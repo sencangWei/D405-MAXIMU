@@ -1,0 +1,139 @@
+device: Intel RealSense D405
+serial: '260322273737'
+resolution:
+- 1280
+- 720
+fps: 30
+source: factory calibration via librealsense get_intrinsics/extrinsics
+cam0_left_ir:
+  fx: 647.519775
+  fy: 647.519775
+  cx: 638.534302
+  cy: 369.76825
+  distortion_model: brown_conrady
+  coeffs:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  width: 1280
+  height: 720
+cam1_right_ir:
+  fx: 647.519775
+  fy: 647.519775
+  cx: 638.534302
+  cy: 369.76825
+  distortion_model: brown_conrady
+  coeffs:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  width: 1280
+  height: 720
+cam_rgb:
+  fx: 655.242432
+  fy: 653.742493
+  cx: 636.423035
+  cy: 368.070282
+  distortion_model: inverse_brown_conrady
+  coeffs:
+  - -0.053749
+  - 0.055981
+  - 0.000221
+  - 0.000555
+  - -0.01832
+  width: 1280
+  height: 720
+cam_depth:
+  fx: 647.519775
+  fy: 647.519775
+  cx: 638.534302
+  cy: 369.76825
+  distortion_model: brown_conrady
+  coeffs:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  width: 1280
+  height: 720
+extrinsics:
+  T_leftir_to_rightir:
+    R:
+    - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.0
+      - 1.0
+      - 0.0
+    - - 0.0
+      - 0.0
+      - 1.0
+    t:
+    - -0.018079
+    - 0.0
+    - 0.0
+  T_rightir_to_leftir:
+    R:
+    - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.0
+      - 1.0
+      - 0.0
+    - - 0.0
+      - 0.0
+      - 1.0
+    t:
+    - 0.018079
+    - 0.0
+    - 0.0
+  T_rgb_to_leftir:
+    R:
+    - - 0.999997
+      - 0.000627
+      - 0.002313
+    - - -0.000625
+      - 1.0
+      - -0.000646
+    - - -0.002313
+      - 0.000645
+      - 0.999997
+    t:
+    - -1.0e-05
+    - -1.0e-05
+    - -1.0e-05
+  T_leftir_to_rgb:
+    R:
+    - - 0.999997
+      - -0.000625
+      - -0.002313
+    - - 0.000627
+      - 1.0
+      - 0.000645
+    - - 0.002313
+      - -0.000646
+      - 0.999997
+    t:
+    - 1.0e-05
+    - 1.0e-05
+    - 1.0e-05
+  T_leftir_to_depth:
+    R:
+    - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.0
+      - 1.0
+      - 0.0
+    - - 0.0
+      - 0.0
+      - 1.0
+    t:
+    - 0.0
+    - 0.0
+    - 0.0

@@ -1,0 +1,46 @@
+# 数据与录制
+recordings/
+recordings_*/
+*.bag
+*.tar.zst
+*.tar.gz
+*.tar
+*.db3
+*.rrd
+
+# 构建产物与依赖
+.deps/
+build/
+build-tools/
+__pycache__/
+*.pyc
+*.pyo
+*.so
+*.o
+*.a
+*.out
+.pytest_cache/
+
+# 校准中间产物
+calibration/
+calibration_results/
+sync_reports/
+realtime_debug_*/
+
+# 旧/临时文件
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 大文件/压缩包
+slam_package.tar.zst
+payload_*
+d405_720p_all_*.tar.zst
+
+# 文档中可能包含的旧结果
+*-report-imucam.pdf
+*-results-imucam.txt
+camchain_720p_leftir.yaml
