@@ -22,8 +22,10 @@ import csv
 import json
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
+from queue import Queue
 
 import pyrealsense2 as rs
 
@@ -101,6 +103,28 @@ def main() -> int:
     first_ts = None  # (ir_left_device_ms, color_device_ms, arrival_mono) 供 epoch 对齐
 
     start_mono = None
+    writer_threads = {}
+    queues = {}  # per-stream 帧队列 (写线程消费)
+
+    # 每个编码器一个写线程: 主循环只入队, 写管道/编码完全脱离主循环,
+    # 避免 ffmpeg 管道反压阻塞采集 -> 消除 Python 侧额外丢帧
+    def writer_loop(key, proc):
+        q = queues[key]
+        while True:
+            frame = q.get()
+            if frame is None:
+                break
+            try:
+                proc.stdin.write(frame.get_data())
+            except (BrokenPipeError, ValueError):
+                break
+
+    for key, (proc, _) in encoders.items():
+        queues[key] = Queue(maxsize=60)  # 2s 缓冲, 平滑突发
+        t = threading.Thread(target=writer_loop, args=(key, proc), daemon=True)
+        t.start()
+        writer_threads[key] = t
+
     try:
         profile = pipeline.start(config)
         imu_recorder.start()
@@ -130,12 +154,7 @@ def main() -> int:
             if first_ts is None and i1.get_frame_timestamp_domain() == rs.timestamp_domain.global_time:
                 first_ts = (float(i1.get_timestamp()), float(c.get_timestamp()), now)
 
-            # 直接写 memoryview (无 bytes() 中间拷贝), 不做任何 Python 转换
-            encoders["ir_left"][0].stdin.write(i1.get_data())
-            encoders["ir_right"][0].stdin.write(i2.get_data())
-            encoders["color"][0].stdin.write(c.get_data())
-
-            # 时间戳/帧号统计 (轻量)
+            # 主循环: 只入队 + 轻量统计, 不写管道
             for key, frame in (("ir_left", i1), ("ir_right", i2), ("color", c)):
                 s = stats[key]
                 n = frame.get_frame_number()
@@ -151,11 +170,20 @@ def main() -> int:
                     ts_ms = float("nan")
                 ts_rows.append([key, frame_idx[key], n, f"{ts_ms:.3f}"])
                 frame_idx[key] += 1
+                queues[key].put(frame)  # 帧引用保持数据存活, 写线程取走写入
     except KeyboardInterrupt:
         pass
     finally:
         imu.stop()
         imu_recorder.stop()
+        # 等写线程消费完再关管道
+        for key in encoders:
+            try:
+                queues[key].put(None)
+            except Exception:
+                pass
+        for t in writer_threads.values():
+            t.join(timeout=5)
         with csv_path.open("w", newline="") as f:
             w = csv.writer(f)
             w.writerow(fields)
