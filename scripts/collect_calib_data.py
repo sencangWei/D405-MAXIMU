@@ -414,9 +414,11 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
 
     session = f"calib_{time.strftime('%Y%m%d_%H%M%S')}"
     out_dir = out_root / session / unit.name
-    frames_dir = out_dir / "frames"
+    frames_dir = out_dir / "frames"           # 左 IR (cam0)
+    frames_right_dir = out_dir / "frames_right"  # 右 IR (cam1, 双目标定用)
     out_dir.mkdir(parents=True, exist_ok=True)
     frames_dir.mkdir(exist_ok=True)
+    frames_right_dir.mkdir(exist_ok=True)
 
     # AprilGrid 检测器
     detector = None
@@ -461,7 +463,10 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
             if preview:
                 with preview_lock:
                     preview_latest["image"] = f.color.copy()
-            item = ("img", f.frame_idx, f.ts, f.color, time.time(), f.frame_number)
+            # 同时记录左 IR (cam0) 和右 IR (cam1), 双目标定
+            right = getattr(f, "infrared_right", None)
+            item = ("img", f.frame_idx, f.ts, f.color, right,
+                    time.time(), f.frame_number)
             q_write.put(item)
             try:
                 q_quality.put_nowait(item)
@@ -502,12 +507,18 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
             kind = item[0]
             try:
                 if kind == "img":
-                    _, idx, ts, img, ts_wall, fnum = item
+                    _, idx, ts, img, img_right, ts_wall, fnum = item
                     path = frames_dir / f"{idx:06d}.jpg"
                     ok, buf = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
                     if ok:
                         buf.tofile(path)
                         written_frames += 1
+                    if img_right is not None:
+                        path_r = frames_right_dir / f"{idx:06d}.jpg"
+                        ok_r, buf_r = cv2.imencode(".jpg", img_right,
+                                                    [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+                        if ok_r:
+                            buf_r.tofile(path_r)
                     cam_w.writerow([idx, fnum, f"{ts:.9f}", f"{ts_wall:.6f}", 0])
                 elif kind == "imu":
                     s = item[1]

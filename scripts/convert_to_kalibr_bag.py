@@ -273,10 +273,18 @@ def convert(input_dir: Path, output: Path, unit: str = "left_hand",
     Imu = ts.types["sensor_msgs/msg/Imu"]
     CameraInfo = ts.types["sensor_msgs/msg/CameraInfo"]
 
+    # 右 IR 帧目录 (双目标定; 不存在则只写 cam0)
+    frames_right_dir = input_dir / unit / "frames_right"
+    has_stereo = frames_right_dir.exists() and any(frames_right_dir.glob("*.jpg"))
+
     with Writer(output) as writer:
         conn_cam = writer.add_connection("/cam0/image_raw", "sensor_msgs/msg/Image", typestore=ts)
         conn_info = writer.add_connection("/cam0/camera_info", "sensor_msgs/msg/CameraInfo", typestore=ts)
         conn_imu = writer.add_connection("/imu0", "sensor_msgs/msg/Imu", typestore=ts)
+        conn_cam1 = conn_info1 = None
+        if has_stereo:
+            conn_cam1 = writer.add_connection("/cam1/image_raw", "sensor_msgs/msg/Image", typestore=ts)
+            conn_info1 = writer.add_connection("/cam1/camera_info", "sensor_msgs/msg/CameraInfo", typestore=ts)
 
         # 写 camera_info (只写一次)
         cam_info = build_camera_info(w, h, fx, fy, cx, cy)
@@ -284,6 +292,11 @@ def convert(input_dir: Path, output: Path, unit: str = "left_hand",
         cam_info.header = build_header(camera_info_stamp, "cam0")
         t_ns = int(camera_info_stamp * 1e9)
         writer.write(conn_info, t_ns, bytes(ts.serialize_ros1(cam_info, "sensor_msgs/msg/CameraInfo")))
+        if has_stereo:
+            cam_info1 = build_camera_info(w, h, fx, fy, cx, cy)
+            cam_info1.header = build_header(camera_info_stamp, "cam1")
+            writer.write(conn_info1, t_ns,
+                         bytes(ts.serialize_ros1(cam_info1, "sensor_msgs/msg/CameraInfo")))
 
         # 写 IMU
         Quaternion = ts.types["geometry_msgs/msg/Quaternion"]
@@ -337,6 +350,28 @@ def convert(input_dir: Path, output: Path, unit: str = "left_hand",
             )
             t_ns = int(ts_shifted * 1e9)
             writer.write(conn_cam, t_ns, bytes(ts.serialize_ros1(msg, "sensor_msgs/msg/Image")))
+            # 双目标定: 写 cam1 (右 IR, 帧号/时间戳与左目一致)
+            if has_stereo:
+                img_path1 = frames_right_dir / f"{idx:06d}.jpg"
+                img1 = cv2.imread(str(img_path1))
+                if img1 is not None:
+                    if mono:
+                        image_data1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+                        step1 = w
+                    else:
+                        image_data1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+                        step1 = w * 3
+                    msg1 = Image(
+                        header=build_header(ts_shifted, "cam1", idx),
+                        height=h,
+                        width=w,
+                        encoding=encoding,
+                        is_bigendian=0,
+                        step=step1,
+                        data=np.frombuffer(image_data1.tobytes(), dtype=np.uint8),
+                    )
+                    writer.write(conn_cam1, t_ns,
+                                 bytes(ts.serialize_ros1(msg1, "sensor_msgs/msg/Image")))
 
     print(f"Generated: {output}")
 
