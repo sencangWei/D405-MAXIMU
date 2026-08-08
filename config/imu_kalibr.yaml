@@ -6,10 +6,10 @@
 #       数量级正确即可, 后续可用 Allan 方差精确标定。
 #
 # 单位:
-#   gyroscope_noise_density:  rad/s / sqrt(Hz)
-#   gyroscope_random_walk:    rad/s^2 / sqrt(Hz)
-#   accelerometer_noise_density: m/s^2 / sqrt(Hz)
-#   accelerometer_random_walk:   m/s^3 / sqrt(Hz)
+#   gyroscope_noise_density: 1.03e-3
+#   gyroscope_random_walk: 2.89e-7
+#   accelerometer_noise_density: 8.28e-3
+#   accelerometer_random_walk: 3.92e-6
 
 rostopic: /imu0
 update_rate: 400.0  # Hz
@@ -17,13 +17,13 @@ update_rate: 400.0  # Hz
 # 陀螺仪 (KT-EX9-2J-2-F1 厂家指标推导, 2026-08-04)
 #   输出噪声 0.135 deg/s rms / sqrt(200 Hz 带宽) = 1.67e-4 rad/s/sqrt(Hz)
 #   随机游走 0.26 deg/sqrt(h) = 7.56e-5 rad/s^2/sqrt(Hz)
-gyroscope_noise_density: 1.67e-4
-gyroscope_random_walk: 7.56e-5
+gyroscope_noise_density: 1.03e-3
+gyroscope_random_walk: 2.89e-7
 
 # 加速度计 (KT-EX9-2J-2-F1 厂家指标; 未直接给噪声密度, 用合理估算)
 #   零偏稳定性 1 mg, 分辨率 0.1 mg; 噪声密度 ~0.1 mg/sqrt(Hz)
-accelerometer_noise_density: 1.0e-3
-accelerometer_random_walk: 3.0e-4
+accelerometer_noise_density: 8.28e-3
+accelerometer_random_walk: 3.92e-6
 
 # IMU 模型: calibrated (默认, 假设工厂已标定轴对准和比例因子)
 # Kalibr 只标 time offset td 和相机-IMU 外参
