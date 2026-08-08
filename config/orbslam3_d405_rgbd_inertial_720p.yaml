@@ -1,0 +1,66 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# D405 左IR + Depth + KT-EX9-2 IMU  (RGB-D-Inertial, 方案1)
+# 用左IR作为灰度图(畸变=0), Depth 与左IR同坐标系。
+# RGB 流仅用于可视化, 不参与 SLAM。
+#--------------------------------------------------------------------------------------------
+File.version: "1.0"
+
+Camera.type: "PinHole"
+
+# 左 IR 内参 (出厂, rectified)
+Camera1.fx: 647.519775
+Camera1.fy: 647.519775
+Camera1.cx: 638.534302
+Camera1.cy: 369.76825
+Camera1.k1: 0.0
+Camera1.k2: 0.0
+Camera1.p1: 0.0
+Camera1.p2: 0.0
+
+Camera.width: 1280
+Camera.height: 720
+Camera.fps: 30
+Camera.RGB: 1
+
+# 深度: Z16 单位 1mm -> DepthMapFactor 1000; 远点阈值 2.5m (D405 超过约1.5m 深度噪声大)
+RGBD.DepthMapFactor: 1000.0
+Stereo.ThDepth: 2.5
+# RGB-D 模式也需要基线参数(用于深度虚拟双目): D405 出厂 18.079mm
+Stereo.b: 0.018079
+
+# cam0 -> IMU (Kalibr T_imu0_cam0 取逆)
+IMU.T_b_c1: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [0.99984671, -0.00187562, -0.01740849, -0.01022065,
+         -0.01745170, -0.02622013, -0.99950385, -0.02838446,
+         0.00141825, 0.99965443, -0.02624883, -0.00887219,
+         0.0, 0.0, 0.0, 1.0]
+
+# IMU 噪声 (厂家指标推导, imu_kalibr.yaml)
+IMU.NoiseGyro: 1.67e-04
+IMU.NoiseAcc: 1.0e-03
+IMU.GyroWalk: 7.56e-05
+IMU.AccWalk: 3.0e-04
+IMU.Frequency: 400.0
+
+ORBextractor.nFeatures: 1500
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1.0
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2.0
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500.0
+Viewer.imageViewScale: 1.0
