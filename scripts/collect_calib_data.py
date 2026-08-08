@@ -216,7 +216,7 @@ class AprilGridPoseTracker:
         if self.detector is None:
             return False
         try:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            gray = img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             dets = self.detector.detect(gray)
         except Exception:
             return False
@@ -304,7 +304,7 @@ class StageQuality:
         dets = []
         if detector is not None:
             try:
-                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                gray = img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 dets = detector.detect(gray)
                 n = len(dets)
             except Exception:
@@ -408,7 +408,8 @@ class StageQuality:
 def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                        strict: bool = False, aprilgrid_cfg: Path = None,
                        tag_family: str = "t36h11", mode: str = "imucam",
-                       preview: bool = False):
+                       preview: bool = False,
+                       exposure_us: int = 30000, gain: int = 100):
     cfg = load_config(config_path)
     unit = cfg.units[0]
 
@@ -481,9 +482,10 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
         fps=unit.camera.fps, enable_depth=unit.camera.enable_depth,
         # 必须传 stereo_ir! 否则默认 False, 抓的是彩色 BGR, 不是 SLAM 用的左 IR
         stereo_ir=bool(getattr(unit.camera, "stereo_ir", False)),
-        auto_exposure=unit.camera.auto_exposure,
-        exposure_us=unit.camera.exposure_us,
-        gain=unit.camera.gain,
+        auto_exposure=False,
+        # 标定用高曝光: D405 IR 无激光, 默认20ms太暗检测不到 AprilGrid
+        exposure_us=exposure_us,
+        gain=gain,
         on_frame=on_frame, name=unit.name,
     )
 
@@ -687,146 +689,150 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
     last_gate_report = 0.0
 
     while phase_idx < len(phases):
-        name, min_secs, req = phases[phase_idx]
-        required_secs = max(float(duration_per_phase), float(min_secs))
-        now = time.monotonic()
-        elapsed_phase = now - t_phase_start
+        try:
+                    name, min_secs, req = phases[phase_idx]
+                    required_secs = max(float(duration_per_phase), float(min_secs))
+                    now = time.monotonic()
+                    elapsed_phase = now - t_phase_start
 
-        # 消费队列用于质检(不阻塞写线程)
-        while not q_quality.empty():
-            try:
-                item = q_quality.get_nowait()
-                if item[0] == "imu":
-                    stage.feed_imu(item[1])
-                elif item[0] == "img":
-                    stage.feed_image(item[3], detector)
-            except Exception as e:
-                print(f"[质检异常] {e}")
-                break
+                    # 消费队列用于质检(不阻塞写线程)
+                    while not q_quality.empty():
+                        try:
+                            item = q_quality.get_nowait()
+                            if item[0] == "imu":
+                                stage.feed_imu(item[1])
+                            elif item[0] == "img":
+                                stage.feed_image(item[3], detector)
+                        except Exception as e:
+                            print(f"[质检异常] {e}")
+                            break
 
-        if preview_enabled:
-            if stage.last_image is not None:
-                vis = stage.last_image.copy()
-                for det in stage.last_detections:
-                    corners = np.asarray(getattr(det, "corners", []), dtype=np.int32)
-                    if corners.size == 8:
-                        cv2.polylines(vis, [corners.reshape(4, 2)], True, (0, 255, 0), 2)
-            else:
-                with preview_lock:
-                    preview_img = preview_latest["image"]
-                vis = preview_img.copy() if preview_img is not None else None
+                    if preview_enabled:
+                        if stage.last_image is not None:
+                            vis = stage.last_image.copy()
+                            for det in stage.last_detections:
+                                corners = np.asarray(getattr(det, "corners", []), dtype=np.int32)
+                                if corners.size == 8:
+                                    cv2.polylines(vis, [corners.reshape(4, 2)], True, (0, 255, 0), 2)
+                        else:
+                            with preview_lock:
+                                preview_img = preview_latest["image"]
+                            vis = preview_img.copy() if preview_img is not None else None
 
-            if vis is not None:
-                status_ok, status_fails, _ = stage.check(req)
-                detect_rate = (
-                    sum(n >= 4 for n in stage.tag_counts) / len(stage.tag_counts)
-                    if stage.tag_counts else 0.0
-                )
-                avg_tags = float(np.mean(stage.tag_counts)) if stage.tag_counts else 0.0
-                motion = stage._pose_motion(req)
-                time_ok = elapsed_phase >= required_secs
-                status = "已达标，等待计时完成" if status_ok and not time_ok else (
-                    "已通过" if status_ok else "未通过"
-                )
-                status_color = (0, 220, 0) if status_ok else (255, 165, 0)
+                        if vis is not None:
+                            status_ok, status_fails, _ = stage.check(req)
+                            detect_rate = (
+                                sum(n >= 4 for n in stage.tag_counts) / len(stage.tag_counts)
+                                if stage.tag_counts else 0.0
+                            )
+                            avg_tags = float(np.mean(stage.tag_counts)) if stage.tag_counts else 0.0
+                            motion = stage._pose_motion(req)
+                            time_ok = elapsed_phase >= required_secs
+                            status = "已达标，等待计时完成" if status_ok and not time_ok else (
+                                "已通过" if status_ok else "未通过"
+                            )
+                            status_color = (0, 220, 0) if status_ok else (255, 165, 0)
 
-                lines = [
-                    (f"当前步骤 {phase_idx + 1}/{len(phases)}    状态：{status}", status_color),
-                    (f"动作：{preview_hints[phase_idx]}", (255, 255, 0)),
-                    (f"当前识别 {stage.last_tag_count}/36    平均 {avg_tags:.1f}    最近有效率 {detect_rate*100:.0f}%", (255, 255, 255)),
-                    (f"位姿解算：{'有效' if stage.last_pose_ok else '未更新'}    计时 {elapsed_phase:.0f}/{required_secs:.0f} 秒", (255, 255, 255)),
-                ]
-                required_motion = []
-                for key in ("tx", "ty", "tz"):
-                    if key in req:
-                        required_motion.append(f"{key[1].upper()}轴覆盖 {motion.get(key, 0.0)*1000:.0f}/{req[key]*1000:.0f}毫米")
-                rotation_names = {
-                    "roll": "绕X（上下倾斜）",
-                    "pitch": "绕Y（左右偏转）",
-                    "yaw": "绕Z（画面内旋转）",
-                }
-                for key in ("roll", "pitch", "yaw"):
-                    if key in req:
-                        required_motion.append(f"{rotation_names[key]} {motion.get(key, 0.0):.1f}/{req[key]:.1f}度")
-                if req.get("imu_excite", 0.0) > 0.0:
-                    required_motion.append(
-                        f"IMU激励 {stage.max_accel_std:.3f}/{req['imu_excite']:.3f}g"
-                    )
-                if required_motion:
-                    lines.append(("  ".join(required_motion), (255, 255, 255)))
-                if stage.pose_tracker is not None and stage.pose_ok_frames >= 3:
-                    lines.append((
-                        f"三维覆盖 {motion.get('span_3d', 0.0)*1000:.0f}毫米    "
-                        f"当前离起点 {motion.get('net', 0.0)*1000:.0f}毫米    "
-                        f"累计路径约 {motion.get('path', 0.0):.2f}米",
-                        (255, 255, 255),
-                    ))
-                if stage.last_tag_count < req.get("tags_min", 4):
-                    lines.append(("提示：把标定板靠近，保持正面和整块板可见", (255, 64, 64)))
-                elif status_fails:
-                    for fail in status_fails[:2]:
-                        lines.append((f"未通过原因：{fail}", (255, 165, 0)))
-                else:
-                    lines.append(("提示：保持缓慢运动，程序将自动进入下一步", (0, 220, 0)))
+                            lines = [
+                                (f"当前步骤 {phase_idx + 1}/{len(phases)}    状态：{status}", status_color),
+                                (f"动作：{preview_hints[phase_idx]}", (255, 255, 0)),
+                                (f"当前识别 {stage.last_tag_count}/36    平均 {avg_tags:.1f}    最近有效率 {detect_rate*100:.0f}%", (255, 255, 255)),
+                                (f"位姿解算：{'有效' if stage.last_pose_ok else '未更新'}    计时 {elapsed_phase:.0f}/{required_secs:.0f} 秒", (255, 255, 255)),
+                            ]
+                            required_motion = []
+                            for key in ("tx", "ty", "tz"):
+                                if key in req:
+                                    required_motion.append(f"{key[1].upper()}轴覆盖 {motion.get(key, 0.0)*1000:.0f}/{req[key]*1000:.0f}毫米")
+                            rotation_names = {
+                                "roll": "绕X（上下倾斜）",
+                                "pitch": "绕Y（左右偏转）",
+                                "yaw": "绕Z（画面内旋转）",
+                            }
+                            for key in ("roll", "pitch", "yaw"):
+                                if key in req:
+                                    required_motion.append(f"{rotation_names[key]} {motion.get(key, 0.0):.1f}/{req[key]:.1f}度")
+                            if req.get("imu_excite", 0.0) > 0.0:
+                                required_motion.append(
+                                    f"IMU激励 {stage.max_accel_std:.3f}/{req['imu_excite']:.3f}g"
+                                )
+                            if required_motion:
+                                lines.append(("  ".join(required_motion), (255, 255, 255)))
+                            if stage.pose_tracker is not None and stage.pose_ok_frames >= 3:
+                                lines.append((
+                                    f"三维覆盖 {motion.get('span_3d', 0.0)*1000:.0f}毫米    "
+                                    f"当前离起点 {motion.get('net', 0.0)*1000:.0f}毫米    "
+                                    f"累计路径约 {motion.get('path', 0.0):.2f}米",
+                                    (255, 255, 255),
+                                ))
+                            if stage.last_tag_count < req.get("tags_min", 4):
+                                lines.append(("提示：把标定板靠近，保持正面和整块板可见", (255, 64, 64)))
+                            elif status_fails:
+                                for fail in status_fails[:2]:
+                                    lines.append((f"未通过原因：{fail}", (255, 165, 0)))
+                            else:
+                                lines.append(("提示：保持缓慢运动，程序将自动进入下一步", (0, 220, 0)))
 
-                panel_h = 18 + 34 * len(lines)
-                overlay = vis.copy()
-                cv2.rectangle(overlay, (0, 0), (vis.shape[1], panel_h), (0, 0, 0), -1)
-                cv2.addWeighted(overlay, 0.72, vis, 0.28, 0, vis)
-                rgb = cv2.cvtColor(vis, cv2.COLOR_BGR2RGB)
-                pil_image = Image.fromarray(rgb)
-                draw = ImageDraw.Draw(pil_image)
-                for row, (text_line, color) in enumerate(lines):
-                    draw.text((16, 5 + row * 34), text_line, font=preview_font, fill=color)
-                vis = cv2.cvtColor(np.asarray(pil_image), cv2.COLOR_RGB2BGR)
+                            panel_h = 18 + 34 * len(lines)
+                            overlay = vis.copy()
+                            cv2.rectangle(overlay, (0, 0), (vis.shape[1], panel_h), (0, 0, 0), -1)
+                            cv2.addWeighted(overlay, 0.72, vis, 0.28, 0, vis)
+                            rgb = cv2.cvtColor(vis, cv2.COLOR_BGR2RGB)
+                            pil_image = Image.fromarray(rgb)
+                            draw = ImageDraw.Draw(pil_image)
+                            for row, (text_line, color) in enumerate(lines):
+                                draw.text((16, 5 + row * 34), text_line, font=preview_font, fill=color)
+                            vis = cv2.cvtColor(np.asarray(pil_image), cv2.COLOR_RGB2BGR)
 
-                cv2.imshow("ego_vio calibration camera", vis)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    print("[预览] 收到 q，结束采集")
-                    phase_idx = len(phases)
-                    break
+                            cv2.imshow("ego_vio calibration camera", vis)
+                            if cv2.waitKey(1) & 0xFF == ord("q"):
+                                print("[预览] 收到 q，结束采集")
+                                phase_idx = len(phases)
+                                break
 
-        # 阶段结束判断
-        if elapsed_phase >= required_secs:
-            ok, fails, oks = stage.check(req)
-            if strict and not ok:
-                if now - last_gate_report >= 2.0:
-                    print(f"\n❌ [{name}] 未达标, 请继续:")
-                    for f in fails:
-                        print(f"   - {f}")
-                    last_gate_report = now
-                continue
+                    # 阶段结束判断
+                    if elapsed_phase >= required_secs:
+                        ok, fails, oks = stage.check(req)
+                        if strict and not ok:
+                            if now - last_gate_report >= 2.0:
+                                print(f"\n❌ [{name}] 未达标, 请继续:")
+                                for f in fails:
+                                    print(f"   - {f}")
+                                last_gate_report = now
+                            continue
 
-            print(f"\n✅ [{name}] 完成")
-            for o in oks:
-                print(f"   {o}")
-            if not ok:
-                print("   (质量指标未完全达标, 但已继续; 建议本阶段动作再大一些)")
-            phase_idx += 1
-            stage.reset()
-            t_phase_start = now
-            last_gate_report = 0.0
-            if phase_idx < len(phases):
-                print(f"\n>>> 下一步: {phases[phase_idx][0]}")
-            continue
+                        print(f"\n✅ [{name}] 完成")
+                        for o in oks:
+                            print(f"   {o}")
+                        if not ok:
+                            print("   (质量指标未完全达标, 但已继续; 建议本阶段动作再大一些)")
+                        phase_idx += 1
+                        stage.reset()
+                        t_phase_start = now
+                        last_gate_report = 0.0
+                        if phase_idx < len(phases):
+                            print(f"\n>>> 下一步: {phases[phase_idx][0]}")
+                        continue
 
-        # 实时提示
-        if now - last_report >= 2.0:
-            print(f"\n[{name}] 已{elapsed_phase:.0f}s")
-            ok, fails, oks = stage.check(req)
-            if not ok:
-                print("  当前指标参考:")
-                for f in fails:
-                    print(f"    - {f}")
-            else:
-                print("  当前指标已满足, 继续保持...")
-            # 总是打印关键参考信息(PnP运动量 / AprilGrid状态)
-            for o in oks:
-                if "AprilGrid识别" in o or "PnP覆盖范围" in o:
-                    print(f"    {o}")
-            last_report = now
+                    # 实时提示
+                    if now - last_report >= 2.0:
+                        print(f"\n[{name}] 已{elapsed_phase:.0f}s")
+                        ok, fails, oks = stage.check(req)
+                        if not ok:
+                            print("  当前指标参考:")
+                            for f in fails:
+                                print(f"    - {f}")
+                        else:
+                            print("  当前指标已满足, 继续保持...")
+                        # 总是打印关键参考信息(PnP运动量 / AprilGrid状态)
+                        for o in oks:
+                            if "AprilGrid识别" in o or "PnP覆盖范围" in o:
+                                print(f"    {o}")
+                        last_report = now
 
-        time.sleep(0.05)
+                    time.sleep(0.05)
+        except KeyboardInterrupt:
+            print("\n[采集] 用户中断 (Ctrl+C), 正在清理...")
+            phase_idx = len(phases)  # 退出循环, 走清理
 
     print("\n" + "=" * 60)
     print("✅ 全部阶段完成, 采集结束")
@@ -866,6 +872,12 @@ def main():
                     help="打开实时相机预览窗口, 与采集同步显示")
     ap.add_argument("--mode", default="imucam", choices=["imucam", "camera"],
                     help="imucam=相机+IMU外参(板子固定晃相机) camera=纯相机内参(晃板子拍全)")
+    ap.add_argument("--exposure-us", type=int, default=30000,
+                    help="标定用 IR 曝光(us). 默认30000: D405 IR 无激光, 20ms太暗"
+                         "检测不到 AprilGrid (实测 20ms→0 tag, 30ms→20 tag)")
+    ap.add_argument("--gain", type=int, default=100,
+                    help="标定用 IR 增益. 默认100 (实测 20ms/gain48 亮度40, "
+                         "30ms/gain100 亮度104)")
     args = ap.parse_args()
 
     if args.mode == "camera":
@@ -880,6 +892,8 @@ def main():
         tag_family=args.tag_family,
         mode=args.mode,
         preview=args.preview,
+        exposure_us=args.exposure_us,
+        gain=args.gain,
     )
 
 
