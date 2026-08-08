@@ -474,6 +474,8 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
         serial=unit.camera.serial,
         width=unit.camera.width, height=unit.camera.height,
         fps=unit.camera.fps, enable_depth=unit.camera.enable_depth,
+        # 必须传 stereo_ir! 否则默认 False, 抓的是彩色 BGR, 不是 SLAM 用的左 IR
+        stereo_ir=bool(getattr(unit.camera, "stereo_ir", False)),
         auto_exposure=unit.camera.auto_exposure,
         exposure_us=unit.camera.exposure_us,
         gain=unit.camera.gain,
@@ -529,7 +531,26 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
     # RealSense 初始化可能让 IMU 线程短暂停顿。先完成相机启动，再打开
     # 并清空 IMU 串口，避免启动积压污染两路时间同步。
     cam.start()
-    imu_reader.start()
+    imu_ok = imu_reader.start()
+    if not imu_ok:
+        print("=" * 60)
+        print("!! IMU 串口打不开!")
+        print(f"   端口: {unit.imu.port}")
+        print("   检查: IMU 是否上电/连接; 确认 --config 用的是 Ubuntu 配置 "
+              "(config/devices_ubuntu.yaml), 不是 Windows 默认(COM9)")
+        if mode == "imucam":
+            print("   (外参标定必须 IMU, 已终止)")
+            print("=" * 60)
+            cam.stop()
+            return
+        print("   (内参标定不需要 IMU, 继续; 但外参标定必须先修好 IMU)")
+        print("=" * 60)
+    if not getattr(unit.camera, "stereo_ir", False):
+        print("=" * 60)
+        print("!! 警告: 相机配置 stereo_ir=False, 标定的是彩色相机, "
+              "不是 SLAM 用的左 IR!")
+        print("   请用 --config config/devices_ubuntu.yaml (stereo_ir: true)")
+        print("=" * 60)
 
     # 获取相机内参并创建 PnP 位姿跟踪器
     pose_tracker = None

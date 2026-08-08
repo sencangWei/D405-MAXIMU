@@ -236,15 +236,19 @@ class RealSenseCapture:
                     pass
 
     def get_intrinsics(self):
-        """返回 RGB 相机内参 (K, D)。未启动时返回 None。"""
+        """返回标定主相机内参 (K, D)。未启动时返回 None。
+
+        stereo_ir 模式下返回左 IR (cam0) 内参; 否则返回彩色内参。
+        """
         if self._pipeline is None:
             return None
         try:
             import pyrealsense2 as rs
             profile = self._pipeline.get_active_profile()
-            stream = profile.get_stream(rs.stream.color)
-            color_profile = rs.video_stream_profile(stream)
-            intr = color_profile.get_intrinsics()
+            stream_type = rs.stream.infrared if self.stereo_ir else rs.stream.color
+            stream = profile.get_stream(stream_type)
+            vsp = rs.video_stream_profile(stream)
+            intr = vsp.get_intrinsics()
             K = np.array([
                 [intr.fx, 0.0, intr.ppx],
                 [0.0, intr.fy, intr.ppy],
