@@ -56,8 +56,6 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--imu-align-s", type=float, default=0.0,
                    help="额外 IMU 平移(s): 补偿 warmup 帧导致图像/IMU 起始错位")
     p.add_argument("--skip-s", type=float, default=0.0, help="跳过开头秒数")
-    p.add_argument("--with-color", action="store_true",
-                   help="同时发布彩色流(默认关; SLAM 不需要, 且 2.7MB/帧大消息易触发 FastRTPS 崩溃)")
     return p.parse_args()
 
 
