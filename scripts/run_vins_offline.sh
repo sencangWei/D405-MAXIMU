@@ -35,7 +35,7 @@ ros2 run vins_fusion_ros2 vins_fusion_ros2_node \
   > /tmp/vins_run.log 2>&1 &
 VINS_PID=$!
 sleep 5
-if ! kill -0 $VINS_PID 2>/dev/null; then
+if ! pgrep -f vins_fusion_ros2_node > /dev/null 2>&1; then
     echo "[ERROR] VINS 启动失败, 看 /tmp/vins_run.log"
     exit 1
 fi
