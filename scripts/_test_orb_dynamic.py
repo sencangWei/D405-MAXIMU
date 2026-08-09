@@ -41,7 +41,11 @@ def main():
 
     replay = subprocess.Popen(
         ["python3", "scripts/replay_db3_to_ros2.py", "--session", sess,
-         "--mode", mode, "--rate", "1.0", "--imu-align-s", "0.0"],
+         "--mode", mode, "--rate", "1.0", "--imu-align-s", "0.0",
+         # IMU 时间偏移: 11.7ms = 08-08 Kalibr td=-0.0117 换算值。
+         # 旧默认 7.36 (08-04 陈旧标定) 在 53x43cm 慢回路上导致尺度爆炸(318m),
+         # 10.0/13.0 也发散; 11.7 为实测最优(闭环 3.5cm), 见 orb-time-offset 记忆。
+         "--imu-shift-ms", os.environ.get("ORB_SHIFT_MS", "11.7")],
         cwd=str(ROOT), stdout=subprocess.DEVNULL)
     t0 = time.time()
     try:

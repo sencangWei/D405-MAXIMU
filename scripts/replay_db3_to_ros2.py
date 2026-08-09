@@ -6,8 +6,8 @@
   - external_imu/imu.bin (KT-EX9, ts 为 monotonic 拟合值)
 
 发布:
-  /cam0/image_raw  左IR (mono8)
-  /cam1/image_raw  右IR (stereo) 或 Depth 16UC1 (rgbd)
+  /cam0/image_raw  左IR (mono8, stereo/rgbd) 或 RGB灰度 (mono8, color_ir)
+  /cam1/image_raw  右IR (mono8, stereo) / Depth 16UC1 (rgbd) / 左IR (mono8, color_ir)
   /imu0            sensor_msgs/Imu (rad/s, m/s^2)
 
 时间线: 图像用设备 global_time; IMU = monotonic + epoch 偏移
@@ -44,6 +44,15 @@ STREAM_TOPICS = {
     "ir_right_meta": TOPIC_PREFIX + "Infrared_2/image/metadata",
     "depth": TOPIC_PREFIX + "Depth_0/image/data",
     "depth_meta": TOPIC_PREFIX + "Depth_0/image/metadata",
+    "color": TOPIC_PREFIX + "Color_0/image/data",
+    "color_meta": TOPIC_PREFIX + "Color_0/image/metadata",
+}
+
+# 每个模式的 cam0/cam1 流分配
+MODE_STREAMS = {
+    "stereo": ("ir_left", "ir_right"),
+    "rgbd": ("ir_left", "depth"),
+    "color_ir": ("color", "ir_left"),
 }
 
 META_TS_RE = re.compile(r"timestamp=([0-9.]+)")
@@ -52,7 +61,7 @@ META_TS_RE = re.compile(r"timestamp=([0-9.]+)")
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="回放 db3+imu.bin 到 ROS2 topic(流式)")
     p.add_argument("--session", type=Path, required=True, help="采集会话目录")
-    p.add_argument("--mode", choices=["stereo", "rgbd"], required=True)
+    p.add_argument("--mode", choices=sorted(MODE_STREAMS), required=True)
     p.add_argument("--rate", type=float, default=1.0, help="回放倍速(1=实时)")
     p.add_argument("--imu-shift-ms", type=float, default=0.0,
                    help="IMU 发布戳平移(Kalibr t_imu=t_cam-7.36ms -> +7.36ms)")
@@ -115,8 +124,8 @@ def bag_event_iter(db3: Path, mode: str):
     from sensor_msgs.msg import Image as RosImage
     from std_msgs.msg import String
 
-    wanted = {"ir_left", "ir_left_meta"}
-    wanted |= {"ir_right", "ir_right_meta"} if mode == "stereo" else {"depth", "depth_meta"}
+    s0, s1 = MODE_STREAMS[mode]
+    wanted = {s0, s0 + "_meta", s1, s1 + "_meta"}
     name_of = {v: k for k, v in STREAM_TOPICS.items() if k in wanted}
 
     reader = rosbag2_py.SequentialReader()
@@ -208,20 +217,25 @@ def main() -> int:
     t0_wall = None
     t_skip_end = None
 
+    # 该模式下哪个流进 cam0 / cam1
+    stream_to_cam = dict(zip(MODE_STREAMS[args.mode], ("cam0", "cam1")))
+
     def publish_img(t, key, msg):
         nonlocal n_img
         msg.header.stamp = to_stamp(t)
-        if key == "ir_left":
-            msg.header.frame_id = "cam0"
-            msg.encoding = "mono8"  # 袋里是 8UC1, 统一为 mono8 供 cv_bridge
-            pub_cam0.publish(msg)
+        cam = stream_to_cam.get(key, "cam1")
+        msg.header.frame_id = cam
+        if key == "depth":
+            msg.encoding = "16UC1"  # 袋里是 mono16
+        elif key == "color":
+            # 袋里是 YUYV (2B/px): 取 Y 通道 -> mono8, 供特征跟踪
+            msg.data = msg.data[::2]
+            msg.step = msg.width
+            msg.encoding = "mono8"
+            msg.is_bigendian = 0
         else:
-            msg.header.frame_id = "cam1"
-            if key == "depth":
-                msg.encoding = "16UC1"  # 袋里是 mono16
-            else:
-                msg.encoding = "mono8"  # ir_right
-            pub_cam1.publish(msg)
+            msg.encoding = "mono8"  # 袋里是 8UC1 (ir), 统一 mono8
+        (pub_cam0 if cam == "cam0" else pub_cam1).publish(msg)
         n_img += 1
 
     def publish_imu(ev):

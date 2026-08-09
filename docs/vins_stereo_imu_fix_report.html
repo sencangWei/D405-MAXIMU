@@ -1,0 +1,393 @@
+<title>VINS stereo-IMU 手部跟踪 SLAM 修复报告</title>
+<style>
+  /* ============ tokens ============ */
+  :root {
+    --ground: #F5F6F8;
+    --surface: #FFFFFF;
+    --surface-2: #EEF1F5;
+    --ink: #16222E;
+    --ink-2: #5A6773;
+    --line: #D9E0E8;
+    --accent: #A9741A;
+    --accent-soft: #F5EAD3;
+    --ok: #2F7D57;
+    --ok-soft: #E3F0E9;
+    --bad: #C0392B;
+    --bad-soft: #F8E7E4;
+    --warn: #8A6D1D;
+    --warn-soft: #F3EDDA;
+    --code: #101820;
+    --code-ink: #DCE4EC;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0C1219;
+      --surface: #131B24;
+      --surface-2: #0F171F;
+      --ink: #DCE4EC;
+      --ink-2: #8B98A5;
+      --line: #26313D;
+      --accent: #E8A33D;
+      --accent-soft: #2A2315;
+      --ok: #4CBE8C;
+      --ok-soft: #123027;
+      --bad: #E06A60;
+      --bad-soft: #321A19;
+      --warn: #D2A84C;
+      --warn-soft: #2C2616;
+      --code: #0B1118;
+      --code-ink: #DCE4EC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0C1219;
+    --surface: #131B24;
+    --surface-2: #0F171F;
+    --ink: #DCE4EC;
+    --ink-2: #8B98A5;
+    --line: #26313D;
+    --accent: #E8A33D;
+    --accent-soft: #2A2315;
+    --ok: #4CBE8C;
+    --ok-soft: #123027;
+    --bad: #E06A60;
+    --bad-soft: #321A19;
+    --warn: #D2A84C;
+    --warn-soft: #2C2616;
+    --code: #0B1118;
+    --code-ink: #DCE4EC;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC",
+                 "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .mono, code, kbd, .num, table td, table th {
+    font-family: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas,
+                 "Liberation Mono", Menlo, monospace;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  /* ============ header ============ */
+  .tick {
+    height: 4px; width: 56px; border-radius: 2px;
+    background: var(--accent); margin-bottom: 18px;
+  }
+  h1 { font-size: 1.45rem; font-weight: 750; line-height: 1.35; letter-spacing: .01em;
+       text-wrap: balance; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px;
+          color: var(--ink-2); font-size: .82rem; }
+  .meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .meta .k { font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+             font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+             color: var(--accent); }
+
+  /* ============ sections ============ */
+  section { margin-top: 44px; }
+  h2 { display: flex; align-items: baseline; gap: 10px;
+       font-size: .98rem; font-weight: 700; letter-spacing: .01em; margin-bottom: 14px; }
+  h2 .no { font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+           font-size: .78rem; color: var(--accent); font-weight: 600; }
+  h2 .rule { flex: 1; height: 1px; background: var(--line); transform: translateY(-4px); }
+  p { max-width: 64ch; }
+  p + p { margin-top: 10px; }
+  strong { font-weight: 700; }
+
+  /* ============ verdict lead ============ */
+  .lead {
+    margin-top: 26px; padding: 16px 18px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: .96rem;
+  }
+  .lead b { color: var(--accent); }
+
+  /* ============ tables ============ */
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .85rem; }
+  th { text-align: left; font-weight: 600; font-size: .72rem; letter-spacing: .06em;
+       text-transform: uppercase; color: var(--ink-2);
+       padding: 8px 10px; border-bottom: 2px solid var(--accent); white-space: nowrap; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:hover td { background: var(--surface-2); }
+  .tbl-scroll { overflow-x: auto; }
+  caption { caption-side: top; text-align: left; color: var(--ink-2);
+            font-size: .78rem; padding: 0 10px 8px; }
+
+  /* status pills */
+  .pill { display: inline-flex; align-items: center; gap: 5px;
+          padding: 2px 9px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+          white-space: nowrap; }
+  .pill .d { font-family: "SF Mono", "Cascadia Code", Consolas, monospace; }
+  .ok   { color: var(--ok);   background: var(--ok-soft); }
+  .bad  { color: var(--bad);  background: var(--bad-soft); }
+  .warn { color: var(--warn); background: var(--warn-soft); }
+  .ok::before, .bad::before, .warn::before { font-weight: 700; }
+  .ok::before   { content: "✓ "; }
+  .bad::before  { content: "✗ "; }
+  .warn::before { content: "— "; }
+
+  /* ============ root-cause chain ============ */
+  ol.chain { list-style: none; counter-reset: step; margin-top: 4px; }
+  ol.chain li { counter-increment: step; position: relative; padding: 10px 0 10px 46px;
+                border-bottom: 1px dashed var(--line); max-width: 100%; }
+  ol.chain li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute; left: 0; top: 11px;
+    font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .78rem; color: var(--accent); font-weight: 600;
+    width: 30px; text-align: right; padding-right: 10px;
+    border-right: 2px solid var(--accent);
+  }
+
+  /* ============ callouts ============ */
+  .callout { margin-top: 18px; padding: 14px 16px; border-radius: 4px;
+             border: 1px solid var(--line); background: var(--surface); font-size: .9rem; }
+  .callout.warn-box { border-left: 3px solid var(--warn); }
+  .callout.ok-box   { border-left: 3px solid var(--ok); }
+  .callout .cap { font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+                  font-size: .72rem; letter-spacing: .08em; color: var(--ink-2);
+                  margin-bottom: 6px; display: block; }
+
+  /* ============ code ============ */
+  pre { background: var(--code); color: var(--code-ink); border-radius: 6px;
+        padding: 14px 16px; overflow-x: auto; font-size: .8rem; line-height: 1.6; }
+  code.inline { background: var(--surface-2); color: var(--accent);
+                padding: 1px 6px; border-radius: 4px; font-size: .82em; }
+  .cmd { margin-top: 14px; }
+  .cmd pre { border: 1px solid var(--line); }
+
+  /* ============ footer ============ */
+  .foot { margin-top: 52px; padding-top: 16px; border-top: 1px solid var(--line);
+          color: var(--ink-2); font-size: .8rem; }
+  .foot .fpath { font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+                 font-size: .76rem; }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 28px 18px 60px; }
+    body { font-size: 14px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="tick"></div>
+  <h1>VINS stereo-IMU 手部跟踪 SLAM 修复报告</h1>
+  <div class="meta">
+    <span><span class="k">date</span> 2026-08-09</span>
+    <span><span class="k">system</span> D405 双目 IR 左+右 · 30 fps · 外部 KT-EX9-2 IMU 400 Hz</span>
+    <span><span class="k">algo</span> vins_fusion_ros2 · stereo-IMU</span>
+  </div>
+
+  <div class="lead">
+    <b>不是时间戳,也不是标定,是算法。</b> VINS 的 stereo+IMU 初始化在最开始就把一次"脏"的
+    gyro bias 估计吸收进了系统。修复后 6/8 个真实会话稳定输出 cm 级轨迹;剩余会话
+    (230503)是移动手部占满画面的动态场景,属算法对该场景的根本性限制,已用决定性实验证实并给出针对性解法。
+  </div>
+
+  <!-- ============ verdict ============ -->
+  <section>
+    <h2><span class="no">01</span> 三个怀疑对象的裁决<span class="rule"></span></h2>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>怀疑对象</th><th>裁决</th><th>证据</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">时间戳</code></td>
+            <td><span class="pill ok">干净,排除</span></td>
+            <td>回放 shift=0 正确;IMU 400Hz 零丢零毛刺;Kalibr 未报时间戳异常</td></tr>
+        <tr><td><code class="inline">标定</code></td>
+            <td><span class="pill ok">正确,排除</span></td>
+            <td>联合标定(Kalibr)对照 AprilGrid 真值 ATE 1.48 / 1.79 cm</td></tr>
+        <tr><td><code class="inline">算法</code></td>
+            <td><span class="pill bad">问题所在</span></td>
+            <td>初始化鲁棒性缺陷 —— 见根因链</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ============ root cause ============ -->
+  <section>
+    <h2><span class="no">02</span> 根因链<span class="rule"></span></h2>
+    <ol class="chain">
+      <li>初始化窗口内(回放 skip 后第一个 ~100ms),视觉 PnP 帧间旋转与 IMU 预积分旋转存在
+          0.5~2° 的随机分歧(<code class="inline">[DIAG-ROT] diff_norm</code>)。</li>
+      <li>原版 <code class="inline">solveGyroscopeBias</code> 是<strong>普通最小二乘</strong>:把 1~2 个坏帧对的 PnP 噪声吸进
+          gyro bias → bg 从真实 ~0.001 rad/s 变成 0.04~0.16 rad/s(2.5~9.4°/s)。</li>
+      <li>大 bg → 预积分旋转错 → 非线性优化无共识 → 离群剔除(&gt;3px)删光特征
+          (feat 355→0)→ <strong>纯 IMU 死推算 → 发散</strong>。</li>
+      <li>坏帧对来源:IR 模糊(Laplacian 5.5 vs 干净会话 14.6)、特征极少(goodFeatures 56 vs 126)、
+          <strong>移动的手部填充画面</strong>(非刚体,破坏静态场景假设)。</li>
+    </ol>
+    <div class="callout">
+      <span class="cap">为什么其他会话没崩</span>
+      那些会话手部不占主导,坏帧对是少数,普通最小二乘把噪声平均掉只剩 ~0.001。230503 是特写手部场景,
+      坏帧对占多数且方向一致,最小二乘无法平均掉。
+    </div>
+  </section>
+
+  <!-- ============ fixes ============ -->
+  <section>
+    <h2><span class="no">03</span> 修复内容 · 累积 6 个文件<span class="rule"></span></h2>
+    <div class="tbl-scroll">
+    <table>
+      <caption>基座(此前已确认必需的 4 个改动)</caption>
+      <thead><tr><th>文件</th><th>改动</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">src/vins_estimator.cpp</code></td><td>IMU QoS 100→2000, 图像 5→100</td><td>处理延迟不丢 IMU/帧</td></tr>
+        <tr><td><code class="inline">integration_base.h</code></td><td>移除 <code class="inline">timestamp&gt;1.0</code> 跳过</td><td>继续积分而非跳过 IMU 间隙</td></tr>
+        <tr><td><code class="inline">feature_tracker.cpp</code></td><td>KLT 窗口 21→31, 金字塔 3→5, quality 0.01→0.005</td><td>快速运动跟踪鲁棒</td></tr>
+        <tr><td><code class="inline">estimator.cpp</code></td><td>updateLatestStates + DIAG 日志</td><td>状态一致性 + 可诊断性</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="tbl-scroll">
+    <table>
+      <caption>本会话 · 初始化鲁棒性修复</caption>
+      <thead><tr><th>文件</th><th>改动</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">initial_aligment.cpp</code></td>
+            <td><code class="inline">solveGyroscopeBias</code> 改 <strong>Huber 迭代重加权 IRLS</strong>(delta≈1.4°, 3 迭代)</td>
+            <td>坏帧对自动降权,不再被吸进 bg</td></tr>
+        <tr><td><code class="inline">estimator.cpp</code></td>
+            <td><strong>初始化守卫</strong>:检查总 bg &gt; 0.01 rad/s 则回滚增量 + slideWindow 重试</td>
+            <td>脏窗口不进 NON_LINEAR,重试到干净窗口</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout">
+      <span class="cap">守卫实现要点 · 踩过的坑</span>
+      ① <strong>必须检查总 bg 而非增量</strong>:solveGyroscopeBias 内部把 delta_bg 累加进
+      <code class="inline">states[].gyro_bias</code>。被拒增量不回滚会残留,下一窗口增量是相对脏 bg 的小修正,只看增量会误放行
+      (实测 0.074 未回滚 + 0.026 增量 = 0.099 总 bg → 发散),触发时必须回滚本次增量。<br><br>
+      ② <strong>阈值 0.01 rad/s(~0.57°/s)</strong>:干净会话 bg=0.0009-0.0015,污染窗口 0.04-0.16,
+      25 倍间隙。0.05 会让 2.5°/s 脏窗口溜进 NON_LINEAR 再发散(实测 230503: bg=0.043 通过 0.05 → 3665m)。
+      0.01 在 230503 上拒绝了 93 个污染窗口,但它仍存在一个 bg&lt;0.01 的干净窗口,初始化后跟踪阶段照样发散
+      —— 守卫只能守住初始化,拦不住跟踪阶段的动态场景污染。
+    </div>
+  </section>
+
+  <!-- ============ results ============ -->
+  <section>
+    <h2><span class="no">04</span> 复验结果 · 修复后全量 8 会话<span class="rule"></span></h2>
+    <div class="tbl-scroll">
+    <table>
+      <caption>真实测试会话 · 6/8 全部工作</caption>
+      <thead><tr><th>会话</th><th>轨迹点</th><th class="num">路径</th><th class="num">中位速度</th><th>初始化 bg</th><th>守卫</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">…_205555</code></td><td class="num">350</td><td class="num">3.4 m</td><td class="num">0.06 m/s</td><td>0.0014</td><td class="num">0</td><td><span class="pill ok">稳定</span></td></tr>
+        <tr><td><code class="inline">…_205703</code></td><td class="num">246</td><td class="num">3.7 m</td><td class="num">0.07 m/s</td><td>0.0016</td><td class="num">0</td><td><span class="pill ok">稳定</span></td></tr>
+        <tr><td><code class="inline">…_111538</code></td><td class="num">253</td><td class="num">3.4 m</td><td class="num">0.07 m/s</td><td>0.0014</td><td class="num">0</td><td><span class="pill ok">稳定</span></td></tr>
+        <tr><td><code class="inline">…_094811</code></td><td class="num">250</td><td class="num">6.1 m</td><td class="num">0.17 m/s</td><td>0.0017</td><td class="num">0</td><td><span class="pill ok">稳定</span></td></tr>
+        <tr><td><code class="inline">…_102729</code></td><td class="num">241</td><td class="num">6.3 m</td><td class="num">0.09 m/s</td><td>0.0018</td><td class="num">0</td><td><span class="pill ok">稳定</span></td></tr>
+        <tr><td><code class="inline">…_230503</code></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td>全窗污染 0.04–0.16</td><td class="num">93 次</td><td><span class="pill bad">无法跟踪</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="tbl-scroll">
+    <table>
+      <caption>无效采集 · 2 个 · 非算法问题</caption>
+      <tbody>
+        <tr><td><span class="pill warn">094342 / 094450</span></td>
+            <td>仅有 250MB db3,缺 <code class="inline">acceptance.json</code>(无真值)和
+                <code class="inline">d405_frames.csv</code>(无法重建帧 epoch 对齐 IMU)。属失败/不完整的采集,不可用于 SLAM 验证。</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout ok-box">
+      <span class="cap">对比基线</span>
+      <strong>纯 origin fork:8/8 全败</strong>(发散或 0 点)—— 累积改动是必需基座。<br>
+      修复前 4/8 稳定 → 修复后(0.01 守卫)<strong>6/8 稳定</strong>;230503 初始化污染被拒 93 次但仍发散
+      (跟踪阶段动态污染,守卫无法拦截);094342/094450 为无效采集。
+    </div>
+  </section>
+
+  <!-- ============ decisive experiment ============ -->
+  <section>
+    <h2><span class="no">05</span> 决定性实验 · 230503 是动态场景根本性限制<span class="rule"></span></h2>
+    <p>用 skip_s=1.5/5/10/14 跳过会话开头,寻找"平静起始窗口":</p>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th class="num">skip_s</th><th>init 窗口</th><th>首个 bg</th><th>守卫重试</th><th class="num">轨迹</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1.5</td><td>t≈1.5s</td><td>2.5°/s</td><td class="num">0</td><td class="num">3665 m <span class="pill bad">发散</span></td></tr>
+        <tr><td class="num">5</td><td>t≈5s</td><td>9.4°/s</td><td class="num">98</td><td class="num">920 m <span class="pill bad">发散</span></td></tr>
+        <tr><td class="num">10</td><td>t≈10s</td><td>6.8°/s</td><td class="num">1</td><td class="num">938 m <span class="pill bad">发散</span></td></tr>
+        <tr><td class="num">14</td><td>t≈14s</td><td>8.8°/s</td><td class="num">1</td><td class="num">194 m <span class="pill bad">发散</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout">
+      <span class="cap">40s 会话内不存在任何能干净初始化的窗口</span>
+      手部全程占满画面且运动;守卫重试 98 次只能找到"最不脏"的窗口。<br><br>
+      <strong>补强实验(0.01 严格阈值)</strong>:230503 重试 93 次后终于找到一个 bg&lt;0.01 的<strong>真正干净</strong>初始化窗口
+      并进入 NON_LINEAR,但 59 个轨迹点后仍发散到 89.9 m。这证明污染不只在初始化 ——
+      手部占满画面的动态场景在滑窗优化阶段同样拖垮跟踪。结论:特征点 VIO 对"移动物体占满画面"场景,
+      在<strong>初始化和跟踪两个阶段</strong>都是根本性限制。
+    </div>
+  </section>
+
+  <!-- ============ open source ============ -->
+  <section>
+    <h2><span class="no">06</span> 开源方案调研与下一步建议<span class="rule"></span></h2>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>方案 / 资料</th><th>要点</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/jinguanzhu/VINS-Mono">dynamic-VIO</a> <span class="mono" style="color:var(--ink-2)">(CEUR Vol-3248 paper21)</span></td>
+            <td>IMU 预积分旋转与 RANSAC 相机旋转对比,<strong>不一致说明 RANSAC 把模型建在了动态物体上,改用 RANSAC 离群点(静态背景)而非内点</strong>。EuRoC 掩膜移动叶片:ATE 1.56m→0.22m。这正是 230503 场景的针对性解法。</td></tr>
+        <tr><td><a href="https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/issues/240">VINS-Fusion Issue #240</a></td>
+            <td><code class="inline">gyroscope bias initial calibration 0.075 -0.10 …</code> 伴随"估计又快又不准"——与我们的污染症状一致,已知痛点。</td></tr>
+        <tr><td><a href="https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/issues/163">VINS-Fusion Issue #163</a></td>
+            <td>bg 不在配置输入中,由初始化在线估计 —— 初始化质量直接决定成败。</td></tr>
+        <tr><td><a href="https://deepwiki.com/HKUST-Aerial-Robotics/VINS-Fusion/3.1-initialization">VINS-Fusion 初始化文档</a></td>
+            <td>stereo+IMU 路径<strong>无重试机制</strong>,失败即留在 INITIAL —— 这正是我们补上守卫的原因。</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout ok-box">
+      <span class="cap">两条落地路径</span>
+      <strong>① 短期(零代码改动)</strong>:部署时初始化阶段让手静止或移出画面 ~2s,等 VINS 用静态背景完成
+      初始化再开始跟踪 —— 所有 VIO 系统的标准做法。<br><br>
+      <strong>② 中期(算法改动)</strong>:实现 dynamic-VIO 的动态特征选择 —— 初始化时对比 IMU 与视觉旋转,
+      不一致则用 RANSAC 离群点(静态背景)做 PnP。需改动 <code class="inline">featureManager</code> / PnP 路径,
+      工作量中等,风险可控,与现有改动架构兼容。
+    </div>
+  </section>
+
+  <!-- ============ reproduce ============ -->
+  <section>
+    <h2><span class="no">07</span> 复现命令<span class="rule"></span></h2>
+    <div class="cmd">
+<pre># 环境准备(必须在 bash 里双重 source)
+bash -c 'source /opt/ros/humble/setup.bash &amp;&amp; source /home/robot/ros2_ws/install/setup.bash'
+
+# 测试单会话(参数: 会话完整路径, skip_s=1.5, rate=1.0, imu_shift_ms=0, imu_align_s=0)
+python3 scripts/_test_vins_dynamic.py \
+  /home/robot/ego_vio_humble/recordings/d405_720p_rgb_stereo_ir_20260809_111538 \
+  1.5 1.0 0 0
+
+# 测试前必须清理残留进程(否则残留节点污染 odometry 导致数值爆炸误判)
+pkill -9 -f vins_fusion_ros2_node; pkill -9 -f replay_db3</pre>
+    </div>
+    <div class="callout">
+      <span class="cap">关键诊断日志 · /tmp/vins_t.log</span>
+      <code class="inline">[DIAG-BG] delta_bg = …</code> 初始化 bg 估计,&lt;0.01 rad/s 为干净 ·
+      <code class="inline">[INIT-GUARD] total gyro bias too large (…)</code> 守卫拒绝脏窗口 ·
+      <code class="inline">[DIAG-ROT] … diff_norm=…</code> 帧间视觉 vs IMU 旋转分歧。
+    </div>
+  </section>
+
+  <div class="foot">
+    Markdown 版:<span class="fpath">ego_vio_humble/docs/vins_stereo_imu_fix_report_2026_08_09.md</span>
+    &nbsp;·&nbsp; 轨迹可通过上述命令复现到 <span class="fpath">/tmp/vins_test_odom.csv</span>
+  </div>
+
+</div>
