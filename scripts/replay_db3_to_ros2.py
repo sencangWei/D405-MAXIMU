@@ -54,7 +54,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--session", type=Path, required=True, help="采集会话目录")
     p.add_argument("--mode", choices=["stereo", "rgbd"], required=True)
     p.add_argument("--rate", type=float, default=1.0, help="回放倍速(1=实时)")
-    p.add_argument("--imu-shift-ms", type=float, default=7.36,
+    p.add_argument("--imu-shift-ms", type=float, default=0.0,
                    help="IMU 发布戳平移(Kalibr t_imu=t_cam-7.36ms -> +7.36ms)")
     p.add_argument("--imu-align-s", type=float, default=0.0,
                    help="额外 IMU 平移(s): 补偿 warmup 帧导致图像/IMU 起始错位")
@@ -171,10 +171,12 @@ def main() -> int:
 
     # IMU 平移: 若未显式指定, 自动对齐 warmup
     align_s = args.imu_align_s
-    if align_s == 0.0:
+    if str(args.imu_align_s).lower() == "auto":
         align_s = compute_auto_align(session)
         if align_s != 0.0:
             print(f"[replay] 自动对齐: IMU 平移 {align_s:+.3f}s (补偿 warmup)", flush=True)
+    else:
+        align_s = float(args.imu_align_s)
 
     img_it = iter(bag_event_iter(db3s[0], args.mode))
     imu_it = iter(imu_event_iter(session, epoch_minus_mono,
