@@ -40,6 +40,7 @@ def main():
     replay = subprocess.Popen(
         ["python3", "scripts/replay_db3_to_ros2.py", "--session", sess,
          "--mode", "stereo", "--rate", sys.argv[3] if len(sys.argv)>3 else "1.0", "--skip-s", sys.argv[2] if len(sys.argv)>2 else "1.5",
+         "--imu-align-s", sys.argv[5] if len(sys.argv)>5 else "0.0001",
          "--imu-shift-ms", sys.argv[4] if len(sys.argv)>4 else "7.36"],
         cwd=str(ROOT), stdout=subprocess.DEVNULL)
     t0 = time.time()
