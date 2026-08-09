@@ -20,8 +20,10 @@ cx = 638.5343   cy = 369.7683
 
 ## 2. 相机-IMU 外参 (VINS body_T_cam0/cam1)
 
+**来源: 用户 2026-08-04 相机-IMU 联合标定 (Kalibr), 即用户实测的外参。**
+本仓库 2026-08-08 的 Kalibr/手眼标定结果仅作调试对比, **不使用**。
 `body_T_cam0 = R_gravity @ inv(T_cam0_imu)`, 其中 R_gravity 是 IMU 重力 Y→Z 变换。
-旧标定 (2026-08-04), 静态验证 0.2cm 最优。
+静态验证 0.2cm 最优。
 
 ```
 body_T_cam0:
