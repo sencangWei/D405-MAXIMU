@@ -5,7 +5,7 @@
 set -o pipefail
 
 SESSION="${1:-recordings/d405_720p_all_20260807_115453}"
-ALIGN_S="${2:--1.52}"
+ALIGN_S="${2:-0.0}"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 ORB_ROOT="/home/robot/ego_pipeline/work/toolchains/ORB_SLAM3"
 
@@ -37,7 +37,7 @@ ros2 run ego_orbslam3_ros2 rgbd_inertial_node \
   -p viewer:=false > /tmp/orb_run.log 2>&1 &
 ORB_PID=$!
 sleep 5
-if ! kill -0 $ORB_PID 2>/dev/null; then
+if ! pgrep -f rgbd_inertial > /dev/null 2>&1; then
     echo "[ERROR] ORB 启动失败, 看 /tmp/orb_run.log"
     exit 1
 fi
@@ -51,13 +51,14 @@ sleep 2
 echo "[3/3] 回放数据 (IMU对齐 $ALIGN_S s)..."
 python3 "$ROOT/scripts/replay_db3_to_ros2.py" \
   --session "$SESSION" --mode rgbd --rate 1.0 \
-  --imu-align-s "$ALIGN_S"
+  --imu-align-s 0.0
 
 echo "等待 ORB 处理完..."
 sleep 5
 
-kill $REC_PID 2>/dev/null
-kill $ORB_PID 2>/dev/null
+kill -9 $REC_PID 2>/dev/null
+kill -9 $ORB_PID 2>/dev/null
+pkill -9 -f rgbd_inertial 2>/dev/null
 sleep 1
 
 echo ""
