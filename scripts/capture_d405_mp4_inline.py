@@ -82,6 +82,12 @@ def main() -> int:
                     help="IR 流编码: ffv1=无损 (精度第一, .mkv), hevc_nvenc=有损 cq18 (仅观赏)")
     ap.add_argument("--rgb-cq", type=int, default=24)
     ap.add_argument("--output-root", type=Path, default=ROOT / "recordings")
+    ap.add_argument("--verify", dest="verify", action="store_true", default=True,
+                    help="录制完成后自动跑一轮 VINS 录后即验 (闭环报告)")
+    ap.add_argument("--no-verify", dest="verify", action="store_false",
+                    help="跳过录后即验 (仅录制)")
+    ap.add_argument("--verify-skip-s", type=float, default=1.5,
+                    help="录后即验跳过的开头秒数 (默认 1.5)")
     args = ap.parse_args()
 
     stamp = time.strftime("%Y%m%d_%H%M%S")
@@ -256,6 +262,16 @@ def main() -> int:
     }
     (session / "acceptance.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))
     print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    if args.verify:
+        print("\n===== 录后即验 (VINS 闭环) =====")
+        vcmd = [sys.executable, "scripts/verify_recorded_session.py", str(session),
+                "--skip-s", str(args.verify_skip_s)]
+        vres = subprocess.run(vcmd, cwd=str(ROOT))
+        print(f"\n===== 录后即验 {'通过' if vres.returncode == 0 else '未通过'}"
+              f" (返回码 {vres.returncode}) =====")
+        if vres.returncode != 0:
+            print("⚠️  该录制建议重录或换更大回路再录 (弱可观测性坏跑, 与格式无关)")
     return 0
 
 
