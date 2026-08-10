@@ -56,6 +56,19 @@ def start_nvenc(path: Path, pix_fmt: str, codec: str, cq: int):
     return subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
 
+def start_ffv1(path: Path, pix_fmt: str):
+    """无损 FFV1 (.mkv) 内联编码: 往返解码与原始 Y8 逐字节一致 (实测验证),
+    VINS 输入与原始 db3 完全相同 -> 精度无损。720p30 实测 ~300fps, 实时无压力。"""
+    cmd = [
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "rawvideo", "-pix_fmt", pix_fmt, "-s", f"{W}x{H}", "-r", str(FPS),
+        "-i", "-",
+        "-c:v", "ffv1", "-level", "3", "-g", "1",
+        "-f", "matroska", str(path),
+    ]
+    return subprocess.Popen(cmd, stdin=subprocess.PIPE)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="D405 三路边录边转 MP4 (NVENC) + IMU")
     ap.add_argument("--serial", default=SERIAL)
@@ -65,6 +78,8 @@ def main() -> int:
                     default="/dev/serial/by-id/usb-1a86_USB_Single_Serial_5B7E005674-if00")
     ap.add_argument("--imu-baud", type=int, default=921600)
     ap.add_argument("--ir-cq", type=int, default=18)
+    ap.add_argument("--ir-codec", choices=["hevc_nvenc", "ffv1"], default="ffv1",
+                    help="IR 流编码: ffv1=无损 (精度第一, .mkv), hevc_nvenc=有损 cq18 (仅观赏)")
     ap.add_argument("--rgb-cq", type=int, default=24)
     ap.add_argument("--output-root", type=Path, default=ROOT / "recordings")
     args = ap.parse_args()
@@ -88,9 +103,14 @@ def main() -> int:
     config.enable_stream(rs.stream.infrared, 1, W, H, rs.format.y8, FPS)
     config.enable_stream(rs.stream.infrared, 2, W, H, rs.format.y8, FPS)
 
+    def ir_encoder(key: str):
+        if args.ir_codec == "ffv1":
+            return start_ffv1(mp4_dir / f"{key}.mkv", "gray")
+        return start_nvenc(mp4_dir / f"{key}.mp4", "gray", "hevc_nvenc", args.ir_cq)
+
     encoders = {
-        "ir_left": (start_nvenc(mp4_dir / "ir_left.mp4", "gray", "hevc_nvenc", args.ir_cq), 0),
-        "ir_right": (start_nvenc(mp4_dir / "ir_right.mp4", "gray", "hevc_nvenc", args.ir_cq), 0),
+        "ir_left": (ir_encoder("ir_left"), 0),
+        "ir_right": (ir_encoder("ir_right"), 0),
         "color": (start_nvenc(mp4_dir / "color.mp4", "yuyv422", "h264_nvenc", args.rgb_cq), 0),
     }
 
@@ -212,23 +232,26 @@ def main() -> int:
 
     elapsed = time.monotonic() - start_mono if start_mono else 0
     total_frames = sum(s["count"] for s in stats.values())
-    total_mb = sum((mp4_dir / f"{k}.mp4").stat().st_size for k in encoders) / 1e6
-    print(f"\n===== 内联 MP4 采集 ({elapsed:.1f}s) =====")
+    def out_path(key: str) -> Path:
+        return mp4_dir / (f"{key}.mkv" if args.ir_codec == "ffv1" and key != "color" else f"{key}.mp4")
+    total_mb = sum(out_path(k).stat().st_size for k in encoders) / 1e6
+    print(f"\n===== 内联 {args.ir_codec} 采集 ({elapsed:.1f}s) =====")
     for key, name in (("ir_left", "IR1"), ("ir_right", "IR2"), ("color", "Color")):
         s = stats[key]
         span = s["last"] - s["first"]
         drop = s["gaps"] / span * 100 if span > 0 else 0
-        sz = (mp4_dir / f"{key}.mp4").stat().st_size / 1e6
+        sz = out_path(key).stat().st_size / 1e6
         print(f"  {name}: 收到{s['count']} 跨度{span} 丢{s['gaps']}({drop:.2f}%) "
-              f"-> {key}.mp4 {sz:.1f}MB")
-    print(f"  MP4 总 {total_mb:.1f}MB / {elapsed:.0f}s = {total_mb/elapsed:.2f}MB/s "
+              f"-> {out_path(key).name} {sz:.1f}MB")
+    print(f"  输出总 {total_mb:.1f}MB / {elapsed:.0f}s = {total_mb/elapsed:.2f}MB/s "
           f"(原始三路约 110MB/s)")
     report = {
         "session": str(session),
         "duration_s": elapsed,
+        "ir_codec": args.ir_codec,
         "frames_by_stream": {k: v["count"] for k, v in stats.items()},
         "gaps_by_stream": {k: v["gaps"] for k, v in stats.items()},
-        "mp4_mb": {k: round((mp4_dir / f"{k}.mp4").stat().st_size / 1e6, 1) for k in encoders},
+        "out_mb": {k: round(out_path(k).stat().st_size / 1e6, 1) for k in encoders},
         "imu": imu.stats(),
     }
     (session / "acceptance.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))

@@ -86,9 +86,15 @@ def main() -> int:
     args = parse_args()
     session = args.session.resolve()
     mp4_dir = session / "mp4"
-    if not (mp4_dir / "ir_left.mp4").exists() or not (mp4_dir / "ir_right.mp4").exists():
-        print(f"[ERROR] 会话里缺 mp4/ir_left.mp4 或 ir_right.mp4: {session}")
-        print("        先跑: python3 scripts/bag_to_mp4_nvenc.py --session <dir>")
+    # IR 支持 .mkv (FFV1 无损) 或 .mp4 (HEVC cq18 有损); color 始终 .mp4
+    def ir_file(key: str) -> Path:
+        for ext in (".mkv", ".mp4"):
+            p = mp4_dir / f"{key}{ext}"
+            if p.exists():
+                return p
+        return mp4_dir / f"{key}.mkv"
+    if not ir_file("ir_left").exists() or not ir_file("ir_right").exists():
+        print(f"[ERROR] 会话里缺 mp4/ir_left(.mkv/.mp4) 或 ir_right: {session}")
         return 1
 
     ts = load_sidecar(mp4_dir)
@@ -107,8 +113,8 @@ def main() -> int:
 
     # 图像迭代器: 取 sidecar 时间戳(秒)排序合并三流
     def img_events():
-        defs = [("ir_left", mp4_dir / "ir_left.mp4", "gray", GRAY_BYTES, ts["ir_left"]),
-                ("ir_right", mp4_dir / "ir_right.mp4", "gray", GRAY_BYTES, ts["ir_right"])]
+        defs = [("ir_left", ir_file("ir_left"), "gray", GRAY_BYTES, ts["ir_left"]),
+                ("ir_right", ir_file("ir_right"), "gray", GRAY_BYTES, ts["ir_right"])]
         gens = []
         for key, path, pix, nbytes, tmap in defs:
             frames = mp4_frame_iter(path, pix, nbytes, list(tmap.values()))

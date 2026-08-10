@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = os.environ.get("VINS_CONFIG",
     "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml")
 OUT = os.environ.get("VINS_OUT", "/tmp/vins_test_odom.csv")
+# 可指定压缩回放变体 (replay_db3_hevc_to_ros2.py) 验证 HEVC 有损压缩对精度的影响
+REPLAY_SCRIPT = os.environ.get("REPLAY_SCRIPT", "scripts/replay_db3_to_ros2.py")
 
 
 def main():
@@ -41,7 +43,7 @@ def main():
     # shift 默认 0: 与配置固定 td=-0.0117 (08-08 Kalibr) 配对, 回放不再改 IMU 时间戳。
     # 旧默认 7.36 (08-04 陈旧标定) + 固定 td 会双重补偿 → 发散 (见 dual-ir-divergence-rootcause)。
     replay = subprocess.Popen(
-        ["python3", "scripts/replay_db3_to_ros2.py", "--session", sess,
+        ["python3", REPLAY_SCRIPT, "--session", sess,
          "--mode", os.environ.get("VINS_MODE", "stereo"),
          "--rate", sys.argv[3] if len(sys.argv)>3 else "1.0", "--skip-s", sys.argv[2] if len(sys.argv)>2 else "1.5",
          "--imu-align-s", sys.argv[5] if len(sys.argv)>5 else "0",
