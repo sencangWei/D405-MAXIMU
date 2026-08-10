@@ -1,0 +1,26 @@
+# 复制为 config/devices.yaml 后按实际硬件填写
+recording:
+  out_dir: "./recordings"
+  jpg_quality: 90
+  save_depth: false
+  imu_bin: true
+
+units:
+  - name: left_hand
+    role: realtime_vio          # realtime_vio | record_only
+    imu:
+      port: COM3                # Windows 串口, 如 COM3; WSL 如 /dev/ttyUSB0
+      baud: 921600
+    camera:
+      serial: "123456789"       # RealSense 序列号, 空字符串表示第一台
+      width: 640
+      height: 480
+      fps: 30
+      enable_depth: false
+      # 相机传输延迟(ms): 运行 scripts/test_sync.py 得到 "ρ 加权平均延迟" 后填入
+      # 例如延迟 +71.1ms 就填 71.0
+      cam_latency_ms: 71.0
+    vio:
+      backend: openvins_socket  # stub(本地纯IMU演示) | openvins_socket(WSL OpenVINS)
+      host: auto                # auto=自动探测WSL IP; 也可填固定IP如 172.27.224.1
+      port: 12345

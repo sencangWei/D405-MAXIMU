@@ -1,0 +1,128 @@
+generated_at: '2026-08-02T22:36:32'
+method: known 5/8cm endpoint-constrained motion (distance-only continuation)
+gyroscope_bias_deg_s_for_rotation_rejection:
+- 0.06365569757719641
+- -0.026990972938438062
+- 0.05298443902365761
+known_distance_validation:
+  matrix: null
+  fit_rmse_m: null
+  formula: empirical_displacement = matrix @ zupt_integrated_displacement
+  warning: This endpoint-constrained empirical map is not an absolute-position observable
+    of an unaided IMU.
+  trials:
+  - axis: Y
+    sign: 1
+    expected_m:
+    - 0.0
+    - 0.05
+    - 0.0
+    direct_position_m:
+    - 0.009284260037763038
+    - 0.03903170608942757
+    - -0.10831722656769324
+    zupt_position_m:
+    - -0.008146915359239428
+    - 0.05389542445972088
+    - 0.10522449576029023
+    axial_zupt_m: 0.05389542445972088
+    cross_axis_m: 0.10553940845901093
+    rotation_deg:
+    - 0.015375970507451852
+    - 0.6303683424613332
+    - 0.01781020789224101
+    duration_s: 2.9025000000001455
+    counter_resets: 0
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: true
+    problems: []
+    warnings: []
+  - axis: Y
+    sign: -1
+    expected_m:
+    - 0.0
+    - -0.05
+    - 0.0
+    direct_position_m:
+    - -0.007112206987627941
+    - -0.05143256659612375
+    - 0.07050681160629686
+    zupt_position_m:
+    - 0.000949451723625479
+    - -0.021335027782343915
+    - -0.013040957762590137
+    axial_zupt_m: -0.021335027782343915
+    cross_axis_m: 0.0130754746736459
+    rotation_deg:
+    - 4.627222140790946
+    - -0.2093728720589683
+    - 0.22107240078082696
+    duration_s: 2.3725000000013097
+    counter_resets: 0
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: false
+    problems:
+    - 移动中转动 4.64°
+    warnings: []
+  - axis: Y
+    sign: 1
+    expected_m:
+    - 0.0
+    - 0.08
+    - 0.0
+    direct_position_m:
+    - 0.007913508245382922
+    - 0.03946641569653283
+    - -0.11787738754470173
+    zupt_position_m:
+    - -0.01218316668205789
+    - 0.08179067351112658
+    - 0.12376260246767043
+    axial_zupt_m: 0.08179067351112658
+    cross_axis_m: 0.12436081102973488
+    rotation_deg:
+    - -2.8811976560086885
+    - 0.6899158792195492
+    - -0.2001961250725003
+    duration_s: 3.0500000000029104
+    counter_resets: 0
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: true
+    problems: []
+    warnings: []
+  - axis: Y
+    sign: -1
+    expected_m:
+    - 0.0
+    - -0.08
+    - 0.0
+    direct_position_m:
+    - -0.017505086332241807
+    - -0.16644583379629868
+    - 0.1546462267410713
+    zupt_position_m:
+    - 0.003386089071635833
+    - -0.055470546499949445
+    - -0.04399291105874367
+    axial_zupt_m: -0.055470546499949445
+    cross_axis_m: 0.0441230305240198
+    rotation_deg:
+    - 3.3917664337431646
+    - -0.5972948361218704
+    - -0.12054423519791728
+    duration_s: 2.5274999999965075
+    counter_resets: 0
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: false
+    problems:
+    - 移动中转动 3.45°
+    warnings: []
+  valid_trial_count: 2
+algorithm_comparison:
+  direct: body-frame acceleration delta double integration
+  zupt: endpoint zero velocity plus linear velocity drift removal per motion interval
+raw_data_file: /home/robot/桌面/ego_vio_calib_kit/imu_calibration_results/imu_distance_y_20260802_223549_raw.npz
