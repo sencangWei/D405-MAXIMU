@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""压缩回放变体: 读原始 db3, 把 IR 流经 HEVC cq18 (与 capture_d405_mp4_inline 完全一致) 转码后再喂 VINS。
+"""压缩回放变体: 读原始 db3, 把 IR 流经编码器转码后再喂 VINS。
 
-用途: 验证内联 MP4 录制的有损 HEVC 压缩是否影响 VINS 双IR 精度。
-编码命令与 capture_d405_mp4_inline.py 完全一致:
-  ffmpeg rawvideo(gray) -> hevc_nvenc -preset p6 -tune ll -rc vbr -cq 18 -> yuv420p -> mp4
-  (灰度源转 yuv420p, 色度子采样对灰度无损, 只压亮度)
+用途: 验证内联录制压缩 (有损 HEVC 或无损 FFV1) 是否影响 VINS 双IR 精度。
+编码命令与 capture_d405_mp4_inline.py 一致:
+  ffv1:      ffmpeg rawvideo(gray) -> ffv1 -level 3 -g 1 -> mkv (无损, 精度第一)
+  hevc_nvenc: ffmpeg rawvideo(gray) -> hevc_nvenc cq18 -> mp4 (有损, 仅观赏)
 
-实现: 批量转码 (整流 -> 临时 raw -> mp4 -> 解码回 raw), 帧序/数量不变,
+CODEC 环境变量选择编码: CODEC=ffv1 (默认 hevc_nvenc)。
+实验结论 (2026-08-10): HEVC cq18 有损 6 次中 2 次发散 (坏跑率 0->2/6), 违反精度第一;
+FFV1 无损字节级一致, VINS 精度等同原始 db3。
+
+实现: 批量转码 (整流 -> 临时 raw -> mkv/mp4 -> 解码回 raw), 帧序/数量不变,
 时间戳用原始 bag 设备时间, IMU 原样。无流式桥接, 确定性。
 用法同 replay_db3_to_ros2.py; 通过 _test_vins_dynamic.py REPLAY_SCRIPT 环境变量指定。
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -30,20 +35,30 @@ FRAME_BYTES = W * H
 
 
 def transcode_frames(frames: list[bytes], tmpdir: Path, tag: str) -> list[bytes]:
-    """整流批量: raw -> HEVC cq18 (mp4) -> 解码回 Y8。返回与输入等序等长的帧列表。"""
+    """整流批量: raw -> 指定编码 -> 解码回 Y8。返回与输入等序等长的帧列表。
+    CODEC=ffv1 (无损, mkv) 或 hevc_nvenc (有损 cq18, mp4)。"""
     raw_in = tmpdir / f"{tag}_in.raw"
-    mp4 = tmpdir / f"{tag}.mp4"
+    codec = os.environ.get("CODEC", "hevc_nvenc")
+    out = tmpdir / f"{tag}.{'mkv' if codec == 'ffv1' else 'mp4'}"
     raw_out = tmpdir / f"{tag}_out.raw"
     raw_in.write_bytes(b"".join(frames))
 
-    enc_cmd = [
-        "ffmpeg", "-y", "-v", "error",
-        "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{W}x{H}", "-r", "30", "-i", str(raw_in),
-        "-vf", "format=yuv420p", "-c:v", "hevc_nvenc", "-preset", "p6",
-        "-tune", "ll", "-rc", "vbr", "-cq", "18", "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart", "-f", "mp4", str(mp4),
-    ]
-    dec_cmd = ["ffmpeg", "-y", "-v", "error", "-i", str(mp4),
+    if codec == "ffv1":
+        enc_cmd = [
+            "ffmpeg", "-y", "-v", "error",
+            "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{W}x{H}", "-r", "30", "-i", str(raw_in),
+            "-c:v", "ffv1", "-level", "3", "-g", "1",
+            "-f", "matroska", str(out),
+        ]
+    else:
+        enc_cmd = [
+            "ffmpeg", "-y", "-v", "error",
+            "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{W}x{H}", "-r", "30", "-i", str(raw_in),
+            "-vf", "format=yuv420p", "-c:v", "hevc_nvenc", "-preset", "p6",
+            "-tune", "ll", "-rc", "vbr", "-cq", "18", "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", "-f", "mp4", str(out),
+        ]
+    dec_cmd = ["ffmpeg", "-y", "-v", "error", "-i", str(out),
                "-f", "rawvideo", "-pix_fmt", "gray", str(raw_out)]
     subprocess.run(enc_cmd, check=True)
     subprocess.run(dec_cmd, check=True)

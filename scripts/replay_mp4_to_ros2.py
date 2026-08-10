@@ -13,12 +13,13 @@
 
 时间戳: 图像用 sidecar 里的设备全局时间; IMU 用 monotonic+epoch 偏移对齐。
 
-注意事项 (本机实测):
-  - msg.data 必须用 bytearray (不能用 bytes), 否则 FastRTPS 间歇抛
-    "context is invalid" 崩溃。回放用 --rate 1.0 (实时) 最稳。
-  - 本机 FastRTPS 环境下, VINS (C++ message_filters) 收不到本脚本的
-    图像 (Python 订阅者可收到)。SLAM 回放建议先用 replay_db3_to_ros2.py
-    (bag 路径, 已验证 181 位姿), MP4 作为存储/传输格式。
+注意事项 (2026-08-10 根因):
+  - 早期 "VINS 收不到图像 + context is invalid 崩溃" 真因 = img_events() 生成器
+    表达式按引用捕获循环变量 key, 两流帧全被标成 ir_right -> cam0 空 (stereo 同步
+    0 位姿) + cam1 单流 2x 流量拥塞 FastRTPS。已用 make_gen(key, frames) 默认参数
+    按值捕获修复 (sink 实测 cam0=945/cam1=944/imu=12157 全达)。
+  - 回放用 --rate 1.0 (实时) 最稳; 图像 QoS 用 RELIABLE (与 replay_db3 一致,
+    可匹配 VINS 的 BEST_EFFORT stereo 订阅)。
 
 用法:
   source /opt/ros/humble/setup.bash
@@ -28,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import subprocess
 import sys
 import time
@@ -51,11 +53,16 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="回放 MP4 + imu.bin 到 ROS2 topic(流式)")
     p.add_argument("--session", type=Path, required=True, help="采集会话目录(含 mp4/ 与 external_imu/)")
     p.add_argument("--rate", type=float, default=1.0, help="回放倍速(1=实时)")
-    p.add_argument("--imu-shift-ms", type=float, default=7.36,
+    p.add_argument("--imu-shift-ms", type=float, default=0.0,
                    help="IMU 发布戳平移(Kalibr t_imu=t_cam-7.36ms -> +7.36ms)")
     p.add_argument("--imu-align-s", type=float, default=0.0,
                    help="额外 IMU 平移(s): 补偿 warmup 帧导致图像/IMU 起始错位")
     p.add_argument("--skip-s", type=float, default=0.0, help="跳过开头秒数")
+    p.add_argument("--mode", default="stereo",
+                   help="兼容 _test_vins_dynamic.py; 本脚本固定双 IR (ir_left/ir_right)")
+    p.add_argument("--raw-dir", type=Path, default=None,
+                   help="预解码裸帧目录 (含 ir_left.raw/ir_right.raw): 不启动 ffmpeg 子进程, "
+                        "用于隔离 ffmpeg 对 VINS 实时性的扰动")
     return p.parse_args()
 
 
@@ -68,8 +75,20 @@ def load_sidecar(mp4_dir: Path) -> dict:
     return out
 
 
-def mp4_frame_iter(mp4_path: Path, pix_fmt: str, frame_bytes: int, ts_list):
-    """流式解码 MP4 -> (device_ts_ms, frame_bytes) 序列. ffmpeg 子进程读 stdout."""
+def mp4_frame_iter(mp4_path: Path, pix_fmt: str, frame_bytes: int, ts_list, raw_file=None):
+    """流式解码 MP4 -> (device_ts_ms, frame_bytes) 序列.
+
+    raw_file 指定时直接从预解码裸文件顺序读取 (无 ffmpeg 子进程)。
+    """
+    if raw_file is not None:
+        f = open(raw_file, "rb")
+        for ts in ts_list:
+            buf = f.read(frame_bytes)
+            if len(buf) < frame_bytes:
+                break
+            yield ts, buf
+        f.close()
+        return
     cmd = ["ffmpeg", "-v", "error", "-i", str(mp4_path),
            "-f", "rawvideo", "-pix_fmt", pix_fmt, "-"]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
@@ -84,6 +103,8 @@ def mp4_frame_iter(mp4_path: Path, pix_fmt: str, frame_bytes: int, ts_list):
 
 def main() -> int:
     args = parse_args()
+    if args.raw_dir is None and os.environ.get("REPLAY_RAW_DIR"):
+        args.raw_dir = Path(os.environ["REPLAY_RAW_DIR"])
     session = args.session.resolve()
     mp4_dir = session / "mp4"
     # IR 支持 .mkv (FFV1 无损) 或 .mp4 (HEVC cq18 有损); color 始终 .mp4
@@ -99,13 +120,19 @@ def main() -> int:
 
     ts = load_sidecar(mp4_dir)
 
-    # IMU 对齐 (与 db3 回放一致)
+    # IMU 对齐: 与 db3 回放语义完全一致 (镜像 replay_db3_to_ros2.py)。
+    # 关键: 数值 0 必须原样使用, 不能触发自动对齐 —— 否则 `--imu-align-s 0`
+    # 会让本路径 IMU 平移 compute_auto_align()(本会话 +0.357s), 而 db3 路径是 0,
+    # 两路 IMU-图像相对时间错位 357ms, VINS 尺度估计爆炸(实测 6/6 闭环 1.5-3m)。
+    # type=float 使 "auto" 不可达, 与 db3 一致 (实际恒为数值)。
     epoch_minus_mono = load_epoch_minus_mono(session)
     align_s = args.imu_align_s
-    if align_s == 0.0:
+    if str(args.imu_align_s).lower() == "auto":
         align_s = compute_auto_align(session)
         if align_s != 0.0:
             print(f"[replay] 自动对齐: IMU 平移 {align_s:+.3f}s (补偿 warmup)", flush=True)
+    else:
+        align_s = float(args.imu_align_s)
     print(f"[replay] epoch-monotonic 偏移: {epoch_minus_mono:.6f}s", flush=True)
 
     imu_it = iter(imu_event_iter(session, epoch_minus_mono,
@@ -113,12 +140,19 @@ def main() -> int:
 
     # 图像迭代器: 取 sidecar 时间戳(秒)排序合并三流
     def img_events():
+        raw_dir = args.raw_dir
         defs = [("ir_left", ir_file("ir_left"), "gray", GRAY_BYTES, ts["ir_left"]),
                 ("ir_right", ir_file("ir_right"), "gray", GRAY_BYTES, ts["ir_right"])]
+        # 生成器表达式按引用捕获外层循环变量 key: 循环结束后 key 恒为最后一值
+        # ("ir_right"), 两流帧全被标成右流 -> cam0 一帧收不到 (VINS stereo 同步 0 位姿,
+        # cam1 单流 2x 流量触发 FastRTPS "context is invalid" 崩溃)。用默认参数按值捕获。
+        def make_gen(key, frames):
+            return ((t / 1000.0, key, b) for t, b in frames)
         gens = []
         for key, path, pix, nbytes, tmap in defs:
-            frames = mp4_frame_iter(path, pix, nbytes, list(tmap.values()))
-            gens.append(((t / 1000.0, key, b) for t, b in frames))
+            raw_file = (raw_dir / f"{key}.raw") if raw_dir else None
+            frames = mp4_frame_iter(path, pix, nbytes, list(tmap.values()), raw_file)
+            gens.append(make_gen(key, frames))
         # 逐流 peek 一个, 每次取时间最早的一个
         peeks = []
         for g in list(gens):
@@ -146,22 +180,16 @@ def main() -> int:
 
     import rclpy
     from rclpy.node import Node
-    from rclpy.qos import (DurabilityPolicy, HistoryPolicy, QoSProfile,
-                           ReliabilityPolicy)
     from sensor_msgs.msg import Image as RosImage, Imu as RosImu
     from builtin_interfaces.msg import Time as RosTime
 
-    # 图像 BEST_EFFORT: 与 VINS 的 rmw_qos_profile_sensor_data 完全匹配,
-    # 且避免 FastRTPS 可靠大图写者被慢消费者阻塞(max_blocking_time)导致的
-    # "context is invalid" 崩溃。IMU 保持可靠(与 VINS IMU 订阅匹配)。
-    img_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT,
-                         history=HistoryPolicy.KEEP_LAST,
-                         durability=DurabilityPolicy.VOLATILE)
-
+    # 图像默认 QoS (RELIABLE KeepLast10): 与 replay_db3_to_ros2.py 完全一致。
+    # 实测 (2026-08-10): db3 回放 RELIABLE 发布本机 FastRTPS 下 VINS 正常收到
+    # (181 位姿); 早期 BEST_EFFORT 反而让 C++ message_filters 收不到图像。
     rclpy.init()
     node = Node("mp4_replay")
-    pub_cam0 = node.create_publisher(RosImage, "/cam0/image_raw", img_qos)
-    pub_cam1 = node.create_publisher(RosImage, "/cam1/image_raw", img_qos)
+    pub_cam0 = node.create_publisher(RosImage, "/cam0/image_raw", 10)
+    pub_cam1 = node.create_publisher(RosImage, "/cam1/image_raw", 10)
     pub_imu = node.create_publisher(RosImu, "/imu0", 2000)
 
     def to_stamp(t_epoch: float) -> RosTime:
@@ -173,17 +201,31 @@ def main() -> int:
     t0_wall = None
     t_skip_end = None
 
+    import array
+
+    # 预分配消息 + 原地改写 .data: 避免每次 msg.data = X 触发 rclpy setter 的
+    # O(N) 全元素校验 (32ms/帧 -> 整条回放 0.5x, 拖慢 VINS 送达节奏致发散)。
+    # array slice 拷贝实测 ~4300fps, 60fps 实时无压力 (db3 回放反序列化走
+    # C 快速路径天然规避; 这里显式等价)。
+    msg0 = RosImage()
+    msg0.header.frame_id = "cam0"
+    msg0.height, msg0.width, msg0.step = H, W, W
+    msg0.is_bigendian = False
+    msg0.encoding = "mono8"
+    msg0.data = array.array("B", [0]) * GRAY_BYTES
+
+    msg1 = RosImage()
+    msg1.header.frame_id = "cam1"
+    msg1.height, msg1.width, msg1.step = H, W, W
+    msg1.is_bigendian = False
+    msg1.encoding = "mono8"
+    msg1.data = array.array("B", [0]) * GRAY_BYTES
+
     def publish_img(t, key, buf):
         nonlocal n_img
-        msg = RosImage()
+        msg = msg0 if key == "ir_left" else msg1
         msg.header.stamp = to_stamp(t)
-        msg.header.frame_id = "cam0" if key == "ir_left" else "cam1"
-        msg.height, msg.width = H, W
-        msg.step = W
-        msg.is_bigendian = False
-        msg.encoding = "mono8"
-        # 用 bytearray (与 db3 回放的 deserialized 数据一致), 避免 bytes 触发 FastRTPS 崩溃
-        msg.data = bytearray(buf)
+        msg.data[:] = array.array("B", buf)   # 原地拷贝, 不触发 setter
         if key == "ir_left":
             pub_cam0.publish(msg)
         else:
