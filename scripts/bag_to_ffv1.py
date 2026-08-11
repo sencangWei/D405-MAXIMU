@@ -2,7 +2,7 @@
 """后处理: 采集会话 db3 → 双IR FFV1 无损 (.mkv) + RGB H264 (.mp4) + 时间戳 sidecar。
 
 与 bag_to_mp4_nvenc.py 相同结构, 但 IR 用 FFV1 无损 (capture --ir-codec ffv1 的等价离线版):
-  IR 用 FFV1 无损 (SLAM 喂流, 字节级保真 -> VINS 精度等同原始 db3)
+  IR 用 FFV1 无损 (SLAM 喂流, 解码像素逐帧等同原始 db3)
   RGB 用 H.264 cq24 (观看用, 不跑 SLAM, 极低码率)
 
 输出 (session/mp4/):
@@ -43,12 +43,13 @@ META_FN_RE = re.compile(r"Frame number=(\d+)")
 
 
 def start_ffv1(path: Path, pix_fmt_in: str):
-    """无损 FFV1 (.mkv): rawvideo -> ffv1 -level 3 -g 1 -> matroska."""
+    """无损 FFV1 (.mkv): 使用 context 建模提高灰度 IR 压缩率。"""
     cmd = [
         "ffmpeg", "-y", "-v", "error",
         "-f", "rawvideo", "-pix_fmt", pix_fmt_in, "-s", f"{W}x{H}", "-r", str(FPS),
         "-i", "-",
-        "-c:v", "ffv1", "-level", "3", "-g", "1",
+        "-c:v", "ffv1", "-level", "3", "-coder", "1", "-context", "1",
+        "-g", "1", "-slices", "4", "-slicecrc", "1",
         "-f", "matroska", str(path),
     ]
     return subprocess.Popen(cmd, stdin=subprocess.PIPE)

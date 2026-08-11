@@ -48,6 +48,26 @@ def classify(closure_cm, path_m):
     return "优", 0
 
 
+def plane_relative_height_metrics(points):
+    """返回平面测试的倾角与去平面高度残差；不把真实竖直运动强制压平。"""
+    design = np.column_stack((points[:, 0], points[:, 1], np.ones(len(points))))
+    if np.linalg.matrix_rank(design) < 3:
+        return float("nan"), float("nan"), float("nan")
+
+    coefficients = np.linalg.lstsq(design, points[:, 2], rcond=None)[0]
+    residual = points[:, 2] - design @ coefficients
+    median = float(np.median(residual))
+    mad = float(np.median(np.abs(residual - median)))
+    robust_sigma = 1.4826 * mad
+    if robust_sigma > 0:
+        residual = residual[np.abs(residual - median) <= 4.0 * robust_sigma]
+
+    tilt_deg = float(np.degrees(np.arctan(np.linalg.norm(coefficients[:2]))))
+    z_std_mm = float(np.std(residual) * 1000.0)
+    z_span_mm = float((np.percentile(residual, 95) - np.percentile(residual, 5)) * 1000.0)
+    return tilt_deg, z_std_mm, z_span_mm
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("session", help="录制会话目录 (含 mp4/ir_left.mkv 等)")
@@ -117,6 +137,8 @@ def main():
     ts = np.array([float(r["t_sec"]) for r in rows])
     v = np.linalg.norm(np.diff(p, axis=0), axis=1) / np.maximum(np.diff(ts), 1e-6)
     medspeed = float(np.median(v))
+    z_raw_span_mm = float((np.max(p[:, 2]) - np.min(p[:, 2])) * 1000.0)
+    plane_tilt_deg, z_plane_std_mm, z_plane_span_mm = plane_relative_height_metrics(p)
 
     verdict, code = classify(closure_cm, path_m)
     print("\n" + "=" * 46)
@@ -124,6 +146,10 @@ def main():
     print(f"  轨迹路径   {path_m:6.2f} m")
     print(f"  轨迹点数   {len(rows)}")
     print(f"  中位速度   {medspeed:.3f} m/s")
+    print(f"  原始 Z 范围 {z_raw_span_mm:6.2f} mm")
+    print(f"  轨迹平面倾角 {plane_tilt_deg:5.2f}°  (重力世界系相对测试平面)")
+    print(f"  去平面 Zσ   {z_plane_std_mm:6.2f} mm")
+    print(f"  去平面 Z90% {z_plane_span_mm:6.2f} mm")
     print(f"  判定       {verdict}")
     print("=" * 46)
     print(f"[verify] 耗时 {elapsed:.0f}s  (一跑一验, 建议现场录完即验)")
