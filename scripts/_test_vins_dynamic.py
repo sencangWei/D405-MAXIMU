@@ -20,6 +20,7 @@ VINS_LOG = os.environ.get("VINS_LOG", "/tmp/vins_t.log")
 REPLAY_LOG = os.environ.get("REPLAY_LOG", "/tmp/replay_t.log")
 # 可指定压缩回放变体 (replay_db3_hevc_to_ros2.py) 验证 HEVC 有损压缩对精度的影响
 REPLAY_SCRIPT = os.environ.get("REPLAY_SCRIPT", "scripts/replay_db3_to_ros2.py")
+TEST_TIMEOUT_S = float(os.environ.get("VINS_TEST_TIMEOUT_S", "360"))
 
 
 def main():
@@ -32,6 +33,11 @@ def main():
         stdout=vins_log, stderr=subprocess.STDOUT,
         preexec_fn=os.setsid)
     time.sleep(5)
+    if vins.poll() is not None:
+        vins_log.close()
+        print(f"VINS 启动失败: 退出码 {vins.returncode}")
+        print(Path(VINS_LOG).read_text(errors="replace"))
+        return 2
 
     # 订阅 /odometry 写文件
     rclpy.init()
@@ -53,12 +59,22 @@ def main():
          "--imu-align-s", sys.argv[5] if len(sys.argv)>5 else "0",
          "--imu-shift-ms", sys.argv[4] if len(sys.argv)>4 else "0"],
         cwd=str(ROOT), stdout=replay_log, stderr=subprocess.STDOUT)
-    t0 = time.time()
+    t0 = time.monotonic()
+    vins_exited = False
     try:
-        while time.time() - t0 < 90 and replay.poll() is None:
+        while time.monotonic() - t0 < TEST_TIMEOUT_S and replay.poll() is None:
+            if vins.poll() is not None:
+                vins_exited = True
+                break
             rclpy.spin_once(node, timeout_sec=0.05)
     except KeyboardInterrupt:
         pass
+    if vins_exited:
+        print(f"VINS 运行中提前退出: 退出码 {vins.returncode}")
+    elif replay.poll() is None:
+        print(f"回放超时: {TEST_TIMEOUT_S:.0f}s")
+    elif replay.returncode != 0:
+        print(f"回放失败: 退出码 {replay.returncode}")
     # 再等 3s 让 VINS 处理完
     t1 = time.time()
     while time.time() - t1 < 4:
