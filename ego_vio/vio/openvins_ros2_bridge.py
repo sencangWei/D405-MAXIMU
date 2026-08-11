@@ -10,6 +10,7 @@ OpenVINS 通过 ROS2 订阅这些话题。
 """
 
 from __future__ import annotations
+import array
 import queue
 import threading
 from typing import Optional
@@ -19,6 +20,27 @@ import numpy as np
 from .base import VIOBackend, Pose
 from ..imu.imu_reader import ImuSample
 from ..camera.realsense_capture import CameraFrame
+
+
+# 必须与 db3_replay_cpp::makeImuMessage 完全一致。VINS 外参是和这次
+# IMU 坐标变换成对标定的；实时链路漏掉它会把静止重力从 Z 轴错发到 Y 轴。
+_VINS_IMU_ROTATION = np.array(
+    [
+        [0.99980212, -0.01423891, -0.01389161],
+        [-0.01423891, -0.02458715, -0.99959628],
+        [0.01389161, 0.99959628, -0.02478503],
+    ],
+    dtype=np.float64,
+)
+_STANDARD_GRAVITY = 9.80665
+
+
+def _rotate_imu_to_vins(
+    gyro_deg_s: np.ndarray, accel_g: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    gyro_rad_s = _VINS_IMU_ROTATION @ np.radians(gyro_deg_s)
+    accel_m_s2 = _VINS_IMU_ROTATION @ (accel_g * _STANDARD_GRAVITY)
+    return gyro_rad_s, accel_m_s2
 
 
 def _camera_has_imu_lead(latest_imu_t: float, camera_t: float, guard_s: float) -> bool:
@@ -143,7 +165,10 @@ class OpenVINSROS2Bridge(VIOBackend):
                 msg.encoding = "mono8"
                 msg.is_bigendian = 0
                 msg.step = int(w)
-                msg.data = data
+                # rclpy 的 msg.data = bytes 会逐元素做 Python 侧校验，720p
+                # 双目每帧约 1.8 MB 时只能发布约 14 fps。原地写入 typed
+                # array 走连续缓冲区路径，与已修复的离线回放保持一致。
+                msg.data[:] = array.array("B", data)
                 return msg
 
             self._cam_pub.publish(make_message("cam0", data0))
@@ -167,15 +192,17 @@ class OpenVINSROS2Bridge(VIOBackend):
         msg.header.stamp.nanosec = nanosec
         msg.header.frame_id = "imu0"
 
-        # OpenVINS 用 9.81 作为重力常量; KT-EX9-2 陀螺仪输出度/秒需转弧度
-        g2ms2 = 9.81
-        msg.linear_acceleration.x = float(sample.ax) * g2ms2
-        msg.linear_acceleration.y = float(sample.ay) * g2ms2
-        msg.linear_acceleration.z = float(sample.az) * g2ms2
+        gyro, accel = _rotate_imu_to_vins(
+            np.array([sample.gx, sample.gy, sample.gz], dtype=np.float64),
+            np.array([sample.ax, sample.ay, sample.az], dtype=np.float64),
+        )
+        msg.linear_acceleration.x = float(accel[0])
+        msg.linear_acceleration.y = float(accel[1])
+        msg.linear_acceleration.z = float(accel[2])
 
-        msg.angular_velocity.x = float(np.radians(sample.gx))
-        msg.angular_velocity.y = float(np.radians(sample.gy))
-        msg.angular_velocity.z = float(np.radians(sample.gz))
+        msg.angular_velocity.x = float(gyro[0])
+        msg.angular_velocity.y = float(gyro[1])
+        msg.angular_velocity.z = float(gyro[2])
 
         self._imu_pub.publish(msg)
         self._imu_published += 1
