@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import threading
 import time
 
 import numpy as np
@@ -79,80 +78,106 @@ def method_frame_queue(duration: float) -> dict:
     return counts
 
 
-def method_callbacks(duration: float) -> dict:
-    """方案C: low-level sensor 回调, 每流独立线程."""
+def method_sensor_queue(duration: float, stream_keys: set[str]) -> dict:
+    """方案C: low-level sensor + native frame_queue, 绕过 pipeline 同步器.
+
+    frame_queue 在 librealsense 的 C++ 回调线程中入队。Python 线程只负责
+    取出单帧和统计帧号，不在相机回调里做转换、编码或文件 I/O。
+    """
     ctx = rs.context()
-    dev = ctx.query_devices()[0]
+    dev = next(
+        d for d in ctx.query_devices()
+        if d.get_info(rs.camera_info.serial_number) == SERIAL
+    )
+    sens = dev.first_depth_sensor()
 
     counts = {"color": 0, "ir1": 0, "ir2": 0, "color_nums": [], "ir1_nums": [], "ir2_nums": []}
-    stop = threading.Event()
-
-    def make_cb(key, nums):
-        def cb(frame):
-            if stop.is_set():
-                return
-            counts[key] += 1
-            nums.append(frame.get_frame_number())
-        return cb
-
-    # 打开传感器并启流
     profiles = []
-    for sens in dev.query_sensors():
-        for p in sens.get_stream_profiles():
-            vs = p.as_video_stream_profile()
-            if p.stream_type() == rs.stream.color and vs.width() == W and vs.format() == rs.format.yuyv:
-                if p.fps() == FPS:
-                    sens.open(p)
-                    sens.start(make_cb("color", counts["color_nums"]))
-                    profiles.append(p)
-            elif p.stream_type() == rs.stream.infrared and vs.width() == W and vs.format() == rs.format.y8:
-                idx = vs.stream_index()
-                if p.fps() == FPS:
-                    sens.open(p)
-                    if idx == 1:
-                        sens.start(make_cb("ir1", counts["ir1_nums"]))
-                    elif idx == 2:
-                        sens.start(make_cb("ir2", counts["ir2_nums"]))
-                    profiles.append(p)
+    for profile in sens.get_stream_profiles():
+        video = profile.as_video_stream_profile()
+        if video.width() != W or video.height() != H or profile.fps() != FPS:
+            continue
+        if (
+            "color" in stream_keys
+            and profile.stream_type() == rs.stream.color
+            and profile.format() == rs.format.yuyv
+        ):
+            profiles.append(profile)
+        elif profile.stream_type() == rs.stream.infrared and profile.format() == rs.format.y8:
+            index = video.stream_index()
+            if index == 1 and "ir1" in stream_keys:
+                profiles.append(profile)
+            elif index == 2 and "ir2" in stream_keys:
+                profiles.append(profile)
 
-    t0 = time.time()
-    while time.time() - t0 < duration:
-        time.sleep(0.5)
-    stop.set()
-    time.sleep(0.5)
-    for sens in dev.query_sensors():
-        try:
-            sens.stop()
-            sens.close()
-        except Exception:
-            pass
-    counts["elapsed"] = time.time() - t0
+    selected = {
+        "color" if p.stream_type() == rs.stream.color
+        else f"ir{p.as_video_stream_profile().stream_index()}"
+        for p in profiles
+    }
+    if selected != stream_keys:
+        raise RuntimeError(f"三路 profile 不完整: {selected}")
+
+    queue = rs.frame_queue(300, keep_frames=True)
+    sens.open(profiles)
+    sens.start(queue)
+    try:
+        # 单帧队列中三路各占一项，预热约 1 秒。
+        for _ in range(FPS * len(stream_keys)):
+            queue.wait_for_frame(timeout_ms=2000)
+
+        t0 = time.monotonic()
+        while time.monotonic() - t0 < duration:
+            frame = queue.wait_for_frame(timeout_ms=2000)
+            profile = frame.get_profile()
+            stream = profile.stream_type()
+            index = profile.as_video_stream_profile().stream_index()
+            if stream == rs.stream.color:
+                key = "color"
+            elif stream == rs.stream.infrared and index == 1:
+                key = "ir1"
+            elif stream == rs.stream.infrared and index == 2:
+                key = "ir2"
+            else:
+                continue
+            counts[key] += 1
+            counts[f"{key}_nums"].append(int(frame.get_frame_number()))
+        counts["elapsed"] = time.monotonic() - t0
+    finally:
+        sens.stop()
+        sens.close()
     return counts
 
 
 def report(name: str, counts: dict, duration: float):
     print(f"\n===== {name} =====")
+    elapsed = counts.get("elapsed", duration)
     for key in ("color", "ir1", "ir2"):
         n = counts.get(key, 0)
-        rate = n / duration
-        expected = int(duration * FPS)
-        print(f"  {key}: {n} 帧 ({rate:.1f}Hz)  期望{expected}  缺失{expected - n} ({(expected-n)/expected*100:.2f}%)")
-    if counts.get("color_nums"):
-        # 检查帧号连续性
-        for key in ("color_nums", "ir1_nums", "ir2_nums"):
-            nums = sorted(counts[key])
-            skips = sum(1 for i in range(1, len(nums)) if nums[i] > nums[i-1] + 1)
-            print(f"  {key} 帧号跳变: {skips} 处")
+        rate = n / elapsed if elapsed > 0 else 0.0
+        print(f"  {key}: {n} 帧 ({rate:.2f}Hz)")
+    for key in ("color_nums", "ir1_nums", "ir2_nums"):
+        nums = counts.get(key, [])
+        if nums:
+            gaps = [nums[i] - nums[i - 1] - 1 for i in range(1, len(nums)) if nums[i] > nums[i - 1] + 1]
+            print(f"  {key} 帧号间隙: {sum(gaps)} 帧 / {len(gaps)} 处")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--duration", type=float, default=30.0)
     ap.add_argument("--methods", nargs="*", default=["all"],
-                    choices=["wait", "queue", "callback", "all"])
+                    choices=["wait", "queue", "sensor_queue", "all"])
+    ap.add_argument(
+        "--sensor-streams",
+        nargs="+",
+        choices=["color", "ir1", "ir2"],
+        default=["color", "ir1", "ir2"],
+        help="sensor_queue 方法启用的原始流",
+    )
     args = ap.parse_args()
 
-    methods = ["wait", "queue", "callback"] if "all" in args.methods else args.methods
+    methods = ["wait", "queue", "sensor_queue"] if "all" in args.methods else args.methods
     for m in methods:
         try:
             if m == "wait":
@@ -160,7 +185,7 @@ def main():
             elif m == "queue":
                 counts = method_frame_queue(args.duration)
             else:
-                counts = method_callbacks(args.duration)
+                counts = method_sensor_queue(args.duration, set(args.sensor_streams))
             report(m, counts, args.duration)
         except Exception as e:
             print(f"\n[{m}] 失败: {e}")
