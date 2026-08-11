@@ -208,6 +208,27 @@ def main() -> int:
     pub_cam1 = node.create_publisher(RosImage, "/cam1/image_raw", 10)
     pub_imu = node.create_publisher(RosImu, "/imu0", 2000)
 
+    # 新建 publisher 后立即发首帧会让 DDS 发现时序决定开头丢多少数据，进而改变
+    # VINS 的初始化窗口。回放最多等 5 秒让三个输入都匹配；无人订阅时仍继续，
+    # 保留脚本单独检查数据的用法。
+    discovery_deadline = time.monotonic() + 5.0
+    while time.monotonic() < discovery_deadline:
+        counts = (pub_cam0.get_subscription_count(),
+                  pub_cam1.get_subscription_count(),
+                  pub_imu.get_subscription_count())
+        if min(counts) > 0:
+            break
+        rclpy.spin_once(node, timeout_sec=0.05)
+    counts = (pub_cam0.get_subscription_count(),
+              pub_cam1.get_subscription_count(),
+              pub_imu.get_subscription_count())
+    if min(counts) > 0:
+        print(f"[replay] DDS 已匹配: cam0={counts[0]} cam1={counts[1]} imu={counts[2]}",
+              flush=True)
+    else:
+        print(f"[replay] WARN: DDS 订阅未全部匹配: cam0={counts[0]} "
+              f"cam1={counts[1]} imu={counts[2]}", flush=True)
+
     def to_stamp(t_epoch: float) -> RosTime:
         sec = int(t_epoch)
         return RosTime(sec=sec, nanosec=int((t_epoch - sec) * 1e9))

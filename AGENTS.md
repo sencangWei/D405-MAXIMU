@@ -12,7 +12,7 @@ RealSense D405(左IR+右IR 真双目 1280×720@30, Y8 无损 FFV1)+ KT-EX9-2 IMU
 - **测试前必 pkill 清场**:`pkill -9 -f vins_fusion_ros2_node; pkill -9 -f replay`(残留节点同时订阅 /imu0、/odometry 会污染 → 数值爆炸误判回归)
 - VINS 日志硬编码 `/tmp/vins_t.log`(VINS_LOG 环境变量无效),每轮跑完**立刻 cp** 到下轮覆盖前
 - VINS 测试: `REPLAY_SCRIPT=scripts/replay_mp4_to_ros2.py VINS_OUT=/tmp/x.csv python3 scripts/_test_vins_dynamic.py recordings/<session> 1.5 1.0 0 0`(参数=skip-s, rate, imu-shift-ms, imu-align-s;默认已修,零参也正确)
-- 录后即验: `python3 scripts/verify_recorded_session.py recordings/<session> [--db3]`(FFV1 生产路径,单轮~70s;判定 优≤3cm/边界≤25cm/坏跑,返回码 0/1/2)
+- 录后即验: `python3 scripts/verify_recorded_session.py recordings/<session>`(原始 db3 生产母版,单轮~70s;判定 优≤3cm/边界≤25cm/坏跑,返回码 0/1/2)。FFV1 暂停生产使用,仅在磁盘受限时用 `--ffv1` 继续验证。
 - ORB 测试: `python3 scripts/_test_orb_dynamic.py recordings/<session> rgbd`
 - **git 无全局身份**: 本机 git 没配 user.name/email,提交必须带本地身份 `git -c user.name=robot -c user.email=robot@localhost commit`(历史 tag 都是 robot 提交的)。
 

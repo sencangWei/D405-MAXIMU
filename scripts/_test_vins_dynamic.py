@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = os.environ.get("VINS_CONFIG",
     "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml")
 OUT = os.environ.get("VINS_OUT", "/tmp/vins_test_odom.csv")
+VINS_LOG = os.environ.get("VINS_LOG", "/tmp/vins_t.log")
+REPLAY_LOG = os.environ.get("REPLAY_LOG", "/tmp/replay_t.log")
 # 可指定压缩回放变体 (replay_db3_hevc_to_ros2.py) 验证 HEVC 有损压缩对精度的影响
 REPLAY_SCRIPT = os.environ.get("REPLAY_SCRIPT", "scripts/replay_db3_to_ros2.py")
 
@@ -23,10 +25,11 @@ REPLAY_SCRIPT = os.environ.get("REPLAY_SCRIPT", "scripts/replay_db3_to_ros2.py")
 def main():
     sess = sys.argv[1]
     # 启动 VINS
+    vins_log = open(VINS_LOG, "w")
     vins = subprocess.Popen(
         ["ros2", "run", "vins_fusion_ros2", "vins_fusion_ros2_node",
          "--ros-args", "-p", "use_sim_time:=false", "-p", f"config_file:={CONFIG}"],
-        stdout=open("/tmp/vins_t.log", "w"), stderr=subprocess.STDOUT,
+        stdout=vins_log, stderr=subprocess.STDOUT,
         preexec_fn=os.setsid)
     time.sleep(5)
 
@@ -42,13 +45,14 @@ def main():
     # 回放 (子进程)
     # shift 默认 0: 与配置固定 td=-0.0117 (08-08 Kalibr) 配对, 回放不再改 IMU 时间戳。
     # 旧默认 7.36 (08-04 陈旧标定) + 固定 td 会双重补偿 → 发散 (见 dual-ir-divergence-rootcause)。
+    replay_log = open(REPLAY_LOG, "w")
     replay = subprocess.Popen(
         ["python3", REPLAY_SCRIPT, "--session", sess,
          "--mode", os.environ.get("VINS_MODE", "stereo"),
          "--rate", sys.argv[3] if len(sys.argv)>3 else "1.0", "--skip-s", sys.argv[2] if len(sys.argv)>2 else "1.5",
          "--imu-align-s", sys.argv[5] if len(sys.argv)>5 else "0",
          "--imu-shift-ms", sys.argv[4] if len(sys.argv)>4 else "0"],
-        cwd=str(ROOT), stdout=subprocess.DEVNULL)
+        cwd=str(ROOT), stdout=replay_log, stderr=subprocess.STDOUT)
     t0 = time.time()
     try:
         while time.time() - t0 < 90 and replay.poll() is None:
@@ -60,6 +64,7 @@ def main():
     while time.time() - t1 < 4:
         rclpy.spin_once(node, timeout_sec=0.05)
     replay.kill()
+    replay_log.close()
 
     with open(OUT, "w", newline="") as f:
         w = csv.writer(f)
@@ -85,7 +90,8 @@ def main():
     node.destroy_node()
     rclpy.shutdown()
     # 查 VINS 日志
-    log = open("/tmp/vins_t.log").read()
+    vins_log.close()
+    log = open(VINS_LOG).read()
     jumps = [l for l in log.split("\n") if "jump" in l or "Residual" in l or "Terminating" in l]
     print("VINS 警告:", jumps[:5] if jumps else "无")
     return 0

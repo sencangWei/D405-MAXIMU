@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""一键"录后即验": 录制会话 → 跑一轮 VINS (FFV1 生产路径) → 出闭环报告。
+"""一键"录后即验": 录制会话 → 跑一轮 VINS (db3 生产路径) → 出闭环报告。
 
 用法:
     python3 scripts/verify_recorded_session.py <session_dir> [--rate 1.0] [--skip-s 1.5]
@@ -27,7 +27,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-REPLAY_SCRIPT = "scripts/replay_mp4_to_ros2.py"   # 生产 FFV1 路径 (与 raw db3 统计等同)
+REPLAY_SCRIPT = "scripts/replay_db3_to_ros2.py"   # 原始 db3 是当前生产母版
 SKIP_S = 1.5          # 跳过开头 (等 IMU 初始对准)
 RATE = 1.0            # 实时率
 WATCH_S = 100         # 最长等待回放完成
@@ -70,17 +70,23 @@ def plane_relative_height_metrics(points):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("session", help="录制会话目录 (含 mp4/ir_left.mkv 等)")
+    ap.add_argument("session", help="录制会话目录 (默认需含原始 db3)")
     ap.add_argument("--rate", type=float, default=RATE)
     ap.add_argument("--skip-s", type=float, default=SKIP_S)
     ap.add_argument("--raw-dir", default=None,
                     help="预解码裸帧目录 (跳过 ffmpeg 子进程, 隔离验证用)")
-    ap.add_argument("--db3", action="store_true",
-                    help="改用原始 db3 回放 (gold standard 对照, 需会话含 .db3)")
+    source = ap.add_mutually_exclusive_group()
+    source.add_argument("--db3", action="store_true",
+                        help="使用原始 db3 回放 (默认; 保留旧命令兼容)")
+    source.add_argument("--ffv1", action="store_true",
+                        help="改用 FFV1 无损归档副本 (磁盘受限时的候选路径)")
     args = ap.parse_args()
 
     sess = Path(args.session)
-    if not (sess / "mp4" / "ir_left.mkv").exists():
+    use_db3 = not args.ffv1
+    if use_db3 and not list(sess.glob("*.db3")):
+        sys.exit(f"[verify] 会话缺原始 db3: {sess}")
+    if not use_db3 and not (sess / "mp4" / "ir_left.mkv").exists():
         sys.exit(f"[verify] 会话缺 mp4/ir_left.mkv: {sess}")
 
     # 清理上一轮残留
@@ -93,13 +99,13 @@ def main():
         out_csv = tf.name
 
     env = dict(os.environ)
-    env["REPLAY_SCRIPT"] = "scripts/replay_db3_to_ros2.py" if args.db3 else REPLAY_SCRIPT
+    env["REPLAY_SCRIPT"] = REPLAY_SCRIPT if use_db3 else "scripts/replay_mp4_to_ros2.py"
     env["VINS_OUT"] = out_csv
     if args.raw_dir:
         env["REPLAY_RAW_DIR"] = args.raw_dir
 
     print(f"[verify] 会话: {sess}")
-    print(f"[verify] 路径: {'db3 原始' if args.db3 else 'FFV1 mkv 生产'}"
+    print(f"[verify] 路径: {'db3 原始生产母版' if use_db3 else 'FFV1 mkv 候选归档'}"
           f"{' + 预解码' if args.raw_dir else ''}  rate={args.rate}x")
     t0 = time.time()
     # 经 bash 先 source ROS 环境再跑 harness (rclpy 依赖 ROS python 路径)
@@ -107,7 +113,8 @@ def main():
         "source /opt/ros/humble/setup.bash; "
         "source /home/robot/ros2_ws/install/setup.bash; "
         f"python3 scripts/_test_vins_dynamic.py {shlex.quote(str(sess))} "
-        f"{shlex.quote(str(args.skip_s))} 1.0 0 0"   # skip, rate, imu-shift, imu-align
+        f"{shlex.quote(str(args.skip_s))} {shlex.quote(str(args.rate))} 0 0"
+        # skip, rate, imu-shift, imu-align
     )
     proc = subprocess.run(
         ["bash", "-c", cmd], cwd=str(ROOT), env=env, capture_output=True, text=True)
