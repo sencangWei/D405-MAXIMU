@@ -21,6 +21,8 @@ REPLAY_LOG = os.environ.get("REPLAY_LOG", "/tmp/replay_t.log")
 # 可指定压缩回放变体 (replay_db3_hevc_to_ros2.py) 验证 HEVC 有损压缩对精度的影响
 REPLAY_SCRIPT = os.environ.get("REPLAY_SCRIPT", "scripts/replay_db3_to_ros2.py")
 TEST_TIMEOUT_S = float(os.environ.get("VINS_TEST_TIMEOUT_S", "360"))
+DRAIN_TIMEOUT_S = float(os.environ.get("VINS_DRAIN_TIMEOUT_S", "30"))
+DRAIN_QUIET_S = float(os.environ.get("VINS_DRAIN_QUIET_S", "5"))
 
 
 def main():
@@ -75,10 +77,18 @@ def main():
         print(f"回放超时: {TEST_TIMEOUT_S:.0f}s")
     elif replay.returncode != 0:
         print(f"回放失败: 退出码 {replay.returncode}")
-    # 再等 3s 让 VINS 处理完
-    t1 = time.time()
-    while time.time() - t1 < 4:
+    # 回放结束后等待后端队列真正排空。固定等待数秒会在 30fps 压测时
+    # 截掉队尾，使闭环/Z 误差统计落在不同终点。
+    drain_start = time.monotonic()
+    quiet_since = drain_start
+    last_row_count = len(rows)
+    while time.monotonic() - drain_start < DRAIN_TIMEOUT_S:
         rclpy.spin_once(node, timeout_sec=0.05)
+        if len(rows) != last_row_count:
+            last_row_count = len(rows)
+            quiet_since = time.monotonic()
+        elif rows and time.monotonic() - quiet_since >= DRAIN_QUIET_S:
+            break
     replay.kill()
     replay_log.close()
 
