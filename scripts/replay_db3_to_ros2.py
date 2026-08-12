@@ -68,6 +68,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--imu-align-s", type=float, default=0.0,
                    help="额外 IMU 平移(s): 补偿 warmup 帧导致图像/IMU 起始错位")
     p.add_argument("--skip-s", type=float, default=0.0, help="跳过开头秒数")
+    p.add_argument("--duration-s", type=float, default=0.0,
+                   help="仅回放指定秒数；0 表示回放到会话末尾")
     return p.parse_args()
 
 
@@ -306,6 +308,8 @@ def main() -> int:
             if t0_wall is None:
                 t0_wall = time.monotonic()
                 t0_data = t
+            if args.duration_s > 0 and t - t0_data >= args.duration_s:
+                break
 
             target = t0_wall + (t - t0_data) / max(args.rate, 1e-6)
             delay = target - time.monotonic()
@@ -322,7 +326,8 @@ def main() -> int:
         print("\n[replay] 中断")
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
     print(f"[replay] 完成: img={n_img} imu={n_imu}")
     return 0
