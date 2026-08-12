@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "development_may_tune": true,
+    "validation_may_select_candidate": true,
+    "hidden_test_may_tune": false,
+    "ground_truth_never_enters_slam": true
+  },
+  "datasets": [
+    {
+      "id": "d405_20260813_000933",
+      "role": "development",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260813_000933",
+      "motion": "closed_loop_with_elevation",
+      "expected_loop": true,
+      "external_ground_truth": null,
+      "acceptance_sha256": "0acd0c0863571a25946e94ef51d158b5432de3b421a546d9bb5dc3208a267ddc"
+    },
+    {
+      "id": "d405_20260812_155408",
+      "role": "validation",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_155408",
+      "motion": "horizontal_closed_loop",
+      "expected_loop": true,
+      "external_ground_truth": null,
+      "acceptance_sha256": "dfd606339c8c5d9c5ab5bc2a950388eb34370ad321a48f78a1f00ff80dcb2548"
+    },
+    {
+      "id": "d405_20260812_151212",
+      "role": "validation",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_151212",
+      "motion": "true_elevation_without_verified_loop",
+      "expected_loop": false,
+      "external_ground_truth": null,
+      "acceptance_sha256": "1503d14d796a49c00b176ee0954335060d34d342b913bdc7d33af4da2555e73a"
+    },
+    {
+      "id": "d405_20260812_121306",
+      "role": "validation",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_121306",
+      "motion": "horizontal_open_or_near_loop",
+      "expected_loop": null,
+      "external_ground_truth": null,
+      "acceptance_sha256": "06cfc21f5bc4c73de4c12eb8f45d7b3ca19f45e02d90f83894b052be1201b6ce"
+    }
+  ]
+}

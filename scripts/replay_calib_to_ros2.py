@@ -14,8 +14,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
-import struct
 import sys
 import time
 from pathlib import Path
@@ -24,39 +22,52 @@ import cv2
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-IMU_PACK_FMT = "<dI7f"
-IMU_PACK_SIZE = struct.calcsize(IMU_PACK_FMT)
+sys.path.insert(0, str(ROOT))
+
+from ego_vio.imu.imu_reader import fit_counter_timestamps
+from scripts.convert_to_kalibr_bag import (
+    read_camera_ts,
+    read_imu_arrival_timestamps,
+    read_imu_bin,
+    select_imu_timestamp_fit,
+)
+
 G0 = 9.80665
 DEG2RAD = 3.141592653589793 / 180.0
 
 
-def load_imu(session: Path, use_rx_mono: bool = False):
-    """返回 [(ts, gx,gy,gz,ax,ay,az), ...] (度->弧度, g->m/s2).
+def load_fitted_timelines(unit: Path):
+    """复用 Kalibr 转换器的时间拟合，保证标定和 VINS 回放同一时基。"""
+    imu_samples = read_imu_bin(unit / "imu.bin")
+    arrival_ts, arrival_source = read_imu_arrival_timestamps(
+        unit / "imu_ts.csv",
+        unit / "camera_ts.csv",
+        [sample["counter"] for sample in imu_samples],
+    )
+    imu_fitted, imu_info, imu_source = select_imu_timestamp_fit(
+        imu_samples, arrival_ts, arrival_source
+    )
+    imu_rows = [
+        (
+            float(ts),
+            sample["gx"] * DEG2RAD,
+            sample["gy"] * DEG2RAD,
+            sample["gz"] * DEG2RAD,
+            sample["ax"] * G0,
+            sample["ay"] * G0,
+            sample["az"] * G0,
+        )
+        for sample, ts in zip(imu_samples, imu_fitted)
+    ]
 
-    ts 基准: imu.bin 里的 fitted counter ts, 或用 imu_ts.csv 的 rx_mono
-    (与相机 camera_ts.csv 的 ts_mono 同一 monotonic 时钟).
-    """
-    out = []
-    # 读 imu_ts.csv 拿 rx_mono (若需要)
-    rx_map = {}
-    if use_rx_mono:
-        with (session / "imu_ts.csv").open(newline="") as f:
-            for r in csv.DictReader(f):
-                try:
-                    rx_map[int(r["counter"])] = float(r["rx_mono"])
-                except (KeyError, ValueError):
-                    pass
-    with (session / "imu.bin").open("rb") as f:
-        while True:
-            c = f.read(IMU_PACK_SIZE)
-            if len(c) < IMU_PACK_SIZE:
-                break
-            ts, cnt, gx, gy, gz, ax, ay, az, _t = struct.unpack(IMU_PACK_FMT, c)
-            if use_rx_mono and cnt in rx_map:
-                ts = rx_map[cnt]
-            out.append((ts, gx * DEG2RAD, gy * DEG2RAD, gz * DEG2RAD,
-                        ax * G0, ay * G0, az * G0))
-    return out
+    camera_raw = read_camera_ts(unit / "camera_ts.csv")
+    camera_fitted, camera_info = fit_counter_timestamps(
+        [row[2] for row in camera_raw], [row[1] for row in camera_raw]
+    )
+    camera_rows = [
+        (row[0], float(ts)) for row, ts in zip(camera_raw, camera_fitted)
+    ]
+    return camera_rows, imu_rows, camera_info, imu_info, imu_source
 
 
 def main():
@@ -65,18 +76,44 @@ def main():
     ap.add_argument("--rate", type=float, default=1.0)
     ap.add_argument("--imu-shift-ms", type=float, default=0.0,
                     help="IMU 发布戳平移(ms), 补偿相机-IMU 时间偏移 (Kalibr timeshift)")
+    ap.add_argument(
+        "--imu-preroll-s",
+        type=float,
+        default=0.1,
+        help="首帧图像前至少保留的 IMU 预滚动时间，避免 VINS 启动预积分缺口",
+    )
     args = ap.parse_args()
     sess = Path(args.session).resolve()
     unit = sess / "left_hand"
 
-    # 图像时间戳
-    cam_rows = []
-    with (unit / "camera_ts.csv").open(newline="") as f:
-        for r in csv.DictReader(f):
-            cam_rows.append((int(r["idx"]), float(r["ts_mono"])))
-    # 用 rx_mono (与相机同一 monotonic 时钟), 再按 Kalibr timeshift 平移
-    imu_rows = load_imu(unit, use_rx_mono=True)
+    cam_rows, imu_rows, camera_info, imu_info, imu_source = load_fitted_timelines(unit)
     imu_rows = [(t + args.imu_shift_ms / 1000.0, *rest) for t, *rest in imu_rows]
+    if not cam_rows or not imu_rows:
+        raise RuntimeError("标定会话没有可回放的相机或 IMU 数据")
+    camera_count_before_trim = len(cam_rows)
+    first_usable_camera_time = imu_rows[0][0] + max(args.imu_preroll_s, 0.0)
+    last_usable_camera_time = imu_rows[-1][0]
+    cam_rows = [
+        row
+        for row in cam_rows
+        if first_usable_camera_time <= row[1] <= last_usable_camera_time
+    ]
+    if not cam_rows:
+        raise RuntimeError("相机与 IMU 没有满足预滚动要求的公共时间窗")
+    print(
+        f"[replay] 相机拟合: {camera_info['rate_hz']:.3f}fps, "
+        f"sigma={camera_info['sigma_ms']:.3f}ms; "
+        f"IMU拟合({imu_source}): {imu_info['rate_hz']:.3f}Hz, "
+        f"sigma={imu_info['sigma_ms']:.3f}ms; "
+        f"额外IMU平移={args.imu_shift_ms:+.3f}ms",
+        flush=True,
+    )
+    print(
+        f"[replay] 公共时间窗: 图像 {camera_count_before_trim}->{len(cam_rows)} 帧, "
+        f"首帧前IMU预滚动={cam_rows[0][1] - imu_rows[0][0]:.3f}s, "
+        f"尾帧距IMU结束={imu_rows[-1][0] - cam_rows[-1][1]:.3f}s",
+        flush=True,
+    )
 
     import rclpy
     from rclpy.node import Node
@@ -88,6 +125,33 @@ def main():
     pub0 = node.create_publisher(RosImage, "/cam0/image_raw", 10)
     pub1 = node.create_publisher(RosImage, "/cam1/image_raw", 10)
     pubi = node.create_publisher(RosImu, "/imu0", 2000)
+
+    discovery_deadline = time.monotonic() + 5.0
+    while time.monotonic() < discovery_deadline:
+        counts = (
+            pub0.get_subscription_count(),
+            pub1.get_subscription_count(),
+            pubi.get_subscription_count(),
+        )
+        if min(counts) > 0:
+            break
+        rclpy.spin_once(node, timeout_sec=0.05)
+    counts = (
+        pub0.get_subscription_count(),
+        pub1.get_subscription_count(),
+        pubi.get_subscription_count(),
+    )
+    if min(counts) == 0:
+        print(
+            f"[replay] WARN: DDS订阅未全部匹配: "
+            f"cam0={counts[0]} cam1={counts[1]} imu={counts[2]}",
+            flush=True,
+        )
+    else:
+        print(
+            f"[replay] DDS已匹配: cam0={counts[0]} cam1={counts[1]} imu={counts[2]}",
+            flush=True,
+        )
 
     def to_stamp(t):
         return RosTime(sec=int(t), nanosec=int((t - int(t)) * 1e9))

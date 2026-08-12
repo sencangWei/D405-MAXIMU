@@ -164,14 +164,30 @@ def main() -> int:
                 raise RuntimeError("VINS or loop-fusion node exited during startup")
 
             with replay_log_path.open("wb") as replay_log:
-                replay = subprocess.Popen(
-                    [
+                if list(args.session.glob("*.db3")):
+                    replay_command = [
                         "python3", str(ROOT / "scripts/replay_db3_to_ros2.py"),
                         "--session", str(args.session), "--mode", "stereo",
                         "--rate", str(args.rate), "--skip-s", str(args.skip_s),
                         "--imu-align-s", "0", "--imu-shift-ms", str(args.imu_shift_ms),
                         "--duration-s", str(args.duration_s),
-                    ],
+                    ]
+                elif (args.session / "left_hand/camera_ts.csv").is_file():
+                    if args.skip_s or args.duration_s:
+                        raise ValueError(
+                            "calibration-session replay does not support skip/duration"
+                        )
+                    replay_command = [
+                        "python3", str(ROOT / "scripts/replay_calib_to_ros2.py"),
+                        "--session", str(args.session), "--rate", str(args.rate),
+                        "--imu-shift-ms", str(args.imu_shift_ms),
+                    ]
+                else:
+                    raise FileNotFoundError(
+                        f"unsupported recording layout: {args.session}"
+                    )
+                replay = subprocess.Popen(
+                    replay_command,
                     cwd=ROOT,
                     stdout=replay_log,
                     stderr=subprocess.STDOUT,
@@ -212,14 +228,25 @@ def main() -> int:
         rclpy.shutdown()
 
     loop_log = loop_log_path.read_text(errors="replace") if loop_log_path.exists() else ""
+    vins_log = vins_log_path.read_text(errors="replace") if vins_log_path.exists() else ""
     accepted = [line for line in loop_log.splitlines() if "[AUTO_LOOP_ACCEPT]" in line]
     rejected = [line for line in loop_log.splitlines() if "[AUTO_LOOP_REJECT]" in line]
     input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
+    estimator_queue_drops = [
+        line
+        for line in vins_log.splitlines()
+        if "[LOOP_KEYFRAME_QUEUE_DROP]" in line
+    ]
     frame_csv = args.session / "d405_frames.csv"
     camera_frames = 0
     if frame_csv.is_file():
         with frame_csv.open(newline="") as stream:
             camera_frames = sum(1 for _ in csv.DictReader(stream))
+    else:
+        calibration_frame_csv = args.session / "left_hand/camera_ts.csv"
+        if calibration_frame_csv.is_file():
+            with calibration_frame_csv.open(newline="") as stream:
+                camera_frames = sum(1 for _ in csv.DictReader(stream))
     expected_poses = max(
         1,
         camera_frames - int(round(args.skip_s * 30.0)),
@@ -228,6 +255,10 @@ def main() -> int:
     failures: list[str] = []
     if input_drops:
         failures.append(f"loop keyframe transport/backlog drops: {len(input_drops)}")
+    if estimator_queue_drops:
+        failures.append(
+            f"estimator loop keyframe queue drops: {len(estimator_queue_drops)}"
+        )
     if camera_frames and pose_coverage < args.min_pose_coverage:
         failures.append(
             f"pose coverage {pose_coverage:.4f} < {args.min_pose_coverage:.4f}"
@@ -248,6 +279,7 @@ def main() -> int:
         "automatic_loop_accepts": len(accepted),
         "automatic_loop_rejects": len(rejected),
         "loop_input_drop_events": len(input_drops),
+        "estimator_keyframe_queue_drop_events": len(estimator_queue_drops),
         "failures": failures,
     }
     (args.out_dir / "run_acceptance.json").write_text(
@@ -262,6 +294,7 @@ def main() -> int:
     print(f"automatic loop rejects after geometry: {len(rejected)}")
     print(f"pose coverage: {pose_coverage:.4f}")
     print(f"loop input drop events: {len(input_drops)}")
+    print(f"estimator keyframe queue drop events: {len(estimator_queue_drops)}")
     print(f"keyframe trajectory: {loop_output / 'vio_loop.csv'}")
     for failure in failures:
         print(f"FAIL: {failure}")
