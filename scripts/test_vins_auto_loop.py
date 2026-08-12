@@ -18,6 +18,7 @@ import subprocess
 import time
 from pathlib import Path
 
+import numpy as np
 import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
@@ -55,6 +56,17 @@ def write_rows(path: Path, rows: list[list[float]]) -> None:
         writer.writerows(rows)
 
 
+def trajectory_diagnostics(rows: list[list[float]]) -> dict[str, float | None]:
+    if len(rows) < 2:
+        return {"max_step_m": None, "z_span_m": None, "endpoint_delta_m": None}
+    points = np.asarray([row[1:4] for row in rows], dtype=float)
+    return {
+        "max_step_m": float(np.linalg.norm(np.diff(points, axis=0), axis=1).max()),
+        "z_span_m": float(np.ptp(points[:, 2])),
+        "endpoint_delta_m": float(np.linalg.norm(points[-1] - points[0])),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("session", type=Path)
@@ -63,11 +75,23 @@ def main() -> int:
     parser.add_argument("--rate", type=float, default=1.0)
     parser.add_argument("--skip-s", type=float, default=1.5)
     parser.add_argument("--imu-shift-ms", type=float, default=0.0)
+    parser.add_argument(
+        "--replay-backend",
+        choices=("cpp", "python"),
+        default="cpp",
+        help="DB3回放后端；产品验收默认使用C++以维持30fps吞吐",
+    )
     parser.add_argument("--timeout-s", type=float, default=420.0)
     parser.add_argument("--drain-timeout-s", type=float, default=180.0)
     parser.add_argument("--duration-s", type=float, default=0.0)
     parser.add_argument(
         "--expect-loop", choices=("any", "yes", "no"), default="any"
+    )
+    parser.add_argument(
+        "--max-loop-closure-m",
+        type=float,
+        default=0.01,
+        help="--expect-loop yes时的后验闭环误差门槛；只评分，不输入SLAM",
     )
     parser.add_argument("--min-pose-coverage", type=float, default=0.98)
     args = parser.parse_args()
@@ -165,13 +189,23 @@ def main() -> int:
 
             with replay_log_path.open("wb") as replay_log:
                 if list(args.session.glob("*.db3")):
+                    replay_script = (
+                        "replay_db3_cpp_to_ros2.py"
+                        if args.replay_backend == "cpp"
+                        else "replay_db3_to_ros2.py"
+                    )
                     replay_command = [
-                        "python3", str(ROOT / "scripts/replay_db3_to_ros2.py"),
+                        "python3", str(ROOT / "scripts" / replay_script),
                         "--session", str(args.session), "--mode", "stereo",
                         "--rate", str(args.rate), "--skip-s", str(args.skip_s),
                         "--imu-align-s", "0", "--imu-shift-ms", str(args.imu_shift_ms),
-                        "--duration-s", str(args.duration_s),
                     ]
+                    if args.replay_backend == "python":
+                        replay_command.extend(["--duration-s", str(args.duration_s)])
+                    elif args.duration_s:
+                        raise ValueError(
+                            "C++ DB3回放暂不支持--duration-s；改用--replay-backend python"
+                        )
                 elif (args.session / "left_hand/camera_ts.csv").is_file():
                     if args.skip_s or args.duration_s:
                         raise ValueError(
@@ -231,6 +265,11 @@ def main() -> int:
     vins_log = vins_log_path.read_text(errors="replace") if vins_log_path.exists() else ""
     accepted = [line for line in loop_log.splitlines() if "[AUTO_LOOP_ACCEPT]" in line]
     rejected = [line for line in loop_log.splitlines() if "[AUTO_LOOP_REJECT]" in line]
+    correction_rejected = [
+        line
+        for line in loop_log.splitlines()
+        if "[AUTO_LOOP_CORRECTION_REJECT]" in line
+    ]
     input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
     estimator_queue_drops = [
         line
@@ -252,6 +291,8 @@ def main() -> int:
         camera_frames - int(round(args.skip_s * 30.0)),
     )
     pose_coverage = min(len(raw_rows), len(corrected_rows)) / expected_poses
+    raw_diagnostics = trajectory_diagnostics(raw_rows)
+    corrected_diagnostics = trajectory_diagnostics(corrected_rows)
     failures: list[str] = []
     if input_drops:
         failures.append(f"loop keyframe transport/backlog drops: {len(input_drops)}")
@@ -267,10 +308,39 @@ def main() -> int:
         failures.append("expected an automatic loop, but none was accepted")
     if args.expect_loop == "no" and accepted:
         failures.append(f"expected no automatic loop, but accepted {len(accepted)}")
+    corrected_endpoint_delta = corrected_diagnostics["endpoint_delta_m"]
+    if (
+        args.expect_loop == "yes"
+        and corrected_endpoint_delta is not None
+        and corrected_endpoint_delta > args.max_loop_closure_m
+    ):
+        failures.append(
+            f"automatic-loop endpoint error {corrected_endpoint_delta:.4f}m > "
+            f"{args.max_loop_closure_m:.4f}m"
+        )
+    raw_max_step = raw_diagnostics["max_step_m"]
+    corrected_max_step = corrected_diagnostics["max_step_m"]
+    if raw_max_step is not None and corrected_max_step is not None:
+        max_allowed_step = max(0.03, 3.5 * raw_max_step)
+        if corrected_max_step > max_allowed_step:
+            failures.append(
+                f"corrected trajectory jump {corrected_max_step:.4f}m > "
+                f"{max_allowed_step:.4f}m"
+            )
+    raw_z_span = raw_diagnostics["z_span_m"]
+    corrected_z_span = corrected_diagnostics["z_span_m"]
+    z_retention_ratio = None
+    if raw_z_span is not None and corrected_z_span is not None and raw_z_span >= 0.10:
+        z_retention_ratio = corrected_z_span / raw_z_span
+        if z_retention_ratio < 0.90:
+            failures.append(
+                f"true-elevation retention {z_retention_ratio:.3f} < 0.900"
+            )
     run_acceptance = {
         "result": "PASS" if return_code == 0 and not failures else "FAIL",
         "session": str(args.session.resolve()),
         "replay_rate": args.rate,
+        "replay_backend": args.replay_backend,
         "raw_odometry_samples": len(raw_rows),
         "corrected_odometry_samples": len(corrected_rows),
         "camera_frames": camera_frames,
@@ -278,6 +348,10 @@ def main() -> int:
         "pose_coverage": pose_coverage,
         "automatic_loop_accepts": len(accepted),
         "automatic_loop_rejects": len(rejected),
+        "automatic_correction_rejects": len(correction_rejected),
+        "raw_trajectory_diagnostics": raw_diagnostics,
+        "corrected_trajectory_diagnostics": corrected_diagnostics,
+        "z_span_retention_ratio": z_retention_ratio,
         "loop_input_drop_events": len(input_drops),
         "estimator_keyframe_queue_drop_events": len(estimator_queue_drops),
         "failures": failures,
@@ -292,6 +366,7 @@ def main() -> int:
     for line in accepted:
         print(line)
     print(f"automatic loop rejects after geometry: {len(rejected)}")
+    print(f"automatic correction safety rejects: {len(correction_rejected)}")
     print(f"pose coverage: {pose_coverage:.4f}")
     print(f"loop input drop events: {len(input_drops)}")
     print(f"estimator keyframe queue drop events: {len(estimator_queue_drops)}")
