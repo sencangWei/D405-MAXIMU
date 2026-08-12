@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import os
 import shutil
 import signal
@@ -35,11 +36,16 @@ def stop_process(process: subprocess.Popen[bytes] | None) -> None:
     try:
         os.killpg(os.getpgid(process.pid), signal.SIGINT)
         process.wait(timeout=5)
-    except (ProcessLookupError, subprocess.TimeoutExpired):
+    except ProcessLookupError:
+        return
+    except subprocess.TimeoutExpired:
         try:
             os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            process.wait(timeout=5)
         except ProcessLookupError:
             pass
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(f"process group {process.pid} did not stop") from exc
 
 
 def write_rows(path: Path, rows: list[list[float]]) -> None:
@@ -58,7 +64,12 @@ def main() -> int:
     parser.add_argument("--skip-s", type=float, default=1.5)
     parser.add_argument("--imu-shift-ms", type=float, default=0.0)
     parser.add_argument("--timeout-s", type=float, default=420.0)
+    parser.add_argument("--drain-timeout-s", type=float, default=180.0)
     parser.add_argument("--duration-s", type=float, default=0.0)
+    parser.add_argument(
+        "--expect-loop", choices=("any", "yes", "no"), default="any"
+    )
+    parser.add_argument("--min-pose-coverage", type=float, default=0.98)
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -89,6 +100,18 @@ def main() -> int:
     loop_log_path = args.out_dir / "auto_loop.log"
     replay_log_path = args.out_dir / "replay.log"
     processes: list[subprocess.Popen[bytes]] = []
+
+    stale = subprocess.run(
+        ["pgrep", "-af", "loop_fusion_node"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if stale.stdout.strip():
+        raise RuntimeError(
+            "stale loop_fusion_node exists; stop it before a deterministic run:\n"
+            + stale.stdout.strip()
+        )
 
     rclpy.init()
     node = Node("auto_loop_trajectory_sink")
@@ -167,7 +190,7 @@ def main() -> int:
 
             quiet_since = time.monotonic()
             last_count = len(corrected_rows)
-            drain_deadline = time.monotonic() + 20
+            drain_deadline = time.monotonic() + args.drain_timeout_s
             while time.monotonic() < drain_deadline:
                 rclpy.spin_once(node, timeout_sec=0.05)
                 if len(corrected_rows) != last_count:
@@ -191,14 +214,58 @@ def main() -> int:
     loop_log = loop_log_path.read_text(errors="replace") if loop_log_path.exists() else ""
     accepted = [line for line in loop_log.splitlines() if "[AUTO_LOOP_ACCEPT]" in line]
     rejected = [line for line in loop_log.splitlines() if "[AUTO_LOOP_REJECT]" in line]
+    input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
+    frame_csv = args.session / "d405_frames.csv"
+    camera_frames = 0
+    if frame_csv.is_file():
+        with frame_csv.open(newline="") as stream:
+            camera_frames = sum(1 for _ in csv.DictReader(stream))
+    expected_poses = max(
+        1,
+        camera_frames - int(round(args.skip_s * 30.0)),
+    )
+    pose_coverage = min(len(raw_rows), len(corrected_rows)) / expected_poses
+    failures: list[str] = []
+    if input_drops:
+        failures.append(f"loop keyframe transport/backlog drops: {len(input_drops)}")
+    if camera_frames and pose_coverage < args.min_pose_coverage:
+        failures.append(
+            f"pose coverage {pose_coverage:.4f} < {args.min_pose_coverage:.4f}"
+        )
+    if args.expect_loop == "yes" and not accepted:
+        failures.append("expected an automatic loop, but none was accepted")
+    if args.expect_loop == "no" and accepted:
+        failures.append(f"expected no automatic loop, but accepted {len(accepted)}")
+    run_acceptance = {
+        "result": "PASS" if return_code == 0 and not failures else "FAIL",
+        "session": str(args.session.resolve()),
+        "replay_rate": args.rate,
+        "raw_odometry_samples": len(raw_rows),
+        "corrected_odometry_samples": len(corrected_rows),
+        "camera_frames": camera_frames,
+        "expected_pose_samples_after_skip": expected_poses,
+        "pose_coverage": pose_coverage,
+        "automatic_loop_accepts": len(accepted),
+        "automatic_loop_rejects": len(rejected),
+        "loop_input_drop_events": len(input_drops),
+        "failures": failures,
+    }
+    (args.out_dir / "run_acceptance.json").write_text(
+        json.dumps(run_acceptance, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     print(f"raw odometry: {len(raw_rows)} samples")
     print(f"corrected odometry: {len(corrected_rows)} samples")
     print(f"automatic loop accepts: {len(accepted)}")
     for line in accepted:
         print(line)
     print(f"automatic loop rejects after geometry: {len(rejected)}")
+    print(f"pose coverage: {pose_coverage:.4f}")
+    print(f"loop input drop events: {len(input_drops)}")
     print(f"keyframe trajectory: {loop_output / 'vio_loop.csv'}")
-    return return_code
+    for failure in failures:
+        print(f"FAIL: {failure}")
+    return 3 if return_code == 0 and failures else return_code
 
 
 if __name__ == "__main__":
