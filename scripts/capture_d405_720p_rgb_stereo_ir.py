@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Record D405 720p color, stereo IR, and the external IMU.
 
-The RealSense streams are stored losslessly in a rosbag2 sqlite file through
-librealsense's V4L2 backend. Color remains in camera-native YUYV; BGR conversion
-is preview-only. The timestamp CSV is reconstructed from the recorded DB3 so a
-slow preview cannot alter the SLAM input timeline. The external IMU remains in
-the project's established imu.bin/imu_ts.csv format.
+The RealSense streams are stored losslessly in a rosbag2 sqlite file. The SDK
+backend is selected by the launcher. Color remains in camera-native YUYV; BGR
+conversion is preview-only. The timestamp CSV is reconstructed from the
+recorded DB3 so a slow preview cannot alter the SLAM input timeline. The
+external IMU remains in the project's established imu.bin/imu_ts.csv format.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ import argparse
 import csv
 import gc
 import json
+import os
 import re
 import shutil
 import sqlite3
@@ -336,6 +337,7 @@ def preview_mosaic(frame_map: dict) -> np.ndarray:
 
 def main() -> int:
     args = parse_args()
+    realsense_backend = os.environ.get("EGO_VIO_REALSENSE_BACKEND", "system-default")
     stamp = time.strftime("%Y%m%d_%H%M%S")
     session = args.output_root.resolve() / f"d405_720p_rgb_stereo_ir_{stamp}"
     session.mkdir(parents=True, exist_ok=False)
@@ -658,7 +660,10 @@ def main() -> int:
         "fps_requested": 30,
         "color_record_format": "YUYV",
         "preview_color_format": "BGR",
-        "capture_backend": "rs.recorder + direct sensor frame_queue",
+        "capture_backend": (
+            f"rs.recorder + direct sensor frame_queue ({realsense_backend})"
+        ),
+        "realsense_python_module": str(Path(rs.__file__).resolve()),
         "monitor_queue_capacity": MONITOR_QUEUE_CAPACITY,
         "camera_storage": {
             "ram_staged": use_ram_stage,
