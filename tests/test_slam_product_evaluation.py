@@ -26,6 +26,7 @@ from validate_slam_dataset_roles import REQUIRED_MOTIONS, validate_manifest
 from validate_slam_product_release import (
     validate_benchmark_environment,
     validate_loop_observability,
+    validate_plane_factor_safety,
     validate_release,
 )
 from slam_benchmark_environment import evaluate_environment
@@ -476,6 +477,38 @@ def test_plane_factor_changes_only_world_gravity_axis_for_tilted_plane():
     np.testing.assert_allclose(corrected[:, :2], raw[:, :2], atol=1e-12)
     np.testing.assert_allclose(corrected[:, 2] - raw[:, 2], correction)
     assert report["correction_axis_world"] == [0.0, 0.0, 1.0]
+
+
+def test_plane_factor_release_evidence_rejects_unobservable_active_factor():
+    failures = validate_plane_factor_safety(
+        {
+            "status": "ACTIVE",
+            "causal": True,
+            "uses_absolute_height": False,
+            "uses_endpoint_constraint": False,
+        },
+        "hidden: depth_plane",
+    )
+
+    assert any("active factor lacks sufficient support" in item for item in failures)
+    assert any("correction axis" in item for item in failures)
+
+
+def test_plane_factor_release_evidence_accepts_safe_automatic_disable():
+    failures = validate_plane_factor_safety(
+        {
+            "status": "DISABLED",
+            "reason": "no stable gravity-aligned plane",
+            "support_observations": 0,
+            "active_trajectory_samples": 0,
+            "causal": True,
+            "uses_absolute_height": False,
+            "uses_endpoint_constraint": False,
+        },
+        "hidden: depth_plane",
+    )
+
+    assert failures == []
 
 
 def test_stereo_replay_cache_preserves_only_required_topics(tmp_path):
@@ -1046,6 +1079,13 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
                 "result": "PASS",
                 "plane_factor": {
                     "status": "ACTIVE",
+                    "support_observations": 8,
+                    "min_support": 5,
+                    "activations": 1,
+                    "active_trajectory_samples": 80,
+                    "correction_axis_world": [0.0, 0.0, 1.0],
+                    "max_correction_m": 0.03,
+                    "applied_correction_max_abs_m": 0.01,
                     "causal": True,
                     "uses_absolute_height": False,
                     "uses_endpoint_constraint": False,

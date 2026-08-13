@@ -29,6 +29,67 @@ DEFAULT_THRESHOLDS = {
 REQUIRED_VARIANTS = ("raw_vins", "auto_loop", "depth_plane")
 
 
+def validate_plane_factor_safety(plane_factor: dict, label: str) -> list[str]:
+    """Require evidence that a plane factor is bounded or safely disabled."""
+    failures: list[str] = []
+    status = plane_factor.get("status")
+    if status not in {"ACTIVE", "DISABLED"}:
+        failures.append(f"{label}: factor status is not ACTIVE or DISABLED")
+    if plane_factor.get("causal") is not True:
+        failures.append(f"{label}: factor is not causal")
+    if plane_factor.get("uses_absolute_height") is not False:
+        failures.append(f"{label}: factor uses absolute height")
+    if plane_factor.get("uses_endpoint_constraint") is not False:
+        failures.append(f"{label}: factor uses endpoint constraint")
+
+    if status == "DISABLED":
+        if not isinstance(plane_factor.get("reason"), str) or not plane_factor["reason"]:
+            failures.append(f"{label}: disabled factor lacks a reason")
+        if plane_factor.get("active_trajectory_samples") != 0:
+            failures.append(f"{label}: disabled factor has active trajectory samples")
+        applied = plane_factor.get("applied_correction_max_abs_m", 0.0)
+        if not isinstance(applied, (int, float)) or not math.isfinite(float(applied)):
+            failures.append(f"{label}: disabled factor correction is non-finite")
+        elif float(applied) != 0.0:
+            failures.append(f"{label}: disabled factor applied a correction")
+        return failures
+
+    if status != "ACTIVE":
+        return failures
+    support = plane_factor.get("support_observations")
+    minimum = plane_factor.get("min_support")
+    if (
+        not isinstance(support, int)
+        or not isinstance(minimum, int)
+        or minimum < 2
+        or support < minimum
+    ):
+        failures.append(f"{label}: active factor lacks sufficient support")
+    if not isinstance(plane_factor.get("activations"), int) or plane_factor["activations"] < 1:
+        failures.append(f"{label}: active factor has no activation evidence")
+    if (
+        not isinstance(plane_factor.get("active_trajectory_samples"), int)
+        or plane_factor["active_trajectory_samples"] < 1
+    ):
+        failures.append(f"{label}: active factor has no active trajectory samples")
+    axis = plane_factor.get("correction_axis_world")
+    if axis != [0.0, 0.0, 1.0]:
+        failures.append(f"{label}: correction axis is not world gravity")
+    maximum = plane_factor.get("max_correction_m")
+    applied = plane_factor.get("applied_correction_max_abs_m")
+    if (
+        not isinstance(maximum, (int, float))
+        or not math.isfinite(float(maximum))
+        or float(maximum) <= 0.0
+        or not isinstance(applied, (int, float))
+        or not math.isfinite(float(applied))
+        or float(applied) < 0.0
+        or float(applied) > float(maximum) + 1e-12
+    ):
+        failures.append(f"{label}: applied correction is not within its bound")
+    return failures
+
+
 def validate_loop_observability(report: dict, label: str) -> list[str]:
     """Require accepted loop edges to carry PnP and optimizer evidence."""
     failures: list[str] = []
@@ -446,18 +507,11 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                             failures.append(
                                 f"{dataset_id}: {variant}: factor report is not PASS"
                             )
-                        if plane_factor.get("causal") is not True:
-                            failures.append(
-                                f"{dataset_id}: {variant}: factor is not causal"
+                        failures.extend(
+                            validate_plane_factor_safety(
+                                plane_factor, f"{dataset_id}: {variant}"
                             )
-                        if plane_factor.get("uses_absolute_height") is not False:
-                            failures.append(
-                                f"{dataset_id}: {variant}: factor uses absolute height"
-                            )
-                        if plane_factor.get("uses_endpoint_constraint") is not False:
-                            failures.append(
-                                f"{dataset_id}: {variant}: factor uses endpoint constraint"
-                            )
+                        )
             if len(set(variant_trajectories)) != len(REQUIRED_VARIANTS):
                 failures.append(
                     f"{dataset_id}: variant trajectory paths must be distinct"

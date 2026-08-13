@@ -100,6 +100,13 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
                 "result": "PASS",
                 "plane_factor": {
                     "status": "ACTIVE",
+                    "support_observations": 8,
+                    "min_support": 5,
+                    "activations": 1,
+                    "active_trajectory_samples": 80,
+                    "correction_axis_world": [0.0, 0.0, 1.0],
+                    "max_correction_m": 0.03,
+                    "applied_correction_max_abs_m": 0.01,
                     "causal": True,
                     "uses_absolute_height": False,
                     "uses_endpoint_constraint": False,
