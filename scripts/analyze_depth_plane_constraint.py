@@ -14,6 +14,7 @@ camera-to-plane distance while the world plane itself remains fixed.
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import json
 import re
@@ -79,7 +80,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="评估D405深度平面质量及其世界坐标稳定性"
     )
-    parser.add_argument("--session", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--session", type=Path)
+    source.add_argument(
+        "--observations-csv",
+        type=Path,
+        help="复用既有depth_plane_frames.csv，跳过原始DB3深度重扫",
+    )
     parser.add_argument("--trajectory", type=Path)
     parser.add_argument(
         "--config",
@@ -102,6 +109,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--world-angle-gate-deg", type=float, default=4.0)
     parser.add_argument("--world-offset-gate-m", type=float, default=0.025)
     parser.add_argument("--max-horizontal-tilt-deg", type=float, default=12.0)
+    parser.add_argument("--plane-factor-gain", type=float, default=0.35)
+    parser.add_argument("--plane-factor-max-correction-m", type=float, default=0.03)
+    parser.add_argument("--plane-factor-max-gap-s", type=float, default=0.5)
+    parser.add_argument("--plane-factor-min-support", type=int, default=5)
+    parser.add_argument("--plane-factor-max-slew-mps", type=float, default=0.03)
+    parser.add_argument(
+        "--corrected-trajectory",
+        type=Path,
+        help="可选输出：仅在平面门控通过区间施加软Z修正的轨迹CSV",
+    )
     return parser.parse_args()
 
 
@@ -172,6 +189,40 @@ def select_db3(session: Path) -> Path:
     if not candidates:
         raise FileNotFoundError(f"no non-empty DB3 in {session}")
     return max(candidates, key=lambda path: path.stat().st_size)
+
+
+def load_observations_csv(path: Path) -> list[PlaneObservation]:
+    vector_fields = {"normal_camera", "normal_world"}
+    optional_float_fields = {
+        "offset_world_m",
+        "world_angle_error_deg",
+        "world_offset_error_m",
+    }
+    boolean_fields = {
+        "local_gate_pass",
+        "pose_matched",
+        "temporal_gate_pass",
+    }
+    observations: list[PlaneObservation] = []
+    with path.open(newline="", encoding="utf-8") as stream:
+        for row in csv.DictReader(stream):
+            values: dict[str, object] = {}
+            for field in PlaneObservation.__dataclass_fields__:
+                value = row[field]
+                if field in vector_fields:
+                    values[field] = ast.literal_eval(value) if value else None
+                elif field in optional_float_fields:
+                    values[field] = float(value) if value else None
+                elif field in boolean_fields:
+                    values[field] = value == "True"
+                elif field == "valid_points":
+                    values[field] = int(value)
+                else:
+                    values[field] = float(value)
+            observations.append(PlaneObservation(**values))
+    if not observations:
+        raise RuntimeError(f"no observations in {path}")
+    return observations
 
 
 def read_static_string(
@@ -466,6 +517,260 @@ def apply_temporal_gate(
     }
 
 
+def plane_factor_correction(
+    observations: list[PlaneObservation],
+    trajectory_times: np.ndarray,
+    trajectory_positions: np.ndarray,
+    gain: float,
+    max_correction_m: float,
+    max_gap_s: float,
+    min_support: int,
+    max_slew_mps: float,
+    angle_gate_deg: float = 4.0,
+    offset_gate_m: float = 0.025,
+    max_horizontal_tilt_deg: float = 12.0,
+) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+    """Apply a causal bounded gravity-axis correction from a stable plane.
+
+    The reference is frozen only after consecutive past observations agree;
+    future observations never affect an earlier correction.  A real camera
+    elevation changes the camera-frame plane distance, so it does not appear
+    as a world-plane residual and is retained.  No absolute height or endpoint
+    information enters this calculation.
+    """
+    if not 0.0 < gain <= 1.0:
+        raise ValueError("plane factor gain must be in (0, 1]")
+    if max_correction_m <= 0.0 or max_gap_s <= 0.0 or max_slew_mps <= 0.0:
+        raise ValueError("plane factor limits must be positive")
+    if not 0.0 < max_horizontal_tilt_deg < 90.0:
+        raise ValueError("horizontal tilt limit must be in (0, 90) degrees")
+    if min_support < 2:
+        raise ValueError("plane factor min_support must be at least 2")
+    if angle_gate_deg <= 0.0 or offset_gate_m <= 0.0:
+        raise ValueError("plane consistency gates must be positive")
+    if len(trajectory_times) != len(trajectory_positions):
+        raise ValueError("trajectory time/position length mismatch")
+    if trajectory_positions.ndim != 2 or trajectory_positions.shape[1] != 3:
+        raise ValueError("trajectory positions must have shape (N, 3)")
+    if len(trajectory_times) < 2:
+        raise ValueError("trajectory must contain at least two samples")
+    if not np.all(np.isfinite(trajectory_times)) or not np.all(
+        np.isfinite(trajectory_positions)
+    ):
+        raise ValueError("trajectory contains non-finite values")
+    if np.any(np.diff(trajectory_times) <= 0.0):
+        raise ValueError("trajectory timestamps must be strictly increasing")
+
+    disabled = {
+        "status": "DISABLED",
+        "reason": "no stable gravity-aligned plane",
+        "support_observations": 0,
+        "active_trajectory_samples": 0,
+        "causal": True,
+        "uses_absolute_height": False,
+        "uses_endpoint_constraint": False,
+    }
+    eligible = sorted(
+        (
+            item
+            for item in observations
+            if item.local_gate_pass
+            and item.pose_matched
+            and item.normal_world is not None
+            and item.offset_world_m is not None
+        ),
+        key=lambda item: item.epoch_s,
+    )
+    if not eligible:
+        return trajectory_positions.copy(), np.zeros(len(trajectory_times)), disabled
+
+    gravity_axis = np.array([0.0, 0.0, 1.0])
+    correction = np.zeros(len(trajectory_times), dtype=float)
+    active_samples = 0
+    support_used = 0
+    activations = 0
+    resets = 0
+    event_index = 0
+    warmup: list[tuple[np.ndarray, float]] = []
+    reference_normal: np.ndarray | None = None
+    reference_offset: float | None = None
+    last_observation_s: float | None = None
+    target_correction = 0.0
+
+    def reset() -> None:
+        nonlocal reference_normal, reference_offset, target_correction, resets
+        if reference_normal is not None or warmup:
+            resets += 1
+        reference_normal = None
+        reference_offset = None
+        target_correction = 0.0
+        warmup.clear()
+
+    def angle_deg(left: np.ndarray, right: np.ndarray) -> float:
+        return float(
+            np.degrees(np.arccos(np.clip(float(left @ right), -1.0, 1.0)))
+        )
+
+    def process(item: PlaneObservation) -> None:
+        nonlocal reference_normal, reference_offset, last_observation_s
+        nonlocal target_correction, activations, support_used
+        if (
+            last_observation_s is not None
+            and item.epoch_s - last_observation_s > max_gap_s
+        ):
+            reset()
+        last_observation_s = item.epoch_s
+        normal = np.asarray(item.normal_world, dtype=float)
+        offset = float(item.offset_world_m)
+        normal_norm = np.linalg.norm(normal)
+        if (
+            normal.shape != (3,)
+            or not np.all(np.isfinite(normal))
+            or not np.isfinite(offset)
+            or normal_norm < 1e-8
+        ):
+            reset()
+            return
+        normal /= normal_norm
+        if normal @ gravity_axis < 0.0:
+            normal = -normal
+            offset = -offset
+        tilt = angle_deg(normal, gravity_axis)
+        if tilt > max_horizontal_tilt_deg:
+            reset()
+            return
+
+        if reference_normal is None:
+            if warmup:
+                warmup_normals = np.asarray([sample[0] for sample in warmup])
+                warmup_normal = warmup_normals.mean(axis=0)
+                warmup_normal /= np.linalg.norm(warmup_normal)
+                warmup_offset = float(np.median([sample[1] for sample in warmup]))
+                if (
+                    angle_deg(normal, warmup_normal) > angle_gate_deg
+                    or abs(offset - warmup_offset) > offset_gate_m
+                ):
+                    reset()
+            warmup.append((normal, offset))
+            if len(warmup) < min_support:
+                return
+            normals = np.asarray([sample[0] for sample in warmup])
+            reference_normal = normals.mean(axis=0)
+            reference_normal /= np.linalg.norm(reference_normal)
+            reference_offset = float(np.median([sample[1] for sample in warmup]))
+            target_correction = 0.0
+            activations += 1
+            support_used += len(warmup)
+            warmup.clear()
+            return
+
+        if (
+            angle_deg(normal, reference_normal) > angle_gate_deg
+            or abs(offset - reference_offset) > offset_gate_m
+        ):
+            reset()
+            warmup.append((normal, offset))
+            return
+        gravity_projection = float(reference_normal @ gravity_axis)
+        target_correction = float(
+            np.clip(
+                gain * (offset - reference_offset) / gravity_projection,
+                -max_correction_m,
+                max_correction_m,
+            )
+        )
+        support_used += 1
+
+    for index in range(1, len(trajectory_times)):
+        timestamp = float(trajectory_times[index])
+        while event_index < len(eligible) and eligible[event_index].epoch_s <= timestamp:
+            process(eligible[event_index])
+            event_index += 1
+        if (
+            reference_normal is not None
+            and last_observation_s is not None
+            and timestamp - last_observation_s > max_gap_s
+        ):
+            reset()
+        if reference_normal is not None:
+            active_samples += 1
+        dt = float(trajectory_times[index] - trajectory_times[index - 1])
+        max_change = max_slew_mps * max(dt, 0.0)
+        correction[index] = correction[index - 1] + float(
+            np.clip(
+                target_correction - correction[index - 1],
+                -max_change,
+                max_change,
+            )
+        )
+    corrected = trajectory_positions + correction[:, None] * gravity_axis
+    raw_vertical_span = float(np.ptp(trajectory_positions @ gravity_axis))
+    corrected_vertical_span = float(np.ptp(corrected @ gravity_axis))
+    if activations == 0:
+        disabled["reason"] = "insufficient causal horizontal-plane support"
+        disabled["support_observations"] = len(eligible)
+        return trajectory_positions.copy(), np.zeros(len(trajectory_times)), disabled
+
+    report = {
+        "status": "ACTIVE",
+        "reason": None,
+        "support_observations": support_used,
+        "activations": activations,
+        "resets": resets,
+        "active_trajectory_samples": active_samples,
+        "active_fraction": float(active_samples / len(trajectory_times)),
+        "last_reference_normal_world": (
+            reference_normal.tolist() if reference_normal is not None else None
+        ),
+        "last_reference_offset_world_m": reference_offset,
+        "correction_axis_world": gravity_axis.tolist(),
+        "gain": gain,
+        "max_correction_m": max_correction_m,
+        "max_gap_s": max_gap_s,
+        "min_support": min_support,
+        "max_slew_mps": max_slew_mps,
+        "max_horizontal_tilt_deg": max_horizontal_tilt_deg,
+        "angle_gate_deg": angle_gate_deg,
+        "offset_gate_m": offset_gate_m,
+        "causal": True,
+        "applied_correction_max_abs_m": float(np.max(np.abs(correction))),
+        "applied_correction_rms_m": float(np.sqrt(np.mean(correction**2))),
+        "raw_gravity_axis_span_m": raw_vertical_span,
+        "corrected_gravity_axis_span_m": corrected_vertical_span,
+        "gravity_axis_span_retention_ratio": (
+            corrected_vertical_span / raw_vertical_span
+            if raw_vertical_span > 1e-9
+            else None
+        ),
+        "uses_absolute_height": False,
+        "uses_endpoint_constraint": False,
+    }
+    return corrected, correction, report
+
+
+def write_trajectory(
+    path: Path,
+    times: np.ndarray,
+    positions: np.ndarray,
+    quaternions: np.ndarray,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(("t_sec", "x", "y", "z", "qw", "qx", "qy", "qz"))
+        for timestamp, position, quaternion in zip(times, positions, quaternions):
+            writer.writerow(
+                (
+                    timestamp,
+                    *position,
+                    quaternion[3],
+                    quaternion[0],
+                    quaternion[1],
+                    quaternion[2],
+                )
+            )
+
+
 def write_outputs(
     output_dir: Path,
     observations: list[PlaneObservation],
@@ -486,19 +791,28 @@ def write_outputs(
 
 def main() -> int:
     args = parse_args()
-    observations, intrinsics, depth_unit_m, db3 = extract_observations(
-        session=args.session.resolve(),
-        sample_every=args.sample_every,
-        max_frames=args.max_frames,
-        grid_stride=args.grid_stride,
-        min_depth_m=args.min_depth_m,
-        max_depth_m=args.max_depth_m,
-        ransac_threshold_m=args.ransac_threshold_m,
-        min_inlier_ratio=args.min_inlier_ratio,
-        min_inlier_points=args.min_inlier_points,
-        max_p95_residual_m=args.max_p95_residual_m,
-    )
+    observation_source = None
+    if args.observations_csv is not None:
+        observation_source = args.observations_csv.resolve()
+        observations = load_observations_csv(observation_source)
+        intrinsics = None
+        depth_unit_m = None
+        db3 = None
+    else:
+        observations, intrinsics, depth_unit_m, db3 = extract_observations(
+            session=args.session.resolve(),
+            sample_every=args.sample_every,
+            max_frames=args.max_frames,
+            grid_stride=args.grid_stride,
+            min_depth_m=args.min_depth_m,
+            max_depth_m=args.max_depth_m,
+            ransac_threshold_m=args.ransac_threshold_m,
+            min_inlier_ratio=args.min_inlier_ratio,
+            min_inlier_points=args.min_inlier_points,
+            max_p95_residual_m=args.max_p95_residual_m,
+        )
     temporal_report = None
+    plane_factor_report = None
     if args.trajectory is not None:
         match_trajectory(
             observations,
@@ -511,33 +825,64 @@ def main() -> int:
             offset_gate_m=args.world_offset_gate_m,
             max_horizontal_tilt_deg=args.max_horizontal_tilt_deg,
         )
+        trajectory_times, trajectory_positions, trajectory_quaternions = load_trajectory(
+            args.trajectory.resolve()
+        )
+        corrected_positions, _, plane_factor_report = plane_factor_correction(
+            observations,
+            trajectory_times,
+            trajectory_positions,
+            gain=args.plane_factor_gain,
+            max_correction_m=args.plane_factor_max_correction_m,
+            max_gap_s=args.plane_factor_max_gap_s,
+            min_support=args.plane_factor_min_support,
+            max_slew_mps=args.plane_factor_max_slew_mps,
+            angle_gate_deg=args.world_angle_gate_deg,
+            offset_gate_m=args.world_offset_gate_m,
+            max_horizontal_tilt_deg=args.max_horizontal_tilt_deg,
+        )
+        if args.corrected_trajectory is not None:
+            write_trajectory(
+                args.corrected_trajectory.resolve(),
+                trajectory_times,
+                corrected_positions,
+                trajectory_quaternions,
+            )
     local_passes = sum(item.local_gate_pass for item in observations)
     report: dict[str, object] = {
         "result": "PROTOTYPE_ONLY",
-        "session": str(args.session.resolve()),
-        "db3": str(db3),
+        "session": str(args.session.resolve()) if args.session else None,
+        "observations_csv": str(observation_source) if observation_source else None,
+        "db3": str(db3) if db3 else None,
         "trajectory": str(args.trajectory.resolve()) if args.trajectory else None,
-        "intrinsics": asdict(intrinsics),
+        "intrinsics": asdict(intrinsics) if intrinsics else None,
         "depth_unit_m": depth_unit_m,
-        "sample_every": args.sample_every,
+        "sample_every": args.sample_every if observation_source is None else None,
         "observations": len(observations),
         "local_gate_passes": local_passes,
         "local_gate_fraction": local_passes / len(observations),
-        "local_gate_thresholds": {
-            "min_inlier_ratio": args.min_inlier_ratio,
-            "min_inlier_points": args.min_inlier_points,
-            "max_p95_residual_m": args.max_p95_residual_m,
-        },
+        "local_gate_thresholds": (
+            {
+                "min_inlier_ratio": args.min_inlier_ratio,
+                "min_inlier_points": args.min_inlier_points,
+                "max_p95_residual_m": args.max_p95_residual_m,
+            }
+            if observation_source is None
+            else None
+        ),
+        "local_gate_labels_replayed": observation_source is not None,
         "world_gate_thresholds": {
             "max_horizontal_tilt_deg": args.max_horizontal_tilt_deg,
             "max_normal_cluster_error_deg": args.world_angle_gate_deg,
             "max_plane_offset_cluster_error_m": args.world_offset_gate_m,
         },
         "temporal_gate": temporal_report,
+        "plane_factor": plane_factor_report,
         "constraint_policy": (
-            "Only observations passing both the local depth-plane gate and the "
-            "world-plane temporal gate may create a soft plane residual. Camera "
-            "height is never assumed constant."
+            "The plane factor considers only locally valid pose-matched planes, "
+            "then applies its own causal past-only gravity and consistency gates. "
+            "The temporal_gate field is an offline diagnostic and is not consumed "
+            "by the factor. Camera height and trajectory endpoints are never assumed."
         ),
     }
     write_outputs(args.output_dir.resolve(), observations, report)

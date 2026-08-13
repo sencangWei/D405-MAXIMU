@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
@@ -14,7 +15,10 @@ from analyze_depth_plane_constraint import (
     PlaneObservation,
     apply_temporal_gate,
     fit_plane_ransac,
+    load_observations_csv,
+    plane_factor_correction,
     transform_plane_to_world,
+    write_outputs,
 )
 from replay_db3_to_ros2 import select_db3
 from build_stereo_replay_cache import STEREO_TOPICS, build_cache
@@ -165,6 +169,246 @@ def test_temporal_gate_rejects_stable_wall_for_z_constraint():
     assert report["horizontal_candidates"] == 0
     assert report["accepted_observations"] == 0
 
+    times = np.linspace(0.0, 9.0, 91)
+    raw = np.column_stack((np.zeros(91), np.zeros(91), np.linspace(0.0, 0.2, 91)))
+    corrected, correction, factor = plane_factor_correction(
+        observations,
+        times,
+        raw,
+        gain=0.35,
+        max_correction_m=0.03,
+        max_gap_s=1.1,
+        min_support=5,
+        max_slew_mps=0.03,
+    )
+    np.testing.assert_allclose(corrected, raw)
+    np.testing.assert_allclose(correction, 0.0)
+    assert factor["status"] == "DISABLED"
+
+
+def test_depth_plane_observation_csv_round_trip(tmp_path):
+    observation = PlaneObservation(
+        epoch_s=12.5,
+        relative_s=0.5,
+        valid_points=1200,
+        inlier_ratio=0.81,
+        median_residual_m=0.001,
+        p95_residual_m=0.003,
+        normal_camera=[0.0, 0.0, 1.0],
+        offset_camera_m=-0.3,
+        local_gate_pass=True,
+        pose_matched=True,
+        normal_world=[0.01, 0.0, 0.99995],
+        offset_world_m=-0.1,
+        world_angle_error_deg=0.1,
+        world_offset_error_m=0.002,
+        temporal_gate_pass=True,
+    )
+    output_dir = tmp_path / "depth_report"
+    write_outputs(output_dir, [observation], {"result": "TEST"})
+
+    loaded = load_observations_csv(output_dir / "depth_plane_frames.csv")
+
+    assert loaded == [observation]
+
+
+def test_plane_factor_reduces_z_drift_without_flattening_real_elevation():
+    times = np.linspace(0.0, 10.0, 301)
+    true_z = 0.2 + 0.12 * np.sin(np.pi * times / 10.0)
+    drift = 0.02 * times / 10.0
+    raw = np.column_stack((0.1 * times, np.zeros_like(times), true_z + drift))
+    observations = []
+    for timestamp in np.linspace(0.0, 10.0, 51):
+        index = int(round(timestamp / 10.0 * (len(times) - 1)))
+        observation = PlaneObservation(
+            epoch_s=timestamp,
+            relative_s=timestamp,
+            valid_points=1000,
+            inlier_ratio=0.8,
+            median_residual_m=0.001,
+            p95_residual_m=0.003,
+            normal_camera=[0.0, 0.0, 1.0],
+            offset_camera_m=float(true_z[index]),
+            local_gate_pass=True,
+            pose_matched=True,
+            normal_world=[0.0, 0.0, 1.0],
+            offset_world_m=float(-drift[index]),
+            temporal_gate_pass=True,
+        )
+        observations.append(observation)
+    corrected, correction, report = plane_factor_correction(
+        observations,
+        times,
+        raw,
+        gain=1.0,
+        max_correction_m=0.03,
+        max_gap_s=0.25,
+        min_support=5,
+        max_slew_mps=0.05,
+    )
+
+    raw_error = raw[:, 2] - true_z
+    corrected_error = corrected[:, 2] - true_z
+    assert report["status"] == "ACTIVE"
+    assert np.sqrt(np.mean(corrected_error**2)) < np.sqrt(np.mean(raw_error**2))
+    assert np.ptp(corrected[:, 2]) > 0.11
+    assert report["gravity_axis_span_retention_ratio"] > 0.9
+    assert np.max(np.abs(correction)) <= 0.03
+
+
+def test_plane_factor_releases_to_zero_when_plane_support_disappears():
+    times = np.linspace(0.0, 12.0, 361)
+    raw = np.column_stack((np.zeros_like(times), np.zeros_like(times), 0.01 * times))
+    observations = []
+    observation_times = np.linspace(0.0, 4.0, 21)
+    for timestamp in observation_times:
+        # The first five samples establish the physical plane.  The remaining
+        # samples model a gradually growing VIO Z drift while that same plane
+        # stays visible.
+        drift = max(0.0, 0.02 * (timestamp - 0.8) / 3.2)
+        observations.append(
+            PlaneObservation(
+                epoch_s=timestamp,
+                relative_s=timestamp,
+                valid_points=1000,
+                inlier_ratio=0.8,
+                median_residual_m=0.001,
+                p95_residual_m=0.003,
+                normal_camera=[0.0, 0.0, 1.0],
+                offset_camera_m=0.3,
+                local_gate_pass=True,
+                pose_matched=True,
+                normal_world=[0.0, 0.0, 1.0],
+                offset_world_m=-0.02 - drift,
+                temporal_gate_pass=True,
+            )
+        )
+    corrected, correction, report = plane_factor_correction(
+        observations,
+        times,
+        raw,
+        gain=1.0,
+        max_correction_m=0.03,
+        max_gap_s=0.25,
+        min_support=5,
+        max_slew_mps=0.02,
+    )
+
+    assert report["status"] == "ACTIVE"
+    assert correction[np.searchsorted(times, 4.0)] < -0.015
+    assert abs(correction[-1]) < 1e-9
+    assert corrected[-1, 2] == raw[-1, 2]
+
+
+def test_plane_factor_is_causal_and_future_observations_do_not_change_past():
+    times = np.linspace(0.0, 8.0, 241)
+    raw = np.column_stack((np.zeros_like(times), np.zeros_like(times), 0.01 * times))
+
+    def observation(timestamp: float, offset: float) -> PlaneObservation:
+        return PlaneObservation(
+            epoch_s=timestamp,
+            relative_s=timestamp,
+            valid_points=1000,
+            inlier_ratio=0.8,
+            median_residual_m=0.001,
+            p95_residual_m=0.003,
+            normal_camera=[0.0, 0.0, 1.0],
+            offset_camera_m=0.3,
+            local_gate_pass=True,
+            pose_matched=True,
+            normal_world=[0.0, 0.0, 1.0],
+            offset_world_m=offset,
+            temporal_gate_pass=True,
+        )
+
+    past = [observation(timestamp, 0.0) for timestamp in np.linspace(0.0, 3.0, 16)]
+    future = [
+        observation(timestamp, -0.02)
+        for timestamp in np.linspace(5.0, 8.0, 16)
+    ]
+    _, correction_without_future, _ = plane_factor_correction(
+        past,
+        times,
+        raw,
+        gain=1.0,
+        max_correction_m=0.03,
+        max_gap_s=0.25,
+        min_support=5,
+        max_slew_mps=0.02,
+    )
+    _, correction_with_future, report = plane_factor_correction(
+        [*past, *future],
+        times,
+        raw,
+        gain=1.0,
+        max_correction_m=0.03,
+        max_gap_s=0.25,
+        min_support=5,
+        max_slew_mps=0.02,
+    )
+
+    past_end = np.searchsorted(times, 5.0)
+    np.testing.assert_allclose(
+        correction_with_future[:past_end],
+        correction_without_future[:past_end],
+        atol=1e-12,
+    )
+    assert report["causal"] is True
+
+
+def test_plane_factor_rejects_non_monotonic_trajectory_timestamps():
+    with pytest.raises(ValueError, match="strictly increasing"):
+        plane_factor_correction(
+            [],
+            np.array([0.0, 1.0, 0.5]),
+            np.zeros((3, 3)),
+            gain=0.35,
+            max_correction_m=0.03,
+            max_gap_s=0.5,
+            min_support=5,
+            max_slew_mps=0.03,
+        )
+
+
+def test_plane_factor_changes_only_world_gravity_axis_for_tilted_plane():
+    times = np.linspace(0.0, 2.0, 61)
+    raw = np.column_stack((0.2 * times, -0.1 * times, 0.01 * times))
+    normal = np.array([0.1, 0.0, np.sqrt(0.99)])
+    observations = []
+    for timestamp in np.linspace(0.0, 2.0, 11):
+        observations.append(
+            PlaneObservation(
+                epoch_s=timestamp,
+                relative_s=timestamp,
+                valid_points=1000,
+                inlier_ratio=0.8,
+                median_residual_m=0.001,
+                p95_residual_m=0.003,
+                normal_camera=normal.tolist(),
+                offset_camera_m=0.3,
+                local_gate_pass=True,
+                pose_matched=True,
+                normal_world=normal.tolist(),
+                offset_world_m=0.01,
+                temporal_gate_pass=True,
+            )
+        )
+    corrected, correction, report = plane_factor_correction(
+        observations,
+        times,
+        raw,
+        gain=1.0,
+        max_correction_m=0.03,
+        max_gap_s=0.25,
+        min_support=5,
+        max_slew_mps=0.1,
+    )
+
+    assert report["status"] == "ACTIVE"
+    np.testing.assert_allclose(corrected[:, :2], raw[:, :2], atol=1e-12)
+    np.testing.assert_allclose(corrected[:, 2] - raw[:, 2], correction)
+    assert report["correction_axis_world"] == [0.0, 0.0, 1.0]
+
 
 def test_stereo_replay_cache_preserves_only_required_topics(tmp_path):
     source = tmp_path / "source.db3"
@@ -200,6 +444,43 @@ def test_stereo_replay_cache_preserves_only_required_topics(tmp_path):
     copied_names = {row[0] for row in copied.execute("SELECT name FROM topics")}
     copied.close()
     assert copied_names == set(STEREO_TOPICS)
+
+
+def test_stereo_replay_cache_can_limit_duration(tmp_path):
+    source = tmp_path / "source.db3"
+    database = sqlite3.connect(source)
+    database.execute(
+        "CREATE TABLE topics(id INTEGER PRIMARY KEY,name TEXT NOT NULL,"
+        "type TEXT NOT NULL,serialization_format TEXT NOT NULL,"
+        "offered_qos_profiles TEXT NOT NULL)"
+    )
+    database.execute(
+        "CREATE TABLE messages(id INTEGER PRIMARY KEY,topic_id INTEGER NOT NULL,"
+        "timestamp INTEGER NOT NULL,data BLOB NOT NULL)"
+    )
+    message_id = 1
+    for topic_id, name in enumerate(STEREO_TOPICS, 1):
+        database.execute(
+            "INSERT INTO topics VALUES(?,?,?,?,?)",
+            (topic_id, name, "test/msg/Test", "cdr", ""),
+        )
+        for second in range(4):
+            database.execute(
+                "INSERT INTO messages VALUES(?,?,?,?)",
+                (message_id, topic_id, second * 1_000_000_000, name.encode()),
+            )
+            message_id += 1
+    database.commit()
+    database.close()
+
+    output = tmp_path / "cache.db3"
+    report = build_cache(source, output, duration_s=1.1)
+    copied = sqlite3.connect(output)
+    count = copied.execute("SELECT count(*) FROM messages").fetchone()[0]
+    copied.close()
+
+    assert report["duration_limit_s"] == 1.1
+    assert count == len(STEREO_TOPICS) * 2
 
 
 def test_dataset_manifest_detects_missing_hidden_test_without_breaking_dev_validation(tmp_path):

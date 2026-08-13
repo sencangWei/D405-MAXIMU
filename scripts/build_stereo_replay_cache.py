@@ -29,6 +29,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="生成只含双IR的轻量回放DB3")
     parser.add_argument("--session", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--duration-s",
+        type=float,
+        default=0.0,
+        help="只复制起始N秒；0表示完整会话",
+    )
     return parser.parse_args()
 
 
@@ -68,7 +74,9 @@ def validate_cache(path: Path) -> dict[str, object]:
     }
 
 
-def build_cache(source: Path, output: Path) -> dict[str, object]:
+def build_cache(
+    source: Path, output: Path, duration_s: float = 0.0
+) -> dict[str, object]:
     if output.exists():
         raise FileExistsError(f"output already exists: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -100,16 +108,35 @@ def build_cache(source: Path, output: Path) -> dict[str, object]:
         if len(topic_ids) != len(STEREO_TOPICS):
             raise RuntimeError("source DB3 does not contain all stereo topics")
         id_placeholders = sql_placeholders(len(topic_ids))
+        first_timestamp = int(
+            database.execute(
+                f"SELECT min(timestamp) FROM source.messages "
+                f"WHERE topic_id IN ({id_placeholders})",
+                topic_ids,
+            ).fetchone()[0]
+        )
+        last_timestamp = (
+            first_timestamp + int(duration_s * 1e9)
+            if duration_s > 0.0
+            else None
+        )
         database.execute(
             f"INSERT INTO topics SELECT * FROM source.topics "
             f"WHERE id IN ({id_placeholders})",
             topic_ids,
         )
-        database.execute(
-            f"INSERT INTO messages SELECT * FROM source.messages "
-            f"WHERE topic_id IN ({id_placeholders}) ORDER BY id",
-            topic_ids,
-        )
+        if last_timestamp is None:
+            database.execute(
+                f"INSERT INTO messages SELECT * FROM source.messages "
+                f"WHERE topic_id IN ({id_placeholders}) ORDER BY id",
+                topic_ids,
+            )
+        else:
+            database.execute(
+                f"INSERT INTO messages SELECT * FROM source.messages "
+                f"WHERE topic_id IN ({id_placeholders}) AND timestamp <= ? ORDER BY id",
+                [*topic_ids, last_timestamp],
+            )
         database.execute("CREATE INDEX timestamp_idx ON messages(timestamp ASC)")
         database.commit()
     except Exception:
@@ -124,6 +151,7 @@ def build_cache(source: Path, output: Path) -> dict[str, object]:
         "output": str(output.resolve()),
         "source_size_bytes": source.stat().st_size,
         "cache_size_bytes": output.stat().st_size,
+        "duration_limit_s": duration_s if duration_s > 0.0 else None,
         "build_duration_s": time.monotonic() - started,
         **validation,
     }
@@ -138,7 +166,9 @@ def main() -> int:
     args = parse_args()
     session = args.session.resolve()
     source = select_db3(session)
-    report = build_cache(source, args.output.resolve())
+    if args.duration_s < 0.0:
+        raise ValueError("duration must not be negative")
+    report = build_cache(source, args.output.resolve(), args.duration_s)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
 
