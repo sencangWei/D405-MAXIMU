@@ -1,0 +1,31 @@
+From c0cf726a38c16b4360db85b3a7a1364fc3fe9972 Mon Sep 17 00:00:00 2001
+From: robot <robot@localhost>
+Date: Fri, 14 Aug 2026 01:54:55 +0800
+Subject: [PATCH] chore(loop): log place retrieval rankings
+
+---
+ loop_fusion/src/pose_graph.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/loop_fusion/src/pose_graph.cpp b/loop_fusion/src/pose_graph.cpp
+index 7df149f..1ee62f0 100755
+--- a/loop_fusion/src/pose_graph.cpp
++++ b/loop_fusion/src/pose_graph.cpp
+@@ -633,6 +633,14 @@ std::vector<int> PoseGraph::detectLoopCandidates(
+         for (const auto &result : ret)
+             if (result.Score > 0.015)
+                 candidates.push_back(static_cast<int>(result.Id));
++	if (frame_index > kLoopTemporalExclusionKeyframes && !ret.empty())
++	{
++		printf("[AUTO_LOOP_RETRIEVAL] current=%d returned=%zu eligible=%zu",
++		       frame_index, ret.size(), candidates.size());
++		for (size_t rank = 0; rank < ret.size(); rank++)
++			printf(" rank%zu=%u:%.5f", rank + 1, ret[rank].Id, ret[rank].Score);
++		printf("\n");
++	}
+ /*
+     if (DEBUG_IMAGE)
+     {
+-- 
+2.34.1
+

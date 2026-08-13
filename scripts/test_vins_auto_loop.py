@@ -127,6 +127,40 @@ def parse_loop_configuration(loop_log: str) -> dict:
     }
 
 
+def parse_loop_retrieval(loop_log: str) -> dict:
+    pattern = re.compile(
+        r"\[AUTO_LOOP_RETRIEVAL\] current=(\d+) returned=(\d+) eligible=(\d+)"
+        r"(?P<ranks>(?: rank\d+=\d+:[0-9.]+)*)"
+    )
+    top_score_pattern = re.compile(r" rank1=\d+:([0-9.]+)")
+    returned: list[int] = []
+    eligible: list[int] = []
+    top_scores: list[float] = []
+    for match in pattern.finditer(loop_log):
+        returned.append(int(match.group(2)))
+        eligible.append(int(match.group(3)))
+        top_score = top_score_pattern.search(match.group("ranks"))
+        if top_score is not None:
+            top_scores.append(float(top_score.group(1)))
+
+    def summary(values: list[int] | list[float]) -> dict[str, float | int | None]:
+        if not values:
+            return {"min": None, "max": None, "mean": None}
+        return {
+            "min": min(values),
+            "max": max(values),
+            "mean": float(sum(values) / len(values)),
+        }
+
+    return {
+        "frames": len(returned),
+        "returned": summary(returned),
+        "eligible": summary(eligible),
+        "zero_eligible_frames": sum(value == 0 for value in eligible),
+        "top_score": summary(top_scores),
+    }
+
+
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
@@ -553,6 +587,7 @@ def main() -> int:
         "automatic_correction_rejects": len(correction_rejected),
         "automatic_spatial_rejects": len(spatial_rejected),
         **loop_configuration,
+        "loop_retrieval": parse_loop_retrieval(loop_log),
         "pnp_quality": parse_pnp_quality(loop_log),
         "pose_graph_health": pose_graph_health,
         "raw_trajectory_diagnostics": raw_diagnostics,

@@ -9,6 +9,7 @@ from test_vins_auto_loop import (
     camera_frame_count,
     classify_run_scope,
     parse_loop_configuration,
+    parse_loop_retrieval,
     parse_pnp_quality,
     parse_pose_graph_health,
     trajectory_diagnostics,
@@ -132,4 +133,33 @@ def test_parse_loop_configuration_reports_effective_spatial_threshold():
     assert parse_loop_configuration("unrelated log\n") == {
         "min_loop_spatial_support": None,
         "max_loop_candidates": None,
+    }
+
+
+def test_parse_loop_retrieval_summarizes_candidate_recall():
+    log = "\n".join(
+        (
+            "[AUTO_LOOP_RETRIEVAL] current=100 returned=3 eligible=2 "
+            "rank1=4:0.12000 rank2=8:0.04000 rank3=2:0.01000",
+            "[AUTO_LOOP_RETRIEVAL] current=101 returned=2 eligible=0 "
+            "rank1=9:0.01000 rank2=3:0.00500",
+        )
+    )
+
+    assert parse_loop_retrieval(log) == {
+        "frames": 2,
+        "returned": {"min": 2, "max": 3, "mean": 2.5},
+        "eligible": {"min": 0, "max": 2, "mean": 1.0},
+        "zero_eligible_frames": 1,
+        "top_score": {"min": 0.01, "max": 0.12, "mean": 0.065},
+    }
+
+
+def test_parse_loop_retrieval_handles_old_logs_without_diagnostics():
+    assert parse_loop_retrieval("unrelated log\n") == {
+        "frames": 0,
+        "returned": {"min": None, "max": None, "mean": None},
+        "eligible": {"min": None, "max": None, "mean": None},
+        "zero_eligible_frames": 0,
+        "top_score": {"min": None, "max": None, "mean": None},
     }
