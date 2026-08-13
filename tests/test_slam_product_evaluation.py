@@ -22,7 +22,7 @@ from analyze_depth_plane_constraint import (
 )
 from replay_db3_to_ros2 import select_db3
 from build_stereo_replay_cache import STEREO_TOPICS, build_cache
-from validate_slam_dataset_roles import validate_manifest
+from validate_slam_dataset_roles import REQUIRED_MOTIONS, validate_manifest
 from validate_slam_product_release import validate_release
 
 
@@ -724,3 +724,251 @@ def test_hidden_dataset_requires_predeclared_loop_and_hashed_gt_report(tmp_path)
     assert result["result"] == "FAIL"
     assert any("predeclare expected_loop" in item for item in result["failures"])
     assert any("ground-truth evaluation report" in item for item in result["failures"])
+
+
+def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
+    session = tmp_path / "recordings" / "session"
+    session.mkdir(parents=True)
+    acceptance = session / "acceptance.json"
+    acceptance.write_text("{}", encoding="utf-8")
+    truth = tmp_path / "truth.csv"
+    truth.write_text("t_sec,x,y,z,qw,qx,qy,qz\n", encoding="utf-8")
+    run_paths = {}
+    trajectory_paths = {}
+    for variant in ("raw_vins", "auto_loop", "depth_plane"):
+        run_path = tmp_path / f"{variant}_run.json"
+        run_path.write_text(
+            json.dumps(
+                {
+                    "variant": variant,
+                    "result": "PASS",
+                    "pose_coverage": 1.0,
+                    "loop_input_drop_events": 0,
+                    "estimator_keyframe_queue_drop_events": 0,
+                    "automatic_loop_accepts": 0,
+                }
+            ),
+            encoding="utf-8",
+        )
+        trajectory_path = tmp_path / f"{variant}_trajectory.csv"
+        trajectory_path.write_text(
+            "t_sec,x,y,z,qw,qx,qy,qz\n", encoding="utf-8"
+        )
+        run_paths[variant] = run_path
+        trajectory_paths[variant] = trajectory_path
+    run = run_paths["auto_loop"]
+    ground_truth = tmp_path / "ground_truth.json"
+    ground_truth.write_text(
+        json.dumps(
+            {
+                "ate_translation_rmse_m": 0.005,
+                "rpe_translation_rmse_m": 0.002,
+                "rpe_rotation_rmse_deg": 0.2,
+                "z_rmse_m": 0.004,
+                "attitude_aligned_ate_rotation_rmse_deg": 0.2,
+                "endpoint_drift_percent_of_path": 0.5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = {
+        "release_variant": "auto_loop",
+        "datasets": [
+            {
+                "id": "development",
+                "role": "development",
+                "motion": "free_motion_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(run.read_bytes()).hexdigest(),
+            },
+            {
+                "id": "validation",
+                "role": "validation",
+                "motion": "l_shape_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(run.read_bytes()).hexdigest(),
+            },
+            {
+                "id": "hidden",
+                "role": "hidden_test",
+                "motion": "straight_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "external_ground_truth": "truth.csv",
+                "external_ground_truth_sha256": hashlib.sha256(truth.read_bytes()).hexdigest(),
+                "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(run.read_bytes()).hexdigest(),
+                "ground_truth_report": "ground_truth.json",
+                "ground_truth_report_sha256": hashlib.sha256(
+                    ground_truth.read_bytes()
+                ).hexdigest(),
+            },
+        ],
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    dataset_module = sys.modules[validate_manifest.__module__]
+    release_module = sys.modules[validate_release.__module__]
+    old_dataset_root = dataset_module.ROOT
+    old_release_root = release_module.ROOT
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        result = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+
+    assert result["result"] == "FAIL"
+    assert result["release_variant"] == "auto_loop"
+    assert result["variant_report_counts"] == {
+        "raw_vins": 0,
+        "auto_loop": 0,
+        "depth_plane": 0,
+    }
+    assert any("hidden: raw_vins: missing variant report" in item for item in result["failures"])
+    assert any("hidden: auto_loop: missing variant report" in item for item in result["failures"])
+    assert any("hidden: depth_plane: missing variant report" in item for item in result["failures"])
+    assert "no hidden three-variant evaluation matrix" in result["failures"]
+
+
+def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant(tmp_path):
+    session = tmp_path / "recordings" / "session"
+    session.mkdir(parents=True)
+    acceptance = session / "acceptance.json"
+    acceptance.write_text("{}", encoding="utf-8")
+    run_paths = {}
+    trajectory_paths = {}
+    for variant in ("raw_vins", "auto_loop", "depth_plane"):
+        run_path = tmp_path / f"{variant}_run.json"
+        run_path.write_text(
+            json.dumps(
+                {
+                    "variant": variant,
+                    "result": "PASS",
+                    "pose_coverage": 1.0,
+                    "loop_input_drop_events": 0,
+                    "estimator_keyframe_queue_drop_events": 0,
+                    "automatic_loop_accepts": 0,
+                }
+            ),
+            encoding="utf-8",
+        )
+        trajectory_path = tmp_path / f"{variant}_trajectory.csv"
+        trajectory_path.write_text(
+            "t_sec,x,y,z,qw,qx,qy,qz\n", encoding="utf-8"
+        )
+        run_paths[variant] = run_path
+        trajectory_paths[variant] = trajectory_path
+
+    good_metrics = {
+        "ate_translation_rmse_m": 0.005,
+        "rpe_translation_rmse_m": 0.002,
+        "rpe_rotation_rmse_deg": 0.2,
+        "z_rmse_m": 0.004,
+        "attitude_aligned_ate_rotation_rmse_deg": 0.2,
+        "endpoint_drift_percent_of_path": 0.5,
+    }
+    poor_metrics = {name: 10.0 for name in good_metrics}
+    metric_paths = {}
+    for variant, metrics in (
+        ("raw_vins", poor_metrics),
+        ("auto_loop", good_metrics),
+        ("depth_plane", poor_metrics),
+    ):
+        path = tmp_path / f"{variant}_gt.json"
+        path.write_text(json.dumps({"variant": variant, **metrics}), encoding="utf-8")
+        metric_paths[variant] = path
+
+    variant_reports = {
+        variant: {
+            "run_report": run_paths[variant].name,
+            "run_report_sha256": hashlib.sha256(
+                run_paths[variant].read_bytes()
+            ).hexdigest(),
+            "trajectory": trajectory_paths[variant].name,
+            "trajectory_sha256": hashlib.sha256(
+                trajectory_paths[variant].read_bytes()
+            ).hexdigest(),
+            "ground_truth_report": path.name,
+            "ground_truth_report_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+        for variant, path in metric_paths.items()
+    }
+    manifest = {
+        "release_variant": "auto_loop",
+        "thresholds": {"min_hidden_runs_per_motion": 1},
+        "datasets": [],
+    }
+    for role, motion, dataset_id in (
+        ("development", "free_motion_open", "development"),
+        ("validation", "l_shape_open", "validation"),
+    ):
+        manifest["datasets"].append(
+            {
+                "id": dataset_id,
+                "role": role,
+                "motion": motion,
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "run_report": run_paths["auto_loop"].name,
+                "run_report_sha256": hashlib.sha256(
+                    run_paths["auto_loop"].read_bytes()
+                ).hexdigest(),
+            }
+        )
+    truth = tmp_path / "truth.csv"
+    truth.write_text("t_sec,x,y,z,qw,qx,qy,qz\n", encoding="utf-8")
+    for index, motion in enumerate(sorted(REQUIRED_MOTIONS)):
+        manifest["datasets"].append(
+            {
+                "id": f"hidden-{index}",
+                "role": "hidden_test",
+                "motion": motion,
+                "session": "recordings/session",
+                "expected_loop": False,
+                "external_ground_truth": "truth.csv",
+                "external_ground_truth_sha256": hashlib.sha256(truth.read_bytes()).hexdigest(),
+                "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "run_report": run_paths["auto_loop"].name,
+                "run_report_sha256": hashlib.sha256(
+                    run_paths["auto_loop"].read_bytes()
+                ).hexdigest(),
+                "ground_truth_report": "auto_loop_gt.json",
+                "ground_truth_report_sha256": hashlib.sha256(
+                    metric_paths["auto_loop"].read_bytes()
+                ).hexdigest(),
+                "variant_reports": variant_reports,
+            }
+        )
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    dataset_module = sys.modules[validate_manifest.__module__]
+    release_module = sys.modules[validate_release.__module__]
+    old_dataset_root = dataset_module.ROOT
+    old_release_root = release_module.ROOT
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        result = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+
+    assert result["result"] == "PASS"
+    assert result["release_readiness"] == "CUSTOMER_READY"
+    assert result["variant_report_counts"] == {
+        "raw_vins": len(REQUIRED_MOTIONS),
+        "auto_loop": len(REQUIRED_MOTIONS),
+        "depth_plane": len(REQUIRED_MOTIONS),
+    }
