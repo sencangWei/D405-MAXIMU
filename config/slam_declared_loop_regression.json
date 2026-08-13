@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "truth_policy": {
+    "source": "user_declared_before_regression",
+    "usage": "post_run_scoring_only",
+    "never_input_to_slam": true,
+    "notes": "expected_loop and endpoint thresholds may fail a completed run, but are never passed to the estimator, loop detector, or pose graph"
+  },
+  "thresholds": {
+    "max_endpoint_error_m": 0.01,
+    "min_pose_coverage": 0.98,
+    "required_repetitions_per_dataset": 3
+  },
+  "datasets": [
+    {
+      "id": "d405_20260812_114728",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_114728",
+      "motion": "closed_rectangle_with_elevation",
+      "expected_loop": true,
+      "acceptance_sha256": "300364c20731aefe146680bd0f8f8a02123289c7362b0a6bfd0aa68477e3de44",
+      "reference_report": null
+    },
+    {
+      "id": "d405_20260812_121306",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_121306",
+      "motion": "closed_rectangle_horizontal",
+      "expected_loop": true,
+      "acceptance_sha256": "06cfc21f5bc4c73de4c12eb8f45d7b3ca19f45e02d90f83894b052be1201b6ce",
+      "reference_report": "reports/release_gate_temporal90_121306/run_acceptance.json"
+    },
+    {
+      "id": "d405_20260812_155408",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_155408",
+      "motion": "closed_loop_horizontal",
+      "expected_loop": true,
+      "acceptance_sha256": "dfd606339c8c5d9c5ab5bc2a950388eb34370ad321a48f78a1f00ff80dcb2548",
+      "reference_report": "reports/release_gate_temporal90_155408/run_acceptance.json"
+    },
+    {
+      "id": "d405_20260813_000933",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260813_000933",
+      "motion": "closed_loop_with_elevation",
+      "expected_loop": true,
+      "acceptance_sha256": "0acd0c0863571a25946e94ef51d158b5432de3b421a546d9bb5dc3208a267ddc",
+      "reference_report": "reports/release_gate_temporal90_000933/run_acceptance.json"
+    }
+  ],
+  "excluded_sessions": [
+    {
+      "id": "d405_20260811_192956",
+      "reason": "capture operated near 15.94 fps and is not valid 30 fps product evidence"
+    },
+    {
+      "id": "d405_20260812_101410",
+      "reason": "capture acceptance FAIL with approximately 11 percent camera gaps"
+    },
+    {
+      "id": "d405_20260812_235529",
+      "reason": "capture acceptance FAIL and the session was later removed"
+    }
+  ]
+}

@@ -116,9 +116,15 @@ def parse_loop_configuration(loop_log: str) -> dict:
         r"min_loop_spatial_support:\s*([0-9.]+)\s*\((enabled|disabled)\)",
         loop_log,
     )
-    if spatial_support is None:
-        return {"min_loop_spatial_support": None}
-    return {"min_loop_spatial_support": float(spatial_support.group(1))}
+    max_candidates = re.search(r"max_loop_candidates:\s*(\d+)", loop_log)
+    return {
+        "min_loop_spatial_support": (
+            float(spatial_support.group(1)) if spatial_support is not None else None
+        ),
+        "max_loop_candidates": (
+            int(max_candidates.group(1)) if max_candidates is not None else None
+        ),
+    }
 
 
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:

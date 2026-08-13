@@ -1,0 +1,85 @@
+From 8ca217b7ce0d2a3f19206ed60313c02899a1b62f Mon Sep 17 00:00:00 2001
+From: robot <robot@localhost>
+Date: Fri, 14 Aug 2026 01:35:17 +0800
+Subject: [PATCH] fix(loop): expand configurable place recall
+
+---
+ config/d405_stereo_imu/d405_stereo_imu_config.yaml |  4 ++++
+ loop_fusion/src/parameters.h                       |  1 +
+ loop_fusion/src/pose_graph.cpp                     |  3 +--
+ loop_fusion/src/pose_graph_node.cpp                | 12 ++++++++++++
+ 4 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/config/d405_stereo_imu/d405_stereo_imu_config.yaml b/config/d405_stereo_imu/d405_stereo_imu_config.yaml
+index d862a59..9edcad2 100644
+--- a/config/d405_stereo_imu/d405_stereo_imu_config.yaml
++++ b/config/d405_stereo_imu/d405_stereo_imu_config.yaml
+@@ -69,3 +69,7 @@ save_image: 0
+ # PnP内点空间覆盖门。0表示关闭，保持当前生产候选行为。
+ # 只有开发/验证正负样本资格报告允许冻结阈值后，才可改为非零。
+ min_loop_spatial_support: 0.0
++
++# DBoW只负责召回，候选仍必须通过左右IR、PnP、连续一致性和修正安全门。
++# 小范围回到原位时外观近邻容易挤掉真实历史帧，扩大召回而不放宽验真。
++max_loop_candidates: 24
+diff --git a/loop_fusion/src/parameters.h b/loop_fusion/src/parameters.h
+index 31dd68d..cb2df1f 100755
+--- a/loop_fusion/src/parameters.h
++++ b/loop_fusion/src/parameters.h
+@@ -35,6 +35,7 @@ extern int COL;
+ extern std::string VINS_RESULT_PATH;
+ extern int DEBUG_IMAGE;
+ extern double MIN_LOOP_SPATIAL_SUPPORT;
++extern int MAX_LOOP_CANDIDATES;
+ extern std::string WORLD_FRAME_ID;
+ extern std::string BODY_FRAME_ID;
+ extern std::string CAMERA_FRAME_ID;
+diff --git a/loop_fusion/src/pose_graph.cpp b/loop_fusion/src/pose_graph.cpp
+index 8b78f87..7df149f 100755
+--- a/loop_fusion/src/pose_graph.cpp
++++ b/loop_fusion/src/pose_graph.cpp
+@@ -595,11 +595,10 @@ std::vector<int> PoseGraph::detectLoopCandidates(
+     //first query; then add this frame into database!
+     QueryResults ret;
+     TicToc t_query;
+-    constexpr int kMaxLoopCandidates = 4;
+     db.query(
+         keyframe->brief_descriptors,
+         ret,
+-        kMaxLoopCandidates,
++        MAX_LOOP_CANDIDATES,
+         frame_index - kLoopTemporalExclusionKeyframes);
+     //printf("query time: %f", t_query.toc());
+     //cout << "Searching for Image " << frame_index << ". " << ret << endl;
+diff --git a/loop_fusion/src/pose_graph_node.cpp b/loop_fusion/src/pose_graph_node.cpp
+index 8b5ff1b..522aeb1 100755
+--- a/loop_fusion/src/pose_graph_node.cpp
++++ b/loop_fusion/src/pose_graph_node.cpp
+@@ -64,6 +64,7 @@ int ROW;
+ int COL;
+ int DEBUG_IMAGE;
+ double MIN_LOOP_SPATIAL_SUPPORT = 0.0;
++int MAX_LOOP_CANDIDATES = 4;
+ 
+ std::string WORLD_FRAME_ID = "world";
+ std::string BODY_FRAME_ID = "body";
+@@ -391,6 +392,17 @@ int main(int argc, char **argv)
+     }
+     printf("min_loop_spatial_support: %.6f%s\n", MIN_LOOP_SPATIAL_SUPPORT,
+            MIN_LOOP_SPATIAL_SUPPORT > 0.0 ? " (enabled)" : " (disabled)");
++    const cv::FileNode max_loop_candidates_node =
++        fsSettings["max_loop_candidates"];
++    if (!max_loop_candidates_node.empty())
++        MAX_LOOP_CANDIDATES = static_cast<int>(max_loop_candidates_node);
++    if (MAX_LOOP_CANDIDATES < 1 || MAX_LOOP_CANDIDATES > 64)
++    {
++        std::cerr << "ERROR: max_loop_candidates must be in [1, 64]"
++                  << std::endl;
++        return 1;
++    }
++    printf("max_loop_candidates: %d\n", MAX_LOOP_CANDIDATES);
+ 
+     rclcpp::init(argc, argv);
+     auto n = rclcpp::Node::make_shared("loop_fusion");
+-- 
+2.34.1

@@ -1,0 +1,64 @@
+import hashlib
+import json
+from pathlib import Path
+
+from run_declared_loop_regression import score_run, validate_manifest
+
+
+def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
+    return {
+        "result": "PASS",
+        "automatic_loop_accepts": accepts,
+        "pose_coverage": 0.99,
+        "corrected_trajectory_diagnostics": {"endpoint_delta_m": endpoint},
+        "loop_input_drop_events": 0,
+        "estimator_keyframe_queue_drop_events": 0,
+        "pose_graph_health": {"rejected_optimizations": 0},
+        "health": {"state": "SLAM_HEALTHY"},
+    }
+
+
+def test_scores_autonomous_sub_centimeter_loop_as_pass():
+    result = score_run(healthy_report(), max_endpoint_m=0.01, min_coverage=0.98)
+    assert result["result"] == "PASS"
+
+
+def test_rejects_missing_loop_or_centimeter_violation():
+    no_loop = score_run(
+        healthy_report(accepts=0), max_endpoint_m=0.01, min_coverage=0.98
+    )
+    inaccurate = score_run(
+        healthy_report(endpoint=0.010001), max_endpoint_m=0.01, min_coverage=0.98
+    )
+    assert no_loop["result"] == "FAIL"
+    assert "no automatic loop was accepted" in no_loop["failures"]
+    assert inaccurate["result"] == "FAIL"
+    assert any("exceeds" in failure for failure in inaccurate["failures"])
+
+
+def test_manifest_requires_immutable_passing_capture(tmp_path: Path):
+    session = tmp_path / "session"
+    session.mkdir()
+    acceptance = session / "acceptance.json"
+    acceptance.write_text(json.dumps({"result": "PASS"}), encoding="utf-8")
+    digest = hashlib.sha256(acceptance.read_bytes()).hexdigest()
+    manifest = {
+        "truth_policy": {
+            "usage": "post_run_scoring_only",
+            "never_input_to_slam": True,
+        },
+        "datasets": [
+            {
+                "id": "closed",
+                "session": str(session),
+                "expected_loop": True,
+                "acceptance_sha256": digest,
+            }
+        ],
+    }
+    assert validate_manifest(manifest) == []
+
+    acceptance.write_text(json.dumps({"result": "FAIL"}), encoding="utf-8")
+    failures = validate_manifest(manifest)
+    assert any("hash changed" in failure for failure in failures)
+    assert any("not PASS" in failure for failure in failures)

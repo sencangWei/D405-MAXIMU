@@ -127,7 +127,9 @@ def test_parse_pose_graph_health_rejects_unusable_solution():
 def test_parse_loop_configuration_reports_effective_spatial_threshold():
     assert parse_loop_configuration(
         "min_loop_spatial_support: 0.0617 (enabled)\n"
-    ) == {"min_loop_spatial_support": 0.0617}
+        "max_loop_candidates: 24\n"
+    ) == {"min_loop_spatial_support": 0.0617, "max_loop_candidates": 24}
     assert parse_loop_configuration("unrelated log\n") == {
-        "min_loop_spatial_support": None
+        "min_loop_spatial_support": None,
+        "max_loop_candidates": None,
     }
