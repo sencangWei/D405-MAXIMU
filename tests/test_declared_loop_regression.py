@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from run_declared_loop_regression import (
+    classify_loop_stage,
     freeze_dataset_inputs,
     score_run,
     validate_frozen_dataset,
@@ -133,6 +134,35 @@ def test_new_candidate_contract_requires_reproducible_run_provenance():
     assert "provenance file is missing: loop_executable" in result["failures"]
 
 
+def test_classifies_positive_loop_failure_stage_without_using_endpoint_truth():
+    report = healthy_report(accepts=0)
+    report["loop_retrieval"]["eligible"]["max"] = 4
+    report["pnp_quality"] = {"samples": 3, "geometry_pass_samples": 2}
+    report["loop_stage_counts"] = {"pending": 2, "correction_rejected": 0}
+
+    assert classify_loop_stage(report, expected_loop=True) == (
+        "GEOMETRY_PASSED_CONFIRMATION_INCOMPLETE"
+    )
+
+    report["loop_stage_counts"] = {"pending": 0, "correction_rejected": 1}
+    assert classify_loop_stage(report, expected_loop=True) == (
+        "CORRECTION_SAFETY_REJECTED"
+    )
+
+
+def test_classifies_retrieval_and_geometry_failures():
+    report = healthy_report(accepts=0)
+    report["loop_retrieval"]["eligible"]["max"] = 0
+    assert classify_loop_stage(report, expected_loop=True) == "NO_ELIGIBLE_RETRIEVAL"
+
+    report["loop_retrieval"]["eligible"]["max"] = 5
+    report["pnp_quality"] = {"samples": 0, "geometry_pass_samples": 0}
+    assert classify_loop_stage(report, expected_loop=True) == "NO_USABLE_PNP"
+
+    report["pnp_quality"] = {"samples": 2, "geometry_pass_samples": 0}
+    assert classify_loop_stage(report, expected_loop=True) == "GEOMETRY_REJECTED"
+
+
 def test_manifest_requires_immutable_passing_capture(tmp_path: Path):
     session = tmp_path / "session"
     session.mkdir()
@@ -232,4 +262,4 @@ def test_markdown_report_exposes_per_run_retrieval_and_accuracy(tmp_path: Path):
 
     text = output.read_text(encoding="utf-8")
     assert "仅在SLAM完成后评分" in text
-    assert "| closed_a | 1 | PASS | 1 | 6.20 | 99.30% | 24.0/3.5 | — |" in text
+    assert "| closed_a | 1 | PASS | — | 1 | 6.20 | 99.30% | 24.0/3.5 | — |" in text

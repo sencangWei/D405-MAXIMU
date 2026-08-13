@@ -236,6 +236,15 @@ def parse_loop_retrieval(loop_log: str) -> dict:
     }
 
 
+def parse_loop_stage_counts(loop_log: str) -> dict[str, int]:
+    return {
+        "pending": loop_log.count("[AUTO_LOOP_PENDING]"),
+        "inconsistent": loop_log.count("[AUTO_LOOP_INCONSISTENT]"),
+        "correction_rejected": loop_log.count("[AUTO_LOOP_CORRECTION_REJECT]"),
+        "cooldown": loop_log.count("[AUTO_LOOP_COOLDOWN]"),
+    }
+
+
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
@@ -577,6 +586,7 @@ def main() -> int:
     ]
     pose_graph_health = parse_pose_graph_health(loop_log)
     loop_configuration = parse_loop_configuration(loop_log)
+    loop_stage_counts = parse_loop_stage_counts(loop_log)
     input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
     estimator_queue_drops = [
         line
@@ -674,6 +684,7 @@ def main() -> int:
         "automatic_spatial_rejects": len(spatial_rejected),
         **loop_configuration,
         "loop_retrieval": parse_loop_retrieval(loop_log),
+        "loop_stage_counts": loop_stage_counts,
         "pnp_quality": parse_pnp_quality(loop_log),
         "pose_graph_health": pose_graph_health,
         "raw_trajectory_diagnostics": raw_diagnostics,

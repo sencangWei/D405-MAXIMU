@@ -11,6 +11,7 @@ from test_vins_auto_loop import (
     run_provenance,
     parse_loop_configuration,
     parse_loop_retrieval,
+    parse_loop_stage_counts,
     parse_pnp_quality,
     parse_pose_graph_health,
     trajectory_diagnostics,
@@ -163,6 +164,23 @@ def test_parse_loop_retrieval_handles_old_logs_without_diagnostics():
         "eligible": {"min": None, "max": None, "mean": None},
         "zero_eligible_frames": 0,
         "top_score": {"min": None, "max": None, "mean": None},
+    }
+
+
+def test_run_report_stage_counts_can_be_read_from_log_markers():
+    log = "\n".join(
+        (
+            "[AUTO_LOOP_PENDING] current=10 matched=1 confirmations=1/4",
+            "[AUTO_LOOP_PENDING] current=11 matched=1 confirmations=2/4",
+            "[AUTO_LOOP_CORRECTION_REJECT] current=12 matched=1",
+        )
+    )
+
+    assert parse_loop_stage_counts(log) == {
+        "pending": 2,
+        "inconsistent": 0,
+        "correction_rejected": 1,
+        "cooldown": 0,
     }
 
 

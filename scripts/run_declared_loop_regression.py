@@ -56,6 +56,31 @@ def validate_run_provenance(report: dict) -> list[str]:
     return failures
 
 
+def classify_loop_stage(report: dict, *, expected_loop: bool) -> str:
+    accepts = int(report.get("automatic_loop_accepts", 0))
+    if not expected_loop:
+        return "FALSE_LOOP_ACCEPTED" if accepts else "SAFETY_CONTROL_CLEAN"
+    if accepts:
+        return "LOOP_ACCEPTED"
+    retrieval = report.get("loop_retrieval", {})
+    eligible_max = retrieval.get("eligible", {}).get("max")
+    if not isinstance(eligible_max, (int, float)):
+        return "RETRIEVAL_UNOBSERVABLE"
+    if eligible_max <= 0:
+        return "NO_ELIGIBLE_RETRIEVAL"
+    pnp = report.get("pnp_quality", {})
+    if int(pnp.get("samples", 0)) == 0:
+        return "NO_USABLE_PNP"
+    if int(pnp.get("geometry_pass_samples", 0)) == 0:
+        return "GEOMETRY_REJECTED"
+    stages = report.get("loop_stage_counts", {})
+    if int(stages.get("correction_rejected", 0)) > 0:
+        return "CORRECTION_SAFETY_REJECTED"
+    if int(stages.get("pending", 0)) > 0:
+        return "GEOMETRY_PASSED_CONFIRMATION_INCOMPLETE"
+    return "GEOMETRY_PASSED_NOT_ACCEPTED"
+
+
 def resolve_project_path(value: str) -> Path:
     path = Path(value)
     return path if path.is_absolute() else ROOT / path
@@ -213,6 +238,7 @@ def score_run(
         failures.append(f"runtime health is {health.get('state')}")
     return {
         "result": "PASS" if not failures else "FAIL",
+        "loop_stage": classify_loop_stage(report, expected_loop=expected_loop),
         "automatic_loop_accepts": accepts,
         "endpoint_error_m": endpoint,
         "pose_coverage": coverage,
@@ -234,8 +260,8 @@ def write_markdown_report(path: Path, summary: dict) -> None:
         "- 真值用途：仅在SLAM完成后评分；未输入估计器、回环检测或位姿图。",
         "- 门槛：真闭环每轮至少接受1条自动回环、首尾误差<10 mm、轨迹覆盖率>=98%；负样本必须0误回环。",
         "",
-        "| 数据 | 轮次 | 结果 | 自动回环 | 首尾误差(mm) | 覆盖率 | DBoW候选/有效候选(均值) | 失败原因 |",
-        "|---|---:|---|---:|---:|---:|---:|---|",
+        "| 数据 | 轮次 | 结果 | 阶段 | 自动回环 | 首尾误差(mm) | 覆盖率 | DBoW候选/有效候选(均值) | 失败原因 |",
+        "|---|---:|---|---|---:|---:|---:|---:|---|",
     ]
     for dataset in summary.get("datasets", []):
         for run in dataset.get("runs", []):
@@ -254,6 +280,7 @@ def write_markdown_report(path: Path, summary: dict) -> None:
             failure_text = "；".join(run.get("failures", [])) or "—"
             lines.append(
                 f"| {dataset['id']} | {run['repetition']} | {run['result']} | "
+                f"{run.get('loop_stage', '—')} | "
                 f"{run.get('automatic_loop_accepts', 0)} | {endpoint_text} | "
                 f"{coverage_text} | {retrieval_text} | {failure_text} |"
             )
