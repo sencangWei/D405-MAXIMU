@@ -7,6 +7,7 @@ from slam_benchmark_environment import (
     CONFLICTING_PROCESS_MARKERS,
     RESOURCE_GATED_PROCESS_MARKERS,
     evaluate_environment,
+    process_matches,
     validate_environment_report,
 )
 
@@ -48,6 +49,50 @@ def test_isolated_hik_camera_is_resource_gated_not_an_absolute_conflict():
     assert "rebot_rs_trajectory_replay.py" in RESOURCE_GATED_PROCESS_MARKERS
     assert "scripts/train.py" in CONFLICTING_PROCESS_MARKERS
     assert "run_pi05_rebot_e2_after_training.py" in CONFLICTING_PROCESS_MARKERS
+
+
+def test_process_matching_uses_real_argv_tokens_not_shell_command_text():
+    assert process_matches(
+        ["python3", "scripts/train.py", "pi05_rebot"],
+        CONFLICTING_PROCESS_MARKERS,
+    )
+    assert process_matches(
+        ["uv", "run", "scripts/train.py", "pi05_rebot"],
+        CONFLICTING_PROCESS_MARKERS,
+    )
+    assert process_matches(
+        [
+            "rtk",
+            "proxy",
+            "/usr/bin/python3",
+            "tools/run_pi05_rebot_e2_after_training.py",
+        ],
+        CONFLICTING_PROCESS_MARKERS,
+    )
+    assert process_matches(
+        [
+            "/home/robot/ego_vio_humble/install/lib/vins_fusion_ros2/loop_fusion_node",
+            "/tmp/config.yaml",
+        ],
+        CONFLICTING_PROCESS_MARKERS,
+    )
+    assert not process_matches(
+        [
+            "find",
+            "/home/robot",
+            "-path",
+            "*/tools/run_pi05_rebot_e2_after_training.py",
+        ],
+        CONFLICTING_PROCESS_MARKERS,
+    )
+    assert not process_matches(
+        [
+            "/usr/bin/zsh",
+            "-lc",
+            "pgrep -af 'scripts/train.py|loop_fusion_node' || true",
+        ],
+        CONFLICTING_PROCESS_MARKERS,
+    )
 
 
 def test_environment_preflight_rejects_io_pressure_and_conflicting_slam():

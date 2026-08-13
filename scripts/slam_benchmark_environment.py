@@ -59,6 +59,33 @@ def read_pressure(path: Path) -> dict[str, dict[str, float]]:
     return result
 
 
+def process_matches(argv: list[str], markers: tuple[str, ...]) -> bool:
+    """Match real entrypoints without treating diagnostic arguments as processes."""
+
+    def token_matches(token: str) -> bool:
+        normalized = token.rstrip("/")
+        return any(
+            normalized == marker or normalized.endswith("/" + marker)
+            for marker in markers
+        )
+
+    if not argv:
+        return False
+    executable = Path(argv[0]).name
+    if token_matches(argv[0]):
+        return True
+    if executable.startswith("python"):
+        return len(argv) > 1 and token_matches(argv[1])
+    if executable == "uv" and len(argv) > 2 and argv[1] == "run":
+        return token_matches(argv[2])
+    if executable == "rtk" and len(argv) > 3 and argv[1] == "proxy":
+        nested = Path(argv[2]).name
+        return nested.startswith("python") and token_matches(argv[3])
+    if executable == "ros2" and len(argv) > 3 and argv[1] == "run":
+        return token_matches(argv[3])
+    return False
+
+
 def find_processes(markers: tuple[str, ...]) -> list[dict[str, int | str]]:
     matches: list[dict[str, int | str]] = []
     own_pid = os.getpid()
@@ -66,13 +93,17 @@ def find_processes(markers: tuple[str, ...]) -> list[dict[str, int | str]]:
         if not directory.name.isdigit() or int(directory.name) == own_pid:
             continue
         try:
-            command = (directory / "cmdline").read_bytes().replace(b"\0", b" ").decode(
-                errors="replace"
-            ).strip()
+            argv = [
+                token.decode(errors="replace")
+                for token in (directory / "cmdline").read_bytes().split(b"\0")
+                if token
+            ]
         except (FileNotFoundError, PermissionError, ProcessLookupError):
             continue
-        if command and any(marker in command for marker in markers):
-            matches.append({"pid": int(directory.name), "command": command})
+        if argv and process_matches(argv, markers):
+            matches.append(
+                {"pid": int(directory.name), "command": " ".join(argv)}
+            )
     return sorted(matches, key=lambda item: int(item["pid"]))
 
 
