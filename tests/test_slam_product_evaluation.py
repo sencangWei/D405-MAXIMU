@@ -885,7 +885,18 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
         ("depth_plane", poor_metrics),
     ):
         path = tmp_path / f"{variant}_gt.json"
-        path.write_text(json.dumps({"variant": variant, **metrics}), encoding="utf-8")
+        path.write_text(
+            json.dumps(
+                {
+                    "variant": variant,
+                    "estimate": str(trajectory_paths[variant].resolve()),
+                    "ground_truth": str((tmp_path / "truth.csv").resolve()),
+                    "truth_usage": "post_run_scoring_only",
+                    **metrics,
+                }
+            ),
+            encoding="utf-8",
+        )
         metric_paths[variant] = path
 
     variant_reports = {
@@ -1010,4 +1021,29 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
     assert any(
         "depth_plane: factor: missing report path" in failure
         for failure in unsafe["failures"]
+    )
+
+    forged_metrics = json.loads(metric_paths["auto_loop"].read_text(encoding="utf-8"))
+    forged_metrics["estimate"] = str(trajectory_paths["raw_vins"].resolve())
+    metric_paths["auto_loop"].write_text(
+        json.dumps(forged_metrics), encoding="utf-8"
+    )
+    variant_reports["auto_loop"]["ground_truth_report_sha256"] = hashlib.sha256(
+        metric_paths["auto_loop"].read_bytes()
+    ).hexdigest()
+    manifest["datasets"][-1]["ground_truth_report_sha256"] = hashlib.sha256(
+        metric_paths["auto_loop"].read_bytes()
+    ).hexdigest()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        forged = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+    assert forged["result"] == "FAIL"
+    assert any(
+        "auto_loop: ground truth report scored a different trajectory" in failure
+        for failure in forged["failures"]
     )

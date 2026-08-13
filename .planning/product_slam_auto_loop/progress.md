@@ -66,3 +66,4 @@
 - 将客户交付清单升级为schema 3并新增三版本盲测硬门：每条隐藏数据必须同时有`raw_vins/auto_loop/depth_plane`独立运行报告、独立轨迹和外部真值报告，全部哈希冻结且报告variant标识必须匹配；仅`release_variant`应用最终精度阈值，防止复制同一JSON伪造三版本对比。候选门仍`CANDIDATE_PASS`，完整门仍`NOT_READY`且明确报告无三版本矩阵；全仓68项测试通过。
 - 新增`build_slam_variant_evidence.py`：把同一条已完成盲测的原始VINS、自动回环和Depth平面轨迹复制到三个独立目录，分别用外部真值事后评分，并封存运行报告、轨迹、评分报告和真值的SHA-256；明确记录`truth_usage=post_run_scoring_only`，不运行SLAM、不用真值改轨迹。
 - 完整门禁新增Depth因子报告硬核验：必须哈希有效、结果PASS、严格因果、不得使用绝对高度或终点约束；缺失或声明不安全即拒绝客户交付。全仓69项测试通过，候选门仍`CANDIDATE_PASS`，完整门仍`NOT_READY`，未误报完成。
+- 修复三版本证据链完整性漏洞：外部真值现在复制到证据包内并冻结哈希；完整门逐版本核对评分报告中的估计轨迹路径、真值路径和`post_run_scoring_only`声明，防止拿错轨迹、替换真值或用另一版本的好指标冒充待发布版本。

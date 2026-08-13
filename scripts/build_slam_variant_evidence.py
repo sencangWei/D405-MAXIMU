@@ -124,6 +124,9 @@ def build_variant_evidence(
         raise FileNotFoundError(base_report_path)
     base_report = json.loads(base_report_path.read_text(encoding="utf-8"))
     factor_report = json.loads(depth_factor_report.read_text(encoding="utf-8"))
+    bundled_ground_truth = copy_artifact(
+        ground_truth, output_dir / "external_ground_truth.csv"
+    )
 
     sources = {
         variant: run_dir / filename for variant, filename in VARIANT_SOURCES.items()
@@ -162,7 +165,7 @@ def build_variant_evidence(
         run_report_path = write_json(variant_dir / "run_report.json", run_report)
         metrics = evaluate_trajectory(
             trajectory,
-            ground_truth,
+            bundled_ground_truth,
             max_interpolation_gap_s,
             rpe_delta_samples,
             body_t_camera_yaml,
@@ -195,8 +198,8 @@ def build_variant_evidence(
     fragment = {
         "dataset_id": dataset_id,
         "truth_usage": "post_run_scoring_only",
-        "ground_truth": str(ground_truth.resolve()),
-        "ground_truth_sha256": sha256(ground_truth),
+        "ground_truth": str(bundled_ground_truth),
+        "ground_truth_sha256": sha256(bundled_ground_truth),
         "variant_reports": entries,
     }
     write_json(output_dir / "manifest_fragment.json", fragment)

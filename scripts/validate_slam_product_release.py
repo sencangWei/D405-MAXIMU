@@ -203,6 +203,33 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         failures.append(
                             f"{dataset_id}: {variant}: ground truth report variant mismatch"
                         )
+                    scored_trajectory = variant_ground_truth.get("estimate")
+                    expected_trajectory = resolve(trajectory_value or "").resolve()
+                    if (
+                        not scored_trajectory
+                        or Path(scored_trajectory).resolve() != expected_trajectory
+                    ):
+                        failures.append(
+                            f"{dataset_id}: {variant}: ground truth report scored a "
+                            "different trajectory"
+                        )
+                    scored_ground_truth = variant_ground_truth.get("ground_truth")
+                    expected_ground_truth = resolve(
+                        dataset.get("external_ground_truth") or ""
+                    ).resolve()
+                    if (
+                        not scored_ground_truth
+                        or Path(scored_ground_truth).resolve() != expected_ground_truth
+                    ):
+                        failures.append(
+                            f"{dataset_id}: {variant}: ground truth report used a "
+                            "different truth file"
+                        )
+                    if variant_ground_truth.get("truth_usage") != "post_run_scoring_only":
+                        failures.append(
+                            f"{dataset_id}: {variant}: ground truth usage is not "
+                            "post-run scoring only"
+                        )
                     if variant == release_variant:
                         checks = {
                             "ate_translation_rmse_m": "max_ate_translation_rmse_m",

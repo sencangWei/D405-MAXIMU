@@ -89,6 +89,13 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
     )
 
     assert fragment["dataset_id"] == "hidden-straight-01"
+    bundled_truth = Path(fragment["ground_truth"])
+    assert bundled_truth.is_file()
+    assert bundled_truth.parent == (tmp_path / "evidence").resolve()
+    assert bundled_truth != truth_path.resolve()
+    assert hashlib.sha256(bundled_truth.read_bytes()).hexdigest() == fragment[
+        "ground_truth_sha256"
+    ]
     entries = fragment["variant_reports"]
     assert set(entries) == {"raw_vins", "auto_loop", "depth_plane"}
     trajectory_paths = {Path(entry["trajectory"]) for entry in entries.values()}
@@ -106,6 +113,7 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         metrics = json.loads(Path(entry["ground_truth_report"]).read_text())
         assert metrics["variant"] == variant
         assert Path(metrics["estimate"]).resolve() == Path(entry["trajectory"]).resolve()
+        assert Path(metrics["ground_truth"]).resolve() == bundled_truth.resolve()
     depth_entry = entries["depth_plane"]
     assert Path(depth_entry["factor_report"]).is_file()
     assert (
