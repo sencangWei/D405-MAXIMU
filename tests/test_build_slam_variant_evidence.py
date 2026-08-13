@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from build_slam_variant_evidence import build_variant_evidence
 from slam_benchmark_environment import evaluate_environment
+from slam_run_health import evaluate_slam_health
 
 
 def write_trajectory(path: Path, positions: np.ndarray) -> None:
@@ -54,11 +55,23 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
     run_report = {
         "result": "PASS",
         "failure_scope": "SLAM",
+        "runtime_error": None,
+        "failures": [],
         "session": "/recordings/session",
+        "raw_odometry_samples": sample_count,
+        "corrected_odometry_samples": sample_count,
+        "expected_pose_samples_after_skip": sample_count,
         "pose_coverage": 1.0,
         "automatic_loop_accepts": 1,
         "loop_input_drop_events": 0,
         "estimator_keyframe_queue_drop_events": 0,
+        "pose_graph_health": {"rejected_optimizations": 0},
+        "raw_trajectory_diagnostics": {"max_step_m": 0.01, "z_span_m": 0.0},
+        "corrected_trajectory_diagnostics": {
+            "max_step_m": 0.01,
+            "z_span_m": 0.0,
+        },
+        "z_span_retention_ratio": None,
         "benchmark_environment": evaluate_environment(
             {
                 "load_average": {"one_minute_per_cpu": 0.1},
@@ -72,6 +85,7 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
             }
         ),
     }
+    run_report["health"] = evaluate_slam_health(run_report)
     (run_dir / "run_acceptance.json").write_text(
         json.dumps(run_report), encoding="utf-8"
     )
@@ -124,6 +138,9 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
             assert path.is_file()
             assert hashlib.sha256(path.read_bytes()).hexdigest() == entry[hash_key]
         assert json.loads(Path(entry["run_report"]).read_text())["variant"] == variant
+        variant_run = json.loads(Path(entry["run_report"]).read_text())
+        assert variant_run["corrected_odometry_samples"] == sample_count
+        assert variant_run["health"]["state"] == "SLAM_HEALTHY"
         metrics = json.loads(Path(entry["ground_truth_report"]).read_text())
         assert metrics["variant"] == variant
         assert Path(metrics["estimate"]).resolve() == Path(entry["trajectory"]).resolve()

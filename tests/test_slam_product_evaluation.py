@@ -29,6 +29,7 @@ from validate_slam_product_release import (
     validate_release,
 )
 from slam_benchmark_environment import evaluate_environment
+from slam_run_health import evaluate_slam_health
 
 
 def passing_benchmark_environment() -> dict:
@@ -44,6 +45,35 @@ def passing_benchmark_environment() -> dict:
             "conflicting_processes": [],
         }
     )
+
+
+def passing_run_report(variant: str) -> dict:
+    report = {
+        "variant": variant,
+        "result": "PASS",
+        "failure_scope": "SLAM",
+        "runtime_error": None,
+        "failures": [],
+        "raw_odometry_samples": 100,
+        "corrected_odometry_samples": 100,
+        "expected_pose_samples_after_skip": 100,
+        "pose_coverage": 1.0,
+        "loop_input_drop_events": 0,
+        "estimator_keyframe_queue_drop_events": 0,
+        "automatic_loop_accepts": 0,
+        "min_loop_spatial_support": 0.06165,
+        "benchmark_environment": passing_benchmark_environment(),
+        "pose_graph_health": {"rejected_optimizations": 0},
+        "raw_trajectory_diagnostics": {"max_step_m": 0.01, "z_span_m": 0.0},
+        "corrected_trajectory_diagnostics": {
+            "max_step_m": 0.0,
+            "z_span_m": 0.0,
+            "endpoint_delta_m": 0.0,
+        },
+        "z_span_retention_ratio": None,
+    }
+    report["health"] = evaluate_slam_health(report)
+    return report
 
 
 def write_passing_pnp_gate_report(path: Path) -> dict:
@@ -836,24 +866,16 @@ def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
     for variant in ("raw_vins", "auto_loop", "depth_plane"):
         run_path = tmp_path / f"{variant}_run.json"
         run_path.write_text(
-            json.dumps(
-                {
-                    "variant": variant,
-                    "result": "PASS",
-                    "failure_scope": "SLAM",
-                    "pose_coverage": 1.0,
-                    "loop_input_drop_events": 0,
-                    "estimator_keyframe_queue_drop_events": 0,
-                    "automatic_loop_accepts": 0,
-                    "min_loop_spatial_support": 0.06165,
-                    "benchmark_environment": passing_benchmark_environment(),
-                }
-            ),
+            json.dumps(passing_run_report(variant)),
             encoding="utf-8",
         )
         trajectory_path = tmp_path / f"{variant}_trajectory.csv"
         trajectory_path.write_text(
-            "t_sec,x,y,z,qw,qx,qy,qz\n", encoding="utf-8"
+            "t_sec,x,y,z,qw,qx,qy,qz\n"
+            + "".join(
+                f"{index / 30.0},0,0,0,1,0,0,0\n" for index in range(100)
+            ),
+            encoding="utf-8",
         )
         run_paths[variant] = run_path
         trajectory_paths[variant] = trajectory_path
@@ -954,24 +976,16 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
     for variant in ("raw_vins", "auto_loop", "depth_plane"):
         run_path = tmp_path / f"{variant}_run.json"
         run_path.write_text(
-            json.dumps(
-                {
-                    "variant": variant,
-                    "result": "PASS",
-                    "failure_scope": "SLAM",
-                    "pose_coverage": 1.0,
-                    "loop_input_drop_events": 0,
-                    "estimator_keyframe_queue_drop_events": 0,
-                    "automatic_loop_accepts": 0,
-                    "min_loop_spatial_support": 0.06165,
-                    "benchmark_environment": passing_benchmark_environment(),
-                }
-            ),
+            json.dumps(passing_run_report(variant)),
             encoding="utf-8",
         )
         trajectory_path = tmp_path / f"{variant}_trajectory.csv"
         trajectory_path.write_text(
-            "t_sec,x,y,z,qw,qx,qy,qz\n", encoding="utf-8"
+            "t_sec,x,y,z,qw,qx,qy,qz\n"
+            + "".join(
+                f"{index / 30.0},0,0,0,1,0,0,0\n" for index in range(100)
+            ),
+            encoding="utf-8",
         )
         run_paths[variant] = run_path
         trajectory_paths[variant] = trajectory_path
@@ -1153,6 +1167,83 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
             dataset["variant_reports"]["auto_loop"][
                 "run_report_sha256"
             ] = restored_hash
+
+    forged_health_run = json.loads(run_paths["auto_loop"].read_text())
+    forged_health_run["health"]["state"] = "SLAM_FAILED"
+    run_paths["auto_loop"].write_text(json.dumps(forged_health_run))
+    forged_health_hash = hashlib.sha256(
+        run_paths["auto_loop"].read_bytes()
+    ).hexdigest()
+    for dataset in manifest["datasets"]:
+        if dataset.get("run_report") == run_paths["auto_loop"].name:
+            dataset["run_report_sha256"] = forged_health_hash
+        if dataset["role"] == "hidden_test":
+            dataset["variant_reports"]["auto_loop"][
+                "run_report_sha256"
+            ] = forged_health_hash
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        forged_health = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+    assert forged_health["result"] == "FAIL"
+    assert any(
+        "run health report is missing or inconsistent" in failure
+        for failure in forged_health["failures"]
+    )
+
+    forged_health_run["health"] = evaluate_slam_health(forged_health_run)
+    run_paths["auto_loop"].write_text(json.dumps(forged_health_run))
+    restored_hash = hashlib.sha256(run_paths["auto_loop"].read_bytes()).hexdigest()
+    for dataset in manifest["datasets"]:
+        if dataset.get("run_report") == run_paths["auto_loop"].name:
+            dataset["run_report_sha256"] = restored_hash
+        if dataset["role"] == "hidden_test":
+            dataset["variant_reports"]["auto_loop"][
+                "run_report_sha256"
+            ] = restored_hash
+
+    original_trajectory = trajectory_paths["auto_loop"].read_bytes()
+    trajectory_paths["auto_loop"].write_text(
+        "t_sec,x,y,z,qw,qx,qy,qz\n"
+        + "".join(
+            f"{index / 30.0},{0.1 if index == 50 else 0},0,0,1,0,0,0\n"
+            for index in range(100)
+        ),
+        encoding="utf-8",
+    )
+    forged_trajectory_hash = hashlib.sha256(
+        trajectory_paths["auto_loop"].read_bytes()
+    ).hexdigest()
+    for dataset in manifest["datasets"]:
+        if dataset["role"] == "hidden_test":
+            dataset["variant_reports"]["auto_loop"][
+                "trajectory_sha256"
+            ] = forged_trajectory_hash
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        forged_trajectory = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+    assert forged_trajectory["result"] == "FAIL"
+    assert any(
+        "corrected diagnostics do not match trajectory" in failure
+        for failure in forged_trajectory["failures"]
+    )
+
+    trajectory_paths["auto_loop"].write_bytes(original_trajectory)
+    restored_trajectory_hash = hashlib.sha256(original_trajectory).hexdigest()
+    for dataset in manifest["datasets"]:
+        if dataset["role"] == "hidden_test":
+            dataset["variant_reports"]["auto_loop"][
+                "trajectory_sha256"
+            ] = restored_trajectory_hash
 
     del variant_reports["depth_plane"]["factor_report"]
     del variant_reports["depth_plane"]["factor_report_sha256"]

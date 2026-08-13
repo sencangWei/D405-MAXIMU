@@ -30,6 +30,7 @@ from slam_benchmark_environment import (
     evaluate_environment,
     validate_environment_report,
 )
+from slam_run_health import evaluate_slam_health
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -240,6 +241,7 @@ def main() -> int:
             "benchmark_environment": benchmark_environment,
             "failures": environment_failures,
         }
+        run_acceptance["health"] = evaluate_slam_health(run_acceptance)
         (args.out_dir / "run_acceptance.json").write_text(
             json.dumps(run_acceptance, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -527,6 +529,7 @@ def main() -> int:
         "estimator_keyframe_queue_drop_events": len(estimator_queue_drops),
         "failures": failures,
     }
+    run_acceptance["health"] = evaluate_slam_health(run_acceptance)
     (args.out_dir / "run_acceptance.json").write_text(
         json.dumps(run_acceptance, ensure_ascii=False, indent=2),
         encoding="utf-8",

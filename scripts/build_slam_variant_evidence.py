@@ -21,6 +21,7 @@ from evaluate_slam_ground_truth import (
     pose_errors,
 )
 from slam_benchmark_environment import validate_environment_report
+from slam_run_health import evaluate_slam_health, trajectory_diagnostics_from_csv
 
 
 VARIANT_SOURCES = {
@@ -131,6 +132,10 @@ def build_variant_evidence(
         raise ValueError("source run is not a valid SLAM evaluation")
     if validate_environment_report(base_report.get("benchmark_environment", {})):
         raise ValueError("source run lacks a passing benchmark environment preflight")
+    if base_report.get("health") != evaluate_slam_health(base_report):
+        raise ValueError("source run health report is missing or inconsistent")
+    if base_report["health"].get("state") != "SLAM_HEALTHY":
+        raise ValueError("source run health is not SLAM_HEALTHY")
     factor_report = json.loads(depth_factor_report.read_text(encoding="utf-8"))
     bundled_ground_truth = copy_artifact(
         ground_truth, output_dir / "external_ground_truth.csv"
@@ -141,10 +146,16 @@ def build_variant_evidence(
     }
     sources["depth_plane"] = depth_trajectory
     entries: dict[str, dict] = {}
+    raw_artifact_facts: dict | None = None
 
     for variant, source in sources.items():
         variant_dir = output_dir / variant
         trajectory = copy_artifact(source, variant_dir / "trajectory.csv")
+        trajectory_facts = trajectory_diagnostics_from_csv(trajectory)
+        if variant == "raw_vins":
+            raw_artifact_facts = trajectory_facts
+        if raw_artifact_facts is None:
+            raise RuntimeError("raw VINS trajectory must be processed first")
 
         run_report = dict(base_report)
         run_report.update(
@@ -157,11 +168,38 @@ def build_variant_evidence(
                 "truth_usage": "none_during_slam",
             }
         )
+        run_report["raw_odometry_samples"] = raw_artifact_facts["sample_count"]
+        run_report["corrected_odometry_samples"] = trajectory_facts["sample_count"]
+        expected_samples = int(run_report["expected_pose_samples_after_skip"])
+        run_report["pose_coverage"] = min(
+            raw_artifact_facts["sample_count"], trajectory_facts["sample_count"]
+        ) / expected_samples
+        run_report["raw_trajectory_diagnostics"] = raw_artifact_facts["diagnostics"]
+        run_report["corrected_trajectory_diagnostics"] = trajectory_facts[
+            "diagnostics"
+        ]
+        raw_z_span = raw_artifact_facts["diagnostics"]["z_span_m"]
+        corrected_z_span = trajectory_facts["diagnostics"]["z_span_m"]
+        run_report["z_span_retention_ratio"] = (
+            corrected_z_span / raw_z_span
+            if raw_z_span is not None
+            and corrected_z_span is not None
+            and raw_z_span >= 0.10
+            else None
+        )
         if variant == "raw_vins":
             run_report["observed_automatic_loop_accepts"] = int(
                 base_report.get("automatic_loop_accepts", 0)
             )
             run_report["automatic_loop_accepts"] = 0
+            run_report["pose_graph_health"] = {
+                "optimizations": 0,
+                "usable_optimizations": 0,
+                "rejected_optimizations": 0,
+            }
+            pnp_quality = dict(run_report.get("pnp_quality", {}))
+            pnp_quality["accepted_edges"] = []
+            run_report["pnp_quality"] = pnp_quality
         if variant == "depth_plane":
             run_report["depth_factor_result"] = factor_report.get("result")
             if factor_report.get("result") != "PASS":
@@ -169,6 +207,7 @@ def build_variant_evidence(
                 failures = list(run_report.get("failures", []))
                 failures.append("depth plane factor report is not PASS")
                 run_report["failures"] = failures
+        run_report["health"] = evaluate_slam_health(run_report)
 
         run_report_path = write_json(variant_dir / "run_report.json", run_report)
         metrics = evaluate_trajectory(

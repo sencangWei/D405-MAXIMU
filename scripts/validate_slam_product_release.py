@@ -10,6 +10,7 @@ import math
 from pathlib import Path
 
 from slam_benchmark_environment import validate_environment_report
+from slam_run_health import evaluate_slam_health, trajectory_diagnostics_from_csv
 from validate_slam_dataset_roles import ROOT, validate_manifest, verify_hash
 
 
@@ -83,6 +84,50 @@ def validate_benchmark_environment(report: dict, label: str) -> list[str]:
     if not isinstance(environment, dict):
         return [f"{label}: missing benchmark environment preflight"]
     return [f"{label}: {failure}" for failure in validate_environment_report(environment)]
+
+
+def validate_run_health(
+    report: dict, label: str, trajectory_path: Path | None = None
+) -> list[str]:
+    expected = evaluate_slam_health(report)
+    failures = []
+    if report.get("health") != expected:
+        failures.append(f"{label}: run health report is missing or inconsistent")
+    if expected.get("state") != "SLAM_HEALTHY":
+        failures.append(f"{label}: run health is {expected.get('state')}")
+    if trajectory_path is not None and trajectory_path.is_file():
+        try:
+            artifact = trajectory_diagnostics_from_csv(trajectory_path)
+        except ValueError as exc:
+            failures.append(f"{label}: invalid trajectory for health check: {exc}")
+        else:
+            if report.get("corrected_odometry_samples") != artifact["sample_count"]:
+                failures.append(
+                    f"{label}: corrected sample count does not match trajectory"
+                )
+            reported_diagnostics = report.get("corrected_trajectory_diagnostics", {})
+            diagnostics_match = isinstance(reported_diagnostics, dict) and all(
+                (
+                    reported_diagnostics.get(name) is None
+                    and measured is None
+                )
+                or (
+                    isinstance(reported_diagnostics.get(name), (int, float))
+                    and measured is not None
+                    and math.isclose(
+                        float(reported_diagnostics[name]),
+                        float(measured),
+                        rel_tol=0.0,
+                        abs_tol=1e-12,
+                    )
+                )
+                for name, measured in artifact["diagnostics"].items()
+            )
+            if not diagnostics_match:
+                failures.append(
+                    f"{label}: corrected diagnostics do not match trajectory"
+                )
+    return failures
 
 
 def resolve(value: str) -> Path:
@@ -189,6 +234,8 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         f"{dataset_id}: effective PnP spatial threshold does not "
                         "match qualified evidence"
                     )
+            if require_complete:
+                failures.extend(validate_run_health(report, dataset_id))
             expected_loop = dataset.get("expected_loop")
             accepted = int(report.get("automatic_loop_accepts", 0))
             if expected_loop is True:
@@ -244,6 +291,17 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         f"{dataset_id}: {variant}: missing variant report"
                     )
                     continue
+                trajectory_value = variant_entry.get("trajectory")
+                trajectory_path = resolve(trajectory_value or "")
+                if trajectory_value:
+                    variant_trajectories.append(str(trajectory_path.resolve()))
+                trajectory_failure = verify_hash(
+                    trajectory_path,
+                    variant_entry.get("trajectory_sha256"),
+                    f"{dataset_id}: {variant}: trajectory",
+                )
+                if trajectory_failure:
+                    failures.append(trajectory_failure)
                 variant_run = load_hashed_json(
                     variant_entry.get("run_report"),
                     variant_entry.get("run_report_sha256"),
@@ -311,16 +369,13 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                             variant_run, f"{dataset_id}: {variant}"
                         )
                     )
-                trajectory_value = variant_entry.get("trajectory")
-                if trajectory_value:
-                    variant_trajectories.append(str(resolve(trajectory_value).resolve()))
-                trajectory_failure = verify_hash(
-                    resolve(trajectory_value or ""),
-                    variant_entry.get("trajectory_sha256"),
-                    f"{dataset_id}: {variant}: trajectory",
-                )
-                if trajectory_failure:
-                    failures.append(trajectory_failure)
+                    failures.extend(
+                        validate_run_health(
+                            variant_run,
+                            f"{dataset_id}: {variant}",
+                            trajectory_path,
+                        )
+                    )
                 variant_ground_truth = load_hashed_json(
                     variant_entry.get("ground_truth_report"),
                     variant_entry.get("ground_truth_report_sha256"),
