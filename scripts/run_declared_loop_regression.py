@@ -17,6 +17,41 @@ from slam_benchmark_environment import capture_environment, evaluate_environment
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "config/slam_declared_loop_regression.json"
+REQUIRED_PROVENANCE_FILES = {
+    "runner",
+    "run_config",
+    "left_calibration",
+    "right_calibration",
+    "vins_executable",
+    "loop_executable",
+    "replay_executable",
+    "capture_acceptance",
+}
+
+
+def validate_run_provenance(report: dict) -> list[str]:
+    provenance = report.get("provenance")
+    if not isinstance(provenance, dict):
+        return ["run provenance is missing"]
+    files = provenance.get("files")
+    if not isinstance(files, dict):
+        return ["run provenance files are missing"]
+    failures = []
+    for name in sorted(REQUIRED_PROVENANCE_FILES):
+        item = files.get(name)
+        if not isinstance(item, dict):
+            failures.append(f"provenance file is missing: {name}")
+            continue
+        digest = item.get("sha256")
+        if not isinstance(digest, str) or len(digest) != 64:
+            failures.append(f"provenance sha256 is invalid: {name}")
+    revisions = provenance.get("git_revisions")
+    if not isinstance(revisions, dict) or not all(
+        isinstance(revisions.get(name), str) and len(revisions[name]) == 40
+        for name in ("ego_vio_humble", "vins_fusion_ros2")
+    ):
+        failures.append("run git revisions are missing or invalid")
+    return failures
 
 
 def resolve_project_path(value: str) -> Path:
@@ -101,6 +136,8 @@ def score_run(
     retrieval = report.get("loop_retrieval", {})
     if expected_max_candidates is not None and int(retrieval.get("frames", 0)) < 1:
         failures.append("loop retrieval diagnostics are missing")
+    if expected_max_candidates is not None:
+        failures.extend(validate_run_provenance(report))
     health = report.get("health")
     if health is not None and health.get("state") != "SLAM_HEALTHY":
         failures.append(f"runtime health is {health.get('state')}")

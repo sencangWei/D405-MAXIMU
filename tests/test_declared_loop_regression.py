@@ -10,6 +10,19 @@ from run_declared_loop_regression import (
 
 
 def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
+    provenance_files = {
+        name: {"path": name, "sha256": "a" * 64}
+        for name in (
+            "runner",
+            "run_config",
+            "left_calibration",
+            "right_calibration",
+            "vins_executable",
+            "loop_executable",
+            "replay_executable",
+            "capture_acceptance",
+        )
+    }
     return {
         "result": "PASS",
         "automatic_loop_accepts": accepts,
@@ -27,6 +40,13 @@ def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
             "top_score": {"min": 0.01, "max": 0.2, "mean": 0.08},
         },
         "health": {"state": "SLAM_HEALTHY"},
+        "provenance": {
+            "files": provenance_files,
+            "git_revisions": {
+                "ego_vio_humble": "b" * 40,
+                "vins_fusion_ros2": "c" * 40,
+            },
+        },
     }
 
 
@@ -91,6 +111,22 @@ def test_new_candidate_contract_requires_retrieval_observability():
 
     assert result["result"] == "FAIL"
     assert "loop retrieval diagnostics are missing" in result["failures"]
+
+
+def test_new_candidate_contract_requires_reproducible_run_provenance():
+    candidate = healthy_report()
+    del candidate["provenance"]["files"]["loop_executable"]
+
+    result = score_run(
+        candidate,
+        expected_loop=True,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
+        expected_max_candidates=24,
+    )
+
+    assert result["result"] == "FAIL"
+    assert "provenance file is missing: loop_executable" in result["failures"]
 
 
 def test_manifest_requires_immutable_passing_capture(tmp_path: Path):
