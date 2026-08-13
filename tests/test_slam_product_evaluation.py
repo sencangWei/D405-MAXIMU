@@ -903,6 +903,29 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
         }
         for variant, path in metric_paths.items()
     }
+    factor_report = tmp_path / "depth_plane_factor.json"
+    factor_report.write_text(
+        json.dumps(
+            {
+                "result": "PASS",
+                "plane_factor": {
+                    "status": "ACTIVE",
+                    "causal": True,
+                    "uses_absolute_height": False,
+                    "uses_endpoint_constraint": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    variant_reports["depth_plane"].update(
+        {
+            "factor_report": factor_report.name,
+            "factor_report_sha256": hashlib.sha256(
+                factor_report.read_bytes()
+            ).hexdigest(),
+        }
+    )
     manifest = {
         "release_variant": "auto_loop",
         "thresholds": {"min_hidden_runs_per_motion": 1},
@@ -972,3 +995,19 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
         "auto_loop": len(REQUIRED_MOTIONS),
         "depth_plane": len(REQUIRED_MOTIONS),
     }
+
+    del variant_reports["depth_plane"]["factor_report"]
+    del variant_reports["depth_plane"]["factor_report_sha256"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        unsafe = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+    assert unsafe["result"] == "FAIL"
+    assert any(
+        "depth_plane: factor: missing report path" in failure
+        for failure in unsafe["failures"]
+    )

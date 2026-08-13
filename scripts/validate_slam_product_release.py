@@ -221,6 +221,31 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                                     f"{dataset_id}: {variant}: {metric} missing or "
                                     "above release threshold"
                                 )
+                if variant == "depth_plane":
+                    factor = load_hashed_json(
+                        variant_entry.get("factor_report"),
+                        variant_entry.get("factor_report_sha256"),
+                        f"{dataset_id}: {variant}: factor",
+                        failures,
+                    )
+                    if factor is not None:
+                        plane_factor = factor.get("plane_factor", {})
+                        if factor.get("result") != "PASS":
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor report is not PASS"
+                            )
+                        if plane_factor.get("causal") is not True:
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor is not causal"
+                            )
+                        if plane_factor.get("uses_absolute_height") is not False:
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor uses absolute height"
+                            )
+                        if plane_factor.get("uses_endpoint_constraint") is not False:
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor uses endpoint constraint"
+                            )
             if len(set(variant_trajectories)) != len(REQUIRED_VARIANTS):
                 failures.append(
                     f"{dataset_id}: variant trajectory paths must be distinct"
