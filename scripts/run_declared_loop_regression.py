@@ -24,6 +24,10 @@ def resolve_project_path(value: str) -> Path:
     return path if path.is_absolute() else ROOT / path
 
 
+def all_datasets(manifest: dict) -> list[dict]:
+    return [*manifest.get("datasets", []), *manifest.get("safety_controls", [])]
+
+
 def validate_manifest(manifest: dict) -> list[str]:
     failures: list[str] = []
     policy = manifest.get("truth_policy", {})
@@ -32,13 +36,13 @@ def validate_manifest(manifest: dict) -> list[str]:
     if policy.get("never_input_to_slam") is not True:
         failures.append("manifest must forbid feeding truth to SLAM")
     ids: set[str] = set()
-    for dataset in manifest.get("datasets", []):
+    for dataset in all_datasets(manifest):
         dataset_id = dataset.get("id", "")
         if not dataset_id or dataset_id in ids:
             failures.append(f"invalid or duplicate dataset id: {dataset_id!r}")
         ids.add(dataset_id)
-        if dataset.get("expected_loop") is not True:
-            failures.append(f"{dataset_id}: regression dataset is not a true loop")
+        if not isinstance(dataset.get("expected_loop"), bool):
+            failures.append(f"{dataset_id}: expected_loop must be true or false")
         session = resolve_project_path(dataset.get("session", ""))
         acceptance = session / "acceptance.json"
         if not acceptance.is_file():
@@ -53,7 +57,14 @@ def validate_manifest(manifest: dict) -> list[str]:
     return failures
 
 
-def score_run(report: dict, *, max_endpoint_m: float, min_coverage: float) -> dict:
+def score_run(
+    report: dict,
+    *,
+    expected_loop: bool,
+    max_endpoint_m: float,
+    min_coverage: float,
+    expected_max_candidates: int | None = None,
+) -> dict:
     diagnostics = report.get("corrected_trajectory_diagnostics", {})
     endpoint = diagnostics.get("endpoint_delta_m")
     accepts = int(report.get("automatic_loop_accepts", 0))
@@ -61,11 +72,13 @@ def score_run(report: dict, *, max_endpoint_m: float, min_coverage: float) -> di
     failures: list[str] = []
     if report.get("result") != "PASS":
         failures.append("run report is not PASS")
-    if accepts < 1:
+    if expected_loop and accepts < 1:
         failures.append("no automatic loop was accepted")
-    if not isinstance(endpoint, (int, float)):
+    if not expected_loop and accepts:
+        failures.append(f"false automatic loops accepted: {accepts}")
+    if expected_loop and not isinstance(endpoint, (int, float)):
         failures.append("endpoint error is missing")
-    elif endpoint > max_endpoint_m:
+    elif expected_loop and endpoint > max_endpoint_m:
         failures.append(
             f"endpoint error {endpoint:.6f}m exceeds {max_endpoint_m:.6f}m"
         )
@@ -78,6 +91,13 @@ def score_run(report: dict, *, max_endpoint_m: float, min_coverage: float) -> di
     pose_graph = report.get("pose_graph_health", {})
     if int(pose_graph.get("rejected_optimizations", 0)) != 0:
         failures.append("pose graph rejected an optimization")
+    if (
+        expected_max_candidates is not None
+        and report.get("max_loop_candidates") != expected_max_candidates
+    ):
+        failures.append(
+            "effective max_loop_candidates does not match the regression contract"
+        )
     health = report.get("health")
     if health is not None and health.get("state") != "SLAM_HEALTHY":
         failures.append(f"runtime health is {health.get('state')}")
@@ -98,7 +118,7 @@ def write_summary(path: Path, summary: dict) -> None:
 def inventory(manifest: dict) -> dict:
     thresholds = manifest["thresholds"]
     rows = []
-    for dataset in manifest["datasets"]:
+    for dataset in all_datasets(manifest):
         report_value = dataset.get("reference_report")
         if not report_value:
             rows.append({"id": dataset["id"], "result": "PENDING", "report": None})
@@ -111,6 +131,7 @@ def inventory(manifest: dict) -> dict:
                 "report": str(report_path),
                 **score_run(
                     report,
+                    expected_loop=dataset["expected_loop"],
                     max_endpoint_m=float(thresholds["max_endpoint_error_m"]),
                     min_coverage=float(thresholds["min_pose_coverage"]),
                 ),
@@ -126,7 +147,14 @@ def inventory(manifest: dict) -> dict:
     }
 
 
-def execute(manifest: dict, out_root: Path, repetitions: int) -> dict:
+def execute(
+    manifest: dict,
+    out_root: Path,
+    repetitions: int,
+    *,
+    wait_for_environment: bool,
+    poll_seconds: float,
+) -> dict:
     environment = evaluate_environment(capture_environment())
     if environment["result"] != "PASS":
         return {
@@ -138,9 +166,27 @@ def execute(manifest: dict, out_root: Path, repetitions: int) -> dict:
 
     thresholds = manifest["thresholds"]
     datasets = []
-    for dataset_index, dataset in enumerate(manifest["datasets"]):
+    contract = manifest.get("algorithm_contract", {})
+    for dataset_index, dataset in enumerate(all_datasets(manifest)):
         runs = []
         for repetition in range(1, repetitions + 1):
+            while True:
+                per_run_environment = evaluate_environment(capture_environment())
+                if per_run_environment["result"] == "PASS":
+                    break
+                if not wait_for_environment:
+                    return {
+                        "mode": "REPEATED_REGRESSION",
+                        "result": "INFRASTRUCTURE_BLOCKED",
+                        "benchmark_environment": per_run_environment,
+                        "datasets": datasets,
+                    }
+                print(
+                    "benchmark environment changed; waiting before next run: "
+                    + "; ".join(per_run_environment["failures"]),
+                    flush=True,
+                )
+                time.sleep(poll_seconds)
             run_dir = out_root / dataset["id"] / f"run_{repetition:02d}"
             command = [
                 sys.executable,
@@ -149,7 +195,7 @@ def execute(manifest: dict, out_root: Path, repetitions: int) -> dict:
                 "--out-dir",
                 str(run_dir),
                 "--expect-loop",
-                "yes",
+                "yes" if dataset["expected_loop"] else "no",
                 "--max-loop-closure-m",
                 str(thresholds["max_endpoint_error_m"]),
                 "--min-pose-coverage",
@@ -172,8 +218,10 @@ def execute(manifest: dict, out_root: Path, repetitions: int) -> dict:
             report = json.loads(report_path.read_text(encoding="utf-8"))
             scored = score_run(
                 report,
+                expected_loop=dataset["expected_loop"],
                 max_endpoint_m=float(thresholds["max_endpoint_error_m"]),
                 min_coverage=float(thresholds["min_pose_coverage"]),
+                expected_max_candidates=contract.get("max_loop_candidates"),
             )
             runs.append(
                 {
@@ -199,6 +247,8 @@ def execute(manifest: dict, out_root: Path, repetitions: int) -> dict:
         "mode": "REPEATED_REGRESSION",
         "result": "PASS" if all(row["result"] == "PASS" for row in datasets) else "FAIL",
         "required_repetitions_per_dataset": repetitions,
+        "positive_dataset_count": len(manifest.get("datasets", [])),
+        "safety_control_count": len(manifest.get("safety_controls", [])),
         "benchmark_environment": environment,
         "datasets": datasets,
     }
@@ -251,7 +301,13 @@ def main() -> int:
                 flush=True,
             )
             time.sleep(args.poll_seconds)
-    summary = execute(manifest, out_root, repetitions)
+    summary = execute(
+        manifest,
+        out_root,
+        repetitions,
+        wait_for_environment=args.wait_for_environment,
+        poll_seconds=args.poll_seconds,
+    )
     write_summary(out_root / "summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary["result"] == "PASS" else 4 if summary["result"] == "INFRASTRUCTURE_BLOCKED" else 3

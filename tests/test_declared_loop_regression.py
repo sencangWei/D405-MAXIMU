@@ -19,21 +19,50 @@ def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
 
 
 def test_scores_autonomous_sub_centimeter_loop_as_pass():
-    result = score_run(healthy_report(), max_endpoint_m=0.01, min_coverage=0.98)
+    result = score_run(
+        healthy_report(),
+        expected_loop=True,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
+    )
     assert result["result"] == "PASS"
 
 
 def test_rejects_missing_loop_or_centimeter_violation():
     no_loop = score_run(
-        healthy_report(accepts=0), max_endpoint_m=0.01, min_coverage=0.98
+        healthy_report(accepts=0),
+        expected_loop=True,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
     )
     inaccurate = score_run(
-        healthy_report(endpoint=0.010001), max_endpoint_m=0.01, min_coverage=0.98
+        healthy_report(endpoint=0.010001),
+        expected_loop=True,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
     )
     assert no_loop["result"] == "FAIL"
     assert "no automatic loop was accepted" in no_loop["failures"]
     assert inaccurate["result"] == "FAIL"
     assert any("exceeds" in failure for failure in inaccurate["failures"])
+
+
+def test_negative_control_rejects_false_loop_and_does_not_score_endpoint():
+    clean = score_run(
+        healthy_report(endpoint=0.5, accepts=0),
+        expected_loop=False,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
+    )
+    false_loop = score_run(
+        healthy_report(accepts=1),
+        expected_loop=False,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
+    )
+    assert clean["result"] == "PASS"
+    assert false_loop["result"] == "FAIL"
+    assert "false automatic loops accepted: 1" in false_loop["failures"]
 
 
 def test_manifest_requires_immutable_passing_capture(tmp_path: Path):

@@ -11,6 +11,10 @@
     "min_pose_coverage": 0.98,
     "required_repetitions_per_dataset": 3
   },
+  "algorithm_contract": {
+    "max_loop_candidates": 24,
+    "min_loop_spatial_support": 0.0
+  },
   "datasets": [
     {
       "id": "d405_20260812_114728",
@@ -43,6 +47,16 @@
       "expected_loop": true,
       "acceptance_sha256": "0acd0c0863571a25946e94ef51d158b5432de3b421a546d9bb5dc3208a267ddc",
       "reference_report": "reports/release_gate_temporal90_000933/run_acceptance.json"
+    }
+  ],
+  "safety_controls": [
+    {
+      "id": "d405_20260812_151212",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_151212",
+      "motion": "true_elevation_open",
+      "expected_loop": false,
+      "acceptance_sha256": "1503d14d796a49c00b176ee0954335060d34d342b913bdc7d33af4da2555e73a",
+      "reference_report": "reports/release_gate_temporal90_151212/run_acceptance.json"
     }
   ],
   "excluded_sessions": [
