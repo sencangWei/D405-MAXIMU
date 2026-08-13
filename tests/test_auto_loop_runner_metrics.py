@@ -9,6 +9,7 @@ from test_vins_auto_loop import (
     camera_frame_count,
     classify_run_scope,
     parse_pnp_quality,
+    parse_pose_graph_health,
     trajectory_diagnostics,
 )
 
@@ -100,3 +101,23 @@ def test_parse_pnp_quality_exposes_accepted_edge_spatial_support():
             "old_hull_fraction": 0.13,
         }
     ]
+
+
+def test_parse_pose_graph_health_rejects_unusable_solution():
+    log = "\n".join(
+        (
+            "[POSE_GRAPH_OPTIMIZATION] current=100 usable=1 initial_cost=1.0 "
+            "final_cost=0.2 iterations=5 time_s=0.01",
+            "[POSE_GRAPH_OPTIMIZATION] current=120 usable=0 initial_cost=nan "
+            "final_cost=nan iterations=0 time_s=0.00",
+            "[POSE_GRAPH_OPTIMIZATION_REJECT] current=120 reason=FAILURE",
+        )
+    )
+
+    report = parse_pose_graph_health(log)
+
+    assert report == {
+        "optimizations": 2,
+        "usable_optimizations": 1,
+        "rejected_optimizations": 1,
+    }

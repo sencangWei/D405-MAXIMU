@@ -91,6 +91,18 @@ def parse_pnp_quality(loop_log: str) -> dict:
     }
 
 
+def parse_pose_graph_health(loop_log: str) -> dict:
+    optimization_pattern = re.compile(
+        r"\[POSE_GRAPH_OPTIMIZATION\] current=\d+ usable=(\d+)"
+    )
+    usability = [int(match.group(1)) for match in optimization_pattern.finditer(loop_log)]
+    return {
+        "optimizations": len(usability),
+        "usable_optimizations": sum(usability),
+        "rejected_optimizations": len(usability) - sum(usability),
+    }
+
+
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
@@ -375,6 +387,7 @@ def main() -> int:
         for line in loop_log.splitlines()
         if "[AUTO_LOOP_CORRECTION_REJECT]" in line
     ]
+    pose_graph_health = parse_pose_graph_health(loop_log)
     input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
     estimator_queue_drops = [
         line
@@ -397,6 +410,11 @@ def main() -> int:
     if estimator_queue_drops:
         failures.append(
             f"estimator loop keyframe queue drops: {len(estimator_queue_drops)}"
+        )
+    if pose_graph_health["rejected_optimizations"]:
+        failures.append(
+            "pose graph unusable solutions: "
+            f"{pose_graph_health['rejected_optimizations']}"
         )
     if camera_frames and pose_coverage < args.min_pose_coverage:
         failures.append(
@@ -455,6 +473,7 @@ def main() -> int:
         "automatic_loop_rejects": len(rejected),
         "automatic_correction_rejects": len(correction_rejected),
         "pnp_quality": parse_pnp_quality(loop_log),
+        "pose_graph_health": pose_graph_health,
         "raw_trajectory_diagnostics": raw_diagnostics,
         "corrected_trajectory_diagnostics": corrected_diagnostics,
         "z_span_retention_ratio": z_retention_ratio,

@@ -185,6 +185,13 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         failures.append(
                             f"{dataset_id}: {variant}: estimator keyframe drops are nonzero"
                         )
+                    if variant_run.get("pose_graph_health", {}).get(
+                        "rejected_optimizations", 0
+                    ) != 0:
+                        failures.append(
+                            f"{dataset_id}: {variant}: pose graph rejected an "
+                            "unusable solution"
+                        )
                 trajectory_value = variant_entry.get("trajectory")
                 if trajectory_value:
                     variant_trajectories.append(str(resolve(trajectory_value).resolve()))
