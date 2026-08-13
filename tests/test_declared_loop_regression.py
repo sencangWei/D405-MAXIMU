@@ -14,6 +14,14 @@ def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
         "loop_input_drop_events": 0,
         "estimator_keyframe_queue_drop_events": 0,
         "pose_graph_health": {"rejected_optimizations": 0},
+        "max_loop_candidates": 24,
+        "loop_retrieval": {
+            "frames": 100,
+            "returned": {"min": 24, "max": 24, "mean": 24.0},
+            "eligible": {"min": 0, "max": 8, "mean": 1.5},
+            "zero_eligible_frames": 20,
+            "top_score": {"min": 0.01, "max": 0.2, "mean": 0.08},
+        },
         "health": {"state": "SLAM_HEALTHY"},
     }
 
@@ -63,6 +71,22 @@ def test_negative_control_rejects_false_loop_and_does_not_score_endpoint():
     assert clean["result"] == "PASS"
     assert false_loop["result"] == "FAIL"
     assert "false automatic loops accepted: 1" in false_loop["failures"]
+
+
+def test_new_candidate_contract_requires_retrieval_observability():
+    candidate = healthy_report()
+    candidate["loop_retrieval"] = {"frames": 0}
+
+    result = score_run(
+        candidate,
+        expected_loop=True,
+        max_endpoint_m=0.01,
+        min_coverage=0.98,
+        expected_max_candidates=24,
+    )
+
+    assert result["result"] == "FAIL"
+    assert "loop retrieval diagnostics are missing" in result["failures"]
 
 
 def test_manifest_requires_immutable_passing_capture(tmp_path: Path):

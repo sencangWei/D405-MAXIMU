@@ -98,6 +98,9 @@ def score_run(
         failures.append(
             "effective max_loop_candidates does not match the regression contract"
         )
+    retrieval = report.get("loop_retrieval", {})
+    if expected_max_candidates is not None and int(retrieval.get("frames", 0)) < 1:
+        failures.append("loop retrieval diagnostics are missing")
     health = report.get("health")
     if health is not None and health.get("state") != "SLAM_HEALTHY":
         failures.append(f"runtime health is {health.get('state')}")
@@ -106,6 +109,7 @@ def score_run(
         "automatic_loop_accepts": accepts,
         "endpoint_error_m": endpoint,
         "pose_coverage": coverage,
+        "loop_retrieval": retrieval,
         "failures": failures,
     }
 
