@@ -28,6 +28,7 @@ CONFLICTING_PROCESS_MARKERS = (
     "replay_db3_cpp",
     "capture_d405_720p_rgb_stereo_ir.py",
     "scripts/train.py",
+    "run_pi05_rebot_e2_after_training.py",
 )
 RESOURCE_GATED_PROCESS_MARKERS = (
     "rebot_rs_trajectory_replay.py",

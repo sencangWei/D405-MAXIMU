@@ -47,6 +47,7 @@ def test_isolated_hik_camera_is_resource_gated_not_an_absolute_conflict():
     assert "rebot_rs_trajectory_replay.py" not in CONFLICTING_PROCESS_MARKERS
     assert "rebot_rs_trajectory_replay.py" in RESOURCE_GATED_PROCESS_MARKERS
     assert "scripts/train.py" in CONFLICTING_PROCESS_MARKERS
+    assert "run_pi05_rebot_e2_after_training.py" in CONFLICTING_PROCESS_MARKERS
 
 
 def test_environment_preflight_rejects_io_pressure_and_conflicting_slam():
