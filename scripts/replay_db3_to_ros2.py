@@ -58,6 +58,13 @@ MODE_STREAMS = {
 META_TS_RE = re.compile(r"timestamp=([0-9.]+)")
 
 
+def select_db3(session: Path) -> Path:
+    candidates = [path for path in session.glob("*.db3") if path.stat().st_size > 0]
+    if not candidates:
+        raise FileNotFoundError(f"会话里没有非空 db3: {session}")
+    return max(candidates, key=lambda path: path.stat().st_size)
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="回放 db3+imu.bin 到 ROS2 topic(流式)")
     p.add_argument("--session", type=Path, required=True, help="采集会话目录")
@@ -172,9 +179,10 @@ def imu_event_iter(session: Path, epoch_minus_mono: float, shift_ms: float):
 def main() -> int:
     args = parse_args()
     session = args.session.resolve()
-    db3s = list(session.glob("*.db3"))
-    if not db3s:
-        print(f"[ERROR] 会话里没有 db3: {session}")
+    try:
+        db3 = select_db3(session)
+    except FileNotFoundError as error:
+        print(f"[ERROR] {error}")
         return 1
 
     epoch_minus_mono = load_epoch_minus_mono(session)
@@ -189,7 +197,7 @@ def main() -> int:
     else:
         align_s = float(args.imu_align_s)
 
-    img_it = iter(bag_event_iter(db3s[0], args.mode))
+    img_it = iter(bag_event_iter(db3, args.mode))
     imu_it = iter(imu_event_iter(session, epoch_minus_mono,
                                  args.imu_shift_ms + align_s * 1000.0))
 

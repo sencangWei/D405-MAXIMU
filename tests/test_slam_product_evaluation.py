@@ -8,6 +8,13 @@ from scipy.spatial.transform import Rotation
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from evaluate_slam_ground_truth import body_trajectory_to_camera, pose_errors
+from analyze_depth_plane_constraint import (
+    PlaneObservation,
+    apply_temporal_gate,
+    fit_plane_ransac,
+    transform_plane_to_world,
+)
+from replay_db3_to_ros2 import select_db3
 from validate_slam_dataset_roles import validate_manifest
 
 
@@ -76,6 +83,83 @@ def test_body_trajectory_to_camera_applies_rotating_lever_arm():
         body_rotation.as_matrix(),
         atol=1e-12,
     )
+
+
+def test_depth_plane_ransac_rejects_outliers():
+    generator = np.random.default_rng(3)
+    xy = generator.uniform(-0.4, 0.4, size=(1000, 2))
+    z = 0.6 + generator.normal(0.0, 0.001, size=1000)
+    plane = np.column_stack((xy, z))
+    outliers = generator.uniform(-0.5, 0.5, size=(200, 3))
+
+    normal, offset, inliers = fit_plane_ransac(
+        np.vstack((plane, outliers)), threshold_m=0.004
+    )
+
+    np.testing.assert_allclose(normal, [0.0, 0.0, 1.0], atol=0.01)
+    assert abs(offset + 0.6) < 0.002
+    assert inliers.mean() > 0.8
+
+
+def test_world_plane_stays_fixed_during_real_vertical_motion():
+    world_rotation_camera = Rotation.identity()
+    world_offsets = []
+    camera_distances = []
+    for camera_height in (0.2, 0.35, 0.5):
+        normal_camera = np.array([0.0, 0.0, 1.0])
+        offset_camera = camera_height
+        normal_world, offset_world = transform_plane_to_world(
+            normal_camera,
+            offset_camera,
+            world_rotation_camera,
+            np.array([0.0, 0.0, camera_height]),
+        )
+        world_offsets.append(offset_world)
+        camera_distances.append(abs(offset_camera))
+        np.testing.assert_allclose(normal_world, [0.0, 0.0, 1.0])
+
+    np.testing.assert_allclose(world_offsets, 0.0, atol=1e-12)
+    np.testing.assert_allclose(camera_distances, [0.2, 0.35, 0.5])
+
+
+def test_replay_selects_largest_nonempty_db3(tmp_path):
+    (tmp_path / "empty.db3").touch()
+    (tmp_path / "small.db3").write_bytes(b"small")
+    expected = tmp_path / "recording.db3"
+    expected.write_bytes(b"complete recording")
+
+    assert select_db3(tmp_path) == expected
+
+
+def test_temporal_gate_rejects_stable_wall_for_z_constraint():
+    observations = []
+    for index in range(10):
+        observation = PlaneObservation(
+            epoch_s=float(index),
+            relative_s=float(index),
+            valid_points=500,
+            inlier_ratio=0.5,
+            median_residual_m=0.001,
+            p95_residual_m=0.003,
+            normal_camera=[1.0, 0.0, 0.0],
+            offset_camera_m=-0.5,
+            local_gate_pass=True,
+            pose_matched=True,
+            normal_world=[1.0, 0.0, 0.0],
+            offset_world_m=-0.5,
+        )
+        observations.append(observation)
+
+    report = apply_temporal_gate(
+        observations,
+        angle_gate_deg=4.0,
+        offset_gate_m=0.025,
+        max_horizontal_tilt_deg=12.0,
+    )
+
+    assert report["locally_matched_observations"] == 10
+    assert report["horizontal_candidates"] == 0
+    assert report["accepted_observations"] == 0
 
 
 def test_dataset_manifest_detects_missing_hidden_test_without_breaking_dev_validation(tmp_path):
