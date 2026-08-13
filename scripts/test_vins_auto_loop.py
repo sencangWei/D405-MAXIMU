@@ -14,6 +14,7 @@ import json
 import os
 import shutil
 import signal
+import sqlite3
 import subprocess
 import time
 from pathlib import Path
@@ -65,6 +66,31 @@ def trajectory_diagnostics(rows: list[list[float]]) -> dict[str, float | None]:
         "z_span_m": float(np.ptp(points[:, 2])),
         "endpoint_delta_m": float(np.linalg.norm(points[-1] - points[0])),
     }
+
+
+def camera_frame_count(session: Path, image_db3: Path | None) -> tuple[int, str | None]:
+    if image_db3 is not None:
+        path = image_db3.resolve()
+        database = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        try:
+            row = database.execute(
+                "SELECT count(*) FROM messages JOIN topics "
+                "ON topics.id = messages.topic_id WHERE topics.name = ?",
+                ("/device_0/sensor_0/Infrared_1/image/data",),
+            ).fetchone()
+        finally:
+            database.close()
+        count = int(row[0]) if row is not None else 0
+        if count == 0:
+            raise RuntimeError(f"image cache has no left IR frames: {path}")
+        return count, str(path)
+
+    for relative in (Path("d405_frames.csv"), Path("left_hand/camera_ts.csv")):
+        frame_csv = session / relative
+        if frame_csv.is_file():
+            with frame_csv.open(newline="") as stream:
+                return sum(1 for _ in csv.DictReader(stream)), str(frame_csv.resolve())
+    return 0, None
 
 
 def main() -> int:
@@ -285,16 +311,9 @@ def main() -> int:
         for line in vins_log.splitlines()
         if "[LOOP_KEYFRAME_QUEUE_DROP]" in line
     ]
-    frame_csv = args.session / "d405_frames.csv"
-    camera_frames = 0
-    if frame_csv.is_file():
-        with frame_csv.open(newline="") as stream:
-            camera_frames = sum(1 for _ in csv.DictReader(stream))
-    else:
-        calibration_frame_csv = args.session / "left_hand/camera_ts.csv"
-        if calibration_frame_csv.is_file():
-            with calibration_frame_csv.open(newline="") as stream:
-                camera_frames = sum(1 for _ in csv.DictReader(stream))
+    camera_frames, camera_frame_count_source = camera_frame_count(
+        args.session, args.image_db3
+    )
     expected_poses = max(
         1,
         camera_frames - int(round(args.skip_s * 30.0)),
@@ -353,6 +372,7 @@ def main() -> int:
         "raw_odometry_samples": len(raw_rows),
         "corrected_odometry_samples": len(corrected_rows),
         "camera_frames": camera_frames,
+        "camera_frame_count_source": camera_frame_count_source,
         "expected_pose_samples_after_skip": expected_poses,
         "pose_coverage": pose_coverage,
         "automatic_loop_accepts": len(accepted),

@@ -1,9 +1,11 @@
+import csv
+import sqlite3
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from test_vins_auto_loop import trajectory_diagnostics
+from test_vins_auto_loop import camera_frame_count, trajectory_diagnostics
 
 
 def test_trajectory_diagnostics_reports_step_and_vertical_span():
@@ -26,3 +28,32 @@ def test_trajectory_diagnostics_handles_incomplete_trajectory():
         "z_span_m": None,
         "endpoint_delta_m": None,
     }
+
+
+def test_camera_frame_count_prefers_actual_image_cache(tmp_path):
+    session = tmp_path / "session"
+    session.mkdir()
+    with (session / "d405_frames.csv").open("w", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["frame"])
+        writer.writerows([[index] for index in range(1000)])
+
+    cache = tmp_path / "stereo_prefix.db3"
+    database = sqlite3.connect(cache)
+    database.execute(
+        "CREATE TABLE topics(id INTEGER PRIMARY KEY,name TEXT NOT NULL)"
+    )
+    database.execute(
+        "CREATE TABLE messages(id INTEGER PRIMARY KEY,topic_id INTEGER NOT NULL)"
+    )
+    database.execute(
+        "INSERT INTO topics VALUES(1, '/device_0/sensor_0/Infrared_1/image/data')"
+    )
+    database.executemany(
+        "INSERT INTO messages VALUES(?, 1)",
+        [(index,) for index in range(1, 451)],
+    )
+    database.commit()
+    database.close()
+
+    assert camera_frame_count(session, cache) == (450, str(cache.resolve()))
