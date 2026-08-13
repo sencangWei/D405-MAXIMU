@@ -23,7 +23,7 @@ from analyze_depth_plane_constraint import (
 from replay_db3_to_ros2 import select_db3
 from build_stereo_replay_cache import STEREO_TOPICS, build_cache
 from validate_slam_dataset_roles import REQUIRED_MOTIONS, validate_manifest
-from validate_slam_product_release import validate_release
+from validate_slam_product_release import validate_loop_observability, validate_release
 
 
 def test_pose_errors_remove_only_rigid_alignment_not_scale():
@@ -640,6 +640,47 @@ def test_candidate_gate_never_claims_customer_release(tmp_path):
     assert result["release_readiness"] == "CANDIDATE_PASS"
     assert result["customer_release_complete"] is False
     assert result["evaluation_scope"] == "candidate_evidence_only"
+
+
+def test_accepted_loop_requires_pnp_and_pose_graph_observability():
+    missing = validate_loop_observability(
+        {
+            "automatic_loop_accepts": 1,
+            "pnp_quality": {"accepted_edges": []},
+            "pose_graph_health": {
+                "optimizations": 0,
+                "usable_optimizations": 0,
+                "rejected_optimizations": 0,
+            },
+        },
+        "hidden: auto_loop",
+    )
+    assert any("accepted PnP quality records" in failure for failure in missing)
+    assert any("pose-graph optimization records" in failure for failure in missing)
+
+    complete = validate_loop_observability(
+        {
+            "automatic_loop_accepts": 1,
+            "pnp_quality": {
+                "accepted_edges": [
+                    {
+                        "inliers": 23,
+                        "rmse_px": 2.3,
+                        "p95_px": 3.6,
+                        "current_hull_fraction": 0.16,
+                        "old_hull_fraction": 0.15,
+                    }
+                ]
+            },
+            "pose_graph_health": {
+                "optimizations": 1,
+                "usable_optimizations": 1,
+                "rejected_optimizations": 0,
+            },
+        },
+        "hidden: auto_loop",
+    )
+    assert complete == []
 
 
 def test_hidden_dataset_requires_predeclared_loop_and_hashed_gt_report(tmp_path):

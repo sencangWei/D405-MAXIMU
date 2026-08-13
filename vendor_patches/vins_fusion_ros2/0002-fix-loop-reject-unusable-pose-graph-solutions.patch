@@ -1,0 +1,46 @@
+From 0f084f04a1e671458e2bacd31b22fb6cf754d32e Mon Sep 17 00:00:00 2001
+From: robot <robot@localhost>
+Date: Thu, 13 Aug 2026 23:12:00 +0800
+Subject: [PATCH 2/2] fix(loop): reject unusable pose graph solutions
+
+---
+ loop_fusion/src/pose_graph.cpp | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/loop_fusion/src/pose_graph.cpp b/loop_fusion/src/pose_graph.cpp
+index 4700c40..8b78f87 100755
+--- a/loop_fusion/src/pose_graph.cpp
++++ b/loop_fusion/src/pose_graph.cpp
+@@ -12,6 +12,7 @@
+ #include "pose_graph.h"
+ 
+ #include <algorithm>
++#include <cmath>
+ 
+ namespace
+ {
+@@ -779,7 +780,20 @@ void PoseGraph::optimize4DoF()
+             m_keyframelist.unlock();
+ 
+             ceres::Solve(options, &problem, &summary);
+-            //std::cout << summary.BriefReport() << "\n";
++            const bool solution_usable = summary.IsSolutionUsable() &&
++                std::isfinite(summary.initial_cost) &&
++                std::isfinite(summary.final_cost);
++            printf("[POSE_GRAPH_OPTIMIZATION] current=%d usable=%d "
++                   "initial_cost=%.6f final_cost=%.6f iterations=%zu time_s=%.4f\n",
++                   cur_index, solution_usable ? 1 : 0, summary.initial_cost,
++                   summary.final_cost, summary.iterations.size(),
++                   summary.total_time_in_seconds);
++            if (!solution_usable)
++            {
++                printf("[POSE_GRAPH_OPTIMIZATION_REJECT] current=%d reason=%s\n",
++                       cur_index, summary.BriefReport().c_str());
++                continue;
++            }
+             
+             //printf("pose optimization time: %f \n", tmp_t.toc());
+             /*
+-- 
+2.34.1
+

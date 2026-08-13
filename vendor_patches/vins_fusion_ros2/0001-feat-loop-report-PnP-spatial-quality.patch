@@ -1,0 +1,133 @@
+From 8de033e66aa5c8c2581cf95126860b322627f1e1 Mon Sep 17 00:00:00 2001
+From: robot <robot@localhost>
+Date: Thu, 13 Aug 2026 22:59:45 +0800
+Subject: [PATCH 1/2] feat(loop): report PnP spatial quality
+
+---
+ loop_fusion/src/keyframe.cpp | 55 ++++++++++++++++++++++++++++++++++--
+ loop_fusion/src/keyframe.h   |  4 ++-
+ 2 files changed, 56 insertions(+), 3 deletions(-)
+
+diff --git a/loop_fusion/src/keyframe.cpp b/loop_fusion/src/keyframe.cpp
+index 262ff46..9b7bd06 100755
+--- a/loop_fusion/src/keyframe.cpp
++++ b/loop_fusion/src/keyframe.cpp
+@@ -12,6 +12,8 @@
+ #include "keyframe.h"
+ 
+ #include <algorithm>
++#include <cmath>
++#include <limits>
+ #include <unordered_set>
+ 
+ template <typename Derived>
+@@ -24,6 +26,16 @@ static void reduceVector(vector<Derived> &v, vector<uchar> status)
+     v.resize(j);
+ }
+ 
++static double imageHullFraction(const vector<cv::Point2f> &points)
++{
++	if (points.size() < 3 || COL <= 0 || ROW <= 0)
++		return 0.0;
++	vector<cv::Point2f> hull;
++	cv::convexHull(points, hull);
++	return std::abs(cv::contourArea(hull)) /
++	       (static_cast<double>(COL) * static_cast<double>(ROW));
++}
++
+ // create keyframe online
+ KeyFrame::KeyFrame(double _time_stamp, int _index, Vector3d &_vio_T_w_i, Matrix3d &_vio_R_w_i,
+ 		           cv::Mat &_image, cv::Mat &_right_image,
+@@ -289,8 +301,12 @@ void KeyFrame::FundmantalMatrixRANSAC(const std::vector<cv::Point2f> &matched_2d
+ void KeyFrame::PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
+                          const std::vector<cv::Point3f> &matched_3d,
+                          std::vector<uchar> &status,
+-                         Eigen::Vector3d &PnP_T_old, Eigen::Matrix3d &PnP_R_old)
++                         Eigen::Vector3d &PnP_T_old, Eigen::Matrix3d &PnP_R_old,
++                         double &reprojection_rmse_px,
++                         double &reprojection_p95_px)
+ {
++	reprojection_rmse_px = std::numeric_limits<double>::infinity();
++	reprojection_p95_px = std::numeric_limits<double>::infinity();
+ 	//for (int i = 0; i < matched_3d.size(); i++)
+ 	//	printf("3d x: %f, y: %f, z: %f\n",matched_3d[i].x, matched_3d[i].y, matched_3d[i].z );
+ 	//printf("match size %d \n", matched_3d.size());
+@@ -349,6 +365,28 @@ void KeyFrame::PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
+         }
+         solvePnP(inlier_points_3d, inlier_points_2d, K, D, rvec, t, true,
+                  cv::SOLVEPNP_ITERATIVE);
++
++		std::vector<cv::Point2f> projected_points;
++		cv::projectPoints(inlier_points_3d, rvec, t, K, D, projected_points);
++		std::vector<double> errors_px;
++		errors_px.reserve(projected_points.size());
++		double squared_error_sum = 0.0;
++		for (size_t i = 0; i < projected_points.size(); ++i)
++		{
++			const double error_px =
++				cv::norm(projected_points[i] - inlier_points_2d[i]) * focal_length_px;
++			errors_px.push_back(error_px);
++			squared_error_sum += error_px * error_px;
++		}
++		if (!errors_px.empty())
++		{
++			reprojection_rmse_px =
++				std::sqrt(squared_error_sum / static_cast<double>(errors_px.size()));
++			std::sort(errors_px.begin(), errors_px.end());
++			const size_t p95_index = static_cast<size_t>(
++				std::ceil(0.95 * static_cast<double>(errors_px.size()))) - 1;
++			reprojection_p95_px = errors_px[std::min(p95_index, errors_px.size() - 1)];
++		}
+     }
+ 
+     for (int i = 0; i < (int)matched_2d_old_norm.size(); i++)
+@@ -577,10 +615,13 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
+ 	Eigen::Vector3d relative_t;
+ 	Quaterniond relative_q;
+ 	double relative_yaw;
++	double pnp_reprojection_rmse_px = std::numeric_limits<double>::infinity();
++	double pnp_reprojection_p95_px = std::numeric_limits<double>::infinity();
+ 	if ((int)matched_2d_cur.size() > MIN_LOOP_NUM)
+ 	{
+ 		status.clear();
+-	    PnPRANSAC(matched_2d_old_norm, matched_3d, status, PnP_T_old, PnP_R_old);
++	    PnPRANSAC(matched_2d_old_norm, matched_3d, status, PnP_T_old, PnP_R_old,
++	               pnp_reprojection_rmse_px, pnp_reprojection_p95_px);
+ 	    reduceVector(matched_2d_cur, status);
+ 	    reduceVector(matched_2d_old, status);
+ 	    reduceVector(matched_2d_cur_norm, status);
+@@ -652,6 +693,16 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
+ 	const double pnp_inlier_ratio = descriptor_match_count > 0
+ 		? static_cast<double>(matched_2d_cur.size()) / descriptor_match_count
+ 		: 0.0;
++	const double current_hull_fraction = imageHullFraction(matched_2d_cur);
++	const double old_hull_fraction = imageHullFraction(matched_2d_old);
++	if (!matched_2d_cur.empty())
++	{
++		printf("[AUTO_LOOP_PNP_QUALITY] current=%d matched=%d inliers=%zu "
++		       "rmse_px=%.3f p95_px=%.3f current_hull=%.4f old_hull=%.4f\n",
++		       index, old_kf->index, matched_2d_cur.size(),
++		       pnp_reprojection_rmse_px, pnp_reprojection_p95_px,
++		       current_hull_fraction, old_hull_fraction);
++	}
+ 	if ((int)matched_2d_cur.size() > MIN_LOOP_NUM &&
+ 	    pnp_inlier_ratio >= MIN_LOOP_INLIER_RATIO)
+ 	{
+diff --git a/loop_fusion/src/keyframe.h b/loop_fusion/src/keyframe.h
+index af0fcc3..7681098 100755
+--- a/loop_fusion/src/keyframe.h
++++ b/loop_fusion/src/keyframe.h
+@@ -79,7 +79,9 @@ public:
+ 	void PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
+ 	               const std::vector<cv::Point3f> &matched_3d,
+ 	               std::vector<uchar> &status,
+-	               Eigen::Vector3d &PnP_T_old, Eigen::Matrix3d &PnP_R_old);
++	               Eigen::Vector3d &PnP_T_old, Eigen::Matrix3d &PnP_R_old,
++	               double &reprojection_rmse_px,
++	               double &reprojection_p95_px);
+ 	void getVioPose(Eigen::Vector3d &_T_w_i, Eigen::Matrix3d &_R_w_i);
+ 	void getPose(Eigen::Vector3d &_T_w_i, Eigen::Matrix3d &_R_w_i);
+ 	void updatePose(const Eigen::Vector3d &_T_w_i, const Eigen::Matrix3d &_R_w_i);
+-- 
+2.34.1
+

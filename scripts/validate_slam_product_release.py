@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 
 from validate_slam_dataset_roles import ROOT, validate_manifest, verify_hash
@@ -24,6 +25,56 @@ DEFAULT_THRESHOLDS = {
     "min_hidden_runs_per_motion": 3,
 }
 REQUIRED_VARIANTS = ("raw_vins", "auto_loop", "depth_plane")
+
+
+def validate_loop_observability(report: dict, label: str) -> list[str]:
+    """Require accepted loop edges to carry PnP and optimizer evidence."""
+    failures: list[str] = []
+    accepted = int(report.get("automatic_loop_accepts", 0))
+    if accepted == 0:
+        return failures
+
+    accepted_edges = report.get("pnp_quality", {}).get("accepted_edges", [])
+    if len(accepted_edges) != accepted:
+        failures.append(
+            f"{label}: {accepted} accepted loops but {len(accepted_edges)} "
+            "accepted PnP quality records"
+        )
+    for index, edge in enumerate(accepted_edges):
+        numeric_fields = (
+            "rmse_px",
+            "p95_px",
+            "current_hull_fraction",
+            "old_hull_fraction",
+        )
+        if not all(
+            isinstance(edge.get(field), (int, float))
+            and math.isfinite(float(edge[field]))
+            for field in numeric_fields
+        ):
+            failures.append(f"{label}: accepted PnP edge {index} has non-finite metrics")
+            continue
+        if int(edge.get("inliers", 0)) <= 0:
+            failures.append(f"{label}: accepted PnP edge {index} has no inliers")
+        if not 0.0 < float(edge["current_hull_fraction"]) <= 1.0:
+            failures.append(
+                f"{label}: accepted PnP edge {index} has invalid current hull"
+            )
+        if not 0.0 < float(edge["old_hull_fraction"]) <= 1.0:
+            failures.append(f"{label}: accepted PnP edge {index} has invalid old hull")
+
+    pose_graph = report.get("pose_graph_health", {})
+    optimizations = int(pose_graph.get("optimizations", 0))
+    usable = int(pose_graph.get("usable_optimizations", 0))
+    rejected = int(pose_graph.get("rejected_optimizations", 0))
+    if optimizations < accepted:
+        failures.append(
+            f"{label}: {accepted} accepted loops but only {optimizations} "
+            "pose-graph optimization records"
+        )
+    if usable != optimizations or rejected != 0:
+        failures.append(f"{label}: pose-graph optimization evidence is not fully usable")
+    return failures
 
 
 def resolve(value: str) -> Path:
@@ -192,6 +243,11 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                             f"{dataset_id}: {variant}: pose graph rejected an "
                             "unusable solution"
                         )
+                    failures.extend(
+                        validate_loop_observability(
+                            variant_run, f"{dataset_id}: {variant}"
+                        )
+                    )
                 trajectory_value = variant_entry.get("trajectory")
                 if trajectory_value:
                     variant_trajectories.append(str(resolve(trajectory_value).resolve()))
