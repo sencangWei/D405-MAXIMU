@@ -10,6 +10,7 @@ from scipy.spatial.transform import Rotation
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from build_slam_variant_evidence import build_variant_evidence
+from slam_benchmark_environment import evaluate_environment
 
 
 def write_trajectory(path: Path, positions: np.ndarray) -> None:
@@ -58,6 +59,18 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         "automatic_loop_accepts": 1,
         "loop_input_drop_events": 0,
         "estimator_keyframe_queue_drop_events": 0,
+        "benchmark_environment": evaluate_environment(
+            {
+                "load_average": {"one_minute_per_cpu": 0.1},
+                "memory_available_gib": 16.0,
+                "pressure": {
+                    "cpu": {"some": {"avg10": 0.1}},
+                    "memory": {"full": {"avg10": 0.0}},
+                    "io": {"full": {"avg10": 0.1}},
+                },
+                "conflicting_processes": [],
+            }
+        ),
     }
     (run_dir / "run_acceptance.json").write_text(
         json.dumps(run_report), encoding="utf-8"
@@ -136,6 +149,27 @@ def test_build_variant_evidence_rejects_infrastructure_run(tmp_path):
     with pytest.raises(ValueError, match="valid SLAM evaluation"):
         build_variant_evidence(
             dataset_id="invalid",
+            run_dir=run_dir,
+            depth_trajectory=tmp_path / "depth.csv",
+            depth_factor_report=tmp_path / "factor.json",
+            ground_truth=tmp_path / "truth.csv",
+            output_dir=tmp_path / "evidence",
+        )
+
+
+def test_build_variant_evidence_rejects_missing_environment_preflight(tmp_path):
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    (run_dir / "run_acceptance.json").write_text(
+        json.dumps({"result": "PASS", "failure_scope": "SLAM"}),
+        encoding="utf-8",
+    )
+
+    import pytest
+
+    with pytest.raises(ValueError, match="benchmark environment preflight"):
+        build_variant_evidence(
+            dataset_id="invalid-environment",
             run_dir=run_dir,
             depth_trajectory=tmp_path / "depth.csv",
             depth_factor_report=tmp_path / "factor.json",

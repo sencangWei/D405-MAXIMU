@@ -23,7 +23,27 @@ from analyze_depth_plane_constraint import (
 from replay_db3_to_ros2 import select_db3
 from build_stereo_replay_cache import STEREO_TOPICS, build_cache
 from validate_slam_dataset_roles import REQUIRED_MOTIONS, validate_manifest
-from validate_slam_product_release import validate_loop_observability, validate_release
+from validate_slam_product_release import (
+    validate_benchmark_environment,
+    validate_loop_observability,
+    validate_release,
+)
+from slam_benchmark_environment import evaluate_environment
+
+
+def passing_benchmark_environment() -> dict:
+    return evaluate_environment(
+        {
+            "load_average": {"one_minute_per_cpu": 0.1},
+            "memory_available_gib": 16.0,
+            "pressure": {
+                "cpu": {"some": {"avg10": 0.1}},
+                "memory": {"full": {"avg10": 0.0}},
+                "io": {"full": {"avg10": 0.1}},
+            },
+            "conflicting_processes": [],
+        }
+    )
 
 
 def test_pose_errors_remove_only_rigid_alignment_not_scale():
@@ -683,6 +703,23 @@ def test_accepted_loop_requires_pnp_and_pose_graph_observability():
     assert complete == []
 
 
+def test_release_rejects_missing_or_weakened_benchmark_environment():
+    assert validate_benchmark_environment({}, "hidden: auto_loop") == [
+        "hidden: auto_loop: missing benchmark environment preflight"
+    ]
+    environment = passing_benchmark_environment()
+    assert validate_benchmark_environment(
+        {"benchmark_environment": environment}, "hidden: auto_loop"
+    ) == []
+    environment["thresholds"]["max_io_pressure_full_avg10_percent"] = 100.0
+    assert any(
+        "was weakened" in failure
+        for failure in validate_benchmark_environment(
+            {"benchmark_environment": environment}, "hidden: auto_loop"
+        )
+    )
+
+
 def test_hidden_dataset_requires_predeclared_loop_and_hashed_gt_report(tmp_path):
     session = tmp_path / "recordings" / "session"
     session.mkdir(parents=True)
@@ -788,6 +825,7 @@ def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
                     "loop_input_drop_events": 0,
                     "estimator_keyframe_queue_drop_events": 0,
                     "automatic_loop_accepts": 0,
+                    "benchmark_environment": passing_benchmark_environment(),
                 }
             ),
             encoding="utf-8",
@@ -901,6 +939,7 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
                     "loop_input_drop_events": 0,
                     "estimator_keyframe_queue_drop_events": 0,
                     "automatic_loop_accepts": 0,
+                    "benchmark_environment": passing_benchmark_environment(),
                 }
             ),
             encoding="utf-8",

@@ -20,6 +20,7 @@ from evaluate_slam_ground_truth import (
     load_trajectory,
     pose_errors,
 )
+from slam_benchmark_environment import validate_environment_report
 
 
 VARIANT_SOURCES = {
@@ -128,6 +129,8 @@ def build_variant_evidence(
         or base_report.get("failure_scope") != "SLAM"
     ):
         raise ValueError("source run is not a valid SLAM evaluation")
+    if validate_environment_report(base_report.get("benchmark_environment", {})):
+        raise ValueError("source run lacks a passing benchmark environment preflight")
     factor_report = json.loads(depth_factor_report.read_text(encoding="utf-8"))
     bundled_ground_truth = copy_artifact(
         ground_truth, output_dir / "external_ground_truth.csv"

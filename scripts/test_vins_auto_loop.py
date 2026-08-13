@@ -25,6 +25,12 @@ import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 
+from slam_benchmark_environment import (
+    capture_environment,
+    evaluate_environment,
+    validate_environment_report,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path(
@@ -208,6 +214,29 @@ def main() -> int:
     os.environ["ROS_LOCALHOST_ONLY"] = "1"
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    benchmark_environment = evaluate_environment(capture_environment())
+    environment_failures = [
+        *benchmark_environment["failures"],
+        *validate_environment_report(benchmark_environment),
+    ]
+    if environment_failures:
+        run_acceptance = {
+            "result": "FAIL",
+            "failure_scope": "INFRASTRUCTURE",
+            "runtime_error": "benchmark environment preflight failed",
+            "ros_domain_id": args.ros_domain_id,
+            "ros_localhost_only": True,
+            "session": str(args.session.resolve()),
+            "benchmark_environment": benchmark_environment,
+            "failures": environment_failures,
+        }
+        (args.out_dir / "run_acceptance.json").write_text(
+            json.dumps(run_acceptance, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        for failure in environment_failures:
+            print(f"环境预检失败: {failure}")
+        return 4
     loop_output = args.out_dir / "loop_output"
     loop_output.mkdir(exist_ok=True)
     (loop_output / "pose_graph").mkdir(exist_ok=True)
@@ -460,6 +489,7 @@ def main() -> int:
         "runtime_error": runtime_error,
         "ros_domain_id": args.ros_domain_id,
         "ros_localhost_only": True,
+        "benchmark_environment": benchmark_environment,
         "session": str(args.session.resolve()),
         "replay_rate": args.rate,
         "replay_backend": args.replay_backend,

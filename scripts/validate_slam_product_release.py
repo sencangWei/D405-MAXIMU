@@ -9,6 +9,7 @@ import json
 import math
 from pathlib import Path
 
+from slam_benchmark_environment import validate_environment_report
 from validate_slam_dataset_roles import ROOT, validate_manifest, verify_hash
 
 
@@ -75,6 +76,13 @@ def validate_loop_observability(report: dict, label: str) -> list[str]:
     if usable != optimizations or rejected != 0:
         failures.append(f"{label}: pose-graph optimization evidence is not fully usable")
     return failures
+
+
+def validate_benchmark_environment(report: dict, label: str) -> list[str]:
+    environment = report.get("benchmark_environment")
+    if not isinstance(environment, dict):
+        return [f"{label}: missing benchmark environment preflight"]
+    return [f"{label}: {failure}" for failure in validate_environment_report(environment)]
 
 
 def resolve(value: str) -> Path:
@@ -245,6 +253,11 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         )
                     failures.extend(
                         validate_loop_observability(
+                            variant_run, f"{dataset_id}: {variant}"
+                        )
+                    )
+                    failures.extend(
+                        validate_benchmark_environment(
                             variant_run, f"{dataset_id}: {variant}"
                         )
                     )
