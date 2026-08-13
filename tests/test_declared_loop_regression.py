@@ -21,6 +21,8 @@ def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
             "loop_executable",
             "replay_executable",
             "capture_acceptance",
+            "camera_timestamps",
+            "imu_samples",
         )
     }
     return {

@@ -26,6 +26,8 @@ REQUIRED_PROVENANCE_FILES = {
     "loop_executable",
     "replay_executable",
     "capture_acceptance",
+    "camera_timestamps",
+    "imu_samples",
 }
 
 

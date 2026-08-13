@@ -94,6 +94,12 @@ def run_provenance(
     acceptance = session.resolve() / "acceptance.json"
     if acceptance.is_file():
         files["capture_acceptance"] = acceptance
+    frame_timestamps = session.resolve() / "d405_frames.csv"
+    if frame_timestamps.is_file():
+        files["camera_timestamps"] = frame_timestamps
+    imu_samples = session.resolve() / "external_imu" / "imu.bin"
+    if imu_samples.is_file():
+        files["imu_samples"] = imu_samples
     return {
         "files": {
             name: {"path": str(path), "sha256": sha256_file(path)}

@@ -173,6 +173,11 @@ def test_run_provenance_hashes_effective_config_and_calibration(
     session.mkdir()
     acceptance = session / "acceptance.json"
     acceptance.write_text('{"result":"PASS"}', encoding="utf-8")
+    camera_timestamps = session / "d405_frames.csv"
+    camera_timestamps.write_text("camera", encoding="utf-8")
+    imu_samples = session / "external_imu" / "imu.bin"
+    imu_samples.parent.mkdir()
+    imu_samples.write_bytes(b"imu")
     run_config = tmp_path / "config.yaml"
     left = tmp_path / "left.yaml"
     right = tmp_path / "right.yaml"
@@ -191,6 +196,10 @@ def test_run_provenance_hashes_effective_config_and_calibration(
         "98d844ea900c08231a1f6e1e12a4aeacf82570dc71285911ff5e66c9f1bb1915"
     )
     assert provenance["files"]["run_config"]["path"] == str(run_config)
+    assert provenance["files"]["camera_timestamps"]["path"] == str(
+        camera_timestamps
+    )
+    assert provenance["files"]["imu_samples"]["path"] == str(imu_samples)
     assert provenance["files"]["replay_executable"]["sha256"] == (
         "545ea538461003efdc8c81c244531b003f6f26cfccf6c0073b3239fdedf49446"
     )
