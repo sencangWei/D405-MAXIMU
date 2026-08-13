@@ -52,6 +52,7 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
     write_trajectory(truth_path, ground_truth)
     run_report = {
         "result": "PASS",
+        "failure_scope": "SLAM",
         "session": "/recordings/session",
         "pose_coverage": 1.0,
         "automatic_loop_accepts": 1,
@@ -120,3 +121,24 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         hashlib.sha256(Path(depth_entry["factor_report"]).read_bytes()).hexdigest()
         == depth_entry["factor_report_sha256"]
     )
+
+
+def test_build_variant_evidence_rejects_infrastructure_run(tmp_path):
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    (run_dir / "run_acceptance.json").write_text(
+        json.dumps({"result": "FAIL", "failure_scope": "INFRASTRUCTURE"}),
+        encoding="utf-8",
+    )
+
+    import pytest
+
+    with pytest.raises(ValueError, match="valid SLAM evaluation"):
+        build_variant_evidence(
+            dataset_id="invalid",
+            run_dir=run_dir,
+            depth_trajectory=tmp_path / "depth.csv",
+            depth_factor_report=tmp_path / "factor.json",
+            ground_truth=tmp_path / "truth.csv",
+            output_dir=tmp_path / "evidence",
+        )

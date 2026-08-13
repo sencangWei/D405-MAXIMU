@@ -167,6 +167,10 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         failures.append(
                             f"{dataset_id}: {variant}: run report is not PASS"
                         )
+                    if variant_run.get("failure_scope") != "SLAM":
+                        failures.append(
+                            f"{dataset_id}: {variant}: run was not a valid SLAM evaluation"
+                        )
                     if variant_run.get("pose_coverage", 0.0) < thresholds[
                         "min_pose_coverage"
                     ]:

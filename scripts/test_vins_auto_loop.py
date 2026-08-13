@@ -12,6 +12,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import shutil
 import signal
 import sqlite3
@@ -30,6 +31,66 @@ DEFAULT_CONFIG = Path(
     "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/"
     "d405_stereo_imu_config.yaml"
 )
+
+
+def classify_run_scope(
+    runtime_error: str | None,
+    camera_frames: int,
+    corrected_poses: int,
+) -> str:
+    if runtime_error is not None and (
+        "replay exceeded" in runtime_error
+        or "DDS" in runtime_error
+        or corrected_poses == 0
+    ):
+        return "INFRASTRUCTURE"
+    if camera_frames > 0 and corrected_poses == 0:
+        return "INFRASTRUCTURE"
+    return "SLAM"
+
+
+def parse_pnp_quality(loop_log: str) -> dict:
+    quality_pattern = re.compile(
+        r"\[AUTO_LOOP_PNP_QUALITY\] current=(\d+) matched=(\d+) "
+        r"inliers=(\d+) rmse_px=([0-9.inf]+) p95_px=([0-9.inf]+) "
+        r"current_hull=([0-9.]+) old_hull=([0-9.]+)"
+    )
+    geometry_pattern = re.compile(
+        r"\[AUTO_LOOP_GEOMETRY_PASS\] current=(\d+) matched=(\d+)"
+    )
+    accept_pattern = re.compile(
+        r"\[AUTO_LOOP_ACCEPT\] current=(\d+) matched=(\d+)"
+    )
+    samples: dict[tuple[int, int], dict] = {}
+    finite_samples = 0
+    for match in quality_pattern.finditer(loop_log):
+        current, matched, inliers = map(int, match.groups()[:3])
+        rmse_px, p95_px, current_hull, old_hull = map(float, match.groups()[3:])
+        finite_samples += int(np.isfinite(rmse_px) and np.isfinite(p95_px))
+        samples[(current, matched)] = {
+            "current": current,
+            "matched": matched,
+            "inliers": inliers,
+            "rmse_px": rmse_px,
+            "p95_px": p95_px,
+            "current_hull_fraction": current_hull,
+            "old_hull_fraction": old_hull,
+        }
+    geometry_keys = {
+        (int(match.group(1)), int(match.group(2)))
+        for match in geometry_pattern.finditer(loop_log)
+    }
+    accepted_edges = []
+    for match in accept_pattern.finditer(loop_log):
+        key = (int(match.group(1)), int(match.group(2)))
+        if key in samples:
+            accepted_edges.append(samples[key])
+    return {
+        "samples": len(samples),
+        "finite_samples": finite_samples,
+        "geometry_pass_samples": sum(key in samples for key in geometry_keys),
+        "accepted_edges": accepted_edges,
+    }
 
 
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:
@@ -125,7 +186,16 @@ def main() -> int:
         help="--expect-loop yes时的后验闭环误差门槛；只评分，不输入SLAM",
     )
     parser.add_argument("--min-pose-coverage", type=float, default=0.98)
+    parser.add_argument(
+        "--ros-domain-id",
+        type=int,
+        default=77,
+        help="隔离离线验收与同机其他ROS 2任务；默认77",
+    )
     args = parser.parse_args()
+
+    os.environ["ROS_DOMAIN_ID"] = str(args.ros_domain_id)
+    os.environ["ROS_LOCALHOST_ONLY"] = "1"
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     loop_output = args.out_dir / "loop_output"
@@ -172,6 +242,7 @@ def main() -> int:
     node = Node("auto_loop_trajectory_sink")
     raw_rows: list[list[float]] = []
     corrected_rows: list[list[float]] = []
+    runtime_error: str | None = None
 
     def append_pose(rows: list[list[float]], message: Odometry) -> None:
         pose = message.pose.pose
@@ -284,6 +355,7 @@ def main() -> int:
                 elif time.monotonic() - quiet_since >= 6:
                     break
     except Exception as exc:
+        runtime_error = str(exc)
         print(f"FAIL: {exc}")
         return_code = 2
     else:
@@ -366,6 +438,12 @@ def main() -> int:
             )
     run_acceptance = {
         "result": "PASS" if return_code == 0 and not failures else "FAIL",
+        "failure_scope": classify_run_scope(
+            runtime_error, camera_frames, len(corrected_rows)
+        ),
+        "runtime_error": runtime_error,
+        "ros_domain_id": args.ros_domain_id,
+        "ros_localhost_only": True,
         "session": str(args.session.resolve()),
         "replay_rate": args.rate,
         "replay_backend": args.replay_backend,
@@ -378,6 +456,7 @@ def main() -> int:
         "automatic_loop_accepts": len(accepted),
         "automatic_loop_rejects": len(rejected),
         "automatic_correction_rejects": len(correction_rejected),
+        "pnp_quality": parse_pnp_quality(loop_log),
         "raw_trajectory_diagnostics": raw_diagnostics,
         "corrected_trajectory_diagnostics": corrected_diagnostics,
         "z_span_retention_ratio": z_retention_ratio,

@@ -5,7 +5,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from test_vins_auto_loop import camera_frame_count, trajectory_diagnostics
+from test_vins_auto_loop import (
+    camera_frame_count,
+    classify_run_scope,
+    parse_pnp_quality,
+    trajectory_diagnostics,
+)
 
 
 def test_trajectory_diagnostics_reports_step_and_vertical_span():
@@ -57,3 +62,40 @@ def test_camera_frame_count_prefers_actual_image_cache(tmp_path):
     database.close()
 
     assert camera_frame_count(session, cache) == (450, str(cache.resolve()))
+
+
+def test_run_scope_distinguishes_infrastructure_from_slam_failure():
+    assert classify_run_scope("replay exceeded 420s", 0, 0) == "INFRASTRUCTURE"
+    assert classify_run_scope("DDS discovery failed", 10, 0) == "INFRASTRUCTURE"
+    assert classify_run_scope(None, 1000, 998) == "SLAM"
+
+
+def test_parse_pnp_quality_exposes_accepted_edge_spatial_support():
+    log = "\n".join(
+        (
+            "[AUTO_LOOP_PNP_QUALITY] current=10 matched=1 inliers=20 "
+            "rmse_px=2.100 p95_px=3.700 current_hull=0.1200 old_hull=0.1100",
+            "[AUTO_LOOP_GEOMETRY_PASS] current=10 matched=1 inliers=20 ratio=0.5",
+            "[AUTO_LOOP_PNP_QUALITY] current=11 matched=1 inliers=22 "
+            "rmse_px=2.300 p95_px=3.900 current_hull=0.1400 old_hull=0.1300",
+            "[AUTO_LOOP_GEOMETRY_PASS] current=11 matched=1 inliers=22 ratio=0.5",
+            "[AUTO_LOOP_ACCEPT] current=11 matched=1 confirmations=4",
+        )
+    )
+
+    report = parse_pnp_quality(log)
+
+    assert report["samples"] == 2
+    assert report["finite_samples"] == 2
+    assert report["geometry_pass_samples"] == 2
+    assert report["accepted_edges"] == [
+        {
+            "current": 11,
+            "matched": 1,
+            "inliers": 22,
+            "rmse_px": 2.3,
+            "p95_px": 3.9,
+            "current_hull_fraction": 0.14,
+            "old_hull_fraction": 0.13,
+        }
+    ]

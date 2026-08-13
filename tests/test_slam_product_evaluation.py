@@ -742,6 +742,7 @@ def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
                 {
                     "variant": variant,
                     "result": "PASS",
+                    "failure_scope": "SLAM",
                     "pose_coverage": 1.0,
                     "loop_input_drop_events": 0,
                     "estimator_keyframe_queue_drop_events": 0,
@@ -854,6 +855,7 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
                 {
                     "variant": variant,
                     "result": "PASS",
+                    "failure_scope": "SLAM",
                     "pose_coverage": 1.0,
                     "loop_input_drop_events": 0,
                     "estimator_keyframe_queue_drop_events": 0,

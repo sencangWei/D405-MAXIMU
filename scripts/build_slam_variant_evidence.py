@@ -123,6 +123,11 @@ def build_variant_evidence(
     if not base_report_path.is_file():
         raise FileNotFoundError(base_report_path)
     base_report = json.loads(base_report_path.read_text(encoding="utf-8"))
+    if (
+        base_report.get("result") != "PASS"
+        or base_report.get("failure_scope") != "SLAM"
+    ):
+        raise ValueError("source run is not a valid SLAM evaluation")
     factor_report = json.loads(depth_factor_report.read_text(encoding="utf-8"))
     bundled_ground_truth = copy_artifact(
         ground_truth, output_dir / "external_ground_truth.csv"
