@@ -38,14 +38,12 @@ def classify_run_scope(
     camera_frames: int,
     corrected_poses: int,
 ) -> str:
-    if runtime_error is not None and (
-        "replay exceeded" in runtime_error
-        or "DDS" in runtime_error
-        or corrected_poses == 0
-    ):
+    if runtime_error is not None and ("DDS" in runtime_error or corrected_poses == 0):
         return "INFRASTRUCTURE"
     if camera_frames > 0 and corrected_poses == 0:
         return "INFRASTRUCTURE"
+    if runtime_error is not None:
+        return "SLAM_RUNTIME"
     return "SLAM"
 
 

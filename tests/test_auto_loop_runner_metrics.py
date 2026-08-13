@@ -67,6 +67,7 @@ def test_camera_frame_count_prefers_actual_image_cache(tmp_path):
 def test_run_scope_distinguishes_infrastructure_from_slam_failure():
     assert classify_run_scope("replay exceeded 420s", 0, 0) == "INFRASTRUCTURE"
     assert classify_run_scope("DDS discovery failed", 10, 0) == "INFRASTRUCTURE"
+    assert classify_run_scope("replay exceeded 420s", 1000, 353) == "SLAM_RUNTIME"
     assert classify_run_scope(None, 1000, 998) == "SLAM"
 
 
