@@ -183,9 +183,9 @@ def score_run(
         failures.append(f"false automatic loops accepted: {accepts}")
     if expected_loop and not isinstance(endpoint, (int, float)):
         failures.append("endpoint error is missing")
-    elif expected_loop and endpoint > max_endpoint_m:
+    elif expected_loop and endpoint >= max_endpoint_m:
         failures.append(
-            f"endpoint error {endpoint:.6f}m exceeds {max_endpoint_m:.6f}m"
+            f"endpoint error {endpoint:.6f}m is not below {max_endpoint_m:.6f}m"
         )
     if not isinstance(coverage, (int, float)) or coverage < min_coverage:
         failures.append(f"pose coverage is below {min_coverage:.3f}")

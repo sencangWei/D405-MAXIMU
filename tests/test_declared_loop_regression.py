@@ -72,7 +72,7 @@ def test_rejects_missing_loop_or_centimeter_violation():
         min_coverage=0.98,
     )
     inaccurate = score_run(
-        healthy_report(endpoint=0.010001),
+        healthy_report(endpoint=0.01),
         expected_loop=True,
         max_endpoint_m=0.01,
         min_coverage=0.98,
@@ -80,7 +80,7 @@ def test_rejects_missing_loop_or_centimeter_violation():
     assert no_loop["result"] == "FAIL"
     assert "no automatic loop was accepted" in no_loop["failures"]
     assert inaccurate["result"] == "FAIL"
-    assert any("exceeds" in failure for failure in inaccurate["failures"])
+    assert any("is not below" in failure for failure in inaccurate["failures"])
 
 
 def test_negative_control_rejects_false_loop_and_does_not_score_endpoint():

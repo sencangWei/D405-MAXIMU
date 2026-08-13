@@ -245,7 +245,7 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                 endpoint = report.get("corrected_trajectory_diagnostics", {}).get(
                     "endpoint_delta_m"
                 )
-                if endpoint is None or endpoint > thresholds["max_loop_endpoint_m"]:
+                if endpoint is None or endpoint >= thresholds["max_loop_endpoint_m"]:
                     failures.append(f"{dataset_id}: loop endpoint exceeds threshold")
             elif expected_loop is False and accepted:
                 failures.append(f"{dataset_id}: false loop accepted")

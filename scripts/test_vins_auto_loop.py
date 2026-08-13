@@ -624,10 +624,10 @@ def main() -> int:
     if (
         args.expect_loop == "yes"
         and corrected_endpoint_delta is not None
-        and corrected_endpoint_delta > args.max_loop_closure_m
+        and corrected_endpoint_delta >= args.max_loop_closure_m
     ):
         failures.append(
-            f"automatic-loop endpoint error {corrected_endpoint_delta:.4f}m > "
+            f"automatic-loop endpoint error {corrected_endpoint_delta:.4f}m >= "
             f"{args.max_loop_closure_m:.4f}m"
         )
     raw_max_step = raw_diagnostics["max_step_m"]
