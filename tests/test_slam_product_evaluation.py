@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from analyze_depth_plane_constraint import (
     transform_plane_to_world,
 )
 from replay_db3_to_ros2 import select_db3
+from build_stereo_replay_cache import STEREO_TOPICS, build_cache
 from validate_slam_dataset_roles import validate_manifest
 
 
@@ -160,6 +162,42 @@ def test_temporal_gate_rejects_stable_wall_for_z_constraint():
     assert report["locally_matched_observations"] == 10
     assert report["horizontal_candidates"] == 0
     assert report["accepted_observations"] == 0
+
+
+def test_stereo_replay_cache_preserves_only_required_topics(tmp_path):
+    source = tmp_path / "source.db3"
+    database = sqlite3.connect(source)
+    database.execute(
+        "CREATE TABLE topics(id INTEGER PRIMARY KEY,name TEXT NOT NULL,"
+        "type TEXT NOT NULL,serialization_format TEXT NOT NULL,"
+        "offered_qos_profiles TEXT NOT NULL)"
+    )
+    database.execute(
+        "CREATE TABLE messages(id INTEGER PRIMARY KEY,topic_id INTEGER NOT NULL,"
+        "timestamp INTEGER NOT NULL,data BLOB NOT NULL)"
+    )
+    names = [*STEREO_TOPICS, "/device_0/sensor_0/Depth_0/image/data"]
+    for topic_id, name in enumerate(names, 1):
+        database.execute(
+            "INSERT INTO topics VALUES(?,?,?,?,?)",
+            (topic_id, name, "test/msg/Test", "cdr", ""),
+        )
+        database.execute(
+            "INSERT INTO messages VALUES(?,?,?,?)",
+            (topic_id, topic_id, topic_id * 10, name.encode()),
+        )
+    database.commit()
+    database.close()
+
+    output = tmp_path / "cache.db3"
+    report = build_cache(source, output)
+
+    assert report["result"] == "PASS"
+    assert set(report["topics"]) == set(STEREO_TOPICS)
+    copied = sqlite3.connect(output)
+    copied_names = {row[0] for row in copied.execute("SELECT name FROM topics")}
+    copied.close()
+    assert copied_names == set(STEREO_TOPICS)
 
 
 def test_dataset_manifest_detects_missing_hidden_test_without_breaking_dev_validation(tmp_path):

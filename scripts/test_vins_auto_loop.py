@@ -76,6 +76,11 @@ def main() -> int:
     parser.add_argument("--skip-s", type=float, default=1.5)
     parser.add_argument("--imu-shift-ms", type=float, default=0.0)
     parser.add_argument(
+        "--image-db3",
+        type=Path,
+        help="可选轻量双IR派生DB3；不改变原始会话和IMU来源",
+    )
+    parser.add_argument(
         "--replay-backend",
         choices=("cpp", "python"),
         default="cpp",
@@ -200,6 +205,10 @@ def main() -> int:
                         "--rate", str(args.rate), "--skip-s", str(args.skip_s),
                         "--imu-align-s", "0", "--imu-shift-ms", str(args.imu_shift_ms),
                     ]
+                    if args.image_db3 is not None:
+                        replay_command.extend(
+                            ["--image-db3", str(args.image_db3.resolve())]
+                        )
                     if args.replay_backend == "python":
                         replay_command.extend(["--duration-s", str(args.duration_s)])
                     elif args.duration_s:

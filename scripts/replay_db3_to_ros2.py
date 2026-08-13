@@ -68,6 +68,11 @@ def select_db3(session: Path) -> Path:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="回放 db3+imu.bin 到 ROS2 topic(流式)")
     p.add_argument("--session", type=Path, required=True, help="采集会话目录")
+    p.add_argument(
+        "--image-db3",
+        type=Path,
+        help="可选的轻量双IR派生DB3；IMU与时钟映射仍读取原会话",
+    )
     p.add_argument("--mode", choices=sorted(MODE_STREAMS), required=True)
     p.add_argument("--rate", type=float, default=1.0, help="回放倍速(1=实时)")
     p.add_argument("--imu-shift-ms", type=float, default=0.0,
@@ -180,7 +185,7 @@ def main() -> int:
     args = parse_args()
     session = args.session.resolve()
     try:
-        db3 = select_db3(session)
+        db3 = args.image_db3.resolve() if args.image_db3 else select_db3(session)
     except FileNotFoundError as error:
         print(f"[ERROR] {error}")
         return 1
