@@ -81,7 +81,7 @@ python3 scripts/validate_slam_product_release.py
 python3 scripts/validate_slam_product_release.py --require-complete
 ```
 
-- 第一条只检查当前开发/验证候选证据，当前输出为 `CANDIDATE_PASS`，并明确 `customer_release_complete=false`。
+- 第一条只检查当前开发/验证候选证据。纠正`121306`真闭环标签后，当前会正确输出`FAIL`：一组待测、一组漏回环，且`customer_release_complete=false`。只有四组重复回归恢复通过后才能重新获得候选状态。
 - 第二条是客户完整交付门禁。它要求八类动作每类至少3条冻结隐藏盲测、每条均预先声明是否应回环并提供哈希保护的外部真值和评测报告，同时检查ATE、平移/旋转RPE、每米漂移率、Z误差、姿态误差、闭环一致性、误回环、覆盖率、丢帧和失败率。当前会正确返回 `NOT_READY`，不会把开发集结果误报为客户可交付。
 - 阈值已经冻结在 `config/slam_product_datasets.json`，真值只进入评分器，绝不进入SLAM。
 
