@@ -61,4 +61,15 @@ Depth平面因子仍处于离线原型阶段：只有局部平面精度/面积�
 3. 验证长序列、多回环和开放轨迹。完全开放且从不重访的场景仍会累计漂移，若产品要求长期绝对位置，必须加入UWB、GNSS、AprilTag地图、激光雷达或其他全局观测。
 4. 处理VINS-Fusion GPLv3商业分发合规。
 
+客户交付状态由可执行门禁生成，不再靠文字判断：
+
+```bash
+python3 scripts/validate_slam_product_release.py
+python3 scripts/validate_slam_product_release.py --require-complete
+```
+
+- 第一条只检查当前开发/验证候选证据，当前输出为 `CANDIDATE_PASS`，并明确 `customer_release_complete=false`。
+- 第二条是客户完整交付门禁。它要求八类动作每类至少3条冻结隐藏盲测、每条均预先声明是否应回环并提供哈希保护的外部真值和评测报告，同时检查ATE、平移/旋转RPE、每米漂移率、Z误差、姿态误差、闭环一致性、误回环、覆盖率、丢帧和失败率。当前会正确返回 `NOT_READY`，不会把开发集结果误报为客户可交付。
+- 阈值已经冻结在 `config/slam_product_datasets.json`，真值只进入评分器，绝不进入SLAM。
+
 因此当前可表述为：“在现有两组独立闭环开发/验证数据上，无人工提示自动回环达到4.53–6.71mm首尾一致性”；不能表述为“所有客户场景绝对精度小于1cm”。

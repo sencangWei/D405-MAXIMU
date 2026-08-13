@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sqlite3
 import sys
@@ -18,6 +19,7 @@ from analyze_depth_plane_constraint import (
 from replay_db3_to_ros2 import select_db3
 from build_stereo_replay_cache import STEREO_TOPICS, build_cache
 from validate_slam_dataset_roles import validate_manifest
+from validate_slam_product_release import validate_release
 
 
 def test_pose_errors_remove_only_rigid_alignment_not_scale():
@@ -204,13 +206,12 @@ def test_dataset_manifest_detects_missing_hidden_test_without_breaking_dev_valid
     session = tmp_path / "recordings" / "session"
     session.mkdir(parents=True)
     (session / "acceptance.json").write_text("{}", encoding="utf-8")
-    import hashlib
-
     manifest = {
         "datasets": [
             {
                 "id": "dev",
                 "role": "development",
+                "motion": "closed_loop_with_elevation",
                 "session": "recordings/session",
                 "external_ground_truth": None,
                 "acceptance_sha256": hashlib.sha256(b"{}").hexdigest(),
@@ -218,6 +219,7 @@ def test_dataset_manifest_detects_missing_hidden_test_without_breaking_dev_valid
             {
                 "id": "val",
                 "role": "validation",
+                "motion": "closed_loop_horizontal",
                 "session": "recordings/session",
                 "external_ground_truth": None,
                 "acceptance_sha256": hashlib.sha256(b"{}").hexdigest(),
@@ -236,3 +238,208 @@ def test_dataset_manifest_detects_missing_hidden_test_without_breaking_dev_valid
         sys.modules[validate_manifest.__module__].ROOT = old_root
     assert strict["result"] == "FAIL"
     assert strict["product_test_readiness"] == "MISSING_HIDDEN_TEST"
+
+
+def test_product_release_gate_rejects_missing_action_matrix(tmp_path):
+    session = tmp_path / "recordings" / "session"
+    session.mkdir(parents=True)
+    acceptance = session / "acceptance.json"
+    acceptance.write_text("{}", encoding="utf-8")
+    report = tmp_path / "run.json"
+    report.write_text(
+        json.dumps(
+            {
+                "result": "PASS",
+                "pose_coverage": 1.0,
+                "loop_input_drop_events": 0,
+                "estimator_keyframe_queue_drop_events": 0,
+                "automatic_loop_accepts": 0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    import hashlib
+
+    manifest = {
+        "datasets": [
+            {
+                "id": "only-one-action",
+                "role": "validation",
+                "motion": "straight_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+            }
+        ]
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    dataset_module = sys.modules[validate_manifest.__module__]
+    release_module = sys.modules[validate_release.__module__]
+    old_dataset_root = dataset_module.ROOT
+    old_release_root = release_module.ROOT
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        result = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+
+    assert result["result"] == "FAIL"
+    assert "closed_loop_horizontal" in result["dataset_gate"]["missing_motions"]
+    assert result["release_readiness"] == "NOT_READY"
+
+
+def test_candidate_gate_never_claims_customer_release(tmp_path):
+    session = tmp_path / "recordings" / "session"
+    session.mkdir(parents=True)
+    acceptance = session / "acceptance.json"
+    acceptance.write_text("{}", encoding="utf-8")
+    report = tmp_path / "run.json"
+    report.write_text(
+        json.dumps(
+            {
+                "result": "PASS",
+                "pose_coverage": 1.0,
+                "loop_input_drop_events": 0,
+                "estimator_keyframe_queue_drop_events": 0,
+                "automatic_loop_accepts": 0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = {
+        "datasets": [
+            {
+                "id": "candidate-development",
+                "role": "development",
+                "motion": "straight_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(
+                    acceptance.read_bytes()
+                ).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+            },
+            {
+                "id": "candidate-validation",
+                "role": "validation",
+                "motion": "free_motion_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(
+                    acceptance.read_bytes()
+                ).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+            },
+        ]
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    dataset_module = sys.modules[validate_manifest.__module__]
+    release_module = sys.modules[validate_release.__module__]
+    old_dataset_root = dataset_module.ROOT
+    old_release_root = release_module.ROOT
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        result = validate_release(manifest_path, require_complete=False)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+
+    assert result["result"] == "PASS"
+    assert result["release_readiness"] == "CANDIDATE_PASS"
+    assert result["customer_release_complete"] is False
+    assert result["evaluation_scope"] == "candidate_evidence_only"
+
+
+def test_hidden_dataset_requires_predeclared_loop_and_hashed_gt_report(tmp_path):
+    session = tmp_path / "recordings" / "session"
+    session.mkdir(parents=True)
+    acceptance = session / "acceptance.json"
+    acceptance.write_text("{}", encoding="utf-8")
+    ground_truth = tmp_path / "truth.csv"
+    ground_truth.write_text("t,x,y,z\n", encoding="utf-8")
+    report = tmp_path / "run.json"
+    report.write_text(
+        json.dumps(
+            {
+                "result": "PASS",
+                "pose_coverage": 1.0,
+                "loop_input_drop_events": 0,
+                "estimator_keyframe_queue_drop_events": 0,
+                "automatic_loop_accepts": 0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = {
+        "datasets": [
+            {
+                "id": "development",
+                "role": "development",
+                "motion": "free_motion_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(
+                    acceptance.read_bytes()
+                ).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+            },
+            {
+                "id": "validation",
+                "role": "validation",
+                "motion": "l_shape_open",
+                "session": "recordings/session",
+                "expected_loop": False,
+                "acceptance_sha256": hashlib.sha256(
+                    acceptance.read_bytes()
+                ).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+            },
+            {
+                "id": "hidden",
+                "role": "hidden_test",
+                "motion": "straight_open",
+                "session": "recordings/session",
+                "expected_loop": None,
+                "external_ground_truth": "truth.csv",
+                "external_ground_truth_sha256": hashlib.sha256(
+                    ground_truth.read_bytes()
+                ).hexdigest(),
+                "acceptance_sha256": hashlib.sha256(
+                    acceptance.read_bytes()
+                ).hexdigest(),
+                "run_report": "run.json",
+                "run_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+            },
+        ]
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    dataset_module = sys.modules[validate_manifest.__module__]
+    release_module = sys.modules[validate_release.__module__]
+    old_dataset_root = dataset_module.ROOT
+    old_release_root = release_module.ROOT
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        result = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+
+    assert result["result"] == "FAIL"
+    assert any("predeclare expected_loop" in item for item in result["failures"])
+    assert any("ground-truth evaluation report" in item for item in result["failures"])

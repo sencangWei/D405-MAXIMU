@@ -1,10 +1,22 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "policy": {
     "development_may_tune": true,
     "validation_may_select_candidate": true,
     "hidden_test_may_tune": false,
     "ground_truth_never_enters_slam": true
+  },
+  "thresholds": {
+    "min_pose_coverage": 0.98,
+    "max_loop_endpoint_m": 0.01,
+    "max_ate_translation_rmse_m": 0.01,
+    "max_rpe_translation_rmse_m": 0.005,
+    "max_rpe_rotation_rmse_deg": 0.5,
+    "max_z_rmse_m": 0.01,
+    "max_attitude_ate_rmse_deg": 0.5,
+    "max_endpoint_drift_percent_of_path": 1.0,
+    "max_failure_rate": 0.05,
+    "min_hidden_runs_per_motion": 3
   },
   "datasets": [
     {
@@ -14,34 +26,42 @@
       "motion": "closed_loop_with_elevation",
       "expected_loop": true,
       "external_ground_truth": null,
-      "acceptance_sha256": "0acd0c0863571a25946e94ef51d158b5432de3b421a546d9bb5dc3208a267ddc"
+      "acceptance_sha256": "0acd0c0863571a25946e94ef51d158b5432de3b421a546d9bb5dc3208a267ddc",
+      "run_report": "reports/release_gate_temporal90_000933/run_acceptance.json",
+      "run_report_sha256": "6d8238857f56af4760c2ff9937d78fe84c66343fcfed0123bc0227a3f2ae8042"
     },
     {
       "id": "d405_20260812_155408",
       "role": "validation",
       "session": "recordings/d405_720p_rgb_stereo_ir_20260812_155408",
-      "motion": "horizontal_closed_loop",
+      "motion": "closed_loop_horizontal",
       "expected_loop": true,
       "external_ground_truth": null,
-      "acceptance_sha256": "dfd606339c8c5d9c5ab5bc2a950388eb34370ad321a48f78a1f00ff80dcb2548"
+      "acceptance_sha256": "dfd606339c8c5d9c5ab5bc2a950388eb34370ad321a48f78a1f00ff80dcb2548",
+      "run_report": "reports/release_gate_temporal90_155408/run_acceptance.json",
+      "run_report_sha256": "b2876179ad94d328b402c3e5d764e72f1c7b8a361465180723f1808dbeeee205"
     },
     {
       "id": "d405_20260812_151212",
       "role": "validation",
       "session": "recordings/d405_720p_rgb_stereo_ir_20260812_151212",
-      "motion": "true_elevation_without_verified_loop",
+      "motion": "true_elevation_open",
       "expected_loop": false,
       "external_ground_truth": null,
-      "acceptance_sha256": "1503d14d796a49c00b176ee0954335060d34d342b913bdc7d33af4da2555e73a"
+      "acceptance_sha256": "1503d14d796a49c00b176ee0954335060d34d342b913bdc7d33af4da2555e73a",
+      "run_report": "reports/release_gate_temporal90_151212/run_acceptance.json",
+      "run_report_sha256": "1c79b43d88026e9d4bcb4752cf0a0876104748887496d673e12b3232a1358405"
     },
     {
       "id": "d405_20260812_121306",
       "role": "validation",
       "session": "recordings/d405_720p_rgb_stereo_ir_20260812_121306",
-      "motion": "horizontal_open_or_near_loop",
+      "motion": "free_motion_open",
       "expected_loop": null,
       "external_ground_truth": null,
-      "acceptance_sha256": "06cfc21f5bc4c73de4c12eb8f45d7b3ca19f45e02d90f83894b052be1201b6ce"
+      "acceptance_sha256": "06cfc21f5bc4c73de4c12eb8f45d7b3ca19f45e02d90f83894b052be1201b6ce",
+      "run_report": "reports/release_gate_temporal90_121306/run_acceptance.json",
+      "run_report_sha256": "543e923e5d8a32cf71794f8474c361068ff1acdfec9ff2e84a589ee5a01a9db6"
     }
   ]
 }
