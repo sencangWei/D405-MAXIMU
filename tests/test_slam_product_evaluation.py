@@ -46,6 +46,20 @@ def passing_benchmark_environment() -> dict:
     )
 
 
+def write_passing_pnp_gate_report(path: Path) -> dict:
+    report = {
+        "result": "PASS",
+        "threshold_freeze_allowed": True,
+        "selected_threshold": 0.06165,
+        "truth_policy": "development_and_validation_only_hidden_forbidden",
+    }
+    path.write_text(json.dumps(report), encoding="utf-8")
+    return {
+        "report": path.name,
+        "report_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
 def test_pose_errors_remove_only_rigid_alignment_not_scale():
     gt = np.column_stack((np.linspace(0, 1, 100), np.zeros(100), np.zeros(100)))
     rotation = Rotation.from_euler("z", 30, degrees=True)
@@ -562,6 +576,9 @@ def test_product_release_gate_rejects_missing_action_matrix(tmp_path):
     import hashlib
 
     manifest = {
+        "pnp_spatial_gate_evidence": write_passing_pnp_gate_report(
+            tmp_path / "pnp_gate.json"
+        ),
         "datasets": [
             {
                 "id": "only-one-action",
@@ -741,6 +758,9 @@ def test_hidden_dataset_requires_predeclared_loop_and_hashed_gt_report(tmp_path)
         encoding="utf-8",
     )
     manifest = {
+        "pnp_spatial_gate_evidence": write_passing_pnp_gate_report(
+            tmp_path / "pnp_gate.json"
+        ),
         "datasets": [
             {
                 "id": "development",
@@ -825,6 +845,7 @@ def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
                     "loop_input_drop_events": 0,
                     "estimator_keyframe_queue_drop_events": 0,
                     "automatic_loop_accepts": 0,
+                    "min_loop_spatial_support": 0.06165,
                     "benchmark_environment": passing_benchmark_environment(),
                 }
             ),
@@ -853,6 +874,9 @@ def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
     )
     manifest = {
         "release_variant": "auto_loop",
+        "pnp_spatial_gate_evidence": write_passing_pnp_gate_report(
+            tmp_path / "pnp_gate.json"
+        ),
         "datasets": [
             {
                 "id": "development",
@@ -939,6 +963,7 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
                     "loop_input_drop_events": 0,
                     "estimator_keyframe_queue_drop_events": 0,
                     "automatic_loop_accepts": 0,
+                    "min_loop_spatial_support": 0.06165,
                     "benchmark_environment": passing_benchmark_environment(),
                 }
             ),
@@ -1021,6 +1046,9 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
     )
     manifest = {
         "release_variant": "auto_loop",
+        "pnp_spatial_gate_evidence": write_passing_pnp_gate_report(
+            tmp_path / "pnp_gate.json"
+        ),
         "thresholds": {"min_hidden_runs_per_motion": 1},
         "datasets": [],
     }
@@ -1088,6 +1116,43 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
         "auto_loop": len(REQUIRED_MOTIONS),
         "depth_plane": len(REQUIRED_MOTIONS),
     }
+
+    mismatched_run = json.loads(run_paths["auto_loop"].read_text())
+    mismatched_run["min_loop_spatial_support"] = 0.05
+    run_paths["auto_loop"].write_text(json.dumps(mismatched_run))
+    mismatched_hash = hashlib.sha256(run_paths["auto_loop"].read_bytes()).hexdigest()
+    for dataset in manifest["datasets"]:
+        if dataset.get("run_report") == run_paths["auto_loop"].name:
+            dataset["run_report_sha256"] = mismatched_hash
+        if dataset["role"] == "hidden_test":
+            dataset["variant_reports"]["auto_loop"][
+                "run_report_sha256"
+            ] = mismatched_hash
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    dataset_module.ROOT = tmp_path
+    release_module.ROOT = tmp_path
+    try:
+        mismatched = validate_release(manifest_path, require_complete=True)
+    finally:
+        dataset_module.ROOT = old_dataset_root
+        release_module.ROOT = old_release_root
+    assert mismatched["result"] == "FAIL"
+    assert any(
+        "effective PnP spatial threshold does not match qualified evidence"
+        in failure
+        for failure in mismatched["failures"]
+    )
+
+    mismatched_run["min_loop_spatial_support"] = 0.06165
+    run_paths["auto_loop"].write_text(json.dumps(mismatched_run))
+    restored_hash = hashlib.sha256(run_paths["auto_loop"].read_bytes()).hexdigest()
+    for dataset in manifest["datasets"]:
+        if dataset.get("run_report") == run_paths["auto_loop"].name:
+            dataset["run_report_sha256"] = restored_hash
+        if dataset["role"] == "hidden_test":
+            dataset["variant_reports"]["auto_loop"][
+                "run_report_sha256"
+            ] = restored_hash
 
     del variant_reports["depth_plane"]["factor_report"]
     del variant_reports["depth_plane"]["factor_report_sha256"]

@@ -1,0 +1,251 @@
+{
+  "result": "INSUFFICIENT_EVIDENCE",
+  "threshold_freeze_allowed": false,
+  "truth_policy": "development_and_validation_only_hidden_forbidden",
+  "confirmation_frames": 4,
+  "requirements": {
+    "min_positive_runs": 2,
+    "min_negative_runs": 2,
+    "min_validation_positive_runs": 1,
+    "min_validation_negative_runs": 1
+  },
+  "minimum_support_margin": 0.02,
+  "qualified_counts": {
+    "positive_runs": 0,
+    "negative_runs": 0,
+    "validation_positive_runs": 0,
+    "validation_negative_runs": 0
+  },
+  "qualified_interval": null,
+  "selected_threshold": null,
+  "exploratory_interval": {
+    "lower_exclusive": 0.0308,
+    "upper_inclusive": 0.0925,
+    "separable": true,
+    "midpoint_candidate": 0.061649999999999996
+  },
+  "failures": [
+    "positive_runs 0 < 2",
+    "negative_runs 0 < 2",
+    "validation_positive_runs 0 < 1",
+    "validation_negative_runs 0 < 1"
+  ],
+  "datasets": [
+    {
+      "id": "pnp-000933-development-positive",
+      "role": "development",
+      "session": "/home/robot/ego_vio_humble/recordings/d405_720p_rgb_stereo_ir_20260813_000933",
+      "expected_loop": true,
+      "loop_log": "000933/auto_loop.log",
+      "loop_log_sha256": "6370270121bc1edf307849b6d8f03f5730b7fbe6614a53c40d68f2f3766ec017",
+      "run_report": "000933/run_acceptance.json",
+      "run_report_sha256": "52de773baaa5167348e6421201cdbcb84b441580f1b76ad9cbbd15a0b7862e94",
+      "complete": true,
+      "log_accepts": 1,
+      "reported_accepts": 1,
+      "accepts_match_expectation": true,
+      "environment_qualified": false,
+      "environment_failures": [
+        "unsupported benchmark environment schema",
+        "benchmark environment preflight is not PASS",
+        "benchmark threshold max_load_1m_per_cpu is missing",
+        "benchmark threshold max_cpu_pressure_some_avg10_percent is missing",
+        "benchmark threshold max_io_pressure_full_avg10_percent is missing",
+        "benchmark threshold max_memory_pressure_full_avg10_percent is missing",
+        "benchmark threshold min_memory_available_gib is missing",
+        "benchmark threshold max_conflicting_processes is missing",
+        "benchmark environment checks are missing"
+      ],
+      "qualified_for_freeze": false,
+      "confirmation_windows": [
+        {
+          "matched": 1,
+          "current_frames": [
+            568,
+            569,
+            570,
+            571
+          ],
+          "minimum_spatial_support": 0.0925,
+          "maximum_rmse_px": 2.527,
+          "maximum_p95_px": 3.872,
+          "minimum_inliers": 19,
+          "ends_in_accept": true
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            569,
+            570,
+            571,
+            572
+          ],
+          "minimum_spatial_support": 0.0925,
+          "maximum_rmse_px": 2.593,
+          "maximum_p95_px": 3.898,
+          "minimum_inliers": 20,
+          "ends_in_accept": false
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            570,
+            571,
+            572,
+            573
+          ],
+          "minimum_spatial_support": 0.107,
+          "maximum_rmse_px": 2.593,
+          "maximum_p95_px": 3.898,
+          "minimum_inliers": 22,
+          "ends_in_accept": false
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            571,
+            572,
+            573,
+            574
+          ],
+          "minimum_spatial_support": 0.107,
+          "maximum_rmse_px": 2.593,
+          "maximum_p95_px": 3.898,
+          "minimum_inliers": 22,
+          "ends_in_accept": false
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            572,
+            573,
+            574,
+            575
+          ],
+          "minimum_spatial_support": 0.0924,
+          "maximum_rmse_px": 2.593,
+          "maximum_p95_px": 3.898,
+          "minimum_inliers": 22,
+          "ends_in_accept": false
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            573,
+            574,
+            575,
+            576
+          ],
+          "minimum_spatial_support": 0.0916,
+          "maximum_rmse_px": 2.496,
+          "maximum_p95_px": 3.888,
+          "minimum_inliers": 22,
+          "ends_in_accept": false
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            574,
+            575,
+            576,
+            577
+          ],
+          "minimum_spatial_support": 0.0916,
+          "maximum_rmse_px": 2.471,
+          "maximum_p95_px": 3.896,
+          "minimum_inliers": 26,
+          "ends_in_accept": false
+        },
+        {
+          "matched": 1,
+          "current_frames": [
+            575,
+            576,
+            577,
+            578
+          ],
+          "minimum_spatial_support": 0.0916,
+          "maximum_rmse_px": 2.569,
+          "maximum_p95_px": 3.896,
+          "minimum_inliers": 24,
+          "ends_in_accept": false
+        }
+      ],
+      "gate_windows": [
+        {
+          "matched": 1,
+          "current_frames": [
+            568,
+            569,
+            570,
+            571
+          ],
+          "minimum_spatial_support": 0.0925,
+          "maximum_rmse_px": 2.527,
+          "maximum_p95_px": 3.872,
+          "minimum_inliers": 19,
+          "ends_in_accept": true
+        }
+      ]
+    },
+    {
+      "id": "pnp-151212-validation-negative",
+      "role": "validation",
+      "session": "/home/robot/ego_vio_humble/recordings/d405_720p_rgb_stereo_ir_20260812_151212",
+      "expected_loop": false,
+      "loop_log": "151212/auto_loop.log",
+      "loop_log_sha256": "ad341ed41a7a26f8ade58664e4350ad98277593c89afb7f0ca904d0d97974194",
+      "run_report": "151212/run_acceptance.json",
+      "run_report_sha256": "42a7b7a040ea6eeee5bda7906f08fa1aa5cc1ea5de95f9bc9ad8ac8be106eb38",
+      "complete": true,
+      "log_accepts": 0,
+      "reported_accepts": 0,
+      "accepts_match_expectation": true,
+      "environment_qualified": false,
+      "environment_failures": [
+        "unsupported benchmark environment schema",
+        "benchmark environment preflight is not PASS",
+        "benchmark threshold max_load_1m_per_cpu is missing",
+        "benchmark threshold max_cpu_pressure_some_avg10_percent is missing",
+        "benchmark threshold max_io_pressure_full_avg10_percent is missing",
+        "benchmark threshold max_memory_pressure_full_avg10_percent is missing",
+        "benchmark threshold min_memory_available_gib is missing",
+        "benchmark threshold max_conflicting_processes is missing",
+        "benchmark environment checks are missing"
+      ],
+      "qualified_for_freeze": false,
+      "confirmation_windows": [
+        {
+          "matched": 3,
+          "current_frames": [
+            596,
+            597,
+            598,
+            599
+          ],
+          "minimum_spatial_support": 0.0308,
+          "maximum_rmse_px": 2.858,
+          "maximum_p95_px": 3.777,
+          "minimum_inliers": 17,
+          "ends_in_accept": false
+        }
+      ],
+      "gate_windows": [
+        {
+          "matched": 3,
+          "current_frames": [
+            596,
+            597,
+            598,
+            599
+          ],
+          "minimum_spatial_support": 0.0308,
+          "maximum_rmse_px": 2.858,
+          "maximum_p95_px": 3.777,
+          "minimum_inliers": 17,
+          "ends_in_accept": false
+        }
+      ]
+    }
+  ]
+}

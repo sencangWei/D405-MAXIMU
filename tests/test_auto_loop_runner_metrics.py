@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 from test_vins_auto_loop import (
     camera_frame_count,
     classify_run_scope,
+    parse_loop_configuration,
     parse_pnp_quality,
     parse_pose_graph_health,
     trajectory_diagnostics,
@@ -120,4 +121,13 @@ def test_parse_pose_graph_health_rejects_unusable_solution():
         "optimizations": 2,
         "usable_optimizations": 1,
         "rejected_optimizations": 1,
+    }
+
+
+def test_parse_loop_configuration_reports_effective_spatial_threshold():
+    assert parse_loop_configuration(
+        "min_loop_spatial_support: 0.0617 (enabled)\n"
+    ) == {"min_loop_spatial_support": 0.0617}
+    assert parse_loop_configuration("unrelated log\n") == {
+        "min_loop_spatial_support": None
     }

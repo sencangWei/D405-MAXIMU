@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "confirmation_frames": 4,
+  "requirements": {
+    "min_positive_runs": 2,
+    "min_negative_runs": 2,
+    "min_validation_positive_runs": 1,
+    "min_validation_negative_runs": 1
+  },
+  "datasets": [
+    {
+      "id": "pnp-000933-development-positive",
+      "role": "development",
+      "session": "/home/robot/ego_vio_humble/recordings/d405_720p_rgb_stereo_ir_20260813_000933",
+      "expected_loop": true,
+      "loop_log": "000933/auto_loop.log",
+      "loop_log_sha256": "6370270121bc1edf307849b6d8f03f5730b7fbe6614a53c40d68f2f3766ec017",
+      "run_report": "000933/run_acceptance.json",
+      "run_report_sha256": "52de773baaa5167348e6421201cdbcb84b441580f1b76ad9cbbd15a0b7862e94"
+    },
+    {
+      "id": "pnp-151212-validation-negative",
+      "role": "validation",
+      "session": "/home/robot/ego_vio_humble/recordings/d405_720p_rgb_stereo_ir_20260812_151212",
+      "expected_loop": false,
+      "loop_log": "151212/auto_loop.log",
+      "loop_log_sha256": "ad341ed41a7a26f8ade58664e4350ad98277593c89afb7f0ca904d0d97974194",
+      "run_report": "151212/run_acceptance.json",
+      "run_report_sha256": "42a7b7a040ea6eeee5bda7906f08fa1aa5cc1ea5de95f9bc9ad8ac8be106eb38"
+    }
+  ]
+}

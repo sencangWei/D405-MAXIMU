@@ -1,0 +1,127 @@
+From b3b9fd4d9ffcd5ba30b7fd417e3207785e91c566 Mon Sep 17 00:00:00 2001
+From: robot <robot@localhost>
+Date: Fri, 14 Aug 2026 00:09:27 +0800
+Subject: [PATCH] feat(loop): add qualified spatial support gate
+
+---
+ .../d405_stereo_imu_config.yaml               |  4 +++
+ loop_fusion/src/keyframe.cpp                  | 12 +++++++
+ loop_fusion/src/parameters.h                  |  1 +
+ loop_fusion/src/pose_graph_node.cpp           | 32 +++++++++++++------
+ 4 files changed, 40 insertions(+), 9 deletions(-)
+
+diff --git a/config/d405_stereo_imu/d405_stereo_imu_config.yaml b/config/d405_stereo_imu/d405_stereo_imu_config.yaml
+index a73e98d..d862a59 100644
+--- a/config/d405_stereo_imu/d405_stereo_imu_config.yaml
++++ b/config/d405_stereo_imu/d405_stereo_imu_config.yaml
+@@ -65,3 +65,7 @@ g_norm: 9.805
+ load_previous_pose_graph: 0
+ pose_graph_save_path: "/home/robot/vins_output/pose_graph/"
+ save_image: 0
++
++# PnP内点空间覆盖门。0表示关闭，保持当前生产候选行为。
++# 只有开发/验证正负样本资格报告允许冻结阈值后，才可改为非零。
++min_loop_spatial_support: 0.0
+diff --git a/loop_fusion/src/keyframe.cpp b/loop_fusion/src/keyframe.cpp
+index 9b7bd06..b8518cd 100755
+--- a/loop_fusion/src/keyframe.cpp
++++ b/loop_fusion/src/keyframe.cpp
+@@ -695,6 +695,8 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
+ 		: 0.0;
+ 	const double current_hull_fraction = imageHullFraction(matched_2d_cur);
+ 	const double old_hull_fraction = imageHullFraction(matched_2d_old);
++	const double spatial_support =
++		std::min(current_hull_fraction, old_hull_fraction);
+ 	if (!matched_2d_cur.empty())
+ 	{
+ 		printf("[AUTO_LOOP_PNP_QUALITY] current=%d matched=%d inliers=%zu "
+@@ -703,6 +705,16 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
+ 		       pnp_reprojection_rmse_px, pnp_reprojection_p95_px,
+ 		       current_hull_fraction, old_hull_fraction);
+ 	}
++	if ((int)matched_2d_cur.size() > MIN_LOOP_NUM &&
++	    pnp_inlier_ratio >= MIN_LOOP_INLIER_RATIO &&
++	    spatial_support < MIN_LOOP_SPATIAL_SUPPORT)
++	{
++		printf("[AUTO_LOOP_SPATIAL_REJECT] current=%d matched=%d "
++		       "support=%.4f threshold=%.4f\n",
++		       index, old_kf->index, spatial_support,
++		       MIN_LOOP_SPATIAL_SUPPORT);
++		return false;
++	}
+ 	if ((int)matched_2d_cur.size() > MIN_LOOP_NUM &&
+ 	    pnp_inlier_ratio >= MIN_LOOP_INLIER_RATIO)
+ 	{
+diff --git a/loop_fusion/src/parameters.h b/loop_fusion/src/parameters.h
+index 89b50e7..31dd68d 100755
+--- a/loop_fusion/src/parameters.h
++++ b/loop_fusion/src/parameters.h
+@@ -34,6 +34,7 @@ extern int ROW;
+ extern int COL;
+ extern std::string VINS_RESULT_PATH;
+ extern int DEBUG_IMAGE;
++extern double MIN_LOOP_SPATIAL_SUPPORT;
+ extern std::string WORLD_FRAME_ID;
+ extern std::string BODY_FRAME_ID;
+ extern std::string CAMERA_FRAME_ID;
+diff --git a/loop_fusion/src/pose_graph_node.cpp b/loop_fusion/src/pose_graph_node.cpp
+index 979c065..8b5ff1b 100755
+--- a/loop_fusion/src/pose_graph_node.cpp
++++ b/loop_fusion/src/pose_graph_node.cpp
+@@ -63,6 +63,7 @@ int VISUALIZATION_SHIFT_Y;
+ int ROW;
+ int COL;
+ int DEBUG_IMAGE;
++double MIN_LOOP_SPATIAL_SUPPORT = 0.0;
+ 
+ std::string WORLD_FRAME_ID = "world";
+ std::string BODY_FRAME_ID = "body";
+@@ -361,15 +362,6 @@ void command()
+ 
+ int main(int argc, char **argv)
+ {
+-    rclcpp::init(argc, argv);
+-    auto n = rclcpp::Node::make_shared("loop_fusion");
+-    posegraph.registerPub(n);
+-    
+-    VISUALIZATION_SHIFT_X = 0;
+-    VISUALIZATION_SHIFT_Y = 0;
+-    SKIP_CNT = 0;
+-    SKIP_DIS = 0;
+-
+     if(argc != 2)
+     {
+         printf("please intput: rosrun loop_fusion loop_fusion_node [config file] \n"
+@@ -385,7 +377,29 @@ int main(int argc, char **argv)
+     if(!fsSettings.isOpened())
+     {
+         std::cerr << "ERROR: Wrong path to settings" << std::endl;
++        return 1;
++    }
++    const cv::FileNode min_spatial_support_node =
++        fsSettings["min_loop_spatial_support"];
++    if (!min_spatial_support_node.empty())
++        MIN_LOOP_SPATIAL_SUPPORT = static_cast<double>(min_spatial_support_node);
++    if (MIN_LOOP_SPATIAL_SUPPORT < 0.0 || MIN_LOOP_SPATIAL_SUPPORT > 1.0)
++    {
++        std::cerr << "ERROR: min_loop_spatial_support must be in [0, 1]"
++                  << std::endl;
++        return 1;
+     }
++    printf("min_loop_spatial_support: %.6f%s\n", MIN_LOOP_SPATIAL_SUPPORT,
++           MIN_LOOP_SPATIAL_SUPPORT > 0.0 ? " (enabled)" : " (disabled)");
++
++    rclcpp::init(argc, argv);
++    auto n = rclcpp::Node::make_shared("loop_fusion");
++    posegraph.registerPub(n);
++
++    VISUALIZATION_SHIFT_X = 0;
++    VISUALIZATION_SHIFT_Y = 0;
++    SKIP_CNT = 0;
++    SKIP_DIS = 0;
+ 
+     cameraposevisual.setScale(0.1);
+     cameraposevisual.setLineWidth(0.01);
+-- 
+2.34.1
+

@@ -109,6 +109,16 @@ def parse_pose_graph_health(loop_log: str) -> dict:
     }
 
 
+def parse_loop_configuration(loop_log: str) -> dict:
+    spatial_support = re.search(
+        r"min_loop_spatial_support:\s*([0-9.]+)\s*\((enabled|disabled)\)",
+        loop_log,
+    )
+    if spatial_support is None:
+        return {"min_loop_spatial_support": None}
+    return {"min_loop_spatial_support": float(spatial_support.group(1))}
+
+
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
@@ -416,7 +426,11 @@ def main() -> int:
         for line in loop_log.splitlines()
         if "[AUTO_LOOP_CORRECTION_REJECT]" in line
     ]
+    spatial_rejected = [
+        line for line in loop_log.splitlines() if "[AUTO_LOOP_SPATIAL_REJECT]" in line
+    ]
     pose_graph_health = parse_pose_graph_health(loop_log)
+    loop_configuration = parse_loop_configuration(loop_log)
     input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
     estimator_queue_drops = [
         line
@@ -502,6 +516,8 @@ def main() -> int:
         "automatic_loop_accepts": len(accepted),
         "automatic_loop_rejects": len(rejected),
         "automatic_correction_rejects": len(correction_rejected),
+        "automatic_spatial_rejects": len(spatial_rejected),
+        **loop_configuration,
         "pnp_quality": parse_pnp_quality(loop_log),
         "pose_graph_health": pose_graph_health,
         "raw_trajectory_diagnostics": raw_diagnostics,
@@ -522,6 +538,7 @@ def main() -> int:
         print(line)
     print(f"automatic loop rejects after geometry: {len(rejected)}")
     print(f"automatic correction safety rejects: {len(correction_rejected)}")
+    print(f"automatic spatial-support rejects: {len(spatial_rejected)}")
     print(f"pose coverage: {pose_coverage:.4f}")
     print(f"loop input drop events: {len(input_drops)}")
     print(f"estimator keyframe queue drop events: {len(estimator_queue_drops)}")

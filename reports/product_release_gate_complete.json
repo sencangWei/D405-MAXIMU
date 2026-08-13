@@ -1,0 +1,90 @@
+{
+  "result": "FAIL",
+  "release_readiness": "NOT_READY",
+  "customer_release_complete": false,
+  "evaluation_scope": "complete_hidden_release",
+  "thresholds": {
+    "min_pose_coverage": 0.98,
+    "max_loop_endpoint_m": 0.01,
+    "max_ate_translation_rmse_m": 0.01,
+    "max_rpe_translation_rmse_m": 0.005,
+    "max_rpe_rotation_rmse_deg": 0.5,
+    "max_z_rmse_m": 0.01,
+    "max_attitude_ate_rmse_deg": 0.5,
+    "max_endpoint_drift_percent_of_path": 1.0,
+    "max_failure_rate": 0.05,
+    "min_hidden_runs_per_motion": 3
+  },
+  "release_variant": "auto_loop",
+  "required_variants": [
+    "raw_vins",
+    "auto_loop",
+    "depth_plane"
+  ],
+  "dataset_gate": {
+    "result": "FAIL",
+    "product_test_readiness": "MISSING_HIDDEN_TEST",
+    "role_counts": {
+      "development": 1,
+      "validation": 3
+    },
+    "motion_counts": {
+      "closed_loop_with_elevation": 1,
+      "closed_loop_horizontal": 1,
+      "true_elevation_open": 1,
+      "free_motion_open": 1
+    },
+    "required_motions": [
+      "closed_loop_horizontal",
+      "closed_loop_with_elevation",
+      "fast_handheld",
+      "free_motion_open",
+      "in_place_rotation",
+      "l_shape_open",
+      "straight_open",
+      "true_elevation_open"
+    ],
+    "missing_motions": [
+      "fast_handheld",
+      "in_place_rotation",
+      "l_shape_open",
+      "straight_open"
+    ],
+    "failures": [
+      "no immutable hidden-test dataset with external ground truth",
+      "missing required motions: fast_handheld, in_place_rotation, l_shape_open, straight_open"
+    ]
+  },
+  "measured_runs": 4,
+  "ground_truth_reports": 0,
+  "loop_reports": 2,
+  "variant_report_counts": {
+    "raw_vins": 0,
+    "auto_loop": 0,
+    "depth_plane": 0
+  },
+  "variant_ground_truth_counts": {
+    "raw_vins": 0,
+    "auto_loop": 0,
+    "depth_plane": 0
+  },
+  "hidden_runs_by_motion": {},
+  "failure_rate": 0.0,
+  "failures": [
+    "no immutable hidden-test dataset with external ground truth",
+    "missing required motions: fast_handheld, in_place_rotation, l_shape_open, straight_open",
+    "PnP spatial gate evidence is not PASS",
+    "PnP spatial gate threshold is not qualified for freeze",
+    "PnP spatial gate selected threshold is invalid",
+    "no hashed external-ground-truth evaluation report",
+    "no hidden three-variant evaluation matrix",
+    "hidden motion closed_loop_horizontal: 0 runs < 3",
+    "hidden motion closed_loop_with_elevation: 0 runs < 3",
+    "hidden motion fast_handheld: 0 runs < 3",
+    "hidden motion free_motion_open: 0 runs < 3",
+    "hidden motion in_place_rotation: 0 runs < 3",
+    "hidden motion l_shape_open: 0 runs < 3",
+    "hidden motion straight_open: 0 runs < 3",
+    "hidden motion true_elevation_open: 0 runs < 3"
+  ]
+}

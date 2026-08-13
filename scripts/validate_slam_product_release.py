@@ -128,11 +128,36 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
     loop_reports = 0
     variant_report_counts = {name: 0 for name in REQUIRED_VARIANTS}
     variant_ground_truth_counts = {name: 0 for name in REQUIRED_VARIANTS}
+    qualified_spatial_threshold = None
 
     if require_complete and release_variant not in REQUIRED_VARIANTS:
         failures.append(
             "release_variant must be one of: " + ", ".join(REQUIRED_VARIANTS)
         )
+    if require_complete:
+        gate_evidence = manifest.get("pnp_spatial_gate_evidence", {})
+        gate_report = load_hashed_json(
+            gate_evidence.get("report"),
+            gate_evidence.get("report_sha256"),
+            "PnP spatial gate evidence",
+            failures,
+        )
+        if gate_report is not None:
+            if gate_report.get("result") != "PASS":
+                failures.append("PnP spatial gate evidence is not PASS")
+            if gate_report.get("threshold_freeze_allowed") is not True:
+                failures.append("PnP spatial gate threshold is not qualified for freeze")
+            selected_threshold = gate_report.get("selected_threshold")
+            if not isinstance(selected_threshold, (int, float)) or not (
+                0.0 < selected_threshold <= 1.0
+            ):
+                failures.append("PnP spatial gate selected threshold is invalid")
+            else:
+                qualified_spatial_threshold = float(selected_threshold)
+            if gate_report.get("truth_policy") != (
+                "development_and_validation_only_hidden_forbidden"
+            ):
+                failures.append("PnP spatial gate evidence violates tuning policy")
 
     for dataset in manifest.get("datasets", []):
         dataset_id = dataset.get("id", "unknown")
@@ -155,6 +180,15 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                 failures.append(f"{dataset_id}: loop input drops are nonzero")
             if report.get("estimator_keyframe_queue_drop_events") != 0:
                 failures.append(f"{dataset_id}: estimator keyframe drops are nonzero")
+            if require_complete and qualified_spatial_threshold is not None:
+                effective_threshold = report.get("min_loop_spatial_support")
+                if not isinstance(effective_threshold, (int, float)) or not math.isclose(
+                    effective_threshold, qualified_spatial_threshold, abs_tol=5e-5
+                ):
+                    failures.append(
+                        f"{dataset_id}: effective PnP spatial threshold does not "
+                        "match qualified evidence"
+                    )
             expected_loop = dataset.get("expected_loop")
             accepted = int(report.get("automatic_loop_accepts", 0))
             if expected_loop is True:
@@ -244,6 +278,22 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                         failures.append(
                             f"{dataset_id}: {variant}: estimator keyframe drops are nonzero"
                         )
+                    if (
+                        variant in {"auto_loop", "depth_plane"}
+                        and qualified_spatial_threshold is not None
+                    ):
+                        effective_threshold = variant_run.get(
+                            "min_loop_spatial_support"
+                        )
+                        if not isinstance(effective_threshold, (int, float)) or not math.isclose(
+                            effective_threshold,
+                            qualified_spatial_threshold,
+                            abs_tol=5e-5,
+                        ):
+                            failures.append(
+                                f"{dataset_id}: {variant}: effective PnP spatial "
+                                "threshold does not match qualified evidence"
+                            )
                     if variant_run.get("pose_graph_health", {}).get(
                         "rejected_optimizations", 0
                     ) != 0:
