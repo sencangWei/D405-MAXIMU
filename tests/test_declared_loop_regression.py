@@ -3,7 +3,9 @@ import json
 from pathlib import Path
 
 from run_declared_loop_regression import (
+    freeze_dataset_inputs,
     score_run,
+    validate_frozen_dataset,
     validate_manifest,
     write_markdown_report,
 )
@@ -157,6 +159,47 @@ def test_manifest_requires_immutable_passing_capture(tmp_path: Path):
     failures = validate_manifest(manifest)
     assert any("hash changed" in failure for failure in failures)
     assert any("not PASS" in failure for failure in failures)
+
+
+def test_freezes_all_replay_inputs_and_detects_later_mutation(tmp_path: Path):
+    session = tmp_path / "session"
+    imu_dir = session / "external_imu"
+    imu_dir.mkdir(parents=True)
+    (session / "acceptance.json").write_text(
+        json.dumps({"result": "PASS"}), encoding="utf-8"
+    )
+    (session / "d405_frames.csv").write_text("frames", encoding="utf-8")
+    (session / "camera.db3").write_bytes(b"camera")
+    (imu_dir / "imu.bin").write_bytes(b"imu")
+    manifest = {
+        "truth_policy": {
+            "usage": "post_run_scoring_only",
+            "never_input_to_slam": True,
+        },
+        "datasets": [
+            {
+                "id": "closed",
+                "session": str(session),
+                "expected_loop": True,
+                "acceptance_sha256": hashlib.sha256(
+                    (session / "acceptance.json").read_bytes()
+                ).hexdigest(),
+            }
+        ],
+    }
+    output = tmp_path / "inputs.json"
+
+    frozen = freeze_dataset_inputs(manifest, output)
+
+    dataset = frozen["datasets"][0]
+    assert output.is_file()
+    assert dataset["files"]["camera_db3"]["sha256"] == hashlib.sha256(
+        b"camera"
+    ).hexdigest()
+    assert validate_frozen_dataset(dataset) == []
+
+    (imu_dir / "imu.bin").write_bytes(b"changed")
+    assert validate_frozen_dataset(dataset) == ["frozen input changed: imu_samples"]
 
 
 def test_markdown_report_exposes_per_run_retrieval_and_accuracy(tmp_path: Path):

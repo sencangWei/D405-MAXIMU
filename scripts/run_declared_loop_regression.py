@@ -65,6 +65,74 @@ def all_datasets(manifest: dict) -> list[dict]:
     return [*manifest.get("datasets", []), *manifest.get("safety_controls", [])]
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def select_session_db3(session: Path) -> Path:
+    candidates = [path for path in session.glob("*.db3") if path.stat().st_size > 0]
+    if not candidates:
+        raise FileNotFoundError(f"no non-empty DB3 in {session}")
+    return max(candidates, key=lambda path: path.stat().st_size)
+
+
+def freeze_dataset_inputs(manifest: dict, output: Path) -> dict:
+    datasets = []
+    for dataset in all_datasets(manifest):
+        session = resolve_project_path(dataset["session"]).resolve()
+        files = {
+            "capture_acceptance": session / "acceptance.json",
+            "camera_db3": select_session_db3(session),
+            "camera_timestamps": session / "d405_frames.csv",
+            "imu_samples": session / "external_imu" / "imu.bin",
+        }
+        frozen_files = {}
+        for name, path in files.items():
+            before = path.stat()
+            digest = sha256_file(path)
+            after = path.stat()
+            if (before.st_size, before.st_mtime_ns) != (
+                after.st_size,
+                after.st_mtime_ns,
+            ):
+                raise RuntimeError(f"input changed while hashing: {path}")
+            frozen_files[name] = {
+                "path": str(path),
+                "size_bytes": after.st_size,
+                "mtime_ns": after.st_mtime_ns,
+                "sha256": digest,
+            }
+        datasets.append({"id": dataset["id"], "files": frozen_files})
+    result = {
+        "schema_version": 1,
+        "truth_usage": "post_run_scoring_only",
+        "datasets": datasets,
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    return result
+
+
+def validate_frozen_dataset(dataset: dict) -> list[str]:
+    failures = []
+    for name, item in dataset["files"].items():
+        path = Path(item["path"])
+        try:
+            stat = path.stat()
+        except FileNotFoundError:
+            failures.append(f"frozen input disappeared: {name}")
+            continue
+        if stat.st_size != item["size_bytes"] or stat.st_mtime_ns != item["mtime_ns"]:
+            failures.append(f"frozen input changed: {name}")
+    return failures
+
+
 def validate_manifest(manifest: dict) -> list[str]:
     failures: list[str] = []
     policy = manifest.get("truth_policy", {})
@@ -243,12 +311,27 @@ def execute(
             "datasets": [],
         }
 
+    dataset_inputs_path = out_root / "dataset_inputs.sha256.json"
+    frozen_inputs = freeze_dataset_inputs(manifest, dataset_inputs_path)
+    frozen_by_id = {item["id"]: item for item in frozen_inputs["datasets"]}
+
     thresholds = manifest["thresholds"]
     datasets = []
     contract = manifest.get("algorithm_contract", {})
     for dataset_index, dataset in enumerate(all_datasets(manifest)):
         runs = []
         for repetition in range(1, repetitions + 1):
+            input_failures = validate_frozen_dataset(frozen_by_id[dataset["id"]])
+            if input_failures:
+                runs.append(
+                    {
+                        "repetition": repetition,
+                        "result": "FAIL",
+                        "return_code": None,
+                        "failures": input_failures,
+                    }
+                )
+                break
             while True:
                 per_run_environment = evaluate_environment(capture_environment())
                 if per_run_environment["result"] == "PASS":
@@ -329,6 +412,8 @@ def execute(
         "positive_dataset_count": len(manifest.get("datasets", [])),
         "safety_control_count": len(manifest.get("safety_controls", [])),
         "benchmark_environment": environment,
+        "dataset_inputs": str(dataset_inputs_path),
+        "dataset_inputs_sha256": sha256_file(dataset_inputs_path),
         "datasets": datasets,
     }
 
