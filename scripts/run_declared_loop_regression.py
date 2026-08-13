@@ -8,6 +8,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -207,6 +208,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--inventory-only", action="store_true")
+    parser.add_argument(
+        "--wait-for-environment",
+        action="store_true",
+        help="wait until benchmark preflight passes instead of exiting immediately",
+    )
+    parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--repetitions", type=int)
     parser.add_argument("--out-root", type=Path)
     args = parser.parse_args()
@@ -231,6 +238,19 @@ def main() -> int:
         / "reports"
         / f"declared_loop_regression_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     )
+    if args.wait_for_environment:
+        if args.poll_seconds <= 0:
+            raise ValueError("poll-seconds must be positive")
+        while True:
+            environment = evaluate_environment(capture_environment())
+            if environment["result"] == "PASS":
+                break
+            print(
+                "benchmark environment not ready; waiting: "
+                + "; ".join(environment["failures"]),
+                flush=True,
+            )
+            time.sleep(args.poll_seconds)
     summary = execute(manifest, out_root, repetitions)
     write_summary(out_root / "summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
