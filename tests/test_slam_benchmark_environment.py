@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from slam_benchmark_environment import (
     CONFLICTING_PROCESS_MARKERS,
+    RESOURCE_GATED_PROCESS_MARKERS,
     evaluate_environment,
     validate_environment_report,
 )
@@ -42,8 +43,10 @@ def test_environment_preflight_passes_qualified_idle_host():
 
 def test_isolated_hik_camera_is_resource_gated_not_an_absolute_conflict():
     assert "hik_camera_node" not in CONFLICTING_PROCESS_MARKERS
+    assert "hik_camera_node" in RESOURCE_GATED_PROCESS_MARKERS
+    assert "rebot_rs_trajectory_replay.py" not in CONFLICTING_PROCESS_MARKERS
+    assert "rebot_rs_trajectory_replay.py" in RESOURCE_GATED_PROCESS_MARKERS
     assert "scripts/train.py" in CONFLICTING_PROCESS_MARKERS
-    assert "rebot_rs_trajectory_replay.py" in CONFLICTING_PROCESS_MARKERS
 
 
 def test_environment_preflight_rejects_io_pressure_and_conflicting_slam():

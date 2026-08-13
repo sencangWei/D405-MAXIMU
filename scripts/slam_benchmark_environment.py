@@ -27,8 +27,11 @@ CONFLICTING_PROCESS_MARKERS = (
     "replay_db3_to_ros2.py",
     "replay_db3_cpp",
     "capture_d405_720p_rgb_stereo_ir.py",
-    "rebot_rs_trajectory_replay.py",
     "scripts/train.py",
+)
+RESOURCE_GATED_PROCESS_MARKERS = (
+    "rebot_rs_trajectory_replay.py",
+    "hik_camera_node",
 )
 CHECK_SPECIFICATIONS = (
     ("load_1m_per_cpu", "max_load_1m_per_cpu", "<="),
@@ -55,8 +58,8 @@ def read_pressure(path: Path) -> dict[str, dict[str, float]]:
     return result
 
 
-def find_conflicting_processes() -> list[dict[str, int | str]]:
-    conflicts: list[dict[str, int | str]] = []
+def find_processes(markers: tuple[str, ...]) -> list[dict[str, int | str]]:
+    matches: list[dict[str, int | str]] = []
     own_pid = os.getpid()
     for directory in Path("/proc").iterdir():
         if not directory.name.isdigit() or int(directory.name) == own_pid:
@@ -67,9 +70,13 @@ def find_conflicting_processes() -> list[dict[str, int | str]]:
             ).strip()
         except (FileNotFoundError, PermissionError, ProcessLookupError):
             continue
-        if command and any(marker in command for marker in CONFLICTING_PROCESS_MARKERS):
-            conflicts.append({"pid": int(directory.name), "command": command})
-    return sorted(conflicts, key=lambda item: int(item["pid"]))
+        if command and any(marker in command for marker in markers):
+            matches.append({"pid": int(directory.name), "command": command})
+    return sorted(matches, key=lambda item: int(item["pid"]))
+
+
+def find_conflicting_processes() -> list[dict[str, int | str]]:
+    return find_processes(CONFLICTING_PROCESS_MARKERS)
 
 
 def capture_environment() -> dict:
@@ -98,6 +105,7 @@ def capture_environment() -> dict:
             "io": read_pressure(Path("/proc/pressure/io")),
         },
         "conflicting_processes": find_conflicting_processes(),
+        "resource_gated_processes": find_processes(RESOURCE_GATED_PROCESS_MARKERS),
     }
 
 
