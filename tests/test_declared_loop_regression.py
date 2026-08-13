@@ -2,7 +2,11 @@ import hashlib
 import json
 from pathlib import Path
 
-from run_declared_loop_regression import score_run, validate_manifest
+from run_declared_loop_regression import (
+    score_run,
+    validate_manifest,
+    write_markdown_report,
+)
 
 
 def healthy_report(endpoint: float = 0.005, accepts: int = 1) -> dict:
@@ -115,3 +119,36 @@ def test_manifest_requires_immutable_passing_capture(tmp_path: Path):
     failures = validate_manifest(manifest)
     assert any("hash changed" in failure for failure in failures)
     assert any("not PASS" in failure for failure in failures)
+
+
+def test_markdown_report_exposes_per_run_retrieval_and_accuracy(tmp_path: Path):
+    output = tmp_path / "report.md"
+    write_markdown_report(
+        output,
+        {
+            "result": "PASS",
+            "datasets": [
+                {
+                    "id": "closed_a",
+                    "runs": [
+                        {
+                            "repetition": 1,
+                            "result": "PASS",
+                            "automatic_loop_accepts": 1,
+                            "endpoint_error_m": 0.0062,
+                            "pose_coverage": 0.993,
+                            "loop_retrieval": {
+                                "returned": {"mean": 24.0},
+                                "eligible": {"mean": 3.5},
+                            },
+                            "failures": [],
+                        }
+                    ],
+                }
+            ],
+        },
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert "仅在SLAM完成后评分" in text
+    assert "| closed_a | 1 | PASS | 1 | 6.20 | 99.30% | 24.0/3.5 | — |" in text

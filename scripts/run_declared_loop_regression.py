@@ -119,6 +119,42 @@ def write_summary(path: Path, summary: dict) -> None:
     path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def write_markdown_report(path: Path, summary: dict) -> None:
+    lines = [
+        "# 无提示自动回环重复性报告",
+        "",
+        f"- 总结论：**{summary['result']}**",
+        "- 真值用途：仅在SLAM完成后评分；未输入估计器、回环检测或位姿图。",
+        "- 门槛：真闭环每轮至少接受1条自动回环、首尾误差<10 mm、轨迹覆盖率>=98%；负样本必须0误回环。",
+        "",
+        "| 数据 | 轮次 | 结果 | 自动回环 | 首尾误差(mm) | 覆盖率 | DBoW候选/有效候选(均值) | 失败原因 |",
+        "|---|---:|---|---:|---:|---:|---:|---|",
+    ]
+    for dataset in summary.get("datasets", []):
+        for run in dataset.get("runs", []):
+            endpoint = run.get("endpoint_error_m")
+            endpoint_text = "—" if endpoint is None else f"{1000.0 * endpoint:.2f}"
+            coverage = run.get("pose_coverage")
+            coverage_text = "—" if coverage is None else f"{100.0 * coverage:.2f}%"
+            retrieval = run.get("loop_retrieval", {})
+            returned = retrieval.get("returned", {}).get("mean")
+            eligible = retrieval.get("eligible", {}).get("mean")
+            retrieval_text = (
+                "—"
+                if returned is None or eligible is None
+                else f"{returned:.1f}/{eligible:.1f}"
+            )
+            failure_text = "；".join(run.get("failures", [])) or "—"
+            lines.append(
+                f"| {dataset['id']} | {run['repetition']} | {run['result']} | "
+                f"{run.get('automatic_loop_accepts', 0)} | {endpoint_text} | "
+                f"{coverage_text} | {retrieval_text} | {failure_text} |"
+            )
+    lines.append("")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def inventory(manifest: dict) -> dict:
     thresholds = manifest["thresholds"]
     rows = []
@@ -313,6 +349,7 @@ def main() -> int:
         poll_seconds=args.poll_seconds,
     )
     write_summary(out_root / "summary.json", summary)
+    write_markdown_report(out_root / "report.md", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary["result"] == "PASS" else 4 if summary["result"] == "INFRASTRUCTURE_BLOCKED" else 3
 
