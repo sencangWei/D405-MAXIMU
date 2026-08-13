@@ -29,7 +29,6 @@ CONFLICTING_PROCESS_MARKERS = (
     "capture_d405_720p_rgb_stereo_ir.py",
     "rebot_rs_trajectory_replay.py",
     "scripts/train.py",
-    "hik_camera_node",
 )
 CHECK_SPECIFICATIONS = (
     ("load_1m_per_cpu", "max_load_1m_per_cpu", "<="),
