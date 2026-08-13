@@ -31,6 +31,7 @@ from slam_benchmark_environment import (
     validate_environment_report,
 )
 from slam_run_health import evaluate_slam_health
+from slam_runtime_watchdog import SlamRuntimeWatchdog
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -294,11 +295,21 @@ def main() -> int:
     raw_rows: list[list[float]] = []
     corrected_rows: list[list[float]] = []
     runtime_error: str | None = None
+    runtime_watchdog = SlamRuntimeWatchdog(start_monotonic_s=time.monotonic())
 
-    def append_pose(rows: list[list[float]], message: Odometry) -> None:
+    def append_pose(
+        stream: str, rows: list[list[float]], message: Odometry
+    ) -> None:
         pose = message.pose.pose
+        timestamp_s = message.header.stamp.sec + message.header.stamp.nanosec * 1e-9
+        runtime_watchdog.ingest(
+            stream,
+            timestamp_s=timestamp_s,
+            point=(pose.position.x, pose.position.y, pose.position.z),
+            arrival_monotonic_s=time.monotonic(),
+        )
         rows.append([
-            message.header.stamp.sec + message.header.stamp.nanosec * 1e-9,
+            timestamp_s,
             pose.position.x,
             pose.position.y,
             pose.position.z,
@@ -308,9 +319,17 @@ def main() -> int:
             pose.orientation.z,
         ])
 
-    node.create_subscription(Odometry, "/odometry", lambda msg: append_pose(raw_rows, msg), 2000)
     node.create_subscription(
-        Odometry, "/odometry_rect", lambda msg: append_pose(corrected_rows, msg), 2000
+        Odometry,
+        "/odometry",
+        lambda msg: append_pose("raw", raw_rows, msg),
+        2000,
+    )
+    node.create_subscription(
+        Odometry,
+        "/odometry_rect",
+        lambda msg: append_pose("corrected", corrected_rows, msg),
+        2000,
     )
 
     try:
@@ -449,7 +468,14 @@ def main() -> int:
     pose_coverage = min(len(raw_rows), len(corrected_rows)) / expected_poses
     raw_diagnostics = trajectory_diagnostics(raw_rows)
     corrected_diagnostics = trajectory_diagnostics(corrected_rows)
+    runtime_watchdog_report = runtime_watchdog.completion_snapshot()
     failures: list[str] = []
+    if runtime_watchdog_report["state"] != "SLAM_HEALTHY":
+        failures.append(
+            "runtime watchdog is "
+            f"{runtime_watchdog_report['state']}: "
+            + ", ".join(runtime_watchdog_report["failures"])
+        )
     if input_drops:
         failures.append(f"loop keyframe transport/backlog drops: {len(input_drops)}")
     if estimator_queue_drops:
@@ -503,6 +529,7 @@ def main() -> int:
             runtime_error, camera_frames, len(corrected_rows)
         ),
         "runtime_error": runtime_error,
+        "runtime_watchdog": runtime_watchdog_report,
         "ros_domain_id": args.ros_domain_id,
         "ros_localhost_only": True,
         "benchmark_environment": benchmark_environment,

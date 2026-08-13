@@ -56,6 +56,10 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         "result": "PASS",
         "failure_scope": "SLAM",
         "runtime_error": None,
+        "runtime_watchdog": {
+            "state": "SLAM_HEALTHY",
+            "product_usable": True,
+        },
         "failures": [],
         "session": "/recordings/session",
         "raw_odometry_samples": sample_count,

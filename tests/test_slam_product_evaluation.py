@@ -53,6 +53,10 @@ def passing_run_report(variant: str) -> dict:
         "result": "PASS",
         "failure_scope": "SLAM",
         "runtime_error": None,
+        "runtime_watchdog": {
+            "state": "SLAM_HEALTHY",
+            "product_usable": True,
+        },
         "failures": [],
         "raw_odometry_samples": 100,
         "corrected_odometry_samples": 100,

@@ -47,6 +47,17 @@ D405双IR 1280x720@30fps + KT-EX9-2 IMU 400Hz
 - 左右IR、RANSAC、3D/PnP或连续一致性任一失败即拒绝回环。
 - 融合地图修正大于3cm时拒绝执行，本地VIO继续输出。
 - 自动验收拒绝关键帧/估计器队列丢失、覆盖率低于98%、异常地图跳变和真实升降Z保留低于90%的版本。
+- 运行看门狗同时订阅`/odometry`与`/odometry_rect`，不读取真值或终点；检测话题缺失/停流、非有限位姿、时间戳倒退、双流时差和异常地图跳变，并发布标准`/slam/diagnostics`与JSON `/slam/health`。数据完整性/跳变故障会锁存，话题暂时缺失或停流允许恢复；离线验收把同一判定快照封入运行报告。
+
+独立实时部署命令：
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 scripts/slam_runtime_watchdog.py \
+  --output-json reports/live_slam_health.json
+```
+
+只有状态为`SLAM_HEALTHY`且`product_usable=true`时，下游产品才可使用当前轨迹；`STARTING`、`SLAM_FAILED`或`INFRASTRUCTURE_BLOCKED`均不得对外宣称轨迹有效。
 
 当前离线C++回放能完整处理上述60秒开放序列，但该轮墙钟耗时约105秒；因此现阶段证明的是离线完整性，不是全场景稳定实时30fps。实时吞吐仍是交付前独立性能门槛。
 

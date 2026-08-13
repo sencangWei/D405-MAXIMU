@@ -29,6 +29,10 @@ def healthy_report() -> dict:
         "result": "PASS",
         "failure_scope": "SLAM",
         "runtime_error": None,
+        "runtime_watchdog": {
+            "state": "SLAM_HEALTHY",
+            "product_usable": True,
+        },
         "failures": [],
         "benchmark_environment": passing_environment(),
         "raw_odometry_samples": 100,
@@ -105,6 +109,19 @@ def test_forged_pose_coverage_and_nonempty_failures_are_rejected():
     assert health["state"] == "SLAM_FAILED"
     assert "declared_failures_empty" in health["failures"]
     assert "pose_coverage_consistency" in health["failures"]
+
+
+def test_runtime_watchdog_failure_rejects_otherwise_passing_run():
+    report = healthy_report()
+    report["runtime_watchdog"] = {
+        "state": "SLAM_FAILED",
+        "product_usable": False,
+    }
+
+    health = evaluate_slam_health(report)
+
+    assert health["state"] == "SLAM_FAILED"
+    assert "runtime_watchdog" in health["failures"]
 
 
 def test_trajectory_diagnostics_reject_timestamp_regression(tmp_path):

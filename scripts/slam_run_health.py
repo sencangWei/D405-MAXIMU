@@ -143,6 +143,15 @@ def evaluate_slam_health(report: dict) -> dict:
     )
     runtime_error = report.get("runtime_error")
     add("runtime_complete", runtime_error in (None, ""), runtime_error, None)
+    runtime_watchdog = report.get("runtime_watchdog")
+    add(
+        "runtime_watchdog",
+        isinstance(runtime_watchdog, dict)
+        and runtime_watchdog.get("state") == "SLAM_HEALTHY"
+        and runtime_watchdog.get("product_usable") is True,
+        runtime_watchdog.get("state") if isinstance(runtime_watchdog, dict) else None,
+        "SLAM_HEALTHY",
+    )
 
     raw_samples = _positive_int(report.get("raw_odometry_samples"))
     corrected_samples = _positive_int(report.get("corrected_odometry_samples"))
