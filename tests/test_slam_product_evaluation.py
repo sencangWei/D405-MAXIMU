@@ -24,6 +24,41 @@ def test_pose_errors_remove_only_rigid_alignment_not_scale():
     assert metrics["endpoint_drift_percent_of_path"] > 9.0
 
 
+def test_pose_errors_report_position_and_attitude_alignment_separately():
+    gt = np.column_stack(
+        (
+            np.linspace(0, 1, 100),
+            0.2 * np.sin(np.linspace(0, 4, 100)),
+            0.1 * np.cos(np.linspace(0, 3, 100)),
+        )
+    )
+    world_offset = Rotation.from_euler("xyz", [3.0, -1.0, 12.0], degrees=True)
+    estimate = gt @ world_offset.as_matrix().T + np.array([2.0, -3.0, 0.4])
+    gt_attitude = Rotation.from_euler(
+        "zyx",
+        np.column_stack(
+            (
+                np.linspace(0, 30, 100),
+                np.linspace(-5, 4, 100),
+                np.linspace(2, -3, 100),
+            )
+        ),
+        degrees=True,
+    )
+    estimate_attitude = world_offset * gt_attitude
+
+    metrics = pose_errors(
+        estimate,
+        estimate_attitude.as_quat(),
+        gt,
+        gt_attitude.as_quat(),
+        delta=10,
+    )
+
+    assert metrics["attitude_aligned_ate_rotation_rmse_deg"] < 1e-10
+    assert metrics["position_vs_attitude_alignment_rotation_deg"] < 1e-10
+
+
 def test_body_trajectory_to_camera_applies_rotating_lever_arm():
     positions = np.zeros((2, 3))
     body_rotation = Rotation.from_euler("z", [0.0, 90.0], degrees=True)

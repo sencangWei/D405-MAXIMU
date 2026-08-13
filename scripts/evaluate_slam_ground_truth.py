@@ -80,6 +80,16 @@ def rigid_align(source: np.ndarray, target: np.ndarray) -> tuple[np.ndarray, np.
     return rotation, translation
 
 
+def orientation_align(
+    source_quaternions: np.ndarray,
+    target_quaternions: np.ndarray,
+) -> np.ndarray:
+    """Return the constant world rotation that best aligns source attitudes."""
+    source = Rotation.from_quat(source_quaternions)
+    target = Rotation.from_quat(target_quaternions)
+    return (target * source.inv()).mean().as_matrix()
+
+
 def load_opencv_matrix(path: Path, key: str) -> np.ndarray:
     storage = cv2.FileStorage(str(path), cv2.FileStorage_READ)
     matrix = storage.getNode(key).mat()
@@ -122,6 +132,33 @@ def pose_errors(
     absolute_rotation_deg = np.degrees(
         (gt_rotations.inv() * aligned_rotations).magnitude()
     )
+    attitude_alignment_rotation = orientation_align(
+        estimate_quaternions, gt_quaternions
+    )
+    attitude_alignment_translation = (
+        gt_positions.mean(axis=0)
+        - attitude_alignment_rotation @ estimate_positions.mean(axis=0)
+    )
+    attitude_aligned_positions = (
+        estimate_positions @ attitude_alignment_rotation.T
+        + attitude_alignment_translation
+    )
+    attitude_aligned_rotations = (
+        Rotation.from_matrix(attitude_alignment_rotation)
+        * Rotation.from_quat(estimate_quaternions)
+    )
+    attitude_aligned_translation = np.linalg.norm(
+        attitude_aligned_positions - gt_positions, axis=1
+    )
+    attitude_aligned_rotation_deg = np.degrees(
+        (gt_rotations.inv() * attitude_aligned_rotations).magnitude()
+    )
+    alignment_disagreement_deg = np.degrees(
+        (
+            Rotation.from_matrix(attitude_alignment_rotation)
+            * Rotation.from_matrix(alignment_rotation).inv()
+        ).magnitude()
+    )
     if len(aligned_positions) <= delta:
         raise ValueError("trajectory too short for requested RPE delta")
     estimate_relative_rotation = aligned_rotations[:-delta].inv() * aligned_rotations[delta:]
@@ -153,6 +190,15 @@ def pose_errors(
         "ate_translation_median_m": float(np.median(absolute_translation)),
         "ate_translation_p95_m": float(np.percentile(absolute_translation, 95)),
         "ate_rotation_rmse_deg": float(np.sqrt(np.mean(absolute_rotation_deg**2))),
+        "attitude_aligned_ate_translation_rmse_m": float(
+            np.sqrt(np.mean(attitude_aligned_translation**2))
+        ),
+        "attitude_aligned_ate_rotation_rmse_deg": float(
+            np.sqrt(np.mean(attitude_aligned_rotation_deg**2))
+        ),
+        "position_vs_attitude_alignment_rotation_deg": float(
+            alignment_disagreement_deg
+        ),
         "rpe_delta_samples": delta,
         "rpe_translation_rmse_m": float(np.sqrt(np.mean(relative_translation**2))),
         "rpe_rotation_rmse_deg": float(np.sqrt(np.mean(relative_rotation_deg**2))),
