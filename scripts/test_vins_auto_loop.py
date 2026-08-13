@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import re
@@ -39,6 +40,74 @@ DEFAULT_CONFIG = Path(
     "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/"
     "d405_stereo_imu_config.yaml"
 )
+VINS_EXECUTABLE = Path(
+    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
+    "vins_fusion_ros2/vins_fusion_ros2_node"
+)
+LOOP_EXECUTABLE = Path(
+    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
+    "vins_fusion_ros2/loop_fusion_node"
+)
+REPLAY_EXECUTABLE = Path(
+    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
+    "vins_fusion_ros2/db3_replay_cpp"
+)
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def git_revision(repository: Path) -> str | None:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    revision = completed.stdout.strip()
+    return revision if completed.returncode == 0 and revision else None
+
+
+def run_provenance(
+    session: Path,
+    run_config: Path,
+    left_calibration: Path,
+    right_calibration: Path,
+    replay_backend: str,
+) -> dict[str, object]:
+    files = {
+        "runner": Path(__file__).resolve(),
+        "run_config": run_config.resolve(),
+        "left_calibration": left_calibration.resolve(),
+        "right_calibration": right_calibration.resolve(),
+        "vins_executable": VINS_EXECUTABLE.resolve(),
+        "loop_executable": LOOP_EXECUTABLE.resolve(),
+    }
+    if replay_backend == "cpp":
+        files["replay_executable"] = REPLAY_EXECUTABLE.resolve()
+    acceptance = session.resolve() / "acceptance.json"
+    if acceptance.is_file():
+        files["capture_acceptance"] = acceptance
+    return {
+        "files": {
+            name: {"path": str(path), "sha256": sha256_file(path)}
+            for name, path in files.items()
+        },
+        "git_revisions": {
+            "ego_vio_humble": git_revision(ROOT),
+            "vins_fusion_ros2": git_revision(
+                Path("/home/robot/ros2_ws/src/vins_fusion_ros2")
+            ),
+        },
+        "source_db3_hashed": False,
+        "source_db3_identity": "capture acceptance hash plus immutable manifest",
+    }
 
 
 def classify_run_scope(
@@ -307,11 +376,21 @@ def main() -> int:
     )
     run_config = args.out_dir / "vins_auto_loop_config.yaml"
     run_config.write_text(config_text, encoding="utf-8")
+    calibration_paths: dict[str, Path] = {}
     for calibration_name in ("left.yaml", "right.yaml"):
         source = args.config.parent / calibration_name
         if not source.is_file():
             raise FileNotFoundError(f"missing camera calibration: {source}")
-        shutil.copy2(source, args.out_dir / calibration_name)
+        destination = args.out_dir / calibration_name
+        shutil.copy2(source, destination)
+        calibration_paths[calibration_name] = destination
+    provenance = run_provenance(
+        args.session,
+        run_config,
+        calibration_paths["left.yaml"],
+        calibration_paths["right.yaml"],
+        args.replay_backend,
+    )
 
     vins_log_path = args.out_dir / "vins.log"
     loop_log_path = args.out_dir / "auto_loop.log"
@@ -573,6 +652,7 @@ def main() -> int:
         "ros_domain_id": args.ros_domain_id,
         "ros_localhost_only": True,
         "benchmark_environment": benchmark_environment,
+        "provenance": provenance,
         "session": str(args.session.resolve()),
         "replay_rate": args.rate,
         "replay_backend": args.replay_backend,

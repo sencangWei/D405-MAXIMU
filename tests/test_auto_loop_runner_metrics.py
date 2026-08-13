@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 from test_vins_auto_loop import (
     camera_frame_count,
     classify_run_scope,
+    run_provenance,
     parse_loop_configuration,
     parse_loop_retrieval,
     parse_pnp_quality,
@@ -163,3 +164,34 @@ def test_parse_loop_retrieval_handles_old_logs_without_diagnostics():
         "zero_eligible_frames": 0,
         "top_score": {"min": None, "max": None, "mean": None},
     }
+
+
+def test_run_provenance_hashes_effective_config_and_calibration(
+    tmp_path, monkeypatch
+):
+    session = tmp_path / "session"
+    session.mkdir()
+    acceptance = session / "acceptance.json"
+    acceptance.write_text('{"result":"PASS"}', encoding="utf-8")
+    run_config = tmp_path / "config.yaml"
+    left = tmp_path / "left.yaml"
+    right = tmp_path / "right.yaml"
+    run_config.write_text("config", encoding="utf-8")
+    left.write_text("left", encoding="utf-8")
+    right.write_text("right", encoding="utf-8")
+    executable = tmp_path / "node"
+    executable.write_bytes(b"node")
+    monkeypatch.setattr("test_vins_auto_loop.VINS_EXECUTABLE", executable)
+    monkeypatch.setattr("test_vins_auto_loop.LOOP_EXECUTABLE", executable)
+    monkeypatch.setattr("test_vins_auto_loop.REPLAY_EXECUTABLE", executable)
+
+    provenance = run_provenance(session, run_config, left, right, "cpp")
+
+    assert provenance["files"]["capture_acceptance"]["sha256"] == (
+        "98d844ea900c08231a1f6e1e12a4aeacf82570dc71285911ff5e66c9f1bb1915"
+    )
+    assert provenance["files"]["run_config"]["path"] == str(run_config)
+    assert provenance["files"]["replay_executable"]["sha256"] == (
+        "545ea538461003efdc8c81c244531b003f6f26cfccf6c0073b3239fdedf49446"
+    )
+    assert provenance["source_db3_hashed"] is False
