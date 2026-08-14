@@ -8,6 +8,10 @@
 #include "as5047p_protocol.h"
 #include "kt_ex9_protocol.h"
 
+void setUp() {}
+
+void tearDown() {}
+
 namespace {
 
 std::array<uint8_t, kt_ex9::kFrameSize> makeValidImuFrame() {
