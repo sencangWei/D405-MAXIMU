@@ -53,8 +53,13 @@ SYNC_TOLERANCE_MS = 2.0
 CAMERA_RAW_BYTES_PER_SECOND = 1280 * 720 * (2 + 1 + 1) * 30
 STAGING_HEADROOM_RATIO = 1.15
 MONITOR_QUEUE_CAPACITY = 64
+DEFAULT_IR_AUTO_EXPOSURE_LIMIT_US = 8000.0
+DEFAULT_IR_AUTO_GAIN_LIMIT = 248.0
+IR_EXPOSURE_LIMIT_TOLERANCE_US = 100.0
 FRAME_NUMBER_RE = re.compile(r"(?:^|;)Frame number=(\d+)")
 TIMESTAMP_RE = re.compile(r"(?:^|;)timestamp=([0-9.]+)")
+ACTUAL_EXPOSURE_RE = re.compile(r"(?:^|;)Actual Exposure=([0-9.]+)")
+GAIN_LEVEL_RE = re.compile(r"(?:^|;)Gain Level=([0-9.]+)")
 METADATA_TOPICS = {
     "color": "/device_0/sensor_0/Color_0/image/metadata",
     "infrared_left": "/device_0/sensor_0/Infrared_1/image/metadata",
@@ -124,6 +129,8 @@ class StreamContinuity:
 class MetadataFrame:
     number: int
     device_ms: float
+    exposure_us: float | None = None
+    gain: float | None = None
 
 
 def stats_delta(start: dict, end: dict) -> dict:
@@ -144,6 +151,21 @@ def decode_cdr_string(blob: bytes) -> str:
     return blob[8:8 + length - 1].decode("utf-8")
 
 
+def metadata_frame_from_text(text: str) -> MetadataFrame | None:
+    number_match = FRAME_NUMBER_RE.search(text)
+    timestamp_match = TIMESTAMP_RE.search(text)
+    if not number_match or not timestamp_match:
+        return None
+    exposure_match = ACTUAL_EXPOSURE_RE.search(text)
+    gain_match = GAIN_LEVEL_RE.search(text)
+    return MetadataFrame(
+        number=int(number_match.group(1)),
+        device_ms=float(timestamp_match.group(1)),
+        exposure_us=float(exposure_match.group(1)) if exposure_match else None,
+        gain=float(gain_match.group(1)) if gain_match else None,
+    )
+
+
 def read_db3_metadata(bag_path: Path) -> dict[str, list[MetadataFrame]]:
     records = {key: [] for key in STREAM_KEYS}
     topic_to_key = {topic: key for key, topic in METADATA_TOPICS.items()}
@@ -157,16 +179,131 @@ def read_db3_metadata(bag_path: Path) -> dict[str, list[MetadataFrame]]:
     with sqlite3.connect(bag_path) as connection:
         for topic, blob in connection.execute(query, tuple(topic_to_key)):
             text = decode_cdr_string(blob)
-            number_match = FRAME_NUMBER_RE.search(text)
-            timestamp_match = TIMESTAMP_RE.search(text)
-            if number_match and timestamp_match:
-                records[topic_to_key[topic]].append(
-                    MetadataFrame(
-                        number=int(number_match.group(1)),
-                        device_ms=float(timestamp_match.group(1)),
-                    )
-                )
+            frame = metadata_frame_from_text(text)
+            if frame is not None:
+                records[topic_to_key[topic]].append(frame)
     return records
+
+
+def analyze_ir_exposure(
+    records: dict[str, list[MetadataFrame]],
+    limit_us: float,
+    tolerance_us: float = IR_EXPOSURE_LIMIT_TOLERANCE_US,
+) -> dict:
+    streams = {}
+    for key in ("infrared_left", "infrared_right"):
+        stream_records = records.get(key, [])
+        exposures = [
+            record.exposure_us
+            for record in stream_records
+            if record.exposure_us is not None
+        ]
+        gains = [record.gain for record in stream_records if record.gain is not None]
+        complete = (
+            bool(stream_records)
+            and len(exposures) == len(stream_records)
+            and len(gains) == len(stream_records)
+        )
+        within_limit = bool(exposures) and max(exposures) <= limit_us + tolerance_us
+        streams[key] = {
+            "result": "PASS" if complete and within_limit else "FAIL",
+            "metadata_complete": complete,
+            "metadata_frames": len(stream_records),
+            "exposure_samples": len(exposures),
+            "gain_samples": len(gains),
+            "exposure_us": {
+                "min": float(np.min(exposures)) if exposures else None,
+                "median": float(np.median(exposures)) if exposures else None,
+                "p95": float(np.percentile(exposures, 95)) if exposures else None,
+                "max": float(np.max(exposures)) if exposures else None,
+            },
+            "gain": {
+                "min": float(np.min(gains)) if gains else None,
+                "median": float(np.median(gains)) if gains else None,
+                "p95": float(np.percentile(gains, 95)) if gains else None,
+                "max": float(np.max(gains)) if gains else None,
+            },
+        }
+    return {
+        "result": (
+            "PASS"
+            if all(stream["result"] == "PASS" for stream in streams.values())
+            else "FAIL"
+        ),
+        "requested_limit_us": limit_us,
+        "tolerance_us": tolerance_us,
+        "streams": streams,
+    }
+
+
+def configure_ir_auto_exposure(
+    sensor, exposure_limit_us: float, gain_limit: float
+) -> dict:
+    required_options = (
+        rs.option.enable_auto_exposure,
+        rs.option.auto_exposure_limit_toggle,
+        rs.option.auto_exposure_limit,
+        rs.option.auto_gain_limit_toggle,
+        rs.option.auto_gain_limit,
+    )
+    unsupported = [str(option) for option in required_options if not sensor.supports(option)]
+    if unsupported:
+        raise RuntimeError(f"D405缺少自动曝光限制选项: {unsupported}")
+
+    exposure_range = sensor.get_option_range(rs.option.auto_exposure_limit)
+    gain_range = sensor.get_option_range(rs.option.auto_gain_limit)
+    if not exposure_range.min <= exposure_limit_us <= exposure_range.max:
+        raise ValueError(
+            f"IR自动曝光上限超出范围: {exposure_limit_us} not in "
+            f"[{exposure_range.min}, {exposure_range.max}]"
+        )
+    if not gain_range.min <= gain_limit <= gain_range.max:
+        raise ValueError(
+            f"IR自动增益上限超出范围: {gain_limit} not in "
+            f"[{gain_range.min}, {gain_range.max}]"
+        )
+
+    sensor.set_option(rs.option.enable_auto_exposure, 1.0)
+    sensor.set_option(rs.option.auto_exposure_limit_toggle, 1.0)
+    sensor.set_option(rs.option.auto_exposure_limit, float(exposure_limit_us))
+    sensor.set_option(rs.option.auto_gain_limit_toggle, 1.0)
+    sensor.set_option(rs.option.auto_gain_limit, float(gain_limit))
+    applied = {
+        "enable_auto_exposure": sensor.get_option(rs.option.enable_auto_exposure),
+        "auto_exposure_limit_toggle": sensor.get_option(
+            rs.option.auto_exposure_limit_toggle
+        ),
+        "auto_exposure_limit_us": sensor.get_option(rs.option.auto_exposure_limit),
+        "auto_gain_limit_toggle": sensor.get_option(rs.option.auto_gain_limit_toggle),
+        "auto_gain_limit": sensor.get_option(rs.option.auto_gain_limit),
+    }
+    exposure_tolerance = max(float(getattr(exposure_range, "step", 0.0)), 1e-6)
+    gain_tolerance = max(float(getattr(gain_range, "step", 0.0)), 1e-6)
+    mismatches = []
+    if applied["enable_auto_exposure"] < 0.5:
+        mismatches.append("enable_auto_exposure")
+    if applied["auto_exposure_limit_toggle"] < 0.5:
+        mismatches.append("auto_exposure_limit_toggle")
+    if (
+        abs(applied["auto_exposure_limit_us"] - exposure_limit_us)
+        > exposure_tolerance
+    ):
+        mismatches.append("auto_exposure_limit_us")
+    if applied["auto_gain_limit_toggle"] < 0.5:
+        mismatches.append("auto_gain_limit_toggle")
+    if abs(applied["auto_gain_limit"] - gain_limit) > gain_tolerance:
+        mismatches.append("auto_gain_limit")
+    if mismatches:
+        raise RuntimeError(f"IR自动曝光配置读回值不一致: {mismatches}; applied={applied}")
+    return {
+        "result": "PASS",
+        "requested": {
+            "auto_exposure_limit_us": exposure_limit_us,
+            "auto_gain_limit": gain_limit,
+        },
+        "applied": applied,
+        "takes_effect": "next_streaming_session",
+    }
 
 
 def analyze_metadata_records(
@@ -247,6 +384,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--imu-baud", type=int, default=921600)
     parser.add_argument("--duration", type=float, default=10.0)
     parser.add_argument("--warmup-frames", type=int, default=30)
+    parser.add_argument(
+        "--ir-auto-exposure-limit-us",
+        type=float,
+        default=DEFAULT_IR_AUTO_EXPOSURE_LIMIT_US,
+        help="双IR自动曝光上限；必须在开流前设置，默认8000us",
+    )
+    parser.add_argument(
+        "--ir-auto-gain-limit",
+        type=float,
+        default=DEFAULT_IR_AUTO_GAIN_LIMIT,
+        help="双IR自动增益上限，默认248",
+    )
     parser.add_argument("--output-root", type=Path, default=ROOT / "recordings")
     parser.add_argument("--no-preview", action="store_true")
     parser.add_argument(
@@ -416,6 +565,7 @@ def main() -> int:
     recorder_resumed = False
     stage_move_error = None
     stage_move_duration_s = 0.0
+    ir_exposure_configuration = None
     epoch_offset = time.time() - time.monotonic()
     try:
         imu_recorder.start()
@@ -424,6 +574,11 @@ def main() -> int:
             raise RuntimeError(f"无法打开IMU串口: {args.imu_port}")
         imu_started = True
 
+        ir_exposure_configuration = configure_ir_auto_exposure(
+            sensor,
+            exposure_limit_us=args.ir_auto_exposure_limit_us,
+            gain_limit=args.ir_auto_gain_limit,
+        )
         sensor.open(profiles)
         sensor_opened = True
         sensor.start(frame_queue)
@@ -437,6 +592,11 @@ def main() -> int:
                 f"预估占用 {staging_required_bytes / 1e9:.2f}GB"
             )
         print("[全流采集] 1280x720@30: 彩色YUYV + 左IR + 右IR；IMU 400Hz")
+        print(
+            "[全流采集] 双IR自动曝光上限 "
+            f"{args.ir_auto_exposure_limit_us:.0f}us，"
+            f"自动增益上限 {args.ir_auto_gain_limit:.0f}"
+        )
         print(
             f"[全流采集] 预热: 相机每路 {max(0, args.warmup_frames)} 帧，"
             f"IMU {IMU_WARMUP_FRAMES} 帧；预热数据不写入正式文件"
@@ -602,6 +762,10 @@ def main() -> int:
             csv_error = bag_error
     else:
         bag_error = "db3 不存在或为空"
+    ir_exposure_acceptance = analyze_ir_exposure(
+        db3_records,
+        limit_us=args.ir_auto_exposure_limit_us,
+    )
 
     imu_counter_keys = (
         "frames_ok",
@@ -627,6 +791,8 @@ def main() -> int:
         capture_error is None
         and bag_error is None
         and csv_error is None
+        and ir_exposure_configuration is not None
+        and ir_exposure_acceptance["result"] == "PASS"
         and csv_rows > 1
         and set(bag_streams) == set(STREAM_KEYS)
         and all(
@@ -685,6 +851,8 @@ def main() -> int:
         "thresholds": {
             "camera_min_rate_hz": MIN_CAMERA_RATE_HZ,
             "camera_max_gap_ratio": MAX_CAMERA_GAP_RATIO,
+            "ir_actual_exposure_max_us": args.ir_auto_exposure_limit_us,
+            "ir_exposure_tolerance_us": IR_EXPOSURE_LIMIT_TOLERANCE_US,
             "imu_rate_hz": [MIN_IMU_RATE_HZ, MAX_IMU_RATE_HZ],
         },
         "camera": {
@@ -694,6 +862,8 @@ def main() -> int:
             "db3_analysis_error": bag_error,
             "csv_rebuild_error": csv_error,
             "authoritative_stream_stats": "db3_streams",
+            "ir_auto_exposure_configuration": ir_exposure_configuration,
+            "ir_exposure_acceptance": ir_exposure_acceptance,
             "db3_size_bytes": bag_path.stat().st_size if bag_path.exists() else 0,
         },
         "imu": {
