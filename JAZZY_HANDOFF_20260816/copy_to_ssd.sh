@@ -71,21 +71,6 @@ for source_path in "${SOURCES[@]}"; do
   fi
 done
 
-source_bytes=0
-for source_path in "${SOURCES[@]}"; do
-  bytes=$(du -sb -- "$source_path" | awk '{print $1}')
-  source_bytes=$((source_bytes + bytes))
-done
-required_bytes=$((source_bytes + MIN_HEADROOM_BYTES))
-available_bytes=$(df -B1 --output=avail "$DEST_ROOT" | tail -n 1 | tr -d ' ')
-echo "[容量] 必须源目录约 $(numfmt --to=iec-i --suffix=B "$source_bytes")"
-echo "[容量] 含20GiB余量需 $(numfmt --to=iec-i --suffix=B "$required_bytes")"
-echo "[容量] 移动固态可用 $(numfmt --to=iec-i --suffix=B "$available_bytes")"
-if (( available_bytes < required_bytes )); then
-  echo "错误：移动固态空间不足。" >&2
-  exit 5
-fi
-
 DEST_PARENT="$DEST_ROOT"
 if [[ ! -w "$DEST_PARENT" ]]; then
   RECOVERY_PARENT="$DEST_ROOT/RECOVERY"
@@ -102,6 +87,35 @@ if [[ ! -w "$DEST_PARENT" ]]; then
   fi
 fi
 BUNDLE="$DEST_PARENT/$BUNDLE_NAME"
+
+source_bytes=0
+for source_path in "${SOURCES[@]}"; do
+  bytes=$(du -sb -- "$source_path" | awk '{print $1}')
+  source_bytes=$((source_bytes + bytes))
+done
+existing_bundle_bytes=0
+if [[ -d "$BUNDLE" && ! -L "$BUNDLE" ]]; then
+  existing_bundle_bytes=$(du -sb -- "$BUNDLE" | awk '{print $1}')
+fi
+additional_bytes=$((source_bytes - existing_bundle_bytes))
+if (( additional_bytes < 0 )); then
+  additional_bytes=0
+fi
+required_bytes=$((additional_bytes + MIN_HEADROOM_BYTES))
+available_bytes=$(df -B1 --output=avail "$DEST_ROOT" | tail -n 1 | tr -d ' ')
+echo "[容量] 必须源目录约 $(numfmt --to=iec-i --suffix=B "$source_bytes")"
+if (( existing_bundle_bytes > 0 )); then
+  echo "[容量] 检测到可续传迁移包约 $(numfmt --to=iec-i --suffix=B "$existing_bundle_bytes")"
+  echo "[容量] 估算新增量加20GiB余量需 $(numfmt --to=iec-i --suffix=B "$required_bytes")"
+else
+  echo "[容量] 含20GiB余量需 $(numfmt --to=iec-i --suffix=B "$required_bytes")"
+fi
+echo "[容量] 移动固态可用 $(numfmt --to=iec-i --suffix=B "$available_bytes")"
+if (( available_bytes < required_bytes )); then
+  echo "错误：移动固态空间不足。" >&2
+  exit 5
+fi
+
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "[DRY-RUN] 将创建/续传：$BUNDLE"
   echo "[DRY-RUN] 检查通过；未写入任何文件。"
