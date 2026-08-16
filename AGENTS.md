@@ -14,4 +14,4 @@ D405 相机 + KT-EX9-2 IMU(400Hz)的标定工具包: IMU 内参/零偏、IMU-相
 VINS/ORB 的采集、回放、验证、精度工程全部在 `/home/robot/ego_vio_humble/`(有完整 AGENTS.md,含命令、铁律、已知 bug)。本仓库只做标定分析,SLAM 任务不要在这边做。
 
 ## 完整记忆位置(接手必读)
-`/home/robot/.claude/projects/-home-robot----ego-vio-calib-kit/memory/*.md`(13 个内容文件 + MEMORY.md 索引,含每条结论的完整调查过程与数据)。**接手任何任务前,先 Read 这些文件获取完整背景,再动手**。
+`/home/robot/.claude/projects/-home-robot----ego-vio-calib-kit/memory/*.md`(14 个内容文件 + MEMORY.md 索引,含每条结论的完整调查过程与数据)。**接手任何任务前,先 Read 这些文件获取完整背景,再动手**。
