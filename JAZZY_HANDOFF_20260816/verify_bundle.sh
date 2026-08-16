@@ -56,7 +56,7 @@ for repo in \
   echo "  PASS $(basename "$repo")"
 done
 
-echo "[3/3] 核对全部文件SHA-256（约240GiB有效迁移源，可能需要较长时间）"
+echo "[3/3] 核对全部文件SHA-256（约185GiB有效迁移源，可能需要较长时间）"
 (
   cd "$BUNDLE"
   sha256sum -c --quiet SHA256SUMS

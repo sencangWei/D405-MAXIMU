@@ -52,7 +52,7 @@ cd <Jazzy上的ego_vio_humble>
 - 单相机/双IR/IMU标定与分析在 `projects/ego_vio_calib_kit/`。
 - 用户明确保留的 IMU `-Z` 静态面只有 14.69s，但 5879 样本、静态波动约 0.00136g，允许作为加速度计标定输入。
 
-### 最新未提交的实时 IMU 修复
+### 最新实时 IMU 修复
 
 旧实时链路错误加载了：
 
@@ -62,14 +62,14 @@ projects/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/cali
 
 该文件自己声明 `acceptance.status: FAIL`、`runtime_applied: false`。A/B 证据还表明手工 90° 陀螺矩阵会把闭环从约 3.60cm 恶化到约 17.84cm。
 
-主工程当前未提交改动已经：
+主工程交接分支已经：
 
 - 在 `ego_vio/imu/calibration.py` 拒绝显式 FAIL 或 `runtime_applied:false` 的标定；
 - 新增 `config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml`：保留六面加速度计校正，陀螺矩阵使用单位阵、bias 为 0，由 VINS 在线估计陀螺偏置；
 - `config/devices_vins_fusion_live.yaml` 改用该运行时配置；
 - 新增针对测试，旧机定向测试 7 项通过。
 
-用户对修正后的实时轨迹反馈“挺不错”。这些改动尚未被主仓库 HEAD 包含，必须从完整工作树或 dirty patch 带到 Jazzy，不能只 clone GitHub。
+用户对修正后的实时轨迹反馈“挺不错”。这些改动已纳入私有仓库`handoff/jazzy-20260816`分支；完整工作树仍额外携带未跟踪报告与数据。
 
 ## VINS / 自动回环实际状态
 
@@ -133,7 +133,7 @@ projects/ego_vio_calib_kit/world_z_calibration/
 
 ## 新 Codex 的近期优先级
 
-1. 完成 Jazzy clean build 和 RSUSB/Python 3.12 适配；先通过静态/软件测试，再接硬件。
+1. 在Jazzy实机完成clean build和RSUSB/Python3.12验收；源码级ABI/ROS路径适配已完成，先通过静态/软件测试，再接硬件。
 2. 复现三路30fps + IMU400Hz 10秒、60秒和90分钟验收，确认新主机无丢帧和温漂/计数复位。
 3. 在不读取人工路径标签的条件下重跑稳定基线会话，核对轨迹数量、哈希、回环接受、Z跨度与失效状态。
 4. 把最新实时 IMU 标定门禁改动纳入可回滚提交，避免 FAIL gyro matrix 再次进入运行时。

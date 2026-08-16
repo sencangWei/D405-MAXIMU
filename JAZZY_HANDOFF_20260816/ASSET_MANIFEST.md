@@ -4,7 +4,7 @@
 
 | 包内路径 | 旧机源路径 | 内容 | 必须性 |
 | --- | --- | --- | --- |
-| `projects/ego_vio_humble/` | `/home/robot/ego_vio_humble/` | 主工程、约 222.6 GiB 当前/回归录制数据、报告、测试、`.deps`、Git 历史与全部未提交文件 | 必须 |
+| `projects/ego_vio_humble/` | `/home/robot/ego_vio_humble/` | 主工程、39组当前/关键回归录制数据、报告、测试、`.deps`、Git历史与全部未提交文件；当前目录约171GiB | 必须 |
 | `projects/ego_vio_calib_kit/` | `/home/robot/桌面/ego_vio_calib_kit/` | 标定工具、IMU/世界Z实验、产品候选证据、轨迹图与 Git 历史 | 必须 |
 | `ros2_ws_humble_snapshot/` | `/home/robot/ros2_ws/` | `vins_fusion_ros2`、`open_vins`、`ego_orbslam3_ros2` 和 Humble 构建取证 | 必须 |
 | `calibration/calib_run_20260808/` | `/tmp/calib_run/` | `calib_imucam*.bag`、`calib_intrinsics.bag`、Kalibr PDF/YAML/TXT；约 10 GiB | 必须 |
@@ -25,15 +25,15 @@ GitHub `D405-MAXIMU` 的 `handoff/jazzy-20260816` 分支还内置
 ## 当前审计数量
 
 - 初始审计 `/home/robot/ego_vio_humble/recordings`：130 个一级会话目录、120,989 个普通文件、308,050,589,221 字节。
-- 精细分类后：18个`CURRENT_ACTIVE`（104.620GiB）、31个`REGRESSION_EVIDENCE`（117.939GiB）、81个`LEGACY_DO_NOT_RUN`（61.344GiB）。最后一类移到项目外隔离区，不进入新机迁移包。
+- 精细分类后：18个`CURRENT_ACTIVE`（104.620GiB）、21个`REGRESSION_EVIDENCE`（62.946GiB）、91个`LEGACY_DO_NOT_RUN`（116.336GiB）。最后一类移到项目外隔离区，不进入新机迁移包。
 - `/tmp/calib_run`：三份原始 bag 合计约 10.6 GB，最大文件为 `calib_imucam.bag`（4,085,822,909 字节）。
-- 隔离前旧机主资产约322GB；移出61.344GiB旧录制后，有效迁移源约257GB（约240GiB）。脚本在运行时重新计算并额外要求20GiB余量。
+- 2026-08-16 容量预检：有效迁移源约185GiB，含20GiB余量需205GiB；当前移动固态可用222GiB，预检通过。
 
 ## 明确未包含
 
 - `~/.codex/config.toml`、登录凭据、token、全局 Codex/Claude 会话数据库：它们可能含敏感凭据，且不是项目运行输入。
 - `/media/robot/ego-recordings/lvzhi`：审计时判定为另一项目的数据，默认不混进本项目迁移包。
-- `/home/robot/ego_vio_recordings_legacy_quarantine_20260816`：81个已被替代、未被当前回归需要的旧会话。保留在旧机作短期可恢复隔离，整包SSD校验通过后可最终删除。
+- `/home/robot/ego_vio_recordings_legacy_quarantine_20260816`：91个已被替代或可在新机重录的会话，共116.336GiB。保留在旧机作短期可恢复隔离，整包SSD校验通过后才可最终删除。
 - `/home/robot/ego_pipeline/work/toolchains/ORB_SLAM3`：记忆里曾引用，但当前旧机上已不存在。包内只有 `ros2_ws/src/ego_orbslam3_ros2` 包装层和 `/tmp/orb_node_backup`。新 Codex 必须从原 Git 来源恢复 ORB-SLAM3 core，不能声称已经带走。
 
 ## Git 双保险

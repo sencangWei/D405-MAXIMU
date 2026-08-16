@@ -35,3 +35,21 @@ def test_realtime_wrapper_hard_disables_failed_level_candidate() -> None:
     assert "level-candidate已由跨会话A/B否决" in wrapper
     assert "prepare_level_vins_config.py" not in wrapper
     assert "[stable|smoke]" in wrapper
+
+
+def test_jazzy_handoff_entrypoints_do_not_pin_humble_or_python310() -> None:
+    realtime = (ROOT / "run_vins_realtime.sh").read_text(encoding="utf-8")
+    capture = (ROOT / "capture_d405_720p_rgb_stereo_ir_rsusb.sh").read_text(
+        encoding="utf-8"
+    )
+    builder = (ROOT / "scripts/build_librealsense_rsusb.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert "source /opt/ros/humble/setup.bash" not in realtime
+    assert 'source "$ROS_SETUP"' in realtime
+    assert "EGO_VIO_ROS_DISTRO" in realtime
+    assert "EGO_VIO_ROS_WS" in realtime
+    assert "cpython-310" not in capture
+    assert "sysconfig.get_config_var" in builder
+    assert "cpython-310" not in builder

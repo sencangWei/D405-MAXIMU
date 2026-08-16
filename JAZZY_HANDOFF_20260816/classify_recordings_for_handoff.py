@@ -2,7 +2,7 @@
 """Classify this audited recording set and optionally quarantine legacy sessions.
 
 Default is read-only. --apply-quarantine only renames an explicit, frozen set of
-81 reviewed session directories to a sibling directory on the same filesystem.
+91 reviewed session directories to a sibling directory on the same filesystem.
 Unknown/new sessions are never moved.
 """
 
@@ -19,6 +19,19 @@ RECORDINGS = Path("/home/robot/ego_vio_humble/recordings")
 QUARANTINE = Path("/home/robot/ego_vio_recordings_legacy_quarantine_20260816")
 HANDOFF = Path("/home/robot/ego_vio_humble/JAZZY_HANDOFF_20260816")
 
+RERECORDABLE = {
+    "d405_720p_all_20260804_152741",
+    "d405_720p_all_20260804_201730",
+    "d405_720p_all_20260804_202306",
+    "d405_720p_all_20260804_202935",
+    "d405_720p_rgb_stereo_ir_20260808_205555",
+    "d405_720p_rgb_stereo_ir_20260808_205703",
+    "d405_720p_rgb_stereo_ir_20260810_200101",
+    "d405_720p_rgb_stereo_ir_20260811_192956",
+    "d405_720p_rgb_stereo_ir_20260812_101410",
+    "d405_mp4_inline_20260810_200218",
+}
+
 EVIDENCE = {
     "calib_20260808_192211",
     "d405_720p_all_20260803_203800",
@@ -29,10 +42,6 @@ EVIDENCE = {
     "d405_720p_all_20260804_150612",
     "d405_720p_all_20260804_151127",
     "d405_720p_all_20260804_152711",
-    "d405_720p_all_20260804_152741",
-    "d405_720p_all_20260804_201730",
-    "d405_720p_all_20260804_202306",
-    "d405_720p_all_20260804_202935",
     "d405_720p_all_20260804_215042",
     "d405_720p_all_20260804_215229",
     "d405_720p_all_20260807_115453",
@@ -40,16 +49,10 @@ EVIDENCE = {
     "d405_720p_rgb_stereo_ir_20260806_192749",
     "d405_720p_rgb_stereo_ir_20260807_115333",
     "d405_720p_rgb_stereo_ir_20260808_134948",
-    "d405_720p_rgb_stereo_ir_20260808_205555",
-    "d405_720p_rgb_stereo_ir_20260808_205703",
     "d405_720p_rgb_stereo_ir_20260808_230503",
     "d405_720p_rgb_stereo_ir_20260809_111538",
     "d405_720p_rgb_stereo_ir_20260810_000943",
     "d405_720p_rgb_stereo_ir_20260810_000943_ffv1prod",
-    "d405_720p_rgb_stereo_ir_20260810_200101",
-    "d405_720p_rgb_stereo_ir_20260811_192956",
-    "d405_720p_rgb_stereo_ir_20260812_101410",
-    "d405_mp4_inline_20260810_200218",
     "imu_static_20260807_234253",
 }
 
@@ -104,7 +107,7 @@ LEGACY = {
     "pre_calib_720p_smoke", "session_20260802_002210",
     "session_20260802_004908", "session_20260804_182652",
     "static_clock_20260802", "static_clock_frozen_20260802",
-}
+} | RERECORDABLE
 
 
 def stats(path: Path) -> tuple[int, int]:
@@ -137,6 +140,8 @@ def classify(path: Path) -> tuple[str, str]:
         return "CURRENT_ACTIVE", "RSUSB正式采集PASS"
     if path.name in EVIDENCE:
         return "REGRESSION_EVIDENCE", "被回归/标定/AB/故障报告引用"
+    if path.name in RERECORDABLE:
+        return "LEGACY_DO_NOT_RUN", "结果报告已保留，可在新机按需重录"
     if path.name in LEGACY:
         return "LEGACY_DO_NOT_RUN", "已由当前标定或RSUSB正式数据替代"
     return "REVIEW_REQUIRED", "审计后新增或未识别，绝不自动移动"
@@ -177,9 +182,12 @@ def main() -> int:
     legacy_rows = [row for row in rows if row[1] == "LEGACY_DO_NOT_RUN"]
     if {row[0] for row in legacy_rows} != LEGACY:
         raise RuntimeError("实际legacy集合与冻结审计集合不一致，拒绝移动")
-    misplaced = (active_names & LEGACY) | (quarantined_names - LEGACY)
-    if QUARANTINE.is_dir() and misplaced:
-        raise RuntimeError("隔离状态异常，拒绝继续: " + ", ".join(sorted(misplaced)))
+    unexpected_quarantine = quarantined_names - LEGACY
+    if unexpected_quarantine:
+        raise RuntimeError(
+            "隔离区含未审计目录，拒绝继续: "
+            + ", ".join(sorted(unexpected_quarantine))
+        )
 
     for category in ("CURRENT_ACTIVE", "REGRESSION_EVIDENCE", "LEGACY_DO_NOT_RUN"):
         subset = [row for row in rows if row[1] == category]
@@ -201,24 +209,35 @@ def main() -> int:
         print(f"DRY-RUN: manifest={manifest}")
         return 0
 
-    if QUARANTINE.is_dir() and quarantined_names == LEGACY and not (active_names & LEGACY):
+    targets = [
+        (root / name, QUARANTINE / name) for name in sorted(active_names & LEGACY)
+    ]
+    if not targets and quarantined_names == LEGACY:
         print(f"ALREADY_QUARANTINED: {len(LEGACY)} sessions -> {QUARANTINE}")
         return 0
-    if QUARANTINE.exists():
-        raise RuntimeError(f"隔离目录已存在但状态不完整，拒绝合并或覆盖: {QUARANTINE}")
-    if os.stat(root).st_dev != os.stat(root.parent).st_dev:
+    if QUARANTINE.exists() and (QUARANTINE.is_symlink() or not QUARANTINE.is_dir()):
+        raise RuntimeError(f"隔离路径不是普通目录，拒绝继续: {QUARANTINE}")
+    quarantine_parent = QUARANTINE if QUARANTINE.is_dir() else QUARANTINE.parent
+    if os.stat(root).st_dev != os.stat(quarantine_parent).st_dev:
         raise RuntimeError("目标父目录不在同一文件系统，拒绝非原子移动")
-    targets = [(root / row[0], QUARANTINE / row[0]) for row in legacy_rows]
     for source, target in targets:
         if source.parent.resolve() != root or source.is_symlink() or not source.is_dir():
             raise RuntimeError(f"源目标验证失败: {source}")
         if target.exists():
             raise RuntimeError(f"目标已存在: {target}")
 
-    QUARANTINE.mkdir(mode=0o755)
+    QUARANTINE.mkdir(mode=0o755, exist_ok=True)
     for source, target in targets:
         source.rename(target)
-    print(f"QUARANTINED: {len(targets)} sessions -> {QUARANTINE}")
+    moved_names = {target.name for _, target in targets}
+    if any(source.exists() for source, _ in targets) or not all(
+        target.is_dir() and not target.is_symlink() for _, target in targets
+    ):
+        raise RuntimeError("移动后验证失败，请保留现场并人工检查")
+    print(
+        f"QUARANTINED: {len(moved_names)} new sessions, "
+        f"{len(LEGACY)} total -> {QUARANTINE}"
+    )
     return 0
 
 

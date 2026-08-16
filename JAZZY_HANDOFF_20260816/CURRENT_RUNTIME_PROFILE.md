@@ -34,7 +34,7 @@
 - `ros2_ws/src/vins_fusion_ros2/config/d405_rgb_ir_imu/d405_rgb_ir_imu_config.yaml`：RGB+左IR伪双目、旧7.36ms/在线td实验，只作历史复现。
 - `桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/calibration_candidate.yaml`：明确FAIL，手工gyro matrix A/B恶化，运行时必须拒绝。
 - `桌面/ego_vio_calib_kit/world_z_calibration/runtime_*`：失败的世界Z实验运行目录，不是有效标定。
-- `recordings_legacy_quarantine_20260816/`：81个已从活跃`recordings/`移出的旧会话，新机不复制。
+- `recordings_legacy_quarantine_20260816/`：91个已从活跃`recordings/`移出的旧或可重录会话，新机不复制。
 
 旧脚本的逐项状态见 `scripts/ENTRYPOINT_STATUS.md`。`run_vins_realtime.sh level-candidate` 已改为明确报错退出，避免失败的固定Z候选再次污染实时轨迹。
 

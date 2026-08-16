@@ -12,7 +12,7 @@ D405 相机 + KT-EX9-2 军工 IMU 的完整数据采集与标定工程。
 |---|---|---|
 | 深度相机 | Intel RealSense D405 | RGB / Depth / 双目 IR |
 | IMU | KT-EX9-2J-2-F1 | 400Hz 陀螺 + 加速度 |
-| 主机 | Ubuntu 22.04 / x86 小电脑 | 采集 + 后处理 |
+| 主机 | Ubuntu 22.04/Humble旧机；Ubuntu 24.04/Jazzy迁移目标 | 采集 + 后处理 |
 
 ## 3. 目录说明
 
@@ -54,7 +54,7 @@ pip install -r requirements.txt
 # 系统依赖
 sudo apt install zstd libusb-1.0-0-dev
 
-# 相机 SDK：使用系统 pyrealsense2 2.58.2（RSUSB 后端）
+# 相机 SDK：运行 scripts/build_librealsense_rsusb.sh 构建本地2.58.2 RSUSB后端
 # IMU 串口：/dev/serial/by-id/usb-1a86_USB_Single_Serial_5B7E005674-if00
 ```
 

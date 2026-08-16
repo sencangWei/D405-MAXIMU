@@ -8,6 +8,10 @@ DEPS="$ROOT/.deps"
 SOURCE="$DEPS/librealsense-$VERSION-src"
 BUILD="$DEPS/librealsense-$VERSION-rsusb-build"
 OUTPUT="$DEPS/librealsense-rsusb-$VERSION/python"
+PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
+PYTHON_EXT_SUFFIX="$($PYTHON_BIN -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')"
+LIBUSB_LIB="$(pkg-config --variable=libdir libusb-1.0)/libusb-1.0.so"
+LIBUSB_INC="$(pkg-config --variable=includedir libusb-1.0)"
 
 mkdir -p "$DEPS"
 if [[ ! -d "$SOURCE/.git" ]]; then
@@ -26,21 +30,27 @@ fi
 cmake -S "$SOURCE" -B "$BUILD" -G Ninja \
     -DFORCE_RSUSB_BACKEND=ON \
     -DBUILD_PYTHON_BINDINGS=ON \
-    -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+    -DPYTHON_EXECUTABLE="$PYTHON_BIN" \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_GRAPHICAL_EXAMPLES=OFF \
     -DBUILD_TOOLS=OFF \
     -DBUILD_UNIT_TESTS=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLIBUSB_LIB=/usr/lib/x86_64-linux-gnu/libusb-1.0.so \
-    -DLIBUSB_INC=/usr/include/libusb-1.0
+    -DLIBUSB_LIB="$LIBUSB_LIB" \
+    -DLIBUSB_INC="$LIBUSB_INC"
 cmake --build "$BUILD" -j "$(nproc)"
 
 mkdir -p "$OUTPUT"
-cp "$BUILD/Release/pyrealsense2.cpython-310-x86_64-linux-gnu.so.$VERSION" \
-    "$OUTPUT/pyrealsense2.cpython-310-x86_64-linux-gnu.so"
-cp "$BUILD/Release/pyrsutils.cpython-310-x86_64-linux-gnu.so.$VERSION" \
-    "$OUTPUT/pyrsutils.cpython-310-x86_64-linux-gnu.so"
+PYREALSENSE_SOURCE="$(find "$BUILD/Release" -maxdepth 1 -type f \
+    -name "pyrealsense2${PYTHON_EXT_SUFFIX}*" -print -quit)"
+PYRSUTILS_SOURCE="$(find "$BUILD/Release" -maxdepth 1 -type f \
+    -name "pyrsutils${PYTHON_EXT_SUFFIX}*" -print -quit)"
+if [[ -z "$PYREALSENSE_SOURCE" || -z "$PYRSUTILS_SOURCE" ]]; then
+    echo "[RSUSB] 未找到当前Python ABI产物: $PYTHON_EXT_SUFFIX" >&2
+    exit 3
+fi
+cp -- "$PYREALSENSE_SOURCE" "$OUTPUT/pyrealsense2${PYTHON_EXT_SUFFIX}"
+cp -- "$PYRSUTILS_SOURCE" "$OUTPUT/pyrsutils${PYTHON_EXT_SUFFIX}"
 
-echo "[RSUSB] 构建完成: $OUTPUT"
+echo "[RSUSB] 构建完成: $OUTPUT (ABI=$PYTHON_EXT_SUFFIX)"

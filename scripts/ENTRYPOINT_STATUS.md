@@ -8,7 +8,7 @@
 - `scripts/replay_db3_to_ros2.py`：当前原始DB3离线回放。
 - `scripts/test_vins_auto_loop.py`：自动回环候选验收工具，不等于客户发布完成。
 - `scripts/verify_recorded_session.py`：录后单条验收。
-- `scripts/build_librealsense_rsusb.sh`：RSUSB构建入口；Jazzy需先完成Python ABI自动发现适配。
+- `scripts/build_librealsense_rsusb.sh`：RSUSB构建入口；已自动发现当前Python ABI，Jazzy仍须本机重新构建并验收。
 
 ## REGRESSION_EVIDENCE
 
