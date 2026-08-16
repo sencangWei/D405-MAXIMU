@@ -17,6 +17,10 @@
 | `metadata/` | 复制时生成 | 主机/包版本、Git bundle、dirty patch、清单、文件统计 | 必须 |
 | `handoff/` | 本目录 | 给人和新 Codex 的交接说明与验证脚本 | 必须 |
 
+世界 Z 接续的四组关键会话、报告路径、负结果与验收门已单独固化在
+`handoff/WORLD_Z_POSTPROCESS_HANDOFF.md`，不能因为迁移到 Jazzy 而从零重做或误用
+失败的固定调平候选。
+
 GitHub `D405-MAXIMU` 的 `handoff/jazzy-20260816` 分支还内置
 `components/ego_vio_calib_kit/` 和 `components/vins_fusion_ros2/` 两份无嵌套 `.git`的
 源码快照，便于只拉一个仓库时开始 Jazzy 移植。完整历史仍以移动盘内的

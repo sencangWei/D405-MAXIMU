@@ -5,6 +5,7 @@
 - 已在旧机 Ubuntu 22.04 / ROS 2 Humble 验证：主工程Python测试、标定工具测试、修改版VINS构建与C++测试、迁移脚本小样本校验。
 - 已做源码级Jazzy适配：当前采集/实时入口不再写死Humble路径或CPython3.10扩展名。
 - **尚未在目标Jazzy电脑验证**：Jazzy clean build、D405/IMU设备权限、30fps/400Hz HIL、长时间稳定性。到新机完成本文件第5～7节前，状态只能是`READY`，不能称为`ACCEPTED`。
+- 世界 Z 后处理仍未完成；新机在复现基线后必须按 `WORLD_Z_POSTPROCESS_HANDOFF.md` 接续，禁止启用旧固定调平候选或事后强制压平。
 
 ## 同一私有仓库的两条版本线
 

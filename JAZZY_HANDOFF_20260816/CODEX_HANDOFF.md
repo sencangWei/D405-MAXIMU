@@ -9,6 +9,7 @@
 新机接手顺序：
 
 1. 完整阅读本文件、`README_先看这里.md`、`JAZZY_FIRST_BOOT.md`。
+   世界 Z 后处理接续还必须完整阅读 `WORLD_Z_POSTPROCESS_HANDOFF.md`。
 2. 阅读两个项目根目录的 `AGENTS.md`。
 3. 阅读 `memory/claude_project_memory/MEMORY.md` 和同目录全部 14 个内容 `.md`。
 4. 阅读主工程 `.planning/product_slam_auto_loop/{task_plan,findings,progress}.md` 和 `.planning/jazzy_handoff_20260816/`。
@@ -100,6 +101,8 @@ projects/ego_vio_calib_kit/product_slam_candidate_20260814/
 ## 世界 Z / 垂直误差实际状态
 
 没有完成。不要把平面轨迹强制压成 Z=0，也不要用用户提供终点修正产品轨迹。
+本项随迁移转到新电脑继续，专用接续文档是 `WORLD_Z_POSTPROCESS_HANDOFF.md`；
+它列出了保留会话、已证伪方案、量化基线、下一步单变量实验和产品验收门。
 
 已证伪：
 
@@ -138,7 +141,7 @@ projects/ego_vio_calib_kit/world_z_calibration/
 3. 在不读取人工路径标签的条件下重跑稳定基线会话，核对轨迹数量、哈希、回环接受、Z跨度与失效状态。
 4. 把最新实时 IMU 标定门禁改动纳入可回滚提交，避免 FAIL gyro matrix 再次进入运行时。
 5. 继续 tracked-BRIEF/候选召回正负回归；完整隐藏动作矩阵达标前保持 `NOT_READY`。
-6. 获取真实水平 Depth 正样本后再继续 Z 因子；没有正样本时保持禁用。
+6. 按 `WORLD_Z_POSTPROCESS_HANDOFF.md` 继续世界 Z 后处理；获取真实水平 Depth 正样本后再继续 Z 因子，没有正样本时保持禁用。
 
 ## 交付措辞
 
