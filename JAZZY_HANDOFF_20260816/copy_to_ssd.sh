@@ -86,7 +86,22 @@ if (( available_bytes < required_bytes )); then
   exit 5
 fi
 
-BUNDLE="$DEST_ROOT/$BUNDLE_NAME"
+DEST_PARENT="$DEST_ROOT"
+if [[ ! -w "$DEST_PARENT" ]]; then
+  RECOVERY_PARENT="$DEST_ROOT/RECOVERY"
+  if [[ -d "$RECOVERY_PARENT" && ! -L "$RECOVERY_PARENT" && -w "$RECOVERY_PARENT" ]]; then
+    DEST_PARENT=$(realpath -e -- "$RECOVERY_PARENT")
+    if [[ "$(findmnt -n -o TARGET --target "$DEST_PARENT")" != "$DEST_ROOT" ]]; then
+      echo "错误：RECOVERY目录不在目标移动固态内，拒绝写入。" >&2
+      exit 6
+    fi
+    echo "[权限] 挂载根目录不可写，使用已有可写目录：$DEST_PARENT"
+  else
+    echo "错误：移动固态根目录不可写，且没有安全可写的RECOVERY目录。" >&2
+    exit 6
+  fi
+fi
+BUNDLE="$DEST_PARENT/$BUNDLE_NAME"
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "[DRY-RUN] 将创建/续传：$BUNDLE"
   echo "[DRY-RUN] 检查通过；未写入任何文件。"

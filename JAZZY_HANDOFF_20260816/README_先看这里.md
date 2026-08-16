@@ -19,6 +19,12 @@ cd /home/robot/ego_vio_humble/JAZZY_HANDOFF_20260816
 <移动固态>/ego_vio_jazzy_handoff_20260816/
 ```
 
+如果移动固态根目录属于root且不可写，但根目录下已有由当前用户拥有的普通`RECOVERY/`目录，脚本会安全地改用：
+
+```text
+<移动固态>/RECOVERY/ego_vio_jazzy_handoff_20260816/
+```
+
 复制结束后会生成整包 `SHA256SUMS`。默认会校验全部文件；约185GiB有效迁移源的复制与哈希都可能需要较长时间，但脚本可安全重跑并续传，不会执行 `--delete`。
 
 ## 复制完成后怎么验
