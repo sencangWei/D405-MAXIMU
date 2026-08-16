@@ -17,6 +17,11 @@
 | `metadata/` | 复制时生成 | 主机/包版本、Git bundle、dirty patch、清单、文件统计 | 必须 |
 | `handoff/` | 本目录 | 给人和新 Codex 的交接说明与验证脚本 | 必须 |
 
+GitHub `D405-MAXIMU` 的 `handoff/jazzy-20260816` 分支还内置
+`components/ego_vio_calib_kit/` 和 `components/vins_fusion_ros2/` 两份无嵌套 `.git`的
+源码快照，便于只拉一个仓库时开始 Jazzy 移植。完整历史仍以移动盘内的
+原始仓库和 Git bundle 为准。
+
 ## 当前审计数量
 
 - 初始审计 `/home/robot/ego_vio_humble/recordings`：130 个一级会话目录、120,989 个普通文件、308,050,589,221 字节。

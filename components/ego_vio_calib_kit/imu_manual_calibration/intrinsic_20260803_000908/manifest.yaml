@@ -1,0 +1,152 @@
+generated_at: '2026-08-03T00:25:08'
+complete: true
+port: /dev/serial/by-id/usb-1a86_USB_Single_Serial_5B7E005674-if00
+baud: 921600
+profile: intrinsic
+notes:
+- intrinsic 用于基础 IMU 本体标定原始数据
+- validation 的已知距离平移只作短时积分验证，不用于求 IMU 内参
+- allan 应单独长时间静止采集，用于随机噪声参数
+segments:
+- index: 1
+  name: 工作姿态静止偏置
+  slug: static_bias
+  instruction: 按实际安装姿态固定设备，完全不碰设备和线缆，连续静止至少 60 秒。
+  purpose: 当前温度下的陀螺零偏和短时静态噪声
+  recommended_duration_s: 60.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/01_static_bias.npz
+  complete: true
+  samples: 46217
+  duration_s: 115.53999999999724
+  mean_rate_hz: 400.00000000000955
+  counter_resets: 0
+  counter_drops: 0
+- index: 2
+  name: 六面静止：+X 朝上
+  slug: static_pos_x
+  instruction: 用支架让 IMU 标注的 +X 方向竖直朝上，放稳后完全不碰设备和线缆，连续静止至少 20 秒。
+  purpose: 加速度计零偏、逐轴比例和轴间串扰检查
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/02_static_pos_x.npz
+  complete: true
+  samples: 11191
+  duration_s: 27.975000000002183
+  mean_rate_hz: 399.9999999999688
+  counter_resets: 0
+  counter_drops: 0
+- index: 3
+  name: 六面静止：-X 朝上
+  slug: static_neg_x
+  instruction: 用支架让 IMU 标注的 -X 方向竖直朝上，放稳后完全不碰设备和线缆，连续静止至少 20 秒。
+  purpose: 加速度计零偏、逐轴比例和轴间串扰检查
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/03_static_neg_x.npz
+  complete: true
+  samples: 9097
+  duration_s: 22.739999999997963
+  mean_rate_hz: 400.0000000000358
+  counter_resets: 0
+  counter_drops: 0
+- index: 4
+  name: 六面静止：+Y 朝上
+  slug: static_pos_y
+  instruction: 用支架让 IMU 标注的 +Y 方向竖直朝上，放稳后完全不碰设备和线缆，连续静止至少 20 秒。
+  purpose: 加速度计零偏、逐轴比例和轴间串扰检查
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/04_static_pos_y.npz
+  complete: true
+  samples: 11503
+  duration_s: 28.75500000000102
+  mean_rate_hz: 399.99999999998585
+  counter_resets: 0
+  counter_drops: 0
+- index: 5
+  name: 六面静止：-Y 朝上
+  slug: static_neg_y
+  instruction: 用支架让 IMU 标注的 -Y 方向竖直朝上，放稳后完全不碰设备和线缆，连续静止至少 20 秒。
+  purpose: 加速度计零偏、逐轴比例和轴间串扰检查
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/05_static_neg_y.npz
+  complete: true
+  samples: 9654
+  duration_s: 24.13249999999971
+  mean_rate_hz: 400.00000000000483
+  counter_resets: 0
+  counter_drops: 0
+- index: 6
+  name: 六面静止：+Z 朝上
+  slug: static_pos_z
+  instruction: 用支架让 IMU 标注的 +Z 方向竖直朝上，放稳后完全不碰设备和线缆，连续静止至少 20 秒。
+  purpose: 加速度计零偏、逐轴比例和轴间串扰检查
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/06_static_pos_z.npz
+  complete: true
+  samples: 8701
+  duration_s: 21.75
+  mean_rate_hz: 400.0
+  counter_resets: 0
+  counter_drops: 0
+- index: 7
+  name: 六面静止：-Z 朝上
+  slug: static_neg_z
+  instruction: 用支架让 IMU 标注的 -Z 方向竖直朝上，放稳后完全不碰设备和线缆，连续静止至少 20 秒。
+  purpose: 加速度计零偏、逐轴比例和轴间串扰检查
+  recommended_duration_s: 20.0
+  recommended_duration_passed: false
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/07_static_neg_z.npz
+  complete: true
+  samples: 5879
+  duration_s: 14.694999999999709
+  mean_rate_hz: 400.0000000000079
+  counter_resets: 0
+  counter_drops: 0
+- index: 8
+  name: Roll 旋转（绕 X 轴）
+  slug: rotate_roll
+  instruction: 绕 X/Roll 轴缓慢完成：+90°→0°→-90°→0°，重复 3 轮；每个端点停稳约 2 秒。用支架/把手操作，不要碰 IMU
+    和附近线缆。
+  purpose: 陀螺 X 轴比例、符号、轴间串扰和角度积分验证
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/08_rotate_roll.npz
+  complete: true
+  samples: 25773
+  duration_s: 64.43000000000029
+  mean_rate_hz: 399.9999999999982
+  counter_resets: 0
+  counter_drops: 0
+- index: 9
+  name: Pitch 旋转（绕 Y 轴）
+  slug: rotate_pitch
+  instruction: 绕 Y/Pitch 轴缓慢完成：+90°→0°→-90°→0°，重复 3 轮；每个端点停稳约 2 秒。用支架/把手操作，不要碰 IMU
+    和附近线缆。
+  purpose: 陀螺 Y 轴比例、符号、轴间串扰和角度积分验证
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/09_rotate_pitch.npz
+  complete: true
+  samples: 30141
+  duration_s: 75.35000000000218
+  mean_rate_hz: 399.9999999999884
+  counter_resets: 0
+  counter_drops: 0
+- index: 10
+  name: Yaw 旋转（绕 Z 轴）
+  slug: rotate_yaw
+  instruction: 绕 Z/Yaw 轴缓慢完成：+90°→0°→-90°→0°，重复 3 轮；每个端点停稳约 2 秒。用支架/把手操作，不要碰 IMU 和附近线缆。
+  purpose: 陀螺 Z 轴比例、符号、轴间串扰和角度积分验证
+  recommended_duration_s: 20.0
+  recommended_duration_passed: true
+  file: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/10_rotate_yaw.npz
+  complete: true
+  samples: 26641
+  duration_s: 66.657606914996
+  mean_rate_hz: 399.6543115322489
+  counter_resets: 235
+  counter_drops: 16

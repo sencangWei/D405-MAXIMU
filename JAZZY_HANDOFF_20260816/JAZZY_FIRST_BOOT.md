@@ -24,6 +24,11 @@ Jazzy 通常是 Ubuntu 24.04 + Python 3.12，ABI 与 Humble/Python 3.10 不兼�
 
 ## 3. 建立干净 Jazzy 工作区
 
+如果直接从 GitHub 的 `D405-MAXIMU` 交接分支恢复，主工程已在
+`components/ego_vio_calib_kit/` 和 `components/vins_fusion_ros2/` 内携带配套源码快照。
+它们可复制到新建工作区的 `src/`；不要复制 Humble 的 `build/`、`install/`或
+`log/`。移动盘交接包仍保留原始三个 Git 仓库与 bundle，用于恢复完整历史。
+
 建议：
 
 ```bash

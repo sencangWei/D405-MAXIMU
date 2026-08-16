@@ -1,0 +1,70 @@
+%YAML:1.0
+
+# LEGACY_DO_NOT_RUN：08-04 RGB+左IR伪双目/旧时间补偿实验，仅供历史复现。
+# 当前必须使用 ../d405_stereo_imu/d405_stereo_imu_config.yaml（双IR，td=-0.0117，shift=0）。
+# D405 RGB + 左IR + KT-EX9-2 IMU — VINS-Fusion 配置
+# cam0 = RGB (出厂内参), cam1 = 左IR (出厂内参)
+# 外参: 2026-08-04 Kalibr leftIR<->IMU + 出厂 T_rgb_to_leftir
+# 注意: RGB 与左IR 出厂基线 ~0.01mm, 伪双目退化, 实为 mono+IMU + 冗余第二视角
+
+imu: 1
+num_of_cam: 2
+imu_topic: "/imu0"
+image0_topic: "/cam0/image_raw"
+image1_topic: "/cam1/image_raw"
+output_path: "/home/robot/vins_output/"
+cam0_calib: "rgb.yaml"
+cam1_calib: "leftir.yaml"
+image_width: 1280
+image_height: 720
+
+# 固定出厂/Kalibr 外参 (不在线精修)
+estimate_extrinsic: 0
+
+# 相机-IMU 时间偏移: 8/4 Kalibr timeshift=-7.36ms, 由回放 --imu-shift-ms 7.36 补偿,
+# 这里 td 从 0 起在线精修 (避免与手动 shift 双计数)
+estimate_td: 1
+td: 0.0
+
+# body_T_cam = R_g @ inv(T_cam_imu): 重力旋转(回放施加) + 相机->IMU 外参
+# cam0 = RGB (T_rgb_to_leftir ≈ 恒等, 故与 cam1 几乎相同)
+body_T_cam0: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ 9.998854031e-01, -1.260448386e-03, -1.509498734e-02, -0.010210816,
+          -1.512299315e-02, -2.687526733e-02, -9.995244908e-01, -0.028394878,
+           8.536738538e-04,  9.996375938e-01, -2.689171097e-02, -0.008862444,
+           0.0, 0.0, 0.0, 1.0 ]
+
+# cam1 = 左IR (8/4 Kalibr leftIR<->IMU)
+body_T_cam1: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ 0.999846698, -0.001875625, -0.017408490, -0.010220651,
+          -0.017451699, -0.026220123, -0.999503847, -0.028384463,
+           0.001418244,  0.999654432, -0.026248839, -0.008872180,
+           0.0, 0.0, 0.0, 1.0 ]
+
+multiple_thread: 1
+max_cnt: 400
+min_dist: 20
+freq: 10
+F_threshold: 1.0
+show_track: 1
+flow_back: 1
+max_solver_time: 0.04
+max_num_iterations: 8
+keyframe_parallax: 10.0
+
+# KT-EX9-2 Allan 实测噪声 (2026-08-08)
+acc_n: 8.28e-3
+gyr_n: 1.03e-3
+acc_w: 3.92e-6
+gyr_w: 2.89e-7
+g_norm: 9.805
+
+load_previous_pose_graph: 0
+pose_graph_save_path: "/home/robot/vins_output/pose_graph/"
+save_image: 0

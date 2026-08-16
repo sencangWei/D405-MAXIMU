@@ -1,0 +1,139 @@
+generated_at: '2026-08-02T23:31:17'
+method: known 5/8cm endpoint-constrained motion (distance-only continuation)
+gyroscope_bias_deg_s_for_rotation_rejection:
+- 0.05743587729102728
+- -0.029981700689386343
+- 0.05153894502387629
+known_distance_validation:
+  matrix: null
+  fit_rmse_m: null
+  formula: empirical_displacement = matrix @ zupt_integrated_displacement
+  warning: This endpoint-constrained empirical map is not an absolute-position observable
+    of an unaided IMU.
+  trials:
+  - axis: Z
+    sign: 1
+    expected_m:
+    - 0.0
+    - 0.0
+    - 0.05
+    direct_position_m:
+    - -0.02874436306193793
+    - -0.0016077006204506046
+    - -0.7327379607715214
+    zupt_position_m:
+    - -0.004769357885944669
+    - 0.006676159055918675
+    - 0.08379989354530078
+    axial_zupt_m: 0.08379989354530078
+    cross_axis_m: 0.00820474706399579
+    rotation_deg:
+    - 0.3423974050984476
+    - -0.6610137206964901
+    - -0.24383178368456207
+    duration_s: 7.692500000001019
+    counter_resets: 1
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: true
+    problems: []
+    warnings:
+    - DIO2/counter 清零 1 次，但拟合时间保持连续
+  - axis: Z
+    sign: -1
+    expected_m:
+    - 0.0
+    - 0.0
+    - -0.05
+    direct_position_m:
+    - 22.278674782183856
+    - 0.42956439435380733
+    - -8.695346025793247
+    zupt_position_m:
+    - -9.174745924510146
+    - 0.15552658068336192
+    - 3.517526423818403
+    axial_zupt_m: 3.517526423818403
+    cross_axis_m: 9.176064041658307
+    rotation_deg:
+    - -5.309013761397778
+    - 5.726895937362401
+    - -6.83351142041996
+    duration_s: 10.06499999999869
+    counter_resets: 1
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: false
+    problems:
+    - 起始未放稳(加速度波动 0.0054 g，角速度波动 1.36 °/s)
+    - 移动中转动 10.38°
+    warnings:
+    - DIO2/counter 清零 1 次，但拟合时间保持连续
+    - 横向串扰 917.61 cm 超过参考值 1.50 cm，保留用于三轴耦合矩阵拟合
+    - 积分方向异常或轴向结果很小
+  - axis: Z
+    sign: 1
+    expected_m:
+    - 0.0
+    - 0.0
+    - 0.08
+    direct_position_m:
+    - -16.89256180569943
+    - -4.599026223049495
+    - -41.205373900471834
+    zupt_position_m:
+    - 8.230427628977157
+    - 3.299012606674157
+    - 17.292316723487982
+    axial_zupt_m: 17.292316723487982
+    cross_axis_m: 8.866985008153875
+    rotation_deg:
+    - -9.660486746641372
+    - 9.768626295771616
+    - 3.5704328894160113
+    duration_s: 10.294999999998254
+    counter_resets: 0
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: false
+    problems:
+    - 起始未放稳(加速度波动 0.0107 g，角速度波动 4.28 °/s)
+    - 移动中转动 14.20°
+    warnings:
+    - 横向串扰 886.70 cm 超过参考值 2.40 cm，保留用于三轴耦合矩阵拟合
+  - axis: Z
+    sign: -1
+    expected_m:
+    - 0.0
+    - 0.0
+    - -0.08
+    direct_position_m:
+    - 8.006671479426776
+    - -0.18359239689918372
+    - -12.908206026390232
+    zupt_position_m:
+    - -3.3257454977500673
+    - 0.11333208008895218
+    - 3.9871799722659613
+    axial_zupt_m: 3.9871799722659613
+    cross_axis_m: 3.3276759572082932
+    rotation_deg:
+    - -5.849827098843671
+    - 5.126865229562194
+    - -1.9431149691367295
+    duration_s: 10.029999999998836
+    counter_resets: 0
+    counter_drops: 0
+    dt_max_ms: 2.5000000023283064
+    valid: false
+    problems:
+    - 起始未放稳(加速度波动 0.0455 g，角速度波动 2.45 °/s)
+    - 移动中转动 8.02°
+    warnings:
+    - 横向串扰 332.77 cm 超过参考值 2.40 cm，保留用于三轴耦合矩阵拟合
+    - 积分方向异常或轴向结果很小
+  valid_trial_count: 1
+algorithm_comparison:
+  direct: body-frame acceleration delta double integration
+  zupt: endpoint zero velocity plus linear velocity drift removal per motion interval
+raw_data_file: /home/robot/桌面/ego_vio_calib_kit/imu_calibration_results/imu_distance_z_20260802_233009_raw.npz
