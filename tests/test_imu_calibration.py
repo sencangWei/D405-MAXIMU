@@ -74,6 +74,46 @@ units:
     assert config.units[0].imu.calibration == str((config_dir / "imu.yaml").resolve())
 
 
+def test_calibration_accepts_manual_gyro_matrix_candidate(tmp_path):
+    calibration_path = tmp_path / "manual_candidate.yaml"
+    calibration_path.write_text(
+        """
+accelerometer:
+  matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  offset_g: [0, 0, 0]
+gyroscope:
+  matrix_candidate: [[2, 0, 0], [0, 3, 0], [0, 0, 4]]
+  bias_deg_s: [0, 0, 0]
+""",
+        encoding="utf-8",
+    )
+
+    calibration = IMUCalibration.load(calibration_path)
+
+    assert np.allclose(calibration.gyro_matrix, np.diag([2.0, 3.0, 4.0]))
+
+
+def test_calibration_rejects_explicitly_failed_candidate(tmp_path):
+    calibration_path = tmp_path / "failed_candidate.yaml"
+    calibration_path.write_text(
+        """
+accelerometer:
+  matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  offset_g: [0, 0, 0]
+gyroscope:
+  matrix_candidate: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  bias_deg_s: [0, 0, 0]
+acceptance:
+  status: FAIL
+  runtime_applied: false
+""",
+        encoding="utf-8",
+    )
+
+    with np.testing.assert_raises_regex(ValueError, "未通过运行时门禁"):
+        IMUCalibration.load(calibration_path)
+
+
 def test_runtime_records_raw_and_feeds_corrected_sample():
     calibration = IMUCalibration(
         calibration_id="runtime-test",

@@ -1,0 +1,33 @@
+recording:
+  out_dir: ./recordings
+  jpg_quality: 90
+  save_depth: false
+  imu_bin: true
+
+units:
+  - name: left_hand
+    role: realtime_vio
+    imu:
+      port: /dev/serial/by-id/usb-1a86_USB_Single_Serial_5B7E005674-if00
+      baud: 921600
+      calibration: /home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml
+    camera:
+      serial: "260322273737"
+      width: 1280
+      height: 720
+      fps: 30
+      enable_depth: false
+      stereo_ir: true
+      auto_exposure: false
+      exposure_us: 20000
+      gain: 48
+      cam_latency_ms: 0.0
+    vio:
+      backend: vins_fusion_ros2
+      cam_topic: /cam0/image_raw
+      cam1_topic: /cam1/image_raw
+      imu_topic: /imu0
+      odom_topic: /odometry_rect
+      stereo: true
+      port: 100
+      qos_reliable: true

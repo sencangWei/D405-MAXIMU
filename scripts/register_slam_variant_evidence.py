@@ -54,6 +54,8 @@ def register_variant_evidence(
         {
             "external_ground_truth": fragment["ground_truth"],
             "external_ground_truth_sha256": fragment["ground_truth_sha256"],
+            "session_inputs": fragment["session_inputs"],
+            "session_inputs_sha256": fragment["session_inputs_sha256"],
             "variant_reports": variants,
             "run_report": release["run_report"],
             "run_report_sha256": release["run_report_sha256"],

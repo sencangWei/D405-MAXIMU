@@ -39,11 +39,44 @@ def verify_hash(path: Path, expected_hash: str | None, label: str) -> str | None
     return None
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def hidden_capture_identity(dataset: dict, session: Path) -> str | None:
+    frozen_value = dataset.get("session_inputs")
+    frozen_hash = dataset.get("session_inputs_sha256")
+    if not frozen_value or not frozen_hash:
+        return None
+    frozen_path = resolve_project_path(frozen_value)
+    if not frozen_path.is_file() or sha256_file(frozen_path) != frozen_hash:
+        return None
+    try:
+        frozen = json.loads(frozen_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if (
+        frozen.get("frozen_before_slam") is not True
+        or frozen.get("truth_usage_policy")
+        != "withheld_from_slam_until_post_run_scoring"
+        or Path(frozen.get("session", "")).resolve() != session.resolve()
+    ):
+        return None
+    db3 = frozen.get("files", {}).get("camera_db3", {})
+    identity = db3.get("sha256")
+    return identity if isinstance(identity, str) and len(identity) == 64 else None
+
+
 def validate_manifest(manifest_path: Path, require_hidden: bool) -> dict:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     failures: list[str] = []
     roles: dict[str, int] = {}
     motions: dict[str, int] = {}
+    hidden_motion_identities: dict[str, set[str]] = {}
     ids: set[str] = set()
 
     for dataset in manifest.get("datasets", []):
@@ -77,6 +110,13 @@ def validate_manifest(manifest_path: Path, require_hidden: bool) -> dict:
             failures.append(hash_failure)
         ground_truth = dataset.get("external_ground_truth")
         if role == "hidden_test":
+            identity = hidden_capture_identity(dataset, session)
+            if identity is None:
+                failures.append(
+                    f"{dataset_id}: hidden test lacks valid pre-SLAM input freeze"
+                )
+            elif motion:
+                hidden_motion_identities.setdefault(motion, set()).add(identity)
             if not isinstance(dataset.get("expected_loop"), bool):
                 failures.append(
                     f"{dataset_id}: hidden test must predeclare expected_loop true/false"
@@ -104,11 +144,27 @@ def validate_manifest(manifest_path: Path, require_hidden: bool) -> dict:
     if require_hidden and missing_motions:
         failures.append("missing required motions: " + ", ".join(missing_motions))
 
+    minimum_hidden = int(
+        manifest.get("thresholds", {}).get("min_hidden_runs_per_motion", 3)
+    )
+    if require_hidden:
+        for motion in sorted(REQUIRED_MOTIONS):
+            count = len(hidden_motion_identities.get(motion, set()))
+            if count < minimum_hidden:
+                failures.append(
+                    f"hidden motion {motion} has {count} independent frozen captures; "
+                    f"need {minimum_hidden}"
+                )
+
     return {
         "result": "PASS" if not failures else "FAIL",
         "product_test_readiness": readiness,
         "role_counts": roles,
         "motion_counts": motions,
+        "independent_hidden_motion_counts": {
+            motion: len(identities)
+            for motion, identities in hidden_motion_identities.items()
+        },
         "required_motions": sorted(REQUIRED_MOTIONS),
         "missing_motions": missing_motions,
         "failures": failures,

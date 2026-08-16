@@ -54,5 +54,5 @@ RealSense D405(左IR+右IR 真双目 1280×720@30, 原始 db3)+ KT-EX9-2 IMU(400
 - **FFV1 本身已被大样本洗清(勿再怀疑格式)**: 36 轮 A/B(raw/FFV1/ffv1raw 各 12)Fisher 双尾 p=1.000 无显著差异,优率 83/83/75%。坏跑(~8-12%)是 53×43cm 慢回路固有 run-to-run 方差(raw 自己 1/12 发散),**不是 FFV1 编码问题**。唯一有实锤的管线差异是 2026-08-10 A/B 的**采集方法**(旧 db3 管线 vs 新 inline mkv)。
 
 ## 完整记忆位置(接手必读)
-Claude 会话记忆(`/home/robot/.claude/projects/-home-robot----ego-vio-calib-kit/memory/*.md`,共 13 个内容文件)含上述每条的完整调查过程、数据表、验证命令。**接手任何任务前,先 Read 这些文件获取完整背景,再动手**(本文件是浓缩版,细节以原始记忆为准)。文件清单:
-`capture-pipeline-ab-result.md` `d405-hardware-facts.md` `dual-ir-divergence-rootcause.md` `orb-replay-time-offset.md` `orb-rgbd-inertial-status.md` `recording-format-ffv1-lossless.md` `vins-230503-rootcause.md` `vins-alignment-bug.md` `vins-config-optimal.md` `vins-fork-state.md` `vins-init-guard.md` `vins-process-hygiene.md` `vins-replay-args.md`
+Claude 会话记忆(`/home/robot/.claude/projects/-home-robot----ego-vio-calib-kit/memory/*.md`,共 14 个内容文件)含上述每条的完整调查过程、数据表、验证命令。**接手任何任务前,先 Read 这些文件获取完整背景,再动手**(本文件是浓缩版,细节以原始记忆为准)。文件清单:
+`capture-pipeline-ab-result.md` `d405-hardware-facts.md` `dual-ir-divergence-rootcause.md` `jazzy-handoff-20260816.md` `orb-replay-time-offset.md` `orb-rgbd-inertial-status.md` `recording-format-ffv1-lossless.md` `vins-230503-rootcause.md` `vins-alignment-bug.md` `vins-config-optimal.md` `vins-fork-state.md` `vins-init-guard.md` `vins-process-hygiene.md` `vins-replay-args.md`

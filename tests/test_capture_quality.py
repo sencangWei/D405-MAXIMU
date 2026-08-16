@@ -11,6 +11,7 @@ from scripts.capture_d405_720p_rgb_stereo_ir import (
     MetadataFrame,
     StreamContinuity,
     analyze_ir_exposure,
+    capture_streams_for_mode,
     configure_ir_auto_exposure,
     decode_cdr_string,
     metadata_frame_from_text,
@@ -71,6 +72,12 @@ def test_stream_continuity_reports_frame_gaps_and_timestamp_regression():
     assert report["gap_events"] == 1
     assert report["timestamp_regressions"] == 1
     assert report["gap_ratio"] == 0.4
+
+
+def test_depth_stereo_mode_replaces_color_without_dropping_dual_ir():
+    names = [item[0] for item in capture_streams_for_mode("depth_stereo_ir")]
+
+    assert names == ["depth", "infrared_left", "infrared_right"]
 
 
 def test_decode_cdr_string_reads_ros2_std_msgs_string():

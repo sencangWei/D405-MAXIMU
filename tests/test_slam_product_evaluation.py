@@ -24,10 +24,12 @@ from replay_db3_to_ros2 import select_db3
 from build_stereo_replay_cache import STEREO_TOPICS, build_cache
 from validate_slam_dataset_roles import REQUIRED_MOTIONS, validate_manifest
 from validate_slam_product_release import (
+    count_unique_hidden_sessions_by_motion,
     validate_benchmark_environment,
     validate_loop_observability,
     validate_plane_factor_safety,
     validate_release,
+    validate_frozen_session_inputs,
 )
 from slam_benchmark_environment import evaluate_environment
 from slam_run_health import evaluate_slam_health
@@ -79,6 +81,92 @@ def passing_run_report(variant: str) -> dict:
     }
     report["health"] = evaluate_slam_health(report)
     return report
+
+
+def test_hidden_motion_repetitions_require_unique_capture_sessions():
+    datasets = [
+        {
+            "id": "hidden-a",
+            "role": "hidden_test",
+            "motion": "straight_open",
+            "session": "recordings/same",
+            "acceptance_sha256": "a" * 64,
+        },
+        {
+            "id": "hidden-b",
+            "role": "hidden_test",
+            "motion": "straight_open",
+            "session": "recordings/copied-same-capture",
+            "acceptance_sha256": "a" * 64,
+        },
+        {
+            "id": "hidden-c",
+            "role": "hidden_test",
+            "motion": "straight_open",
+            "session": "recordings/independent",
+            "acceptance_sha256": "b" * 64,
+        },
+        {
+            "id": "not-measured",
+            "role": "hidden_test",
+            "motion": "straight_open",
+            "session": "recordings/unmeasured",
+            "acceptance_sha256": "c" * 64,
+        },
+    ]
+
+    counts = count_unique_hidden_sessions_by_motion(
+        datasets, {"hidden-a", "hidden-b", "hidden-c"}
+    )
+
+    assert counts == {"straight_open": 2}
+
+
+def test_complete_gate_rehashes_frozen_raw_session_inputs(tmp_path: Path):
+    session = tmp_path / "recordings" / "hidden"
+    (session / "external_imu").mkdir(parents=True)
+    paths = {
+        "capture_acceptance": session / "acceptance.json",
+        "camera_db3": session / "capture.db3",
+        "camera_timestamps": session / "d405_frames.csv",
+        "imu_samples": session / "external_imu" / "imu.bin",
+    }
+    for name, path in paths.items():
+        path.write_bytes(name.encode())
+    frozen = {
+        "schema_version": 1,
+        "session": str(session.resolve()),
+        "frozen_before_slam": True,
+        "truth_usage_policy": "withheld_from_slam_until_post_run_scoring",
+        "files": {
+            name: {
+                "path": str(path.resolve()),
+                "size_bytes": path.stat().st_size,
+                "mtime_ns": path.stat().st_mtime_ns,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+            for name, path in paths.items()
+        },
+    }
+    frozen_path = tmp_path / "frozen.json"
+    frozen_path.write_text(json.dumps(frozen))
+    dataset = {
+        "session": str(session),
+        "acceptance_sha256": frozen["files"]["capture_acceptance"]["sha256"],
+        "session_inputs": str(frozen_path),
+        "session_inputs_sha256": hashlib.sha256(frozen_path.read_bytes()).hexdigest(),
+    }
+    failures = []
+
+    identity = validate_frozen_session_inputs(dataset, "hidden", failures)
+
+    assert failures == []
+    assert identity == frozen["files"]["camera_db3"]["sha256"]
+    paths["imu_samples"].write_bytes(b"changed")
+    failures = []
+    changed_identity = validate_frozen_session_inputs(dataset, "hidden", failures)
+    assert "hidden: frozen input size changed: imu_samples" in failures
+    assert changed_identity is None
 
 
 def write_passing_pnp_gate_report(path: Path) -> dict:
@@ -1005,9 +1093,35 @@ def test_complete_release_requires_hashed_three_variant_matrix(tmp_path):
 
 def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant(tmp_path):
     session = tmp_path / "recordings" / "session"
-    session.mkdir(parents=True)
+    (session / "external_imu").mkdir(parents=True)
     acceptance = session / "acceptance.json"
     acceptance.write_text("{}", encoding="utf-8")
+    session_files = {
+        "capture_acceptance": acceptance,
+        "camera_db3": session / "capture.db3",
+        "camera_timestamps": session / "d405_frames.csv",
+        "imu_samples": session / "external_imu" / "imu.bin",
+    }
+    session_files["camera_db3"].write_bytes(b"camera")
+    session_files["camera_timestamps"].write_bytes(b"timestamps")
+    session_files["imu_samples"].write_bytes(b"imu")
+    frozen_inputs = {
+        "schema_version": 1,
+        "session": str(session.resolve()),
+        "frozen_before_slam": True,
+        "truth_usage_policy": "withheld_from_slam_until_post_run_scoring",
+        "files": {
+            name: {
+                "path": str(path.resolve()),
+                "size_bytes": path.stat().st_size,
+                "mtime_ns": path.stat().st_mtime_ns,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+            for name, path in session_files.items()
+        },
+    }
+    frozen_inputs_path = tmp_path / "frozen_inputs.json"
+    frozen_inputs_path.write_text(json.dumps(frozen_inputs))
     run_paths = {}
     trajectory_paths = {}
     for variant in ("raw_vins", "auto_loop", "depth_plane"):
@@ -1077,6 +1191,11 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
         json.dumps(
             {
                 "result": "PASS",
+                "scope": "depth_plane_factor_safety_evidence",
+                "truth_usage": "none",
+                "corrected_trajectory": str(
+                    trajectory_paths["depth_plane"].resolve()
+                ),
                 "plane_factor": {
                     "status": "ACTIVE",
                     "support_observations": 8,
@@ -1141,6 +1260,10 @@ def test_three_variant_gate_applies_precision_thresholds_only_to_release_variant
                 "external_ground_truth": "truth.csv",
                 "external_ground_truth_sha256": hashlib.sha256(truth.read_bytes()).hexdigest(),
                 "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                "session_inputs": frozen_inputs_path.name,
+                "session_inputs_sha256": hashlib.sha256(
+                    frozen_inputs_path.read_bytes()
+                ).hexdigest(),
                 "run_report": run_paths["auto_loop"].name,
                 "run_report_sha256": hashlib.sha256(
                     run_paths["auto_loop"].read_bytes()

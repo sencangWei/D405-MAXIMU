@@ -31,7 +31,7 @@ class CameraConfig:
 
 @dataclass
 class VIOConfig:
-    backend: str = "stub"          # stub | openvins_socket | openvins_ros2
+    backend: str = "stub"          # stub | openvins_socket | openvins_ros2 | vins_fusion_ros2
     host: str = "auto"             # openvins_socket 用: auto=自动探测 WSL IP; 否则填 IP
     port: int = 12345              # openvins_socket 用发送端口 / openvins_ros2 用队列长度
     cam_topic: str = "/cam0/image_raw"   # openvins_ros2 用
@@ -39,6 +39,8 @@ class VIOConfig:
     stereo: bool = False
     imu_topic: str = "/imu0"             # openvins_ros2 用
     qos_reliable: bool = True            # openvins_ros2 用
+    odom_topic: str = "/odometry"         # ROS2 VIO/SLAM 轨迹可视化输入
+    imu_level_calibration: str = ""      # 离线/实时VINS共用的固定IMU调平旋转
 
 
 @dataclass
@@ -113,6 +115,13 @@ def load_config(path: str | Path = None) -> AppConfig:
                 stereo=vio_raw.get("stereo", False),
                 imu_topic=vio_raw.get("imu_topic", "/imu0"),
                 qos_reliable=vio_raw.get("qos_reliable", True),
+                odom_topic=vio_raw.get("odom_topic", "/odometry"),
+                imu_level_calibration=(
+                    str((path.parent / vio_raw["imu_level_calibration"]).resolve())
+                    if vio_raw.get("imu_level_calibration")
+                    and not Path(vio_raw["imu_level_calibration"]).is_absolute()
+                    else vio_raw.get("imu_level_calibration", "")
+                ),
             ),
         ))
 

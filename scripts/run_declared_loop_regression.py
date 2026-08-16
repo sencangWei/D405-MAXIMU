@@ -328,6 +328,7 @@ def execute(
     *,
     wait_for_environment: bool,
     poll_seconds: float,
+    loop_executable: Path | None = None,
 ) -> dict:
     environment = evaluate_environment(capture_environment())
     if environment["result"] != "PASS":
@@ -392,6 +393,10 @@ def execute(
                 "--ros-domain-id",
                 str(77 + dataset_index),
             ]
+            if loop_executable is not None:
+                command.extend(
+                    ["--loop-executable", str(loop_executable.resolve())]
+                )
             completed = subprocess.run(command, cwd=ROOT, check=False)
             report_path = run_dir / "run_acceptance.json"
             if not report_path.is_file():
@@ -457,6 +462,11 @@ def main() -> int:
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--repetitions", type=int)
     parser.add_argument("--out-root", type=Path)
+    parser.add_argument(
+        "--loop-executable",
+        type=Path,
+        help="可选冻结回环二进制；路径和SHA-256由每轮运行报告绑定",
+    )
     args = parser.parse_args()
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -498,6 +508,7 @@ def main() -> int:
         repetitions,
         wait_for_environment=args.wait_for_environment,
         poll_seconds=args.poll_seconds,
+        loop_executable=args.loop_executable,
     )
     write_summary(out_root / "summary.json", summary)
     write_markdown_report(out_root / "report.md", summary)

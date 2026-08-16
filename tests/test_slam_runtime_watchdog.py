@@ -77,6 +77,26 @@ def test_runtime_watchdog_latches_timestamp_and_map_jump_faults():
     }
 
 
+def test_runtime_watchdog_rejects_shared_raw_and_corrected_pose_jump():
+    monitor = healthy_monitor()
+    monitor.ingest(
+        "raw", timestamp_s=0.5, point=(0.2, 0.0, 0.0), arrival_monotonic_s=0.5
+    )
+    monitor.ingest(
+        "corrected",
+        timestamp_s=0.5,
+        point=(0.2, 0.0, 0.0),
+        arrival_monotonic_s=0.5,
+    )
+
+    snapshot = monitor.completion_snapshot()
+
+    assert snapshot["state"] == "SLAM_FAILED"
+    assert snapshot["product_usable"] is False
+    assert snapshot["max_raw_step_m"] > snapshot["max_raw_step_limit_m"]
+    assert snapshot["failures"] == ["raw_trajectory_jump"]
+
+
 def test_runtime_watchdog_detects_stale_and_skewed_streams():
     monitor = healthy_monitor()
     add_pose(monitor, "raw", 20, (0.1, 0.0, 0.0))

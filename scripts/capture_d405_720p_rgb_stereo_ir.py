@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record D405 720p color, stereo IR, and the external IMU.
+"""Record a D405 720p stereo-IR sensor pack and the external IMU.
 
 The RealSense streams are stored losslessly in a rosbag2 sqlite file. The SDK
 backend is selected by the launcher. Color remains in camera-native YUYV; BGR
@@ -43,6 +43,12 @@ STREAMS = (
     ("infrared_right", rs.stream.infrared, 2, rs.format.y8),
 )
 
+DEPTH_STEREO_STREAMS = (
+    ("depth", rs.stream.depth, 0, rs.format.z16),
+    ("infrared_left", rs.stream.infrared, 1, rs.format.y8),
+    ("infrared_right", rs.stream.infrared, 2, rs.format.y8),
+)
+
 STREAM_KEYS = tuple(name for name, *_ in STREAMS)
 IMU_WARMUP_FRAMES = 500
 MIN_CAMERA_RATE_HZ = 29.5
@@ -62,9 +68,18 @@ ACTUAL_EXPOSURE_RE = re.compile(r"(?:^|;)Actual Exposure=([0-9.]+)")
 GAIN_LEVEL_RE = re.compile(r"(?:^|;)Gain Level=([0-9.]+)")
 METADATA_TOPICS = {
     "color": "/device_0/sensor_0/Color_0/image/metadata",
+    "depth": "/device_0/sensor_0/Depth_0/image/metadata",
     "infrared_left": "/device_0/sensor_0/Infrared_1/image/metadata",
     "infrared_right": "/device_0/sensor_0/Infrared_2/image/metadata",
 }
+
+
+def capture_streams_for_mode(mode: str) -> tuple:
+    if mode == "rgb_stereo_ir":
+        return STREAMS
+    if mode == "depth_stereo_ir":
+        return DEPTH_STEREO_STREAMS
+    raise ValueError(f"unsupported capture mode: {mode}")
 
 
 @dataclass
@@ -168,7 +183,11 @@ def metadata_frame_from_text(text: str) -> MetadataFrame | None:
 
 def read_db3_metadata(bag_path: Path) -> dict[str, list[MetadataFrame]]:
     records = {key: [] for key in STREAM_KEYS}
-    topic_to_key = {topic: key for key, topic in METADATA_TOPICS.items()}
+    topic_to_key = {
+        topic: key
+        for key, topic in METADATA_TOPICS.items()
+        if key in STREAM_KEYS
+    }
     placeholders = ",".join("?" for _ in topic_to_key)
     query = f"""
         SELECT topics.name, messages.data
@@ -383,6 +402,15 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--imu-baud", type=int, default=921600)
     parser.add_argument("--duration", type=float, default=10.0)
+    parser.add_argument(
+        "--capture-mode",
+        choices=("rgb_stereo_ir", "depth_stereo_ir"),
+        default="rgb_stereo_ir",
+        help=(
+            "rgb_stereo_ir保留彩色录制；depth_stereo_ir使用硬件Depth+"
+            "双IR，用于平面因子和Z误差验收"
+        ),
+    )
     parser.add_argument("--warmup-frames", type=int, default=30)
     parser.add_argument(
         "--ir-auto-exposure-limit-us",
@@ -423,6 +451,8 @@ def stream_key(frame) -> str | None:
     index = profile.as_video_stream_profile().stream_index()
     if stream == rs.stream.color:
         return "color"
+    if stream == rs.stream.depth:
+        return "depth"
     if stream == rs.stream.infrared and index == 1:
         return "infrared_left"
     if stream == rs.stream.infrared and index == 2:
@@ -436,7 +466,17 @@ def select_profiles(sensor) -> list:
         video = profile.as_video_stream_profile()
         if video.width() != 1280 or video.height() != 720 or profile.fps() != 30:
             continue
-        if profile.stream_type() == rs.stream.color and profile.format() == rs.format.yuyv:
+        if (
+            "color" in STREAM_KEYS
+            and profile.stream_type() == rs.stream.color
+            and profile.format() == rs.format.yuyv
+        ):
+            profiles.append(profile)
+        elif (
+            "depth" in STREAM_KEYS
+            and profile.stream_type() == rs.stream.depth
+            and profile.format() == rs.format.z16
+        ):
             profiles.append(profile)
         elif (
             profile.stream_type() == rs.stream.infrared
@@ -455,6 +495,8 @@ def stream_key_from_profile(profile) -> str | None:
     index = profile.as_video_stream_profile().stream_index()
     if stream == rs.stream.color:
         return "color"
+    if stream == rs.stream.depth:
+        return "depth"
     if stream == rs.stream.infrared and index == 1:
         return "infrared_left"
     if stream == rs.stream.infrared and index == 2:
@@ -463,18 +505,26 @@ def stream_key_from_profile(profile) -> str | None:
 
 
 def preview_mosaic(frame_map: dict) -> np.ndarray:
-    color_yuyv = np.asanyarray(frame_map["color"].get_data())
-    if color_yuyv.dtype == np.uint16:
-        color_yuyv = color_yuyv.view(np.uint8).reshape(color_yuyv.shape + (2,))
-    color = cv2.cvtColor(color_yuyv, cv2.COLOR_YUV2BGR_YUY2)
     left = np.asanyarray(frame_map["infrared_left"].get_data())
     right = np.asanyarray(frame_map["infrared_right"].get_data())
-
     left_bgr = cv2.cvtColor(left, cv2.COLOR_GRAY2BGR)
     right_bgr = cv2.cvtColor(right, cv2.COLOR_GRAY2BGR)
+
+    if "color" in frame_map:
+        color_yuyv = np.asanyarray(frame_map["color"].get_data())
+        if color_yuyv.dtype == np.uint16:
+            color_yuyv = color_yuyv.view(np.uint8).reshape(color_yuyv.shape + (2,))
+        primary_label = "RGB"
+        primary = cv2.cvtColor(color_yuyv, cv2.COLOR_YUV2BGR_YUY2)
+    else:
+        primary_label = "Depth"
+        primary = np.asanyarray(
+            rs.colorizer().colorize(frame_map["depth"]).get_data()
+        )
+
     tiles = []
     for label, image in (
-        ("RGB", color),
+        (primary_label, primary),
         ("IR Left", left_bgr),
         ("IR Right", right_bgr),
     ):
@@ -485,12 +535,16 @@ def preview_mosaic(frame_map: dict) -> np.ndarray:
 
 
 def main() -> int:
+    global STREAMS, STREAM_KEYS, CAMERA_RAW_BYTES_PER_SECOND
     args = parse_args()
+    STREAMS = capture_streams_for_mode(args.capture_mode)
+    STREAM_KEYS = tuple(name for name, *_ in STREAMS)
+    CAMERA_RAW_BYTES_PER_SECOND = 1280 * 720 * (2 + 1 + 1) * 30
     realsense_backend = os.environ.get("EGO_VIO_REALSENSE_BACKEND", "system-default")
     stamp = time.strftime("%Y%m%d_%H%M%S")
-    session = args.output_root.resolve() / f"d405_720p_rgb_stereo_ir_{stamp}"
+    session = args.output_root.resolve() / f"d405_720p_{args.capture_mode}_{stamp}"
     session.mkdir(parents=True, exist_ok=False)
-    bag_path = session / "d405_720p_rgb_stereo_ir.db3"
+    bag_path = session / f"d405_720p_{args.capture_mode}.db3"
     frame_csv_path = session / "d405_frames.csv"
     use_ram_stage = not args.no_ram_stage and args.duration > 0
     record_path = bag_path
@@ -591,7 +645,12 @@ def main() -> int:
                 f"[全流采集] DB3实时写入内存盘，结束后搬到输出目录；"
                 f"预估占用 {staging_required_bytes / 1e9:.2f}GB"
             )
-        print("[全流采集] 1280x720@30: 彩色YUYV + 左IR + 右IR；IMU 400Hz")
+        stream_description = (
+            "彩色YUYV + 左IR + 右IR"
+            if args.capture_mode == "rgb_stereo_ir"
+            else "Depth Z16 + 左IR + 右IR"
+        )
+        print(f"[全流采集] 1280x720@30: {stream_description}；IMU 400Hz")
         print(
             "[全流采集] 双IR自动曝光上限 "
             f"{args.ir_auto_exposure_limit_us:.0f}us，"
@@ -683,7 +742,7 @@ def main() -> int:
                 complete_sets += 1
                 if not args.no_preview and now_mono >= next_preview_mono:
                     cv2.imshow(
-                        "D405 720p: RGB | IR Left | IR Right",
+                        f"D405 720p: {args.capture_mode} | IR Left | IR Right",
                         preview_mosaic(latest_frames),
                     )
                     next_preview_mono = now_mono + 0.1
@@ -824,8 +883,10 @@ def main() -> int:
         "capture_error": capture_error,
         "resolution": [1280, 720],
         "fps_requested": 30,
-        "color_record_format": "YUYV",
-        "preview_color_format": "BGR",
+        "capture_mode": args.capture_mode,
+        "color_record_format": "YUYV" if "color" in STREAM_KEYS else None,
+        "depth_record_format": "Z16" if "depth" in STREAM_KEYS else None,
+        "preview_color_format": "BGR" if "color" in STREAM_KEYS else "Depth colorized",
         "capture_backend": (
             f"rs.recorder + direct sensor frame_queue ({realsense_backend})"
         ),

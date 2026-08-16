@@ -54,7 +54,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--session", type=Path, required=True, help="采集会话目录(含 mp4/ 与 external_imu/)")
     p.add_argument("--rate", type=float, default=1.0, help="回放倍速(1=实时)")
     p.add_argument("--imu-shift-ms", type=float, default=0.0,
-                   help="IMU 发布戳平移(Kalibr t_imu=t_cam-7.36ms -> +7.36ms)")
+                   help="IMU发布戳平移；VINS固定td=-11.7ms时保持0，ORB使用11.7ms")
     p.add_argument("--imu-align-s", type=float, default=0.0,
                    help="额外 IMU 平移(s): 补偿 warmup 帧导致图像/IMU 起始错位")
     p.add_argument("--skip-s", type=float, default=0.0, help="跳过开头秒数")

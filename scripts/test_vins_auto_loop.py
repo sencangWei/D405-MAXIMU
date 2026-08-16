@@ -23,6 +23,7 @@ from pathlib import Path
 
 import numpy as np
 import rclpy
+import yaml
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 
@@ -54,6 +55,36 @@ REPLAY_EXECUTABLE = Path(
 )
 
 
+def load_accel_calibration(path: Path) -> dict[str, object]:
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    accelerometer = data.get("accelerometer") if isinstance(data, dict) else None
+    if not isinstance(accelerometer, dict):
+        raise ValueError("IMU calibration lacks accelerometer section")
+    matrix = np.asarray(accelerometer.get("matrix"), dtype=float)
+    offset_g = np.asarray(accelerometer.get("offset_g"), dtype=float)
+    if matrix.shape != (3, 3) or offset_g.shape != (3,):
+        raise ValueError("accelerometer calibration must be a 3x3 matrix plus 3 offsets")
+    if not np.isfinite(matrix).all() or not np.isfinite(offset_g).all():
+        raise ValueError("accelerometer calibration contains non-finite values")
+    return {
+        "path": str(path.resolve()),
+        "matrix": matrix.reshape(-1).tolist(),
+        "offset_g": offset_g.tolist(),
+    }
+
+
+def accel_calibration_replay_arguments(calibration: dict[str, object]) -> list[str]:
+    def values(items: object) -> list[str]:
+        return [str(float(value)) for value in items]
+
+    return [
+        "--imu-accel-matrix",
+        *values(calibration["matrix"]),
+        "--imu-accel-offset-g",
+        *values(calibration["offset_g"]),
+    ]
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -80,6 +111,9 @@ def run_provenance(
     left_calibration: Path,
     right_calibration: Path,
     replay_backend: str,
+    loop_executable: Path = LOOP_EXECUTABLE,
+    replay_executable: Path | None = None,
+    imu_accel_calibration: Path | None = None,
 ) -> dict[str, object]:
     files = {
         "runner": Path(__file__).resolve(),
@@ -87,10 +121,14 @@ def run_provenance(
         "left_calibration": left_calibration.resolve(),
         "right_calibration": right_calibration.resolve(),
         "vins_executable": VINS_EXECUTABLE.resolve(),
-        "loop_executable": LOOP_EXECUTABLE.resolve(),
+        "loop_executable": loop_executable.resolve(),
     }
     if replay_backend == "cpp":
-        files["replay_executable"] = REPLAY_EXECUTABLE.resolve()
+        files["replay_executable"] = (
+            REPLAY_EXECUTABLE if replay_executable is None else replay_executable
+        ).resolve()
+    if imu_accel_calibration is not None:
+        files["imu_accel_calibration"] = imu_accel_calibration.resolve()
     acceptance = session.resolve() / "acceptance.json"
     if acceptance.is_file():
         files["capture_acceptance"] = acceptance
@@ -306,6 +344,32 @@ def camera_frame_count(session: Path, image_db3: Path | None) -> tuple[int, str 
     return 0, None
 
 
+def expected_pose_samples(
+    camera_frames: int,
+    skip_s: float,
+    camera_rate_hz: float = 30.0,
+) -> int:
+    return max(1, camera_frames - int(round(skip_s * camera_rate_hz)))
+
+
+def drain_is_complete(
+    *,
+    raw_poses: int,
+    corrected_poses: int,
+    expected_poses: int,
+    min_pose_coverage: float,
+    quiet_duration_s: float,
+    require_coverage: bool,
+    quiet_threshold_s: float = 6.0,
+) -> bool:
+    if quiet_duration_s < quiet_threshold_s:
+        return False
+    if not require_coverage:
+        return True
+    pose_coverage = min(raw_poses, corrected_poses) / max(1, expected_poses)
+    return pose_coverage >= min_pose_coverage
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("session", type=Path)
@@ -320,10 +384,27 @@ def main() -> int:
         help="可选轻量双IR派生DB3；不改变原始会话和IMU来源",
     )
     parser.add_argument(
+        "--replay-executable",
+        type=Path,
+        default=REPLAY_EXECUTABLE,
+        help="显式指定C++回放二进制，支持不覆盖稳定安装的隔离A/B验证",
+    )
+    parser.add_argument(
+        "--imu-accel-calibration",
+        type=Path,
+        help="可选：只应用六面静态标定的加速度计3x3矩阵与零偏",
+    )
+    parser.add_argument(
         "--replay-backend",
         choices=("cpp", "python"),
         default="cpp",
         help="DB3回放后端；产品验收默认使用C++以维持30fps吞吐",
+    )
+    parser.add_argument(
+        "--loop-executable",
+        type=Path,
+        default=LOOP_EXECUTABLE,
+        help="显式指定回环节点二进制，支持不覆盖稳定安装的隔离A/B验证",
     )
     parser.add_argument("--timeout-s", type=float, default=420.0)
     parser.add_argument("--drain-timeout-s", type=float, default=180.0)
@@ -345,6 +426,14 @@ def main() -> int:
         help="隔离离线验收与同机其他ROS 2任务；默认77",
     )
     args = parser.parse_args()
+
+    if args.imu_accel_calibration is not None and args.replay_backend != "cpp":
+        parser.error("--imu-accel-calibration currently requires --replay-backend cpp")
+    accel_calibration = (
+        load_accel_calibration(args.imu_accel_calibration)
+        if args.imu_accel_calibration is not None
+        else None
+    )
 
     os.environ["ROS_DOMAIN_ID"] = str(args.ros_domain_id)
     os.environ["ROS_LOCALHOST_ONLY"] = "1"
@@ -405,7 +494,14 @@ def main() -> int:
         calibration_paths["left.yaml"],
         calibration_paths["right.yaml"],
         args.replay_backend,
+        loop_executable=args.loop_executable,
+        replay_executable=args.replay_executable,
+        imu_accel_calibration=args.imu_accel_calibration,
     )
+    camera_frames, camera_frame_count_source = camera_frame_count(
+        args.session, args.image_db3
+    )
+    expected_poses = expected_pose_samples(camera_frames, args.skip_s)
 
     vins_log_path = args.out_dir / "vins.log"
     loop_log_path = args.out_dir / "auto_loop.log"
@@ -480,10 +576,8 @@ def main() -> int:
             )
             processes.append(vins)
             loop = subprocess.Popen(
-                [
-                    "stdbuf", "-oL", "-eL", "ros2", "run", "vins_fusion_ros2",
-                    "loop_fusion_node", str(run_config),
-                ],
+                ["stdbuf", "-oL", "-eL", str(args.loop_executable.resolve()),
+                 str(run_config)],
                 stdout=loop_log,
                 stderr=subprocess.STDOUT,
                 preexec_fn=os.setsid,
@@ -495,17 +589,32 @@ def main() -> int:
 
             with replay_log_path.open("wb") as replay_log:
                 if list(args.session.glob("*.db3")):
-                    replay_script = (
-                        "replay_db3_cpp_to_ros2.py"
-                        if args.replay_backend == "cpp"
-                        else "replay_db3_to_ros2.py"
-                    )
-                    replay_command = [
-                        "python3", str(ROOT / "scripts" / replay_script),
+                    replay_args = [
                         "--session", str(args.session), "--mode", "stereo",
                         "--rate", str(args.rate), "--skip-s", str(args.skip_s),
                         "--imu-align-s", "0", "--imu-shift-ms", str(args.imu_shift_ms),
                     ]
+                    if accel_calibration is not None:
+                        replay_args.extend(
+                            accel_calibration_replay_arguments(accel_calibration)
+                        )
+                    if args.replay_backend == "cpp":
+                        replay_command = (
+                            [
+                                "python3",
+                                str(ROOT / "scripts" / "replay_db3_cpp_to_ros2.py"),
+                                *replay_args,
+                            ]
+                            if args.replay_executable.resolve()
+                            == REPLAY_EXECUTABLE.resolve()
+                            else [str(args.replay_executable.resolve()), *replay_args]
+                        )
+                    else:
+                        replay_command = [
+                            "python3",
+                            str(ROOT / "scripts" / "replay_db3_to_ros2.py"),
+                            *replay_args,
+                        ]
                     if args.image_db3 is not None:
                         replay_command.extend(
                             ["--image-db3", str(args.image_db3.resolve())]
@@ -549,14 +658,22 @@ def main() -> int:
                     raise RuntimeError(f"replay failed with exit code {replay.returncode}")
 
             quiet_since = time.monotonic()
-            last_count = len(corrected_rows)
+            last_counts = (len(raw_rows), len(corrected_rows))
             drain_deadline = time.monotonic() + args.drain_timeout_s
             while time.monotonic() < drain_deadline:
                 rclpy.spin_once(node, timeout_sec=0.05)
-                if len(corrected_rows) != last_count:
-                    last_count = len(corrected_rows)
+                current_counts = (len(raw_rows), len(corrected_rows))
+                if current_counts != last_counts:
+                    last_counts = current_counts
                     quiet_since = time.monotonic()
-                elif time.monotonic() - quiet_since >= 6:
+                elif drain_is_complete(
+                    raw_poses=current_counts[0],
+                    corrected_poses=current_counts[1],
+                    expected_poses=expected_poses,
+                    min_pose_coverage=args.min_pose_coverage,
+                    quiet_duration_s=time.monotonic() - quiet_since,
+                    require_coverage=camera_frames > 0,
+                ):
                     break
     except Exception as exc:
         runtime_error = str(exc)
@@ -593,13 +710,6 @@ def main() -> int:
         for line in vins_log.splitlines()
         if "[LOOP_KEYFRAME_QUEUE_DROP]" in line
     ]
-    camera_frames, camera_frame_count_source = camera_frame_count(
-        args.session, args.image_db3
-    )
-    expected_poses = max(
-        1,
-        camera_frames - int(round(args.skip_s * 30.0)),
-    )
     pose_coverage = min(len(raw_rows), len(corrected_rows)) / expected_poses
     raw_diagnostics = trajectory_diagnostics(raw_rows)
     corrected_diagnostics = trajectory_diagnostics(corrected_rows)
@@ -672,6 +782,7 @@ def main() -> int:
         "session": str(args.session.resolve()),
         "replay_rate": args.rate,
         "replay_backend": args.replay_backend,
+        "imu_accel_calibration": accel_calibration,
         "raw_odometry_samples": len(raw_rows),
         "corrected_odometry_samples": len(corrected_rows),
         "camera_frames": camera_frames,

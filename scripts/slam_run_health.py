@@ -12,10 +12,11 @@ from pathlib import Path
 from slam_benchmark_environment import validate_environment_report
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 MIN_POSE_COVERAGE = 0.98
 MIN_TRUE_ELEVATION_RETENTION = 0.90
 MIN_ABSOLUTE_JUMP_LIMIT_M = 0.03
+MAX_RAW_STEP_LIMIT_M = 0.05
 RAW_STEP_MULTIPLIER = 3.5
 
 
@@ -97,6 +98,7 @@ def evaluate_slam_health(report: dict) -> dict:
                 "min_pose_coverage": MIN_POSE_COVERAGE,
                 "min_true_elevation_retention": MIN_TRUE_ELEVATION_RETENTION,
                 "min_absolute_jump_limit_m": MIN_ABSOLUTE_JUMP_LIMIT_M,
+                "max_raw_step_limit_m": MAX_RAW_STEP_LIMIT_M,
                 "raw_step_multiplier": RAW_STEP_MULTIPLIER,
             },
             "checks": [],
@@ -212,6 +214,12 @@ def evaluate_slam_health(report: dict) -> dict:
     corrected_diagnostics = report.get("corrected_trajectory_diagnostics", {})
     raw_max_step = _number(raw_diagnostics.get("max_step_m"))
     corrected_max_step = _number(corrected_diagnostics.get("max_step_m"))
+    add(
+        "raw_trajectory_jump",
+        raw_max_step is not None and raw_max_step <= MAX_RAW_STEP_LIMIT_M,
+        raw_max_step,
+        {"maximum_m": MAX_RAW_STEP_LIMIT_M},
+    )
     jump_limit = (
         max(MIN_ABSOLUTE_JUMP_LIMIT_M, RAW_STEP_MULTIPLIER * raw_max_step)
         if raw_max_step is not None
@@ -256,6 +264,7 @@ def evaluate_slam_health(report: dict) -> dict:
             "min_pose_coverage": MIN_POSE_COVERAGE,
             "min_true_elevation_retention": MIN_TRUE_ELEVATION_RETENTION,
             "min_absolute_jump_limit_m": MIN_ABSOLUTE_JUMP_LIMIT_M,
+            "max_raw_step_limit_m": MAX_RAW_STEP_LIMIT_M,
             "raw_step_multiplier": RAW_STEP_MULTIPLIER,
         },
         "checks": checks,

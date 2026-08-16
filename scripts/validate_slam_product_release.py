@@ -29,6 +29,110 @@ DEFAULT_THRESHOLDS = {
 REQUIRED_VARIANTS = ("raw_vins", "auto_loop", "depth_plane")
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def count_unique_hidden_sessions_by_motion(
+    datasets: list[dict],
+    measured_dataset_ids: set[str],
+    capture_identities: dict[str, str] | None = None,
+) -> dict[str, int]:
+    captures: dict[str, set[str]] = {}
+    for dataset in datasets:
+        if (
+            dataset.get("role") != "hidden_test"
+            or dataset.get("id") not in measured_dataset_ids
+        ):
+            continue
+        motion = dataset.get("motion", "unknown")
+        verified_identity = (capture_identities or {}).get(dataset.get("id"))
+        acceptance_hash = dataset.get("acceptance_sha256")
+        if verified_identity:
+            capture_identity = verified_identity
+        elif isinstance(acceptance_hash, str) and len(acceptance_hash) == 64:
+            capture_identity = acceptance_hash
+        else:
+            capture_identity = str(resolve(dataset.get("session", "")).resolve())
+        captures.setdefault(motion, set()).add(capture_identity)
+    return {motion: len(identities) for motion, identities in captures.items()}
+
+
+def validate_frozen_session_inputs(
+    dataset: dict, label: str, failures: list[str]
+) -> str | None:
+    initial_failure_count = len(failures)
+    frozen = load_hashed_json(
+        dataset.get("session_inputs"),
+        dataset.get("session_inputs_sha256"),
+        f"{label}: frozen session inputs",
+        failures,
+    )
+    if frozen is None:
+        return None
+    if frozen.get("schema_version") != 1:
+        failures.append(f"{label}: frozen session input schema is unsupported")
+    if frozen.get("frozen_before_slam") is not True:
+        failures.append(f"{label}: session inputs were not frozen before SLAM")
+    if frozen.get("truth_usage_policy") != (
+        "withheld_from_slam_until_post_run_scoring"
+    ):
+        failures.append(f"{label}: frozen session truth isolation policy is invalid")
+    expected_session = resolve(dataset.get("session", "")).resolve()
+    try:
+        frozen_session = Path(frozen.get("session", "")).resolve()
+    except TypeError:
+        frozen_session = Path("/")
+    if frozen_session != expected_session:
+        failures.append(f"{label}: frozen session does not match dataset session")
+
+    required = {
+        "capture_acceptance",
+        "camera_db3",
+        "camera_timestamps",
+        "imu_samples",
+    }
+    files = frozen.get("files")
+    if not isinstance(files, dict):
+        failures.append(f"{label}: frozen session files are missing")
+        return None
+    for name in sorted(required):
+        item = files.get(name)
+        if not isinstance(item, dict):
+            failures.append(f"{label}: frozen input is missing: {name}")
+            continue
+        path = Path(item.get("path", "")).resolve()
+        if not path.is_relative_to(expected_session):
+            failures.append(f"{label}: frozen input is outside session: {name}")
+            continue
+        if not path.is_file():
+            failures.append(f"{label}: frozen input file is missing: {name}")
+            continue
+        expected_size = item.get("size_bytes")
+        if not isinstance(expected_size, int) or path.stat().st_size != expected_size:
+            failures.append(f"{label}: frozen input size changed: {name}")
+            continue
+        expected_mtime_ns = item.get("mtime_ns")
+        if not isinstance(expected_mtime_ns, int) or path.stat().st_mtime_ns != expected_mtime_ns:
+            failures.append(f"{label}: frozen input timestamp changed: {name}")
+            continue
+        expected_hash = item.get("sha256")
+        if not isinstance(expected_hash, str) or sha256_file(path) != expected_hash:
+            failures.append(f"{label}: frozen input hash changed: {name}")
+    acceptance = files.get("capture_acceptance", {})
+    if acceptance.get("sha256") != dataset.get("acceptance_sha256"):
+        failures.append(f"{label}: frozen capture acceptance identity changed")
+    camera_db3 = files.get("camera_db3", {})
+    identity = camera_db3.get("sha256")
+    if len(failures) != initial_failure_count:
+        return None
+    return identity if isinstance(identity, str) and len(identity) == 64 else None
+
+
 def validate_plane_factor_safety(plane_factor: dict, label: str) -> list[str]:
     """Require evidence that a plane factor is bounded or safely disabled."""
     failures: list[str] = []
@@ -212,7 +316,7 @@ def load_hashed_json(
     if not expected_hash:
         failures.append(f"{label}: missing report sha256")
         return None
-    actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+    actual_hash = sha256_file(path)
     if actual_hash != expected_hash:
         failures.append(
             f"{label}: report hash changed ({actual_hash} != {expected_hash})"
@@ -229,7 +333,8 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
     failures = list(dataset_gate["failures"])
     measured_runs = 0
     failed_runs = 0
-    hidden_runs_by_motion: dict[str, int] = {}
+    measured_hidden_dataset_ids: set[str] = set()
+    hidden_capture_identities: dict[str, str] = {}
     ground_truth_reports = 0
     loop_reports = 0
     variant_report_counts = {name: 0 for name in REQUIRED_VARIANTS}
@@ -311,7 +416,7 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
             elif expected_loop is False and accepted:
                 failures.append(f"{dataset_id}: false loop accepted")
             if role == "hidden_test":
-                hidden_runs_by_motion[motion] = hidden_runs_by_motion.get(motion, 0) + 1
+                measured_hidden_dataset_ids.add(dataset_id)
 
         ground_truth = load_hashed_json(
             dataset.get("ground_truth_report"),
@@ -343,6 +448,11 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                     )
 
         if require_complete and role == "hidden_test":
+            capture_identity = validate_frozen_session_inputs(
+                dataset, dataset_id, failures
+            )
+            if capture_identity:
+                hidden_capture_identities[dataset_id] = capture_identity
             variant_reports = dataset.get("variant_reports", {})
             variant_trajectories: list[str] = []
             for variant in REQUIRED_VARIANTS:
@@ -507,6 +617,26 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                             failures.append(
                                 f"{dataset_id}: {variant}: factor report is not PASS"
                             )
+                        if factor.get("scope") != (
+                            "depth_plane_factor_safety_evidence"
+                        ):
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor evidence scope is invalid"
+                            )
+                        if factor.get("truth_usage") != "none":
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor evidence used truth"
+                            )
+                        scored_corrected = factor.get("corrected_trajectory")
+                        if (
+                            not scored_corrected
+                            or Path(scored_corrected).resolve()
+                            != trajectory_path.resolve()
+                        ):
+                            failures.append(
+                                f"{dataset_id}: {variant}: factor evidence scored a "
+                                "different corrected trajectory"
+                            )
                         failures.extend(
                             validate_plane_factor_safety(
                                 plane_factor, f"{dataset_id}: {variant}"
@@ -517,6 +647,11 @@ def validate_release(manifest_path: Path, require_complete: bool) -> dict:
                     f"{dataset_id}: variant trajectory paths must be distinct"
                 )
 
+    hidden_runs_by_motion = count_unique_hidden_sessions_by_motion(
+        manifest.get("datasets", []),
+        measured_hidden_dataset_ids & hidden_capture_identities.keys(),
+        hidden_capture_identities,
+    )
     failure_rate = failed_runs / measured_runs if measured_runs else 1.0
     if failure_rate > thresholds["max_failure_rate"]:
         failures.append(

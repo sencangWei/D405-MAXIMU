@@ -60,17 +60,27 @@ sudo apt install zstd libusb-1.0-0-dev
 
 ## 5. 数据采集
 
-### 5.1 推荐：三路 720p（RGB + Depth + 左 IR）
+### 5.1 RGB-D采集（RGB + Depth + 左 IR）
 
-适合 RGB-D 视觉惯性 SLAM，丢帧约 **1%**，IMU 与相机时间戳软对齐。
+适合 RGB-D 后处理实验。是否合格必须以每次采集生成的
+`acceptance.json`为准，不能沿用历史平均丢帧率。
 
 ```bash
 ./capture_d405_720p_rgbd_imu.sh --duration 60 --no-preview
 ```
 
-### 5.2 备用：四路 720p（RGB + 左 IR + 右 IR + Depth）
+### 5.2 当前VINS产品主采集（RGB + 左 IR + 右 IR）
 
-数据最全，但 D405 内部四路调度导致丢帧约 **15%**，仅在对齐/同步要求不高的场景使用。
+当前产品回归使用D405双IR 30fps＋外置IMU 400Hz，RSUSB后端、正式窗口零丢帧验收：
+
+```bash
+./capture_d405_720p_rgb_stereo_ir_rsusb.sh --duration 60
+```
+
+### 5.3 四路实验采集（RGB + 左 IR + 右 IR + Depth）
+
+D405四路720p并发可能触发内部调度和吞吐问题。只用于Depth/平面因子实验，
+每条数据仍须独立通过`acceptance.json`，不得假定固定丢帧率。
 
 ```bash
 ./capture_d405_720p_all_streams.sh --duration 60 --no-preview
@@ -124,18 +134,20 @@ kalibr_calibrate_imu_camera \
 
 ### 6.4 当前标定结果
 
-由 Kalibr 在 `calib_20260804_194345` 上得到：
+当前权威时间外参来自2026-08-08重新标定：
 
 - 重投影残差：**0.42 px**
-- 相机-IMU 时间偏移：**timeshift_cam_imu = -7.36 ms**（`t_imu = t_cam - 7.36ms`）
+- 相机-IMU 时间偏移：**td = -11.7 ms**
 - 加速度随机游走：0.039 m/s²
 - 陀螺随机游走：0.0045 rad/s
 
-结果已写入 `config/camimu_720p_leftir_kalibr.yaml`。
+VINS配置使用`estimate_td: 0`并固定`td: -0.0117`。旧的`-7.36ms`结果已废弃，
+禁止与在线时间偏移估计同时使用，否则会形成双重补偿。
 
 ## 7. 数据质量验证
 
-示例会话 `d405_720p_all_20260804_215229`（三路 60s）：
+以下旧会话只用于展示报告字段，不代表当前产品采集门槛。当前必须逐条读取
+`acceptance.json`，要求双IR 30fps和IMU 400Hz正式窗口零丢帧、零回退：
 
 | 流 | 帧数 | 帧率 | 丢帧 |
 |---|---|---|---|

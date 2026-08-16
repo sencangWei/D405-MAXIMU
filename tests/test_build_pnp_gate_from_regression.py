@@ -115,3 +115,42 @@ def test_rejects_unassigned_dataset_role(tmp_path):
         assert "missing predeclared role: closed" in str(exc)
     else:
         raise AssertionError("missing role was accepted")
+
+
+def test_rejects_incomplete_regression_instead_of_freezing_partial_gate(tmp_path):
+    regression_manifest = tmp_path / "regression_manifest.json"
+    regression_manifest.write_text(
+        json.dumps(
+            {
+                "thresholds": {"required_repetitions_per_dataset": 3},
+                "datasets": [
+                    {"id": "closed", "session": "unused", "expected_loop": True}
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "mode": "REPEATED_REGRESSION",
+                "datasets": [{"id": "closed", "runs": []}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    roles = tmp_path / "roles.json"
+    roles.write_text(
+        json.dumps(
+            {"schema_version": 1, "roles": {"closed": "validation"}}
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        build_manifest(regression_manifest, summary, roles, tmp_path / "out.json")
+    except ValueError as exc:
+        assert "regression run 1 is missing" in str(exc)
+    else:
+        raise AssertionError("partial regression was accepted")

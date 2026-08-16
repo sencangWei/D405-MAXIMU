@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 
@@ -23,10 +24,16 @@ def main() -> int:
     args = ap.parse_args()
 
     rclpy.init()
-    node = Node("odom_recorder")
+    topic_suffix = args.topic.strip("/").replace("/", "_") or "root"
+    node = Node(f"odom_recorder_{topic_suffix}")
     fp = args.out.open("w", newline="", encoding="utf-8")
     writer = csv.writer(fp)
-    writer.writerow(["t_sec", "x", "y", "z", "qx", "qy", "qz", "qw"])
+    writer.writerow(
+        [
+            "t_sec", "x", "y", "z", "qx", "qy", "qz", "qw",
+            "vx", "vy", "vz", "wx", "wy", "wz",
+        ]
+    )
     n = 0
     t0 = None
 
@@ -37,7 +44,15 @@ def main() -> int:
             t0 = t
         p = msg.pose.pose.position
         q = msg.pose.pose.orientation
-        writer.writerow([f"{t - t0:.6f}", p.x, p.y, p.z, q.x, q.y, q.z, q.w])
+        linear = msg.twist.twist.linear
+        angular = msg.twist.twist.angular
+        writer.writerow(
+            [
+                f"{t - t0:.6f}", p.x, p.y, p.z, q.x, q.y, q.z, q.w,
+                linear.x, linear.y, linear.z,
+                angular.x, angular.y, angular.z,
+            ]
+        )
         fp.flush()
         n += 1
 
@@ -45,13 +60,14 @@ def main() -> int:
     print(f"[odom_csv] 订阅 {args.topic} -> {args.out}")
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         fp.close()
         print(f"[odom_csv] 保存 {n} 个位姿 -> {args.out}")
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
     return 0
 
 

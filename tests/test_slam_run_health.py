@@ -85,6 +85,18 @@ def test_drops_jump_and_elevation_loss_fail_health():
     ]
 
 
+def test_shared_raw_and_corrected_jump_fails_health():
+    report = healthy_report()
+    report["raw_trajectory_diagnostics"]["max_step_m"] = 0.16
+    report["corrected_trajectory_diagnostics"]["max_step_m"] = 0.16
+
+    health = evaluate_slam_health(report)
+
+    assert health["state"] == "SLAM_FAILED"
+    assert health["product_usable"] is False
+    assert health["failures"] == ["raw_trajectory_jump"]
+
+
 def test_planar_run_skips_elevation_retention():
     report = healthy_report()
     report["raw_trajectory_diagnostics"]["z_span_m"] = 0.02

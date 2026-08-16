@@ -19,27 +19,20 @@ import numpy as np
 
 from .base import VIOBackend, Pose
 from ..imu.imu_reader import ImuSample
+from ..imu.vins_transform import load_vins_imu_rotation
 from ..camera.realsense_capture import CameraFrame
 
-
-# 必须与 db3_replay_cpp::makeImuMessage 完全一致。VINS 外参是和这次
-# IMU 坐标变换成对标定的；实时链路漏掉它会把静止重力从 Z 轴错发到 Y 轴。
-_VINS_IMU_ROTATION = np.array(
-    [
-        [0.99980212, -0.01423891, -0.01389161],
-        [-0.01423891, -0.02458715, -0.99959628],
-        [0.01389161, 0.99959628, -0.02478503],
-    ],
-    dtype=np.float64,
-)
 _STANDARD_GRAVITY = 9.80665
 
 
 def _rotate_imu_to_vins(
-    gyro_deg_s: np.ndarray, accel_g: np.ndarray
+    gyro_deg_s: np.ndarray,
+    accel_g: np.ndarray,
+    rotation: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    gyro_rad_s = _VINS_IMU_ROTATION @ np.radians(gyro_deg_s)
-    accel_m_s2 = _VINS_IMU_ROTATION @ (accel_g * _STANDARD_GRAVITY)
+    transform = load_vins_imu_rotation() if rotation is None else rotation
+    gyro_rad_s = transform @ np.radians(gyro_deg_s)
+    accel_m_s2 = transform @ (accel_g * _STANDARD_GRAVITY)
     return gyro_rad_s, accel_m_s2
 
 
@@ -70,11 +63,13 @@ class OpenVINSROS2Bridge(VIOBackend):
         qos_reliable: bool = True,
         epoch_offset: float = 0.0,
         cam_latency_ms: float = 0.0,
+        imu_level_calibration: str = "",
     ):
         self.name = name
         self._epoch_offset = epoch_offset
         self._cam_latency_s = cam_latency_ms / 1000.0
         self._stereo = stereo
+        self._imu_rotation = load_vins_imu_rotation(imu_level_calibration)
         self._imu_first_counter = None
         self._imu_first_ts = None
         self._imu_period = 1.0 / 400.0
@@ -101,7 +96,8 @@ class OpenVINSROS2Bridge(VIOBackend):
 
         # 图像异步队列: 采集线程放帧, 后台线程取帧发布
         self._cam_queue: queue.Queue = queue.Queue(maxsize=3)
-        self._cam_dropped = 0
+        self._cam_warmup_discarded = 0
+        self._cam_queue_dropped = 0
         self._cam_published = 0
         self._imu_published = 0
         self._stop = threading.Event()
@@ -150,7 +146,7 @@ class OpenVINSROS2Bridge(VIOBackend):
                 if self._stop.is_set():
                     break
                 if not ready:
-                    self._cam_dropped += 1
+                    self._cam_warmup_discarded += 1
                     continue
 
             sec, nanosec = self._sec_nanos(t)
@@ -195,6 +191,7 @@ class OpenVINSROS2Bridge(VIOBackend):
         gyro, accel = _rotate_imu_to_vins(
             np.array([sample.gx, sample.gy, sample.gz], dtype=np.float64),
             np.array([sample.ax, sample.ay, sample.az], dtype=np.float64),
+            self._imu_rotation,
         )
         msg.linear_acceleration.x = float(accel[0])
         msg.linear_acceleration.y = float(accel[1])
@@ -227,6 +224,17 @@ class OpenVINSROS2Bridge(VIOBackend):
         h, w = mono0.shape
         t = frame.ts + self._epoch_offset - self._cam_latency_s
 
+        # The camera starts before the serial IMU so the first ~1.25 s of
+        # images intentionally have no matching post-warmup IMU samples. Do
+        # not fill the small runtime queue with those known-unusable frames;
+        # classify them as startup warmup rather than transport loss.
+        with self._imu_ready:
+            if not _camera_has_imu_lead(
+                self._latest_imu_t, t, self._imu_guard_s
+            ):
+                self._cam_warmup_discarded += 1
+                return None
+
         # 非阻塞入队; 队列满时丢弃 (采集线程不受阻)
         item = (
             t,
@@ -238,7 +246,7 @@ class OpenVINSROS2Bridge(VIOBackend):
         try:
             self._cam_queue.put(item, block=False)
         except queue.Full:
-            self._cam_dropped += 1
+            self._cam_queue_dropped += 1
         return None
 
     def latest(self) -> Optional[Pose]:
@@ -249,7 +257,8 @@ class OpenVINSROS2Bridge(VIOBackend):
         return {
             "ros_imu_pub": self._imu_published,
             "ros_cam_pub": self._cam_published,
-            "ros_cam_drop": self._cam_dropped,
+            "ros_cam_warmup_discard": self._cam_warmup_discarded,
+            "ros_cam_drop": self._cam_queue_dropped,
             "ros_cam_queue": self._cam_queue.qsize(),
         }
 
@@ -262,5 +271,9 @@ class OpenVINSROS2Bridge(VIOBackend):
         except Exception:
             pass
         self._cam_thread.join(timeout=1.0)
-        if self._cam_dropped:
-            print(f"[{self.name}] 共丢弃 {self._cam_dropped} 帧图像, 发布 {self._cam_published}")
+        if self._cam_warmup_discarded or self._cam_queue_dropped:
+            print(
+                f"[{self.name}] 启动预热等待 {self._cam_warmup_discarded} 帧, "
+                f"运行期真实丢帧 {self._cam_queue_dropped} 帧, "
+                f"发布 {self._cam_published} 帧"
+            )

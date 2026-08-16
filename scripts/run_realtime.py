@@ -22,7 +22,8 @@ def main():
     ap.add_argument("--session", default=None, help="录制会话名(默认时间戳)")
     ap.add_argument("--no-record", action="store_true", help="不录制，只跑可视化")
     ap.add_argument("--no-viz", action="store_true", help="不启动 Rerun")
-    ap.add_argument("--backend", default=None, choices=["stub", "openvins_socket", "openvins_ros2", "orbslam3_ros2"],
+    ap.add_argument("--duration-s", type=float, default=0.0, help="运行秒数；0表示直到Ctrl-C")
+    ap.add_argument("--backend", default=None, choices=["stub", "openvins_socket", "openvins_ros2", "vins_fusion_ros2", "orbslam3_ros2"],
                     help="强制指定 VIO 后端")
     args = ap.parse_args()
 
@@ -40,7 +41,7 @@ def main():
     rt.setup(record=not args.no_record, visualize=not args.no_viz)
     rt.start()
     try:
-        rt.run()
+        rt.run(duration_s=args.duration_s)
     finally:
         rt.stop()
 

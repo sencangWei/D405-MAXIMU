@@ -20,6 +20,7 @@ VINS_LOG = os.environ.get("VINS_LOG", "/tmp/vins_t.log")
 REPLAY_LOG = os.environ.get("REPLAY_LOG", "/tmp/replay_t.log")
 # 可指定压缩回放变体 (replay_db3_hevc_to_ros2.py) 验证 HEVC 有损压缩对精度的影响
 REPLAY_SCRIPT = os.environ.get("REPLAY_SCRIPT", "scripts/replay_db3_to_ros2.py")
+IMU_LEVEL_CALIBRATION = os.environ.get("VINS_IMU_LEVEL_CALIBRATION", "")
 TEST_TIMEOUT_S = float(os.environ.get("VINS_TEST_TIMEOUT_S", "360"))
 DRAIN_TIMEOUT_S = float(os.environ.get("VINS_DRAIN_TIMEOUT_S", "30"))
 DRAIN_QUIET_S = float(os.environ.get("VINS_DRAIN_QUIET_S", "5"))
@@ -54,12 +55,18 @@ def main():
     # shift 默认 0: 与配置固定 td=-0.0117 (08-08 Kalibr) 配对, 回放不再改 IMU 时间戳。
     # 旧默认 7.36 (08-04 陈旧标定) + 固定 td 会双重补偿 → 发散 (见 dual-ir-divergence-rootcause)。
     replay_log = open(REPLAY_LOG, "w")
+    replay_command = [
+        "python3", REPLAY_SCRIPT, "--session", sess,
+        "--mode", os.environ.get("VINS_MODE", "stereo"),
+        "--rate", sys.argv[3] if len(sys.argv)>3 else "1.0",
+        "--skip-s", sys.argv[2] if len(sys.argv)>2 else "1.5",
+        "--imu-align-s", sys.argv[5] if len(sys.argv)>5 else "0",
+        "--imu-shift-ms", sys.argv[4] if len(sys.argv)>4 else "0",
+    ]
+    if IMU_LEVEL_CALIBRATION:
+        replay_command.extend(["--imu-level-calibration", IMU_LEVEL_CALIBRATION])
     replay = subprocess.Popen(
-        ["python3", REPLAY_SCRIPT, "--session", sess,
-         "--mode", os.environ.get("VINS_MODE", "stereo"),
-         "--rate", sys.argv[3] if len(sys.argv)>3 else "1.0", "--skip-s", sys.argv[2] if len(sys.argv)>2 else "1.5",
-         "--imu-align-s", sys.argv[5] if len(sys.argv)>5 else "0",
-         "--imu-shift-ms", sys.argv[4] if len(sys.argv)>4 else "0"],
+        replay_command,
         cwd=str(ROOT), stdout=replay_log, stderr=subprocess.STDOUT)
     t0 = time.monotonic()
     vins_exited = False

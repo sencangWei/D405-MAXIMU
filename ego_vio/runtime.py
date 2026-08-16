@@ -75,7 +75,7 @@ class Runtime:
                 epoch_offset=self._epoch_offset,
                 cam_latency_ms=unit.camera.cam_latency_ms,
             )
-        if unit.vio.backend in ("openvins_ros2", "orbslam3_ros2"):
+        if unit.vio.backend in ("openvins_ros2", "vins_fusion_ros2", "orbslam3_ros2"):
             from .vio.openvins_ros2_bridge import OpenVINSROS2Bridge
             return OpenVINSROS2Bridge(
                 name=(
@@ -91,6 +91,7 @@ class Runtime:
                 qos_reliable=unit.vio.qos_reliable,
                 epoch_offset=self._epoch_offset,
                 cam_latency_ms=unit.camera.cam_latency_ms,
+                imu_level_calibration=unit.vio.imu_level_calibration,
             )
         # 默认 stub
         return StubVIO(name=f"stub_{unit.name}")
@@ -146,6 +147,26 @@ class Runtime:
                 if ov_ros2_units:
                     self._start_ros2_odom_subscriber(
                         ov_ros2_units, "/ov_msckf/odomimu", "OpenVINS"
+                    )
+                vins_ros2_units = [
+                    u.name
+                    for u in self.cfg.realtime_units()
+                    if u.vio.backend == "vins_fusion_ros2"
+                ]
+                if vins_ros2_units:
+                    vins_odom_topics = {
+                        u.vio.odom_topic
+                        for u in self.cfg.realtime_units()
+                        if u.vio.backend == "vins_fusion_ros2"
+                    }
+                    if len(vins_odom_topics) != 1:
+                        raise ValueError(
+                            "实时VINS单元必须共用同一个odom_topic"
+                        )
+                    self._start_ros2_odom_subscriber(
+                        vins_ros2_units,
+                        next(iter(vins_odom_topics)),
+                        "VINS-Fusion自动回环校正",
                     )
                 orb_ros2_units = [
                     u.name
@@ -327,7 +348,7 @@ class Runtime:
             self._odom_receiver.close()
         print("[runtime] 已停止。")
 
-    def run(self, stat_interval: float = 3.0):
+    def run(self, stat_interval: float = 3.0, duration_s: float = 0.0):
         def handler(signum, frame):
             self._stop_evt.set()
         signal.signal(signal.SIGINT, handler)
@@ -335,8 +356,11 @@ class Runtime:
 
         print(f"[runtime] 录制目录: {self.out_dir}")
         print("[runtime] Ctrl-C 停止。")
+        deadline = time.monotonic() + duration_s if duration_s > 0.0 else None
         last_stat = time.monotonic()
         while not self._stop_evt.is_set():
+            if deadline is not None and time.monotonic() >= deadline:
+                break
             time.sleep(0.2)
             now = time.monotonic()
             if now - last_stat >= stat_interval:
@@ -376,6 +400,7 @@ class Runtime:
             if "ros_cam_pub" in s:
                 line += (
                     f" | ROS pub imu={s['ros_imu_pub']} cam={s['ros_cam_pub']}"
+                    f" warmup={s.get('ros_cam_warmup_discard', 0)}"
                     f" drop={s['ros_cam_drop']} q={s['ros_cam_queue']}"
                 )
             print(line)

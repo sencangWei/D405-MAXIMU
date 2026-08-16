@@ -31,6 +31,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from ego_vio.imu.vins_transform import load_vins_imu_rotation
+
 G0 = 9.80665
 DEG2RAD = 3.141592653589793 / 180.0
 IMU_PACK_FMT = "<dI7f"
@@ -76,12 +78,17 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--mode", choices=sorted(MODE_STREAMS), required=True)
     p.add_argument("--rate", type=float, default=1.0, help="回放倍速(1=实时)")
     p.add_argument("--imu-shift-ms", type=float, default=0.0,
-                   help="IMU 发布戳平移(Kalibr t_imu=t_cam-7.36ms -> +7.36ms)")
+                   help="IMU发布戳平移；VINS固定td=-11.7ms时保持0，ORB使用11.7ms")
     p.add_argument("--imu-align-s", type=float, default=0.0,
                    help="额外 IMU 平移(s): 补偿 warmup 帧导致图像/IMU 起始错位")
     p.add_argument("--skip-s", type=float, default=0.0, help="跳过开头秒数")
     p.add_argument("--duration-s", type=float, default=0.0,
                    help="仅回放指定秒数；0 表示回放到会话末尾")
+    p.add_argument(
+        "--imu-level-calibration",
+        type=Path,
+        help="通过门禁的IMU水平调平标定；必须与候选VINS外参成对使用",
+    )
     return p.parse_args()
 
 
@@ -183,6 +190,7 @@ def imu_event_iter(session: Path, epoch_minus_mono: float, shift_ms: float):
 
 def main() -> int:
     args = parse_args()
+    imu_rotation = load_vins_imu_rotation(args.imu_level_calibration)
     session = args.session.resolve()
     try:
         db3 = args.image_db3.resolve() if args.image_db3 else select_db3(session)
@@ -277,25 +285,17 @@ def main() -> int:
     def publish_imu(ev):
         nonlocal n_imu
         t, gx, gy, gz, ax, ay, az = ev
-        # IMU 坐标系变换: 重力 y -> z 向下
-        # R = [0.99980212, -0.01423891, -0.01389161;
-        #      -0.01423891, -0.02458715, -0.99959628;
-        #       0.01389161,  0.99959628, -0.02478503]
-        gx_n = 0.99980212*gx - 0.01423891*gy - 0.01389161*gz
-        gy_n = -0.01423891*gx - 0.02458715*gy - 0.99959628*gz
-        gz_n = 0.01389161*gx + 0.99959628*gy - 0.02478503*gz
-        ax_n = 0.99980212*ax - 0.01423891*ay - 0.01389161*az
-        ay_n = -0.01423891*ax - 0.02458715*ay - 0.99959628*az
-        az_n = 0.01389161*ax + 0.99959628*ay - 0.02478503*az
+        gyro = imu_rotation @ [gx, gy, gz]
+        accel = imu_rotation @ [ax, ay, az]
         im = RosImu()
         im.header.stamp = to_stamp(t)
         im.header.frame_id = "imu0"
-        im.angular_velocity.x = gx_n
-        im.angular_velocity.y = gy_n
-        im.angular_velocity.z = gz_n
-        im.linear_acceleration.x = ax_n
-        im.linear_acceleration.y = ay_n
-        im.linear_acceleration.z = az_n
+        im.angular_velocity.x = float(gyro[0])
+        im.angular_velocity.y = float(gyro[1])
+        im.angular_velocity.z = float(gyro[2])
+        im.linear_acceleration.x = float(accel[0])
+        im.linear_acceleration.y = float(accel[1])
+        im.linear_acceleration.z = float(accel[2])
         pub_imu.publish(im)
         n_imu += 1
 

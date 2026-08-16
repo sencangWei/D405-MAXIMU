@@ -28,6 +28,8 @@ def test_register_variant_evidence_updates_only_selected_hidden_dataset(tmp_path
         "truth_usage": "post_run_scoring_only",
         "ground_truth": str(truth),
         "ground_truth_sha256": hashlib.sha256(truth.read_bytes()).hexdigest(),
+        "session_inputs": "/evidence/session_inputs.json",
+        "session_inputs_sha256": "f" * 64,
         "variant_reports": variants,
     }
     fragment_path = tmp_path / "fragment.json"
@@ -61,6 +63,8 @@ def test_register_variant_evidence_updates_only_selected_hidden_dataset(tmp_path
     assert hidden["variant_reports"] == variants
     assert hidden["external_ground_truth"] == str(truth)
     assert hidden["external_ground_truth_sha256"] == fragment["ground_truth_sha256"]
+    assert hidden["session_inputs"] == fragment["session_inputs"]
+    assert hidden["session_inputs_sha256"] == fragment["session_inputs_sha256"]
     assert hidden["run_report"] == variants["auto_loop"]["run_report"]
     assert hidden["ground_truth_report"] == variants["auto_loop"][
         "ground_truth_report"

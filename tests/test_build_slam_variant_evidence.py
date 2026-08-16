@@ -98,6 +98,10 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         json.dumps(
             {
                 "result": "PASS",
+                "scope": "depth_plane_factor_safety_evidence",
+                "truth_usage": "none",
+                "raw_trajectory": str((run_dir / "vio_raw.csv").resolve()),
+                "corrected_trajectory": str(depth_path.resolve()),
                 "plane_factor": {
                     "status": "ACTIVE",
                     "support_observations": 8,
@@ -115,6 +119,21 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         ),
         encoding="utf-8",
     )
+    session_inputs = tmp_path / "session_inputs.json"
+    session_inputs.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "session": str(Path(run_report["session"]).resolve()),
+                "frozen_before_slam": True,
+                "truth_usage_policy": (
+                    "withheld_from_slam_until_post_run_scoring"
+                ),
+                "files": {},
+            }
+        ),
+        encoding="utf-8",
+    )
 
     fragment = build_variant_evidence(
         dataset_id="hidden-straight-01",
@@ -122,12 +141,19 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         depth_trajectory=depth_path,
         depth_factor_report=factor_report,
         ground_truth=truth_path,
+        session_inputs=session_inputs,
         output_dir=tmp_path / "evidence",
         max_interpolation_gap_s=0.1,
         rpe_delta_samples=10,
     )
 
     assert fragment["dataset_id"] == "hidden-straight-01"
+    bundled_inputs = Path(fragment["session_inputs"])
+    assert bundled_inputs.is_file()
+    assert bundled_inputs.parent == (tmp_path / "evidence").resolve()
+    assert hashlib.sha256(bundled_inputs.read_bytes()).hexdigest() == fragment[
+        "session_inputs_sha256"
+    ]
     bundled_truth = Path(fragment["ground_truth"])
     assert bundled_truth.is_file()
     assert bundled_truth.parent == (tmp_path / "evidence").resolve()
@@ -181,6 +207,7 @@ def test_build_variant_evidence_rejects_infrastructure_run(tmp_path):
             depth_trajectory=tmp_path / "depth.csv",
             depth_factor_report=tmp_path / "factor.json",
             ground_truth=tmp_path / "truth.csv",
+            session_inputs=tmp_path / "inputs.json",
             output_dir=tmp_path / "evidence",
         )
 
@@ -202,5 +229,6 @@ def test_build_variant_evidence_rejects_missing_environment_preflight(tmp_path):
             depth_trajectory=tmp_path / "depth.csv",
             depth_factor_report=tmp_path / "factor.json",
             ground_truth=tmp_path / "truth.csv",
+            session_inputs=tmp_path / "inputs.json",
             output_dir=tmp_path / "evidence",
         )

@@ -54,25 +54,49 @@ def build_manifest(
     for dataset_id in dataset_contract:
         if roles.get(dataset_id) not in {"development", "validation"}:
             raise ValueError(f"missing predeclared role: {dataset_id}")
+    summary_by_id = {
+        dataset.get("id"): dataset for dataset in summary.get("datasets", [])
+    }
+    unknown_ids = set(summary_by_id) - set(dataset_contract)
+    if unknown_ids:
+        raise ValueError(
+            "summary contains unknown dataset(s): " + ", ".join(sorted(unknown_ids))
+        )
+    repetitions = int(
+        summary.get("required_repetitions_per_dataset")
+        or regression.get("thresholds", {}).get("required_repetitions_per_dataset")
+        or 1
+    )
+    if repetitions < 1:
+        raise ValueError("required repetitions must be positive")
 
     datasets = []
-    for dataset in summary.get("datasets", []):
-        dataset_id = dataset.get("id")
-        contract = dataset_contract.get(dataset_id)
-        if contract is None:
-            raise ValueError(f"summary contains unknown dataset: {dataset_id}")
+    for dataset_id, contract in dataset_contract.items():
+        dataset = summary_by_id.get(dataset_id)
+        if dataset is None:
+            raise ValueError(f"{dataset_id}: dataset is missing from summary")
         session = resolve(project_root, contract["session"])
-        for run in dataset.get("runs", []):
+        runs_by_repetition = {
+            run.get("repetition"): run for run in dataset.get("runs", [])
+        }
+        for repetition in range(1, repetitions + 1):
+            run = runs_by_repetition.get(repetition)
+            if run is None:
+                raise ValueError(
+                    f"{dataset_id}: regression run {repetition} is missing"
+                )
             report_value = run.get("report")
             if not report_value:
-                raise ValueError(f"{dataset_id}: run report is missing")
+                raise ValueError(
+                    f"{dataset_id}: run {repetition} report is missing"
+                )
             report = resolve(project_root, report_value)
             loop_log = report.parent / "auto_loop.log"
             if not report.is_file() or not loop_log.is_file():
                 raise ValueError(f"{dataset_id}: run artifacts are incomplete")
             datasets.append(
                 {
-                    "id": f"{dataset_id}-run-{int(run['repetition']):02d}",
+                    "id": f"{dataset_id}-run-{repetition:02d}",
                     "role": roles[dataset_id],
                     "session": str(session),
                     "expected_loop": contract["expected_loop"],

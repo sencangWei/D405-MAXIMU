@@ -6,8 +6,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from test_vins_auto_loop import (
+    accel_calibration_replay_arguments,
     camera_frame_count,
     classify_run_scope,
+    drain_is_complete,
+    expected_pose_samples,
+    load_accel_calibration,
     run_provenance,
     parse_loop_configuration,
     parse_loop_retrieval,
@@ -16,6 +20,101 @@ from test_vins_auto_loop import (
     parse_pose_graph_health,
     trajectory_diagnostics,
 )
+
+
+def test_accelerometer_calibration_is_validated_and_forwarded(tmp_path):
+    calibration = tmp_path / "imu_accel.yaml"
+    calibration.write_text(
+        """
+accelerometer:
+  matrix:
+    - [1.0, 0.01, 0.02]
+    - [0.03, 1.0, 0.04]
+    - [0.05, 0.06, 1.0]
+  offset_g: [0.001, -0.002, 0.003]
+""".strip(),
+        encoding="utf-8",
+    )
+
+    loaded = load_accel_calibration(calibration)
+
+    assert loaded["matrix"] == [
+        1.0,
+        0.01,
+        0.02,
+        0.03,
+        1.0,
+        0.04,
+        0.05,
+        0.06,
+        1.0,
+    ]
+    assert loaded["offset_g"] == [0.001, -0.002, 0.003]
+    assert accel_calibration_replay_arguments(loaded) == [
+        "--imu-accel-matrix",
+        "1.0",
+        "0.01",
+        "0.02",
+        "0.03",
+        "1.0",
+        "0.04",
+        "0.05",
+        "0.06",
+        "1.0",
+        "--imu-accel-offset-g",
+        "0.001",
+        "-0.002",
+        "0.003",
+    ]
+
+
+def test_drain_requires_target_pose_coverage_before_quiet_exit():
+    expected = expected_pose_samples(camera_frames=1799, skip_s=1.5)
+
+    assert expected == 1754
+    assert not drain_is_complete(
+        raw_poses=1020,
+        corrected_poses=1020,
+        expected_poses=expected,
+        min_pose_coverage=0.98,
+        quiet_duration_s=10.0,
+        require_coverage=True,
+    )
+    assert not drain_is_complete(
+        raw_poses=1718,
+        corrected_poses=1754,
+        expected_poses=expected,
+        min_pose_coverage=0.98,
+        quiet_duration_s=10.0,
+        require_coverage=True,
+    )
+    assert drain_is_complete(
+        raw_poses=1719,
+        corrected_poses=1754,
+        expected_poses=expected,
+        min_pose_coverage=0.98,
+        quiet_duration_s=6.0,
+        require_coverage=True,
+    )
+
+
+def test_drain_keeps_legacy_quiet_exit_when_frame_count_is_unavailable():
+    assert drain_is_complete(
+        raw_poses=10,
+        corrected_poses=10,
+        expected_poses=1,
+        min_pose_coverage=0.98,
+        quiet_duration_s=6.0,
+        require_coverage=False,
+    )
+    assert not drain_is_complete(
+        raw_poses=10,
+        corrected_poses=10,
+        expected_poses=1,
+        min_pose_coverage=0.98,
+        quiet_duration_s=5.99,
+        require_coverage=False,
+    )
 
 
 def test_trajectory_diagnostics_reports_step_and_vertical_span():
@@ -204,11 +303,20 @@ def test_run_provenance_hashes_effective_config_and_calibration(
     right.write_text("right", encoding="utf-8")
     executable = tmp_path / "node"
     executable.write_bytes(b"node")
+    loop_executable = tmp_path / "loop_node"
+    loop_executable.write_bytes(b"loop")
     monkeypatch.setattr("test_vins_auto_loop.VINS_EXECUTABLE", executable)
     monkeypatch.setattr("test_vins_auto_loop.LOOP_EXECUTABLE", executable)
     monkeypatch.setattr("test_vins_auto_loop.REPLAY_EXECUTABLE", executable)
 
-    provenance = run_provenance(session, run_config, left, right, "cpp")
+    provenance = run_provenance(
+        session,
+        run_config,
+        left,
+        right,
+        "cpp",
+        loop_executable=loop_executable,
+    )
 
     assert provenance["files"]["capture_acceptance"]["sha256"] == (
         "98d844ea900c08231a1f6e1e12a4aeacf82570dc71285911ff5e66c9f1bb1915"
@@ -220,5 +328,8 @@ def test_run_provenance_hashes_effective_config_and_calibration(
     assert provenance["files"]["imu_samples"]["path"] == str(imu_samples)
     assert provenance["files"]["replay_executable"]["sha256"] == (
         "545ea538461003efdc8c81c244531b003f6f26cfccf6c0073b3239fdedf49446"
+    )
+    assert provenance["files"]["loop_executable"]["path"] == str(
+        loop_executable.resolve()
     )
     assert provenance["source_db3_hashed"] is False

@@ -43,8 +43,9 @@ body_T_cam1:
 ## 3. 相机-IMU 时间偏移
 
 - Kalibr 双目标定 (2026-08-08): timeshift = -11.7ms (t_imu = t_cam - 11.7ms)
-- 回放端 shift: `--imu-shift-ms 7.36` (旧值, 静态最优)
-- **建议 VINS 用 estimate_td: 1 在线估计**
+- VINS回放端不再平移IMU时间戳：`--imu-shift-ms 0`，配置固定`td=-0.0117`。
+- ORB回放端使用`--imu-shift-ms 11.7`。陈旧`7.36ms`已废弃。
+- **当前VINS必须使用`estimate_td: 0`**，避免固定偏移与在线估计重复补偿。
 
 ## 4. IMU 噪声 (Allan 实测 2026-08-08)
 

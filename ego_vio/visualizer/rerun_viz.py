@@ -330,12 +330,16 @@ class RerunVisualizer:
             import rerun.blueprint as rrb
         except ImportError as exc:
             raise RuntimeError("当前 rerun-sdk 缺少 Blueprint API") from exc
-        required_eye_fields = ("position", "look_target", "eye_up", "spin_speed")
-        if not all(hasattr(rrb.EyeControls3D, name) for name in required_eye_fields):
-            raise RuntimeError(
-                "自动取景需要 rerun-sdk>=0.28，请升级后重新运行"
-            )
         self._rrb = rrb
+        required_eye_fields = ("position", "look_target", "eye_up", "spin_speed")
+        self._supports_eye_pose = all(
+            hasattr(rrb.EyeControls3D, name) for name in required_eye_fields
+        )
+        if not self._supports_eye_pose:
+            print(
+                "[viz] rerun-sdk 不支持程序控制相机视角；"
+                "轨迹仍正常显示，视角请在窗口内手动调整"
+            )
 
         # 轨迹元素为 (ts, t, q); 位置已相对起点原点
         self._trajectory = {n: deque(maxlen=max_points) for n in unit_names}
@@ -435,7 +439,7 @@ class RerunVisualizer:
         camera_due, camera_ts = _rate_due(
             pose.ts, self._last_camera_ts, self.CAMERA_HZ
         )
-        if camera_due:
+        if camera_due and self._supports_eye_pose:
             self._last_camera_ts = camera_ts
             self._update_camera_view()
 
@@ -562,6 +566,17 @@ class RerunVisualizer:
         right = rrb.Vertical(
             *(panel_views + [rrb.TextLogView(origin="stats", name="stats")])
         )
+        eye_controls_kwargs = {
+            "kind": rrb.Eye3DKind.FirstPerson,
+            "speed": max(distance, 1.0),
+        }
+        if self._supports_eye_pose:
+            eye_controls_kwargs.update(
+                position=position.tolist(),
+                look_target=np.asarray(center, dtype=float).tolist(),
+                eye_up=[0.0, 0.0, 1.0],
+                spin_speed=0.0,
+            )
         blueprint = rrb.Blueprint(
             rrb.Horizontal(
                 rrb.Spatial3DView(
@@ -569,14 +584,7 @@ class RerunVisualizer:
                     name="3D Pose / Trajectory",
                     line_grid=False,
                     background=[40, 40, 40],
-                    eye_controls=rrb.EyeControls3D(
-                        kind=rrb.Eye3DKind.FirstPerson,
-                        position=position.tolist(),
-                        look_target=np.asarray(center, dtype=float).tolist(),
-                        eye_up=[0.0, 0.0, 1.0],
-                        spin_speed=0.0,
-                        speed=max(distance, 1.0),
-                    ),
+                    eye_controls=rrb.EyeControls3D(**eye_controls_kwargs),
                 ),
                 right,
                 column_shares=[0.7, 0.3],

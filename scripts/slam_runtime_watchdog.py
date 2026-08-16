@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 @dataclass
@@ -42,13 +42,18 @@ class SlamRuntimeWatchdog:
         max_stream_skew_s: float = 0.1,
         min_samples_healthy: int = 10,
         min_absolute_jump_m: float = 0.03,
+        max_raw_step_m: float = 0.05,
         raw_step_multiplier: float = 3.5,
     ) -> None:
         if startup_grace_s <= 0 or stale_timeout_s <= 0 or max_stream_skew_s <= 0:
             raise ValueError("time thresholds must be positive")
         if min_samples_healthy <= 1:
             raise ValueError("min_samples_healthy must be greater than one")
-        if min_absolute_jump_m <= 0 or raw_step_multiplier <= 0:
+        if (
+            min_absolute_jump_m <= 0
+            or max_raw_step_m <= 0
+            or raw_step_multiplier <= 0
+        ):
             raise ValueError("jump thresholds must be positive")
         self.start_monotonic_s = start_monotonic_s
         self.startup_grace_s = startup_grace_s
@@ -56,10 +61,12 @@ class SlamRuntimeWatchdog:
         self.max_stream_skew_s = max_stream_skew_s
         self.min_samples_healthy = min_samples_healthy
         self.min_absolute_jump_m = min_absolute_jump_m
+        self.max_raw_step_limit_m = max_raw_step_m
         self.raw_step_multiplier = raw_step_multiplier
         self.streams = {"raw": StreamState(), "corrected": StreamState()}
         self.latched_failures: list[str] = []
         self.infrastructure_failures: list[str] = []
+        self.max_raw_step_m = 0.0
         self.max_corrected_step_m = 0.0
         self.max_allowed_corrected_step_m = min_absolute_jump_m
         self.pending_corrected_steps: deque[tuple[float, float]] = deque()
@@ -128,7 +135,11 @@ class SlamRuntimeWatchdog:
             step = math.dist(state.last_point, point)
             state.recent_steps_m.append(step)
             state.recent_timed_steps.append((timestamp_s, step))
-            if stream == "corrected":
+            if stream == "raw":
+                self.max_raw_step_m = max(self.max_raw_step_m, step)
+                if step > self.max_raw_step_limit_m:
+                    self._latch("raw_trajectory_jump")
+            else:
                 self.pending_corrected_steps.append((timestamp_s, step))
         state.samples += 1
         state.first_arrival_s = (
@@ -224,6 +235,8 @@ class SlamRuntimeWatchdog:
                 for name, state in self.streams.items()
             },
             "raw_corrected_timestamp_skew_s": stream_skew_s,
+            "max_raw_step_m": self.max_raw_step_m,
+            "max_raw_step_limit_m": self.max_raw_step_limit_m,
             "max_corrected_step_m": self.max_corrected_step_m,
             "last_allowed_corrected_step_m": self.max_allowed_corrected_step_m,
             "thresholds": {
@@ -232,6 +245,7 @@ class SlamRuntimeWatchdog:
                 "max_stream_skew_s": self.max_stream_skew_s,
                 "min_samples_healthy": self.min_samples_healthy,
                 "min_absolute_jump_m": self.min_absolute_jump_m,
+                "max_raw_step_m": self.max_raw_step_limit_m,
                 "raw_step_multiplier": self.raw_step_multiplier,
             },
             "failures": failures,
@@ -265,6 +279,7 @@ def main() -> int:
     parser.add_argument("--startup-grace-s", type=float, default=3.0)
     parser.add_argument("--stale-timeout-s", type=float, default=0.5)
     parser.add_argument("--max-stream-skew-s", type=float, default=0.1)
+    parser.add_argument("--max-raw-step-m", type=float, default=0.05)
     parser.add_argument("--publish-hz", type=float, default=5.0)
     args = parser.parse_args()
     if args.publish_hz <= 0:
@@ -275,6 +290,7 @@ def main() -> int:
         startup_grace_s=args.startup_grace_s,
         stale_timeout_s=args.stale_timeout_s,
         max_stream_skew_s=args.max_stream_skew_s,
+        max_raw_step_m=args.max_raw_step_m,
     )
     node = None
     ros_initialized = False

@@ -8,6 +8,7 @@ import csv
 import json
 from pathlib import Path
 
+import cv2
 import numpy as np
 
 
@@ -34,12 +35,81 @@ def plane_metrics(points: np.ndarray) -> tuple[float, float, float]:
     )
 
 
+def resample_by_arc_length(points: np.ndarray, count: int = 1000) -> np.ndarray:
+    if len(points) < 2:
+        raise ValueError("至少需要两个轨迹点")
+    segment_lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
+    keep = np.r_[True, segment_lengths > 1e-9]
+    unique_points = points[keep]
+    if len(unique_points) < 2:
+        raise ValueError("轨迹没有可测运动")
+    distances = np.r_[
+        0.0,
+        np.cumsum(np.linalg.norm(np.diff(unique_points, axis=0), axis=1)),
+    ]
+    targets = np.linspace(0.0, distances[-1], count)
+    return np.column_stack(
+        [np.interp(targets, distances, unique_points[:, axis]) for axis in range(2)]
+    )
+
+
+def horizontal_rectangle_metrics(points_xy: np.ndarray) -> dict[str, object]:
+    sampled = resample_by_arc_length(points_xy)
+    rectangle = cv2.minAreaRect(sampled.astype(np.float32))
+    box = cv2.boxPoints(rectangle).astype(float)
+    edges = np.roll(box, -1, axis=0) - box
+    edge_lengths = np.linalg.norm(edges, axis=1)
+    extent_cm = np.sort(np.asarray(rectangle[1], dtype=float) * 100.0)[::-1]
+    line_distances = []
+    for point, edge, length in zip(box, edges, edge_lengths):
+        offsets = sampled - point
+        line_distances.append(
+            np.abs(edge[0] * offsets[:, 1] - edge[1] * offsets[:, 0]) / length
+        )
+    boundary_distance = np.min(np.column_stack(line_distances), axis=1)
+    return {
+        "method": "uniform_arc_length_minimum_area_rectangle",
+        "resampled_points": len(sampled),
+        "robust_extent_cm": extent_cm.tolist(),
+        "boundary_rms_mm": float(np.sqrt(np.mean(boundary_distance**2)) * 1000.0),
+        "boundary_p95_mm": float(np.percentile(boundary_distance, 95) * 1000.0),
+    }
+
+
+def dwell_closure_metrics(
+    time_s: np.ndarray,
+    points: np.ndarray,
+    window_s: float,
+) -> dict[str, object]:
+    if window_s <= 0:
+        raise ValueError("静止窗口必须大于0秒")
+    start = points[time_s <= time_s[0] + window_s]
+    end = points[time_s >= time_s[-1] - window_s]
+    if len(start) == 0 or len(end) == 0:
+        raise ValueError("起止静止窗口没有轨迹样本")
+    start_center = np.median(start, axis=0)
+    end_center = np.median(end, axis=0)
+    delta_cm = (end_center - start_center) * 100.0
+    return {
+        "window_s": window_s,
+        "start_samples": len(start),
+        "end_samples": len(end),
+        "start_center_m": start_center.tolist(),
+        "end_center_m": end_center.tolist(),
+        "delta_xyz_cm": delta_cm.tolist(),
+        "distance_cm": float(np.linalg.norm(delta_cm)),
+        "horizontal_distance_cm": float(np.linalg.norm(delta_cm[:2])),
+        "vertical_distance_cm": float(abs(delta_cm[2])),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("trajectory", type=Path)
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--expected-x-cm", type=float, default=82.0)
     parser.add_argument("--expected-y-cm", type=float, default=63.0)
+    parser.add_argument("--dwell-window-s", type=float, default=3.0)
     args = parser.parse_args()
 
     time_s, points = load_trajectory(args.trajectory)
@@ -52,13 +122,18 @@ def main() -> int:
     )
 
     segments = np.linalg.norm(np.diff(points, axis=0), axis=1)
-    closure_cm = float(np.linalg.norm(points[-1] - points[0]) * 100.0)
+    point_closure_delta_cm = (points[-1] - points[0]) * 100.0
+    point_closure_cm = float(np.linalg.norm(point_closure_delta_cm))
+    dwell_closure = dwell_closure_metrics(time_s, points, args.dwell_window_s)
+    closure_cm = float(dwell_closure["distance_cm"])
     path_m = float(segments.sum())
     z_span_cm = float(np.ptp(points[:, 2]) * 100.0)
-    closure_delta_cm = (points[-1] - points[0]) * 100.0
+    closure_delta_cm = np.asarray(dwell_closure["delta_xyz_cm"])
     horizontal_closure_cm = float(np.linalg.norm(closure_delta_cm[:2]))
     vertical_closure_cm = float(abs(closure_delta_cm[2]))
-    horizontal_extent_cm = np.sort(np.ptp(points[:, :2], axis=0) * 100.0)[::-1]
+    world_axis_extent_cm = np.ptp(points[:, :2], axis=0) * 100.0
+    rectangle = horizontal_rectangle_metrics(points[:, :2])
+    horizontal_extent_cm = np.asarray(rectangle["robust_extent_cm"])
     expected_extent_cm = np.sort(
         np.array([args.expected_x_cm, args.expected_y_cm])
     )[::-1]
@@ -81,12 +156,18 @@ def main() -> int:
         "trajectory_points": len(points),
         "duration_s": float(time_s[-1] - time_s[0]),
         "path_m": path_m,
+        "point_closure_cm": point_closure_cm,
+        "point_closure_delta_xyz_cm": point_closure_delta_cm.tolist(),
         "closure_cm": closure_cm,
+        "closure_method": "start_end_dwell_median",
+        "dwell_closure": dwell_closure,
         "horizontal_closure_cm": horizontal_closure_cm,
         "vertical_closure_cm": vertical_closure_cm,
         "expected_rectangle_cm": [args.expected_x_cm, args.expected_y_cm],
+        "world_axis_horizontal_extent_cm": world_axis_extent_cm.tolist(),
         "horizontal_extent_cm": horizontal_extent_cm.tolist(),
         "horizontal_extent_error_cm": horizontal_error_cm.tolist(),
+        "horizontal_rectangle_geometry": rectangle,
         "pca_extent_cm": pca_cm.tolist(),
         "pca_p1_p99_extent_cm": pca_p1p99_cm.tolist(),
         "xyz_span_cm": (np.ptp(points, axis=0) * 100.0).tolist(),
@@ -140,12 +221,18 @@ def main() -> int:
         f"轨迹点数: {len(points)}\n"
         f"有效时长: {metrics['duration_s']:.2f} s\n"
         f"累计路径: {path_m:.3f} m\n"
-        f"闭环误差: {closure_cm:.2f} cm\n"
+        f"静止窗口中位数闭环误差: {closure_cm:.2f} cm\n"
+        f"单帧首尾闭环误差: {point_closure_cm:.2f} cm\n"
+        f"闭环XYZ有符号差: {closure_delta_cm[0]:+.2f} / "
+        f"{closure_delta_cm[1]:+.2f} / {closure_delta_cm[2]:+.2f} cm\n"
         f"水平闭环误差: {horizontal_closure_cm:.2f} cm\n"
         f"垂直闭环误差: {vertical_closure_cm:.2f} cm\n"
         f"目标矩形: {args.expected_x_cm:.1f} × {args.expected_y_cm:.1f} cm\n"
-        f"俯视轴向范围: {horizontal_extent_cm[0]:.1f} × {horizontal_extent_cm[1]:.1f} cm\n"
+        f"世界XY轴向范围: {world_axis_extent_cm[0]:.1f} × {world_axis_extent_cm[1]:.1f} cm\n"
+        f"旋转不变矩形范围: {horizontal_extent_cm[0]:.1f} × {horizontal_extent_cm[1]:.1f} cm\n"
         f"俯视尺寸误差: {horizontal_error_cm[0]:+.1f} / {horizontal_error_cm[1]:+.1f} cm\n"
+        f"矩形边界RMS/P95: {rectangle['boundary_rms_mm']:.2f} / "
+        f"{rectangle['boundary_p95_mm']:.2f} mm\n"
         f"轨迹PCA外包: {pca_cm[0]:.1f} × {pca_cm[1]:.1f} cm\n"
         f"轨迹PCA 1%-99%: {pca_p1p99_cm[0]:.1f} × {pca_p1p99_cm[1]:.1f} cm\n"
         f"XYZ范围: {metrics['xyz_span_cm'][0]:.1f} × "

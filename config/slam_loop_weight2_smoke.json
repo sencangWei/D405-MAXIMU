@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "truth_policy": {
+    "source": "user_declared_before_regression",
+    "usage": "post_run_scoring_only",
+    "never_input_to_slam": true,
+    "notes": "Single-dataset smoke test for isolated verified-loop weight A/B"
+  },
+  "thresholds": {
+    "max_endpoint_error_m": 0.01,
+    "min_pose_coverage": 0.98,
+    "required_repetitions_per_dataset": 1
+  },
+  "algorithm_contract": {
+    "max_loop_candidates": 24,
+    "min_loop_spatial_support": 0.0
+  },
+  "datasets": [
+    {
+      "id": "d405_20260812_155408",
+      "session": "recordings/d405_720p_rgb_stereo_ir_20260812_155408",
+      "motion": "closed_loop_horizontal",
+      "expected_loop": true,
+      "acceptance_sha256": "dfd606339c8c5d9c5ab5bc2a950388eb34370ad321a48f78a1f00ff80dcb2548",
+      "reference_report": "reports/release_gate_temporal90_155408/run_acceptance.json"
+    }
+  ],
+  "safety_controls": []
+}

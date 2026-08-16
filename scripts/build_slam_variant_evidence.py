@@ -110,6 +110,7 @@ def build_variant_evidence(
     depth_trajectory: Path,
     depth_factor_report: Path,
     ground_truth: Path,
+    session_inputs: Path,
     output_dir: Path,
     max_interpolation_gap_s: float = 0.1,
     rpe_delta_samples: int = 30,
@@ -136,7 +137,35 @@ def build_variant_evidence(
         raise ValueError("source run health report is missing or inconsistent")
     if base_report["health"].get("state") != "SLAM_HEALTHY":
         raise ValueError("source run health is not SLAM_HEALTHY")
+    frozen_inputs = json.loads(session_inputs.read_text(encoding="utf-8"))
+    if frozen_inputs.get("frozen_before_slam") is not True:
+        raise ValueError("source session inputs were not frozen before SLAM")
+    if frozen_inputs.get("truth_usage_policy") != (
+        "withheld_from_slam_until_post_run_scoring"
+    ):
+        raise ValueError("source session truth isolation policy is invalid")
+    if Path(frozen_inputs.get("session", "")).resolve() != Path(
+        base_report.get("session", "")
+    ).resolve():
+        raise ValueError("frozen session inputs do not match source run session")
     factor_report = json.loads(depth_factor_report.read_text(encoding="utf-8"))
+    if factor_report.get("result") != "PASS":
+        raise ValueError("depth factor evidence is not PASS")
+    if factor_report.get("scope") != "depth_plane_factor_safety_evidence":
+        raise ValueError("depth factor evidence scope is invalid")
+    if factor_report.get("truth_usage") != "none":
+        raise ValueError("depth factor evidence used ground truth")
+    if Path(factor_report.get("raw_trajectory", "")).resolve() != (
+        run_dir / VARIANT_SOURCES["raw_vins"]
+    ).resolve():
+        raise ValueError("depth factor evidence scored a different raw trajectory")
+    if Path(factor_report.get("corrected_trajectory", "")).resolve() != Path(
+        depth_trajectory
+    ).resolve():
+        raise ValueError("depth factor evidence scored a different corrected trajectory")
+    bundled_session_inputs = copy_artifact(
+        session_inputs, output_dir / "session_inputs.json"
+    )
     bundled_ground_truth = copy_artifact(
         ground_truth, output_dir / "external_ground_truth.csv"
     )
@@ -247,6 +276,8 @@ def build_variant_evidence(
         "truth_usage": "post_run_scoring_only",
         "ground_truth": str(bundled_ground_truth),
         "ground_truth_sha256": sha256(bundled_ground_truth),
+        "session_inputs": str(bundled_session_inputs),
+        "session_inputs_sha256": sha256(bundled_session_inputs),
         "variant_reports": entries,
     }
     write_json(output_dir / "manifest_fragment.json", fragment)
@@ -262,6 +293,7 @@ def main() -> int:
     parser.add_argument("--depth-trajectory", type=Path, required=True)
     parser.add_argument("--depth-factor-report", type=Path, required=True)
     parser.add_argument("--ground-truth", type=Path, required=True)
+    parser.add_argument("--session-inputs", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--max-interpolation-gap-s", type=float, default=0.1)
     parser.add_argument("--rpe-delta-samples", type=int, default=30)
@@ -274,6 +306,7 @@ def main() -> int:
         depth_trajectory=args.depth_trajectory,
         depth_factor_report=args.depth_factor_report,
         ground_truth=args.ground_truth,
+        session_inputs=args.session_inputs,
         output_dir=args.output_dir,
         max_interpolation_gap_s=args.max_interpolation_gap_s,
         rpe_delta_samples=args.rpe_delta_samples,
