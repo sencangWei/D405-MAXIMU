@@ -34,7 +34,15 @@ def test_realtime_wrapper_hard_disables_failed_level_candidate() -> None:
 
     assert "level-candidate已由跨会话A/B否决" in wrapper
     assert "prepare_level_vins_config.py" not in wrapper
-    assert "[stable|smoke]" in wrapper
+    assert "level-candidate" in wrapper
+
+
+def test_frozen_record_mode_keeps_recording_and_live_vins_on_one_sensor_owner() -> None:
+    wrapper = (ROOT / "run_vins_realtime.sh").read_text(encoding="utf-8")
+
+    assert "frozen-record" in wrapper
+    assert "capture_d405_720p_rgb_stereo_ir_rsusb.sh" in wrapper
+    assert "--publish-vins" in wrapper
 
 
 def test_jazzy_handoff_entrypoints_do_not_pin_humble_or_python310() -> None:

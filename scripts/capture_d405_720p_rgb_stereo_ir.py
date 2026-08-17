@@ -34,6 +34,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from ego_vio.imu.imu_reader import ImuReader
+from ego_vio.imu.calibration import IMUCalibration
+from ego_vio.camera.realsense_capture import CameraFrame
 from ego_vio.recorder.recorder import IMU_PACK_SIZE, UnitRecorder
 
 
@@ -154,6 +156,11 @@ def stats_delta(start: dict, end: dict) -> dict:
 
 def timestamps_aligned(timestamps_ms: list[float], tolerance_ms: float) -> bool:
     return bool(timestamps_ms) and max(timestamps_ms) - min(timestamps_ms) <= tolerance_ms
+
+
+def live_vins_timestamp_monotonic(device_ms: float, epoch_offset: float) -> float:
+    """Map the recorded D405 global-time exposure timestamp to monotonic time."""
+    return device_ms / 1000.0 - epoch_offset
 
 
 def decode_cdr_string(blob: bytes) -> str:
@@ -427,6 +434,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-root", type=Path, default=ROOT / "recordings")
     parser.add_argument("--no-preview", action="store_true")
     parser.add_argument(
+        "--publish-vins",
+        action="store_true",
+        help="将同一份双IR/IMU实时发布给已启动的VINS；不另开相机或串口",
+    )
+    parser.add_argument(
+        "--vins-imu-calibration",
+        type=Path,
+        default=ROOT / "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+        help="实时发布前应用的已验收IMU内参标定；原始IMU落盘不改写",
+    )
+    parser.add_argument(
         "--no-ram-stage",
         action="store_true",
         help="直接写输出硬盘；默认先写/dev/shm，停止采集后再搬运DB3",
@@ -569,10 +587,21 @@ def main() -> int:
 
     imu_recorder = UnitRecorder("external_imu", session, save_depth=False, max_queue=8000)
     recording_active = threading.Event()
+    vins_bridge = None
+    vins_imu_calibration = None
+    live_vins_frames_forwarded = 0
+    live_vins_transport = {}
 
     def record_imu(sample) -> None:
         if recording_active.is_set():
             imu_recorder.put_imu(sample)
+        if vins_bridge is not None:
+            corrected = (
+                vins_imu_calibration.apply(sample)
+                if vins_imu_calibration is not None
+                else sample
+            )
+            vins_bridge.feed_imu(corrected)
 
     imu = ImuReader(
         args.imu_port,
@@ -621,6 +650,24 @@ def main() -> int:
     stage_move_duration_s = 0.0
     ir_exposure_configuration = None
     epoch_offset = time.time() - time.monotonic()
+    if args.publish_vins:
+        from ego_vio.vio.openvins_ros2_bridge import OpenVINSROS2Bridge
+
+        vins_imu_calibration = IMUCalibration.load(args.vins_imu_calibration)
+        vins_bridge = OpenVINSROS2Bridge(
+            name="frozen_live_record",
+            cam_topic="/cam0/image_raw",
+            cam1_topic="/cam1/image_raw",
+            imu_topic="/imu0",
+            stereo=True,
+            queue_size=100,
+            qos_reliable=True,
+            epoch_offset=epoch_offset,
+        )
+        print(
+            "[实时VINS录制] 原始DB3/IMU落盘与VINS发布共用同一D405和IMU采集源；"
+            f"IMU运行时标定={vins_imu_calibration.calibration_id}"
+        )
     try:
         imu_recorder.start()
         imu_recorder_started = True
@@ -740,6 +787,27 @@ def main() -> int:
 
             if aligned and signature != last_complete_signature:
                 complete_sets += 1
+                if vins_bridge is not None:
+                    left_frame = latest_frames["infrared_left"]
+                    right_frame = latest_frames["infrared_right"]
+                    left_image = np.asanyarray(left_frame.get_data())
+                    right_image = np.asanyarray(right_frame.get_data())
+                    vins_bridge.feed_camera(
+                        CameraFrame(
+                            ts=live_vins_timestamp_monotonic(
+                                float(left_frame.get_timestamp()), epoch_offset
+                            ),
+                            color=left_image,
+                            depth=None,
+                            frame_idx=complete_sets,
+                            ts_arrival=now_mono,
+                            ts_domain="global_time",
+                            frame_number=int(left_frame.get_frame_number()),
+                            infrared_left=left_image,
+                            infrared_right=right_image,
+                        )
+                    )
+                    live_vins_frames_forwarded += 1
                 if not args.no_preview and now_mono >= next_preview_mono:
                     cv2.imshow(
                         f"D405 720p: {args.capture_mode} | IR Left | IR Right",
@@ -780,6 +848,9 @@ def main() -> int:
             imu.stop()
         if imu_recorder_started:
             imu_recorder.stop()
+        if vins_bridge is not None:
+            live_vins_transport = vins_bridge.transport_stats()
+            vins_bridge.close()
         cv2.destroyAllWindows()
         sensor = None
         recorder_device = None
@@ -876,8 +947,16 @@ def main() -> int:
         and imu_formal.get("serial_reconnects", 1) == 0
         and imu_recorder.dropped == 0
     )
+    live_vins_ok = (
+        not args.publish_vins
+        or (
+            live_vins_frames_forwarded > 1
+            and live_vins_transport.get("ros_cam_drop", 1) == 0
+            and live_vins_transport.get("ros_imu_pub", 0) >= imu_samples_written
+        )
+    )
     report = {
-        "result": "PASS" if camera_ok and imu_ok else "FAIL",
+        "result": "PASS" if camera_ok and imu_ok and live_vins_ok else "FAIL",
         "session": str(session),
         "bag": str(bag_path),
         "capture_error": capture_error,
@@ -934,6 +1013,17 @@ def main() -> int:
             "samples_written": imu_samples_written,
             "rate_hz": imu_rate_hz,
             "recorder_drops": imu_recorder.dropped,
+        },
+        "live_vins": {
+            "enabled": args.publish_vins,
+            "result": "PASS" if live_vins_ok else "FAIL",
+            "frames_forwarded": live_vins_frames_forwarded,
+            "imu_calibration": (
+                vins_imu_calibration.calibration_id
+                if vins_imu_calibration is not None
+                else None
+            ),
+            "transport": live_vins_transport,
         },
     }
     (session / "acceptance.json").write_text(

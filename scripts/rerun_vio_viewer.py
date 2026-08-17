@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Ubuntu 本地 Rerun 可视化: 订阅 /ov_msckf/odomimu + /cam0/image_raw。
+"""Ubuntu 本地 Rerun 可视化: 订阅 VIO odometry + /cam0/image_raw。
 
 用法:
-  python3 scripts/rerun_vio_viewer.py [--headless]
+  python3 scripts/rerun_vio_viewer.py [--headless] [--odom-topic /odometry_rect]
 """
 import argparse
 import sys
@@ -38,6 +38,7 @@ def _pose_axis_strips(position: np.ndarray, quaternion: np.ndarray, length: floa
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--headless", action="store_true", help="保存 .rrd 文件而非实时显示")
+    ap.add_argument("--odom-topic", default="/ov_msckf/odomimu")
     args = ap.parse_args()
 
     import rerun as rr
@@ -194,10 +195,10 @@ def main():
         for path, value in values.items():
             rr.log(path, rr.Scalars([float(value)]))
 
-    node.create_subscription(Odometry, "/ov_msckf/odomimu", on_odom, 10)
+    node.create_subscription(Odometry, args.odom_topic, on_odom, 10)
     node.create_subscription(ImageMsg, "/cam0/image_raw", on_image, 10)
     node.create_subscription(ImuMsg, "/imu0", on_imu, 100)
-    print("[viewer] 订阅 /ov_msckf/odomimu + /cam0/image_raw + /imu0 (50Hz IMU曲线)")
+    print(f"[viewer] 订阅 {args.odom_topic} + /cam0/image_raw + /imu0 (50Hz IMU曲线)")
 
     # Spin in background thread
     spin_thread = threading.Thread(target=lambda: rclpy.spin(node), daemon=True)

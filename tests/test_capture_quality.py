@@ -19,6 +19,7 @@ from scripts.capture_d405_720p_rgb_stereo_ir import (
     required_staging_bytes,
     stats_delta,
     timestamps_aligned,
+    live_vins_timestamp_monotonic,
     write_frames_csv,
 )
 
@@ -78,6 +79,11 @@ def test_depth_stereo_mode_replaces_color_without_dropping_dual_ir():
     names = [item[0] for item in capture_streams_for_mode("depth_stereo_ir")]
 
     assert names == ["depth", "infrared_left", "infrared_right"]
+
+
+def test_live_vins_uses_the_same_global_time_mapping_as_recorded_db3():
+    """Live VINS must consume the exposure time later reconstructed for replay."""
+    assert live_vins_timestamp_monotonic(1_785_952_580_123.0, 1_785_952_000.0) == pytest.approx(580.123)
 
 
 def test_decode_cdr_string_reads_ros2_std_msgs_string():

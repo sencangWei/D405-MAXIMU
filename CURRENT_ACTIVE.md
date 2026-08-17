@@ -5,6 +5,7 @@
 - 采集：`./capture_d405_720p_rgb_stereo_ir_rsusb.sh --duration 60`
 - 实时：`./run_vins_realtime.sh stable`
 - 历史 `<1 cm` 冻结链复现：`./run_vins_realtime.sh frozen`
+- 同采集实时准确＋可复放冻结后端：`./run_vins_realtime.sh frozen-record --duration 60`
 - 相机：D405 双IR 1280×720@30（彩色只记录，不与IR组成伪双目）
 - IMU：KT-EX9-2 400Hz
 - VINS：`/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml`

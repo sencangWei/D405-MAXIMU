@@ -28,6 +28,17 @@ cd /home/robot/ego_vio_humble
 ./run_vins_realtime.sh frozen
 ```
 
+如果需要**同一次采集**同时得到准确实时轨迹和可复放的原始 DB3＋IMU，使用唯一硬件
+采集者的 `frozen-record` 模式；不要另开两个会抢占相机/串口的命令：
+
+```bash
+cd /home/robot/ego_vio_humble
+./run_vins_realtime.sh frozen-record --duration 60
+```
+
+它将同一份双 IR 帧和 IMU 样本同时送给冻结 VINS 与原始记录器；Rerun 只订阅
+`/odometry_rect`、`/cam0/image_raw`、`/imu0`，不再额外打开设备。
+
 启动日志必须打印冻结二进制路径和上面的 SHA256。Rerun 继续显示
 `/odometry_rect`，原始轨迹仍记录为 `/odometry`。
 

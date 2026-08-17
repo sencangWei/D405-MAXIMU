@@ -8,6 +8,10 @@ RSUSB_PYTHON="$ROOT/.deps/librealsense-rsusb-2.58.2/python"
 RUN_DIR="/tmp/ego_vio_vins_live_$(date +%Y%m%d_%H%M%S)"
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
 MODE="${1:-stable}"
+if [[ $# -gt 0 ]]; then
+  shift
+fi
+CAPTURE_ARGS=("$@")
 FROZEN_LOOP_EXECUTABLE="${EGO_VIO_FROZEN_LOOP_EXECUTABLE:-$ROOT/frozen_chain_a3a38b8/bin/lfn_product_origin_ready_v7}"
 FROZEN_LOOP_SHA256="8148cc99945e56c38151254da7aae38269892efb5d6786c6b003e97e8d550001"
 FROZEN_BUILD_ROOT="$ROOT/frozen_builds/20260817_191957"
@@ -37,7 +41,7 @@ fi
 WS_SETUP="$ROS_WS/install/setup.bash"
 BASE_CONFIG="${EGO_VIO_VINS_CONFIG:-$ROS_WS/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml}"
 required_files=("$ROS_SETUP" "$BASE_CONFIG" "$RSUSB_MODULE")
-if [[ "$MODE" != "frozen" ]]; then
+if [[ "$MODE" != "frozen" && "$MODE" != "frozen-record" ]]; then
   required_files+=("$WS_SETUP")
 else
   required_files+=("$FROZEN_SETUP")
@@ -64,7 +68,7 @@ case "$MODE" in
     VINS_CONFIG="$BASE_CONFIG"
     EXTRA_RUNTIME_ARGS+=(--no-viz --duration-s 15)
     ;;
-  frozen)
+  frozen|frozen-record)
     VINS_CONFIG="$FROZEN_BUILD_ROOT/install/vins_fusion_ros2/share/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml"
     if [[ ! -f "$VINS_CONFIG" ]]; then
       echo "错误：冻结链配置缺失：$VINS_CONFIG" >&2
@@ -83,14 +87,14 @@ case "$MODE" in
     fi
     ;;
   *)
-    echo "用法: $0 [stable|frozen|smoke]" >&2
+    echo "用法: $0 [stable|frozen|frozen-record|smoke] [采集参数]" >&2
     exit 2
     ;;
 esac
 
 set +u
 source "$ROS_SETUP"
-if [[ "$MODE" != "frozen" ]]; then
+if [[ "$MODE" != "frozen" && "$MODE" != "frozen-record" ]]; then
   source "$WS_SETUP"
 else
   source "$FROZEN_SETUP"
@@ -99,6 +103,10 @@ fi
 set -u
 
 cleanup() {
+  if [[ -n "${VIEWER_PID:-}" ]]; then
+    kill "$VIEWER_PID" 2>/dev/null || true
+    wait "$VIEWER_PID" 2>/dev/null || true
+  fi
   if [[ -n "${RECT_REC_PID:-}" ]]; then
     kill "$RECT_REC_PID" 2>/dev/null || true
     wait "$RECT_REC_PID" 2>/dev/null || true
@@ -128,13 +136,13 @@ echo "模式: $MODE"
 echo "ROS: $ROS_DISTRO_NAME  工作区: $ROS_WS"
 echo "VINS配置: $VINS_CONFIG"
 echo "日志: $RUN_DIR"
-if [[ "$MODE" == "frozen" ]]; then
+if [[ "$MODE" == "frozen" || "$MODE" == "frozen-record" ]]; then
   echo "冻结回环: $FROZEN_LOOP_EXECUTABLE"
   echo "冻结回环SHA256: $FROZEN_LOOP_SHA256"
 fi
 echo "启动后请保持设备静止5秒；Rerun显示 /odometry_rect 自动回环校正轨迹。"
 
-if [[ "$MODE" == "frozen" ]]; then
+if [[ "$MODE" == "frozen" || "$MODE" == "frozen-record" ]]; then
   "$FROZEN_BUILD_ROOT/build/vins_fusion_ros2/vins_fusion_ros2_node" \
     --ros-args -p use_sim_time:=false -p config_file:="$VINS_CONFIG" \
     > "$RUN_DIR/vins.log" 2>&1 &
@@ -145,7 +153,7 @@ else
 fi
 VINS_PID=$!
 
-if [[ "$MODE" == "frozen" ]]; then
+if [[ "$MODE" == "frozen" || "$MODE" == "frozen-record" ]]; then
   "$FROZEN_LOOP_EXECUTABLE" "$VINS_CONFIG" \
     > "$RUN_DIR/loop_fusion.log" 2>&1 &
 else
@@ -170,7 +178,16 @@ RAW_REC_PID=$!
 RECT_REC_PID=$!
 echo "三轴诊断轨迹: $RUN_DIR/odometry_raw.csv 和 odometry_rect.csv"
 
-PYTHONPATH="$RSUSB_PYTHON:$ROOT${PYTHONPATH:+:$PYTHONPATH}" \
-  "$PYTHON_BIN" "$ROOT/scripts/run_realtime.py" \
-    --config "$DEVICE_CONFIG" --backend vins_fusion_ros2 --no-record \
-    "${EXTRA_RUNTIME_ARGS[@]}" 2>&1 | tee "$RUN_DIR/runtime.log"
+if [[ "$MODE" == "frozen-record" ]]; then
+  echo "实时显示与原始落盘由同一采集源驱动；Rerun订阅 /odometry_rect。"
+  "$PYTHON_BIN" "$ROOT/scripts/rerun_vio_viewer.py" \
+    --odom-topic /odometry_rect > "$RUN_DIR/rerun.log" 2>&1 &
+  VIEWER_PID=$!
+  "$ROOT/capture_d405_720p_rgb_stereo_ir_rsusb.sh" \
+    --publish-vins --no-preview "${CAPTURE_ARGS[@]}" 2>&1 | tee "$RUN_DIR/capture.log"
+else
+  PYTHONPATH="$RSUSB_PYTHON:$ROOT${PYTHONPATH:+:$PYTHONPATH}" \
+    "$PYTHON_BIN" "$ROOT/scripts/run_realtime.py" \
+      --config "$DEVICE_CONFIG" --backend vins_fusion_ros2 --no-record \
+      "${EXTRA_RUNTIME_ARGS[@]}" 2>&1 | tee "$RUN_DIR/runtime.log"
+fi
