@@ -40,9 +40,9 @@ else
 fi
 WS_SETUP="$ROS_WS/install/setup.bash"
 BASE_CONFIG="${EGO_VIO_VINS_CONFIG:-$ROS_WS/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml}"
-required_files=("$ROS_SETUP" "$BASE_CONFIG" "$RSUSB_MODULE")
+required_files=("$ROS_SETUP" "$RSUSB_MODULE")
 if [[ "$MODE" != "frozen" && "$MODE" != "frozen-record" ]]; then
-  required_files+=("$WS_SETUP")
+  required_files+=("$WS_SETUP" "$BASE_CONFIG")
 else
   required_files+=("$FROZEN_SETUP")
 fi

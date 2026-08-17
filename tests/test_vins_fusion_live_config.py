@@ -45,6 +45,12 @@ def test_frozen_record_mode_keeps_recording_and_live_vins_on_one_sensor_owner() 
     assert "--publish-vins" in wrapper
 
 
+def test_frozen_mode_does_not_require_the_current_workspace_config() -> None:
+    wrapper = (ROOT / "run_vins_realtime.sh").read_text(encoding="utf-8")
+
+    assert 'required_files=("$ROS_SETUP" "$RSUSB_MODULE")' in wrapper
+
+
 def test_jazzy_handoff_entrypoints_do_not_pin_humble_or_python310() -> None:
     realtime = (ROOT / "run_vins_realtime.sh").read_text(encoding="utf-8")
     capture = (ROOT / "capture_d405_720p_rgb_stereo_ir_rsusb.sh").read_text(
