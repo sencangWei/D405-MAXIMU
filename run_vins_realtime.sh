@@ -7,6 +7,11 @@ DEVICE_CONFIG="$ROOT/config/devices_vins_fusion_live.yaml"
 RSUSB_PYTHON="$ROOT/.deps/librealsense-rsusb-2.58.2/python"
 RUN_DIR="/tmp/ego_vio_vins_live_$(date +%Y%m%d_%H%M%S)"
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
+MODE="${1:-stable}"
+FROZEN_LOOP_EXECUTABLE="${EGO_VIO_FROZEN_LOOP_EXECUTABLE:-$ROOT/frozen_chain_a3a38b8/bin/lfn_product_origin_ready_v7}"
+FROZEN_LOOP_SHA256="8148cc99945e56c38151254da7aae38269892efb5d6786c6b003e97e8d550001"
+FROZEN_BUILD_ROOT="$ROOT/frozen_builds/20260817_191957"
+FROZEN_SETUP="$FROZEN_BUILD_ROOT/install/setup.bash"
 PYTHON_EXT_SUFFIX="$("$PYTHON_BIN" -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')"
 RSUSB_MODULE="$RSUSB_PYTHON/pyrealsense2${PYTHON_EXT_SUFFIX}"
 
@@ -31,14 +36,19 @@ else
 fi
 WS_SETUP="$ROS_WS/install/setup.bash"
 BASE_CONFIG="${EGO_VIO_VINS_CONFIG:-$ROS_WS/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml}"
-for required_file in "$ROS_SETUP" "$WS_SETUP" "$BASE_CONFIG" "$RSUSB_MODULE"; do
+required_files=("$ROS_SETUP" "$BASE_CONFIG" "$RSUSB_MODULE")
+if [[ "$MODE" != "frozen" ]]; then
+  required_files+=("$WS_SETUP")
+else
+  required_files+=("$FROZEN_SETUP")
+fi
+for required_file in "${required_files[@]}"; do
   if [[ ! -f "$required_file" ]]; then
     echo "错误：部署文件缺失：$required_file" >&2
     exit 5
   fi
 done
 
-MODE="${1:-stable}"
 EXTRA_RUNTIME_ARGS=()
 mkdir -p "$RUN_DIR"
 case "$MODE" in
@@ -54,15 +64,38 @@ case "$MODE" in
     VINS_CONFIG="$BASE_CONFIG"
     EXTRA_RUNTIME_ARGS+=(--no-viz --duration-s 15)
     ;;
+  frozen)
+    VINS_CONFIG="$FROZEN_BUILD_ROOT/install/vins_fusion_ros2/share/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml"
+    if [[ ! -f "$VINS_CONFIG" ]]; then
+      echo "错误：冻结链配置缺失：$VINS_CONFIG" >&2
+      exit 6
+    fi
+    if [[ ! -x "$FROZEN_LOOP_EXECUTABLE" ]]; then
+      echo "错误：冻结回环可执行文件不存在或不可执行：$FROZEN_LOOP_EXECUTABLE" >&2
+      exit 6
+    fi
+    actual_frozen_loop_sha256="$(sha256sum "$FROZEN_LOOP_EXECUTABLE" | awk '{print $1}')"
+    if [[ "$actual_frozen_loop_sha256" != "$FROZEN_LOOP_SHA256" ]]; then
+      echo "错误：冻结回环二进制哈希不匹配。" >&2
+      echo "期望：$FROZEN_LOOP_SHA256" >&2
+      echo "实际：$actual_frozen_loop_sha256" >&2
+      exit 6
+    fi
+    ;;
   *)
-    echo "用法: $0 [stable|smoke]" >&2
+    echo "用法: $0 [stable|frozen|smoke]" >&2
     exit 2
     ;;
 esac
 
 set +u
 source "$ROS_SETUP"
-source "$WS_SETUP"
+if [[ "$MODE" != "frozen" ]]; then
+  source "$WS_SETUP"
+else
+  source "$FROZEN_SETUP"
+  export LD_LIBRARY_PATH="$FROZEN_BUILD_ROOT/build/vins_fusion_ros2:$FROZEN_BUILD_ROOT/build/vins_fusion_ros2/vins${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
 set -u
 
 cleanup() {
@@ -95,15 +128,30 @@ echo "模式: $MODE"
 echo "ROS: $ROS_DISTRO_NAME  工作区: $ROS_WS"
 echo "VINS配置: $VINS_CONFIG"
 echo "日志: $RUN_DIR"
+if [[ "$MODE" == "frozen" ]]; then
+  echo "冻结回环: $FROZEN_LOOP_EXECUTABLE"
+  echo "冻结回环SHA256: $FROZEN_LOOP_SHA256"
+fi
 echo "启动后请保持设备静止5秒；Rerun显示 /odometry_rect 自动回环校正轨迹。"
 
-ros2 run vins_fusion_ros2 vins_fusion_ros2_node --ros-args \
-  -p use_sim_time:=false -p config_file:="$VINS_CONFIG" \
-  > "$RUN_DIR/vins.log" 2>&1 &
+if [[ "$MODE" == "frozen" ]]; then
+  "$FROZEN_BUILD_ROOT/build/vins_fusion_ros2/vins_fusion_ros2_node" \
+    --ros-args -p use_sim_time:=false -p config_file:="$VINS_CONFIG" \
+    > "$RUN_DIR/vins.log" 2>&1 &
+else
+  ros2 run vins_fusion_ros2 vins_fusion_ros2_node --ros-args \
+    -p use_sim_time:=false -p config_file:="$VINS_CONFIG" \
+    > "$RUN_DIR/vins.log" 2>&1 &
+fi
 VINS_PID=$!
 
-ros2 run vins_fusion_ros2 loop_fusion_node "$VINS_CONFIG" \
-  > "$RUN_DIR/loop_fusion.log" 2>&1 &
+if [[ "$MODE" == "frozen" ]]; then
+  "$FROZEN_LOOP_EXECUTABLE" "$VINS_CONFIG" \
+    > "$RUN_DIR/loop_fusion.log" 2>&1 &
+else
+  ros2 run vins_fusion_ros2 loop_fusion_node "$VINS_CONFIG" \
+    > "$RUN_DIR/loop_fusion.log" 2>&1 &
+fi
 LOOP_PID=$!
 
 sleep 6
