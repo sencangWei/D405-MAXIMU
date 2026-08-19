@@ -1,4 +1,4 @@
-# 产品标定操作手册（六步独立命令草案）
+# 产品标定操作手册（六步独立命令，工程验证版）
 
 适用产品：已经完成最终机械装配的 D405 双 IR＋KT-EX9 IMU 产品。
 
@@ -13,8 +13,9 @@
 显示 `PASS` 后退出，客户才执行下一条命令。`FAIL` 重做当前步，`BLOCKED` 按屏幕提示
 处理设备或前置步骤。系统不提供 `run-all`。
 
-> 下面六个 `calibrate_*.sh` 是已经冻结的客户命令接口。当前仓库先完成算法与证据
-> 框架，硬件采集后端要逐项实现、逐项 HIL 后才发布给客户，不能用空壳冒充可用。
+> 下面六个 `calibrate_*.sh` 已连接实际采集和求解后端，不是占位命令。当前没有完整
+> 硬件，状态仍是“工程验证版”：离线回归已执行，真实 D405＋IMU＋STM32 的逐步 HIL
+> 尚未执行，因此暂不能作为客户发布版签发。
 
 ## 0. 创建本机产品档案（只做一次）
 
@@ -23,9 +24,10 @@ cd /home/robot/ego_vio_calib_kit
 ./calibrate_init.sh 产品编号
 ```
 
-脚本自动读取并绑定 D405 序列号、IMU/控制板身份、固件和机械版本；不让客户手工登记
-PASS。所有输出进入 `calibration_sessions/产品编号/`，重做某一步时创建新的 attempt，
-不覆盖上一份原始数据。
+脚本自动读取并绑定 D405 序列号及固定的 `/dev/serial/by-id/` IMU 端口；识别不唯一即
+BLOCKED。STM32 固件哈希和机械版本字段会在硬件 HIL 阶段补入，未补齐前不得发布。
+所有输出进入 `calibration_sessions/产品编号/`，重做某一步时创建新的 attempt，不覆盖
+上一份原始数据。
 
 ## 1. IMU 静态 bias
 
@@ -59,8 +61,8 @@ PASS。所有输出进入 `calibration_sessions/产品编号/`，重做某一步
 姿态。采完立即做椭球拟合，输出加速度 bias、scale/非正交矩阵和留出误差到
 `imu_multipose/report.yaml`。验证姿态不会回流参与拟合。
 
-这一步校正的是加速度计。陀螺完整比例/非正交参数若无计量转台，应留给第 5 步的视觉
-辅助联合标定，不能用手转“约 90°”当真值。
+这一步校正的是加速度计。陀螺完整比例/非正交参数需要计量转台，不能用手转“约 90°”
+当真值；第 5 步的标准 Kalibr 命令只求相机—IMU 外参和时间偏移，也不冒充陀螺内参。
 
 ## 4. D405 双 IR 相机内参和双目外参
 
@@ -69,9 +71,11 @@ PASS。所有输出进入 `calibration_sessions/产品编号/`，重做某一步
 ```
 
 整机固定，客户只移动 AprilGrid。屏幕依次提示九宫格、近/中/远距离和不同倾角；左右
-IR 必须同步采集 `1280×720@30`。命令自动导出并哈希 D405 工厂参数、生成双目 Kalibr
-bag、求左右内参与 `T_cam1_cam0`，再用独立留出图像自动验证重投影/极线误差，并与
-2026-08-08 历史 `18.0966 mm` 基线 A/B。输出 `d405_stereo/report.yaml`。
+IR 必须同步采集 `1280×720@30`。命令复用历史已跑通的双 IR 分阶段采集器，生成双目
+Kalibr bag、求左右内参与 `T_cam1_cam0`，检查 Kalibr 重投影 RMS，并与历史工厂基线
+`18.079 mm` A/B；实机模式改用当前连接 D405 的 `1280×720@30 Y8` factory profile
+外参作为正式基线。输出 `d405_stereo/report.yaml`。独立留出图像的极线/P95 验收尚未
+接入，客户发布前必须补齐。
 
 客户流程不写 D405 NVRAM，只生成产品侧候选配置。
 
@@ -95,9 +99,11 @@ attempt 都自动生成双 IR＋IMU Kalibr bag并求 `T_cam0_imu`、`T_cam1_imu`
 ./calibrate_06_world_z.sh 产品编号
 ```
 
-脚本分次提示录制已知水平平面运动和真实升降运动。每一条录制结束后自动用第 1～5 步
-候选配置运行冻结 SLAM 链并导出轨迹。至少 3 条平面轨迹用于拟合/leave-one-out，至少
-2 条真实升降轨迹只作负例验证。
+脚本分次提示录制已知水平平面运动和真实升降运动。每一条录制结束后运行冻结 SLAM 链
+并导出轨迹。至少 3 条平面轨迹用于拟合/leave-one-out，至少 2 条真实升降轨迹只作负例
+验证。当前实时入口仍加载冻结历史配置；把第 1～5 步候选配置注入冻结 VINS 后再采的
+接线尚未完成，所以目前只允许用离线参数对已经使用候选配置生成的轨迹做正式求解，
+不能把默认实时入口的结果签成新产品 Z 标定。
 
 命令只允许求一个全局刚体旋转 `R_world_z_from_vins_world`，输出
 `world_z/report.yaml` 和候选矩阵。平面留出轨迹 Z P5–P95 必须 `<10 mm` 且不劣于
@@ -108,6 +114,19 @@ attempt 都自动生成双 IR＋IMU Kalibr bag并求 `T_cam0_imu`、`T_cam1_imu`
 六步都 PASS 后，系统生成一份候选标定包，但仍不覆盖历史冻结 Humble 配置。交付人员
 还要用历史数据和新采数据做端到端 SLAM A/B，确认旧 `<1 cm` 回环基线没有退化后，
 才把候选包签名为产品配置。
+
+## 工程复算参数（客户正常操作不使用）
+
+```bash
+./calibrate_01_imu_static.sh 产品编号 --input-capture <采集目录>
+./calibrate_02_imu_noise.sh 产品编号 --input-capture <采集目录>
+./calibrate_03_imu_intrinsic.sh 产品编号 --input-csv <30姿态均值.csv>
+./calibrate_04_d405_stereo.sh 产品编号 --input-camchain <camchain.yaml> --input-results <results-cam.txt>
+./calibrate_05_camera_imu.sh 产品编号 --run1 <run1.yaml> --results1 <run1.txt> --run2 <run2.yaml> --results2 <run2.txt>
+./calibrate_06_world_z.sh 产品编号 \
+  --planar p1=<p1.csv> --planar p2=<p2.csv> --planar p3=<p3.csv> \
+  --elevation e1=<e1.csv> --elevation e2=<e2.csv>
+```
 
 - IMU 更换：从第 1 步重做。
 - IMU采样率、固件滤波或时间戳链改变：至少重做第 1、2、5、6 步。
