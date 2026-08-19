@@ -441,8 +441,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--vins-imu-calibration",
         type=Path,
-        default=ROOT / "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
-        help="实时发布前应用的已验收IMU内参标定；原始IMU落盘不改写",
+        default=None,
+        help=(
+            "实时发布前显式应用的已验收IMU内参标定；"
+            "缺省发布原始IMU，原始IMU落盘始终不改写"
+        ),
     )
     parser.add_argument(
         "--no-ram-stage",
@@ -653,7 +656,8 @@ def main() -> int:
     if args.publish_vins:
         from ego_vio.vio.openvins_ros2_bridge import OpenVINSROS2Bridge
 
-        vins_imu_calibration = IMUCalibration.load(args.vins_imu_calibration)
+        if args.vins_imu_calibration is not None:
+            vins_imu_calibration = IMUCalibration.load(args.vins_imu_calibration)
         vins_bridge = OpenVINSROS2Bridge(
             name="frozen_live_record",
             cam_topic="/cam0/image_raw",
@@ -666,7 +670,12 @@ def main() -> int:
         )
         print(
             "[实时VINS录制] 原始DB3/IMU落盘与VINS发布共用同一D405和IMU采集源；"
-            f"IMU运行时标定={vins_imu_calibration.calibration_id}"
+            "IMU运行时标定="
+            + (
+                vins_imu_calibration.calibration_id
+                if vins_imu_calibration is not None
+                else "raw_unmodified"
+            )
         )
     try:
         imu_recorder.start()

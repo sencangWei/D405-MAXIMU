@@ -1,9 +1,8 @@
 from pathlib import Path
 
-import numpy as np
+import yaml
 
 from ego_vio.config import load_config
-from ego_vio.imu.calibration import IMUCalibration
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,10 +12,15 @@ def test_live_config_pairs_vins_backend_with_level_calibration() -> None:
     stable = load_config(ROOT / "config/devices_vins_fusion_live.yaml")
     assert stable.units[0].vio.imu_level_calibration == ""
     assert stable.units[0].vio.odom_topic == "/odometry_rect"
-    calibration = IMUCalibration.load(stable.units[0].imu.calibration)
-    assert calibration.calibration_id == "imu_runtime_accel_calibrated_raw_gyro_20260816"
-    assert np.allclose(calibration.gyro_matrix, np.eye(3))
-    assert np.allclose(calibration.gyro_bias_deg_s, np.zeros(3))
+    assert stable.units[0].imu.calibration == ""
+
+    rejected = yaml.safe_load(
+        (ROOT / "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert rejected["acceptance"]["status"] == "FAIL"
+    assert rejected["acceptance"]["runtime_applied"] is False
 
     config = load_config(ROOT / "config/devices_vins_fusion_live_level_candidate.yaml")
     unit = config.units[0]
@@ -47,8 +51,13 @@ def test_frozen_record_mode_keeps_recording_and_live_vins_on_one_sensor_owner() 
 
 def test_frozen_mode_does_not_require_the_current_workspace_config() -> None:
     wrapper = (ROOT / "run_vins_realtime.sh").read_text(encoding="utf-8")
+    capture = (ROOT / "scripts/capture_d405_720p_rgb_stereo_ir.py").read_text(
+        encoding="utf-8"
+    )
 
     assert 'required_files=("$ROS_SETUP" "$RSUSB_MODULE")' in wrapper
+    assert 'default=None' in capture
+    assert 'else "raw_unmodified"' in capture
 
 
 def test_jazzy_handoff_entrypoints_do_not_pin_humble_or_python310() -> None:
