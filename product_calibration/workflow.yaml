@@ -1,0 +1,96 @@
+format_version: 1
+product_family: D405_KTEX9_AS5047P
+result_values: [PASS, FAIL, BLOCKED]
+stages:
+  identity:
+    title: 锁定产品身份与机械结构
+    prerequisites: []
+    evidence: identity/report.yaml
+    invalidated_by: [device_replacement, mount_change]
+    operator_steps:
+      - 将D405、IMU、编码器和夹爪装到最终支架并锁紧。
+      - 记录产品ID、D405序列号、串口by-id、STM32固件SHA256和安装照片。
+      - 核对设备身份后生成identity/report.yaml；身份不明必须BLOCKED。
+  d405_stereo:
+    title: D405双IR厂内参数导出与独立核验
+    prerequisites: [identity]
+    evidence: d405_stereo/report.yaml
+    invalidated_by: [d405_internal_change, camera_replacement, work_profile_change]
+    operator_steps:
+      - 固定整机，确认双IR工作模式为1280x720@30并导出设备厂内参数。
+      - 移动AprilGrid覆盖九宫格、近中远和多个倾斜角度，两只IR始终同时看见标定板。
+      - 用独立验证数据计算左右重投影和极线误差，并与黄金18.0966 mm基线比较。
+      - 不写D405 NVRAM；超限时生成FAIL并转服务标定。
+  imu_static_bias:
+    title: IMU工作温度静态偏置
+    prerequisites: [identity]
+    evidence: imu_static_bias/report.yaml
+    invalidated_by: [imu_replacement, temperature_range_change]
+    operator_steps:
+      - 将最终装配整机刚性放稳，线缆不受力，预热到工作温度。
+      - 连续静止10分钟，前2分钟稳定，后8分钟作为正式窗口。
+      - 确认约400 Hz、零丢帧、零复位、时间戳单调后生成报告。
+  imu_multipose:
+    title: IMU任意多姿态椭球内参
+    prerequisites: [identity]
+    evidence: imu_multipose/report.yaml
+    invalidated_by: [imu_replacement]
+    operator_steps:
+      - 整套支架保持刚性，不要求IMU轴对准桌面。
+      - 采集30个分散静止姿态，每个30至60秒；至少20个拟合、10个留出。
+      - 覆盖整个球面后运行椭球拟合，只用留出姿态做最终验收。
+  imu_allan:
+    title: IMU 15至24小时Allan噪声
+    prerequisites: [identity]
+    evidence: imu_allan/report.yaml
+    invalidated_by: [imu_replacement, firmware_filter_change, sample_rate_change]
+    operator_steps:
+      - 在恒温、无振动位置固定整机并记录温度。
+      - 连续采集15至24小时原始400 Hz数据，中途不得移动、断电或重插。
+      - 计算Allan deviation并保存图、参数、原始数据SHA256和Kalibr单位说明。
+  camera_imu:
+    title: 相机IMU空间外参与时间偏移双数据集复验
+    prerequisites: [d405_stereo, imu_multipose, imu_allan]
+    evidence: camera_imu/report.yaml
+    invalidated_by: [mount_change, camera_replacement, imu_replacement, timestamp_chain_change]
+    operator_steps:
+      - 固定AprilGrid，移动锁紧后的相机和IMU整体，不要单独扭相机。
+      - 完成XYZ平移和roll、pitch、yaw旋转，保持标定板清晰可见。
+      - 采集两份独立bag并分别运行Kalibr空间和时间标定。
+      - 比较两份结果，并与黄金基线-11.7 ms及历史外参做A/B；不得直接复制旧值。
+  encoder_transport:
+    title: STM32 C2联合包与编码器通信HIL
+    prerequisites: [identity]
+    evidence: encoder_transport/report.yaml
+    invalidated_by: [board_replacement, firmware_change, usb_bridge_change]
+    operator_steps:
+      - 记录STM32固件模式、Git提交和二进制SHA256，确认目标为C2。
+      - 先做10分钟筛选，再做至少2小时耐久并跨越一次71.58分钟计时器回绕。
+      - 要求CRC、序号、IMU/发送队列溢出和PC消费队列丢弃均为0。
+  encoder_distance:
+    title: 编码器角度到夹爪距离
+    prerequisites: [encoder_transport]
+    evidence: encoder_distance/report.yaml
+    invalidated_by: [encoder_replacement, magnet_change, mechanism_change]
+    operator_steps:
+      - 在整个夹爪行程选择至少10个量具真值点。
+      - 每点分别从张开和闭合方向接近，各重复3次并保存原始14位角。
+      - 展开角度、拟合单调模型并用未参与拟合的距离点验证误差和滞回。
+  world_z:
+    title: 世界坐标和Z正负例验证
+    prerequisites: [camera_imu]
+    evidence: world_z/report.yaml
+    invalidated_by: [camera_imu_change, world_fixture_change]
+    operator_steps:
+      - 用静止重力和已知水平平面数据拟合唯一世界坐标旋转。
+      - 用至少3条独立平面轨迹验证Z跨度，不允许逐条压平或修终点。
+      - 用至少2条真实升降轨迹确认高度保留不低于80%。
+  final_acceptance:
+    title: 产品10秒60秒90分钟最终验收
+    prerequisites: [camera_imu, encoder_distance, world_z]
+    evidence: final_acceptance/report.yaml
+    invalidated_by: [any_calibration_invalidated, production_software_change]
+    operator_steps:
+      - 使用候选标定先做10秒冒烟，再做60秒功能验证。
+      - 通过后执行90分钟稳定性及客户场景轨迹验收。
+      - 对黄金历史数据和新硬件新数据分别A/B，所有必需门槛通过才可签字交付。

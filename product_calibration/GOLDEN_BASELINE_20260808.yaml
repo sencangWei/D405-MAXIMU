@@ -1,0 +1,72 @@
+format_version: 1
+status: GOLDEN_REFERENCE_NOT_NEW_ASSEMBLY_CALIBRATION
+hardware:
+  camera_model: Intel RealSense D405
+  camera_serial: "260322273737"
+  camera_stream: dual_ir_1280x720_30fps
+  imu_model: KT-EX9-2
+  imu_rate_hz: 400.0
+camera_stereo:
+  kalibr_baseline_m: 0.018096615038451416
+  factory_baseline_m: 0.018079
+  run1_reprojection_mean_px: {cam0: 0.30800913714865485, cam1: 0.3392902527963479}
+  run2_reprojection_mean_px: {cam0: 0.3660603924126984, cam1: 0.3863443821760426}
+camera_imu:
+  run1:
+    timeshift_cam_imu_s: {cam0: -0.011726616554237214, cam1: -0.011756311635899592}
+    T_cam0_imu:
+      - [0.9997364834874917, -0.01831210572286867, 0.013843062091135516, 0.017159852577937517]
+      - [0.018186154655193028, 0.9997925633158599, 0.00917028446450677, 0.011133058700604131]
+      - [-0.014008117750859812, -0.008916115875035144, 0.9998621282530813, -0.02879528172799971]
+      - [0.0, 0.0, 0.0, 1.0]
+    T_cam1_imu:
+      - [0.9997237481482744, -0.018426880432016395, 0.014590320966661066, -0.0009577304105917693]
+      - [0.018322484894817463, 0.9998057940876245, 0.0072567662284288735, 0.011157151809400119]
+      - [-0.014721207003680235, -0.0069874305977985435, 0.9998672221240158, -0.028534352603991748]
+      - [0.0, 0.0, 0.0, 1.0]
+  run2:
+    timeshift_cam_imu_s: {cam0: -0.011852575723473412, cam1: -0.0118242130142557}
+    T_cam0_imu:
+      - [0.9997272808118041, -0.021045802030102492, 0.010121176687757744, 0.014521795588397158]
+      - [0.02094598262662204, 0.9997318950710359, 0.009869335817533681, 0.011485642972886718]
+      - [-0.01032617123818526, -0.009654646269218749, 0.999900074003885, -0.028700815100079803]
+      - [0.0, 0.0, 0.0, 1.0]
+    T_cam1_imu:
+      - [0.9997170024678373, -0.021161122082554988, 0.010868389435858505, -0.0035957540760971404]
+      - [0.02107525481316041, 0.9997462409363089, 0.00795533583704848, 0.01150926546898255]
+      - [-0.011033975316386939, -0.007724030419869691, 0.9999092912573573, -0.028437237188719964]
+      - [0.0, 0.0, 0.0, 1.0]
+  repeatability:
+    rotation_deg: 0.267327307
+    translation_mm: 2.663190623
+    cam0_td_ms: 0.125959169
+    cam1_td_ms: 0.067901378
+runtime_contract:
+  vins_estimate_td: 0
+  vins_td_s: -0.0117
+  replay_imu_shift_ms: 0.0
+  imu_runtime_intrinsic: raw_no_extra_matrix
+  paired_transform_rule: replay_gravity_rotation_and_body_T_cam_must_change_together
+historical_slam:
+  vins_source_commit: a3a38b82da5ed7b7fd3de11e6dc1f42287472cf8
+  loop_binary_sha256: 8148cc99945e56c38151254da7aae38269892efb5d6786c6b003e97e8d550001
+  closure_metric: 3d_euclidean_start_end_distance
+imu_noise_runtime_values:
+  acc_n: 0.00828
+  gyr_n: 0.00103
+  acc_w: 0.00000392
+  gyr_w: 0.000000289
+  provenance_note: >-
+    Historical report says these came from a 240.1-minute capture, but the raw capture
+    is not present in the recovered handoff and the Kalibr YAML comments still call them
+    estimates. Preserve as proven runtime baseline, not as auditable product Allan truth.
+source_artifacts:
+  root: /home/robot/ego_vio_handoff_20260816/calibration/calib_run_20260808
+  files:
+    calib_intrinsics-camchain.yaml: ffb88c97587713c3431f73f99439f90ca095cd9338c7fb75594fe7346bf9b03d
+    calib_imucam-camchain-imucam.yaml: b544009747935c425f7386d94b55db8f349bc18577dcb12c2892a0827c0525d6
+    calib_imucam2-camchain-imucam.yaml: 6abcd0fab03371321746dd43098a97d1fbbed972438d129ecda4ee043cc28f20
+    calib_intrinsics-results-cam.txt: 8b1da8dcb8bbf28a677d65a554ff99d747b438f7d2a75da4aca93fa682f998ae
+    calib_imucam-results-imucam.txt: fc30ad62c590475e4d9199bb4e1dda3b5ab043723ac7680ffd80fe46c709f16d
+    calib_imucam2-results-imucam.txt: 00fea52a7f0b6e4f72ad6bc5576c35dc736e25c351fb17588cf07089e520939d
+    imu_kalibr.yaml: 8b8bd80381e346e071c9c8876ba1316b5e3f6976b434c07510aef01184d8b39e
