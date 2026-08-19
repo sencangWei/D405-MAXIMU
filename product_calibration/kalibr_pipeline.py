@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import math
 import os
@@ -14,6 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
+import cv2
 
 from .compatible_imu_reader import CompatibleImuReader
 from .workflow import WorkflowError, sha256_file
@@ -269,6 +271,204 @@ def stereo_report(camchain: Path, results: Path, baseline: Path,
         "checks": checks,
         "evidence": {"camchain": str(camchain.resolve()), "camchain_sha256": sha256_file(camchain),
                      "results": str(results.resolve()), "results_sha256": sha256_file(results)},
+    }
+
+
+def _camera_matrix(camera: dict) -> np.ndarray:
+    if camera.get("camera_model") != "pinhole" or camera.get("distortion_model") != "radtan":
+        raise WorkflowError("留出极线验收当前只接受Kalibr pinhole-radtan模型")
+    values = np.asarray(camera.get("intrinsics", []), dtype=float)
+    if values.shape != (4,):
+        raise WorkflowError("camchain内参形状错误")
+    fx, fy, cx, cy = values
+    return np.asarray([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]], dtype=float)
+
+
+def rectified_epipolar_errors(
+    camchain: Path, matched_corners: list[tuple[np.ndarray, np.ndarray]]
+) -> np.ndarray:
+    """Return |v_left-v_right| after rectifying matched, never-optimized corners."""
+    document = yaml.safe_load(Path(camchain).read_text(encoding="utf-8")) or {}
+    try:
+        cam0, cam1 = document["cam0"], document["cam1"]
+        resolution0 = tuple(int(value) for value in cam0["resolution"])
+        resolution1 = tuple(int(value) for value in cam1["resolution"])
+        transform = np.asarray(cam1["T_cn_cnm1"], dtype=float)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise WorkflowError("camchain缺少留出极线验收所需字段") from exc
+    if resolution0 != resolution1 or len(resolution0) != 2:
+        raise WorkflowError("双目分辨率不一致")
+    if transform.shape != (4, 4):
+        raise WorkflowError("cam1.T_cn_cnm1形状错误")
+    if not matched_corners:
+        raise WorkflowError("留出集没有左右匹配AprilGrid角点")
+    left = np.concatenate([np.asarray(pair[0], dtype=float).reshape(-1, 2)
+                           for pair in matched_corners], axis=0)
+    right = np.concatenate([np.asarray(pair[1], dtype=float).reshape(-1, 2)
+                            for pair in matched_corners], axis=0)
+    if left.shape != right.shape or left.shape[0] == 0:
+        raise WorkflowError("留出集左右角点数量不一致")
+    k0, k1 = _camera_matrix(cam0), _camera_matrix(cam1)
+    d0 = np.asarray(cam0.get("distortion_coeffs", []), dtype=float)
+    d1 = np.asarray(cam1.get("distortion_coeffs", []), dtype=float)
+    r1, r2, p1, p2, _, _, _ = cv2.stereoRectify(
+        k0, d0, k1, d1, resolution0, transform[:3, :3], transform[:3, 3],
+        flags=cv2.CALIB_ZERO_DISPARITY, alpha=0,
+    )
+    left_rectified = cv2.undistortPoints(left.reshape(-1, 1, 2), k0, d0, R=r1, P=p1)
+    right_rectified = cv2.undistortPoints(right.reshape(-1, 1, 2), k1, d1, R=r2, P=p2)
+    return np.abs(left_rectified[:, 0, 1] - right_rectified[:, 0, 1])
+
+
+def _coverage_cells(corners: list[np.ndarray], width: int, height: int) -> list[int]:
+    cells = set()
+    for array in corners:
+        for x, y in np.asarray(array, dtype=float).reshape(-1, 2):
+            if not (0.0 <= x < width and 0.0 <= y < height):
+                continue
+            column = min(2, int(3.0 * x / width))
+            row = min(2, int(3.0 * y / height))
+            cells.add(row * 3 + column)
+    return sorted(cells)
+
+
+def _aprilgrid_center(detections: dict[int, np.ndarray]) -> np.ndarray | None:
+    """Project the known full 6x6 grid center from visible tag-corner correspondences."""
+    object_corners = []
+    image_corners = []
+    pitch = 1.3
+    for tag_id, corners in sorted(detections.items()):
+        if tag_id < 0 or tag_id >= 36:
+            continue
+        row, column = divmod(tag_id, 6)
+        x0, y0 = column * pitch, row * pitch
+        object_corners.extend([
+            [x0, y0], [x0 + 1.0, y0],
+            [x0 + 1.0, y0 + 1.0], [x0, y0 + 1.0],
+        ])
+        image_corners.extend(np.asarray(corners, dtype=float).reshape(4, 2).tolist())
+    if len(object_corners) < 16:
+        return None
+    homography, _ = cv2.findHomography(
+        np.asarray(object_corners, dtype=float), np.asarray(image_corners, dtype=float), 0
+    )
+    if homography is None:
+        return None
+    grid_extent = 6.0 + 5.0 * 0.3
+    projected = cv2.perspectiveTransform(
+        np.asarray([[[grid_extent / 2.0, grid_extent / 2.0]]], dtype=float), homography
+    ).reshape(2)
+    return projected.reshape(1, 2) if np.all(np.isfinite(projected)) else None
+
+
+def heldout_epipolar_report(
+    recording: Path, camchain: Path, *, max_sampled_frames: int = 180
+) -> dict:
+    """Validate a solved camchain on a separately captured synchronized stereo set."""
+    unit = Path(recording) / "left_hand"
+    left_dir, right_dir = unit / "frames", unit / "frames_right"
+    left_by_name = {path.name: path for path in left_dir.glob("*.jpg")}
+    right_by_name = {path.name: path for path in right_dir.glob("*.jpg")}
+    left_names, right_names = set(left_by_name), set(right_by_name)
+    unpaired_left = sorted(left_names - right_names)
+    unpaired_right = sorted(right_names - left_names)
+    names = sorted(left_names & right_names)
+    document = yaml.safe_load(Path(camchain).read_text(encoding="utf-8")) or {}
+    try:
+        expected_resolution = tuple(int(value) for value in document["cam0"]["resolution"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise WorkflowError("camchain缺少cam0分辨率") from exc
+    if len(expected_resolution) != 2:
+        raise WorkflowError("camchain的cam0分辨率形状错误")
+    if len(names) > max_sampled_frames:
+        indices = np.linspace(0, len(names) - 1, max_sampled_frames, dtype=int)
+        names = [names[int(index)] for index in indices]
+
+    from aprilgrid import Detector
+
+    detector_left = Detector("t36h11")
+    detector_right = Detector("t36h11")
+    matched: list[tuple[np.ndarray, np.ndarray]] = []
+    left_view_centers: list[np.ndarray] = []
+    right_view_centers: list[np.ndarray] = []
+    valid_views = 0
+    invalid_images = 0
+    resolution_mismatches = 0
+    digest = hashlib.sha256()
+    digest.update(("left=" + "\n".join(sorted(left_names)) + "\nright="
+                   + "\n".join(sorted(right_names))).encode("utf-8"))
+    width = height = 0
+    for name in names:
+        left_bytes, right_bytes = left_by_name[name].read_bytes(), right_by_name[name].read_bytes()
+        digest.update(name.encode("utf-8") + b"\0" + left_bytes + b"\0" + right_bytes)
+        left_image = cv2.imdecode(np.frombuffer(left_bytes, np.uint8), cv2.IMREAD_GRAYSCALE)
+        right_image = cv2.imdecode(np.frombuffer(right_bytes, np.uint8), cv2.IMREAD_GRAYSCALE)
+        if left_image is None or right_image is None or left_image.shape != right_image.shape:
+            invalid_images += 1
+            continue
+        height, width = left_image.shape[:2]
+        if (width, height) != expected_resolution:
+            resolution_mismatches += 1
+            continue
+        detections_left = {int(item.tag_id): np.asarray(item.corners, dtype=float).reshape(4, 2)
+                           for item in detector_left.detect(left_image)}
+        detections_right = {int(item.tag_id): np.asarray(item.corners, dtype=float).reshape(4, 2)
+                            for item in detector_right.detect(right_image)}
+        common_ids = sorted(set(detections_left) & set(detections_right) & set(range(36)))
+        if len(common_ids) < 4:
+            continue
+        for tag_id in common_ids:
+            left = detections_left[tag_id]
+            right = detections_right[tag_id]
+            matched.append((left, right))
+        left_center = _aprilgrid_center({tag_id: detections_left[tag_id] for tag_id in common_ids})
+        right_center = _aprilgrid_center({tag_id: detections_right[tag_id] for tag_id in common_ids})
+        if left_center is not None and right_center is not None:
+            valid_views += 1
+            left_view_centers.append(left_center)
+            right_view_centers.append(right_center)
+
+    errors = (
+        rectified_epipolar_errors(camchain, matched)
+        if matched else np.asarray([], dtype=float)
+    )
+    left_cells = _coverage_cells(left_view_centers, width, height)
+    right_cells = _coverage_cells(right_view_centers, width, height)
+    p95 = float(np.percentile(errors, 95.0)) if errors.size else None
+    checks = {
+        "synchronized_stereo_frames_present": bool(names),
+        "all_left_right_files_paired": not unpaired_left and not unpaired_right,
+        "all_sampled_images_valid": invalid_images == 0,
+        "all_images_match_camchain_resolution": resolution_mismatches == 0,
+        "independent_valid_views_ge_40": valid_views >= 40,
+        "left_covers_all_9_cells": left_cells == list(range(9)),
+        "right_covers_all_9_cells": right_cells == list(range(9)),
+        "epipolar_vertical_p95_le_1px": p95 is not None and p95 <= 1.0,
+    }
+    return {
+        "result": "PASS" if all(checks.values()) else "FAIL",
+        "method": "separate_capture_aprilgrid_matched_corner_rectification",
+        "metrics": {
+            "sampled_synchronized_frames": len(names),
+            "unpaired_left_images": len(unpaired_left),
+            "unpaired_right_images": len(unpaired_right),
+            "invalid_or_mismatched_stereo_images": invalid_images,
+            "resolution_mismatches": resolution_mismatches,
+            "valid_matched_views": valid_views,
+            "matched_tags": len(matched),
+            "matched_corners": int(errors.size),
+            "epipolar_vertical_mean_px": float(np.mean(errors)) if errors.size else None,
+            "epipolar_vertical_p95_px": p95,
+            "epipolar_vertical_max_px": float(np.max(errors)) if errors.size else None,
+            "left_coverage_cells": left_cells,
+            "right_coverage_cells": right_cells,
+        },
+        "thresholds": {"min_common_tags_per_view": 4, "min_valid_views": 40,
+                       "required_target_center_coverage_cells": list(range(9)),
+                       "max_epipolar_vertical_p95_px": 1.0},
+        "checks": checks,
+        "evidence": {"validation_recording": str(Path(recording).resolve()),
+                     "sampled_stereo_sha256": digest.hexdigest()},
     }
 
 

@@ -13,6 +13,9 @@
 显示 `PASS` 后退出，客户才执行下一条命令。`FAIL` 重做当前步，`BLOCKED` 按屏幕提示
 处理设备或前置步骤。系统不提供 `run-all`。
 
+现场首次操作可先打开 `TOMORROW_CALIBRATION_CHECKLIST_ZH.md`，它按实际时间顺序列出
+上电、建档、第 1 步和过夜 Allan 采集。
+
 > 下面六个 `calibrate_*.sh` 已连接实际采集和求解后端，不是占位命令。当前没有完整
 > 硬件，状态仍是“工程验证版”：离线回归已执行，真实 D405＋IMU＋STM32 的逐步 HIL
 > 尚未执行，因此暂不能作为客户发布版签发。
@@ -32,6 +35,8 @@ BLOCKED。STM32 固件哈希和机械版本字段会在硬件 HIL 阶段补入�
 工程机已经把 Kalibr 隔离在 ROS 1 Noetic 容器中，主机继续使用 ROS 2 Humble；
 `kalibr_calibrate_cameras`、`kalibr_calibrate_imu_camera` 和
 `kalibr_camera_validator` 是本机命令。AprilGrid 检测库安装在主机 Python 环境中。
+明天继续使用已经在历史标定中跑通的实体 `6×6` AprilGrid：单 tag
+`35.2 mm`，净间距 `10.56 mm` (`tagSpacing=0.3`)；不需要重新生成或打印。
 
 ## 1. IMU 静态 bias
 
@@ -75,17 +80,15 @@ BLOCKED。STM32 固件哈希和机械版本字段会在硬件 HIL 阶段补入�
 ```
 
 整机固定，客户只移动 AprilGrid。屏幕依次提示九宫格、近/中/远距离和不同倾角；左右
-IR 必须同步采集 `1280×720@30`。命令复用历史已跑通的双 IR 分阶段采集器，生成双目
-Kalibr bag、求左右内参与 `T_cam1_cam0`，检查 Kalibr 重投影 RMS，并与历史工厂基线
+IR 必须同步采集 `1280×720@30`。命令先采一份求解集，再重新独立采一份
+留出集；留出图像不会进入 Kalibr 优化。求解左右内参与 `T_cam1_cam0`，检查
+Kalibr 重投影 RMS，并与历史工厂基线
 `18.079 mm` A/B；实机模式改用当前连接 D405 的 `1280×720@30 Y8` factory profile
 外参作为正式基线。输出 `d405_stereo/report.yaml`。
 
-“独立留出图像的极线/P95 验收尚未接入”不是指 Kalibr 没装好，而是当前命令只检查
-参与求解那批图像的 Kalibr 残差。发布版必须在采集完成、求解开始前固定分出一批
-`held-out` 同步左右图，禁止送入优化；求解后再用固定内外参整流这些留出图，按相同
-AprilGrid 角点计算 `|v_left-v_right|`。其 P95 `≤1.0 px` 表示至少 95% 的独立角点
-纵向极线错位不超过 1 像素。这个独立验收器未接入前，第 4 步只能算工程 PASS，不能
-签成客户发布 PASS。
+求解后命令用固定内外参整流留出图，匹配相同 AprilGrid ID/角点并计算
+`|v_left-v_right|`。留出集必须有至少 40 个有效同步视角、左右都覆盖九宫格，
+且纵向极线错位 P95 `≤1.0 px`。任一超限即第 4 步 FAIL。
 
 客户流程不写 D405 NVRAM，只生成产品侧候选配置。
 
@@ -131,12 +134,16 @@ attempt 都自动生成双 IR＋IMU Kalibr bag并求 `T_cam0_imu`、`T_cam1_imu`
 ./calibrate_01_imu_static.sh 产品编号 --input-capture <采集目录>
 ./calibrate_02_imu_noise.sh 产品编号 --input-capture <采集目录>
 ./calibrate_03_imu_intrinsic.sh 产品编号 --input-csv <30姿态均值.csv>
-./calibrate_04_d405_stereo.sh 产品编号 --input-camchain <camchain.yaml> --input-results <results-cam.txt>
+./calibrate_04_d405_stereo.sh 产品编号 --input-camchain <camchain.yaml> --input-results <results-cam.txt> --input-validation <独立双IR留出录制目录>
 ./calibrate_05_camera_imu.sh 产品编号 --run1 <run1.yaml> --results1 <run1.txt> --run2 <run2.yaml> --results2 <run2.txt>
 ./calibrate_06_world_z.sh 产品编号 \
   --planar p1=<p1.csv> --planar p2=<p2.csv> --planar p3=<p3.csv> \
   --elevation e1=<e1.csv> --elevation e2=<e2.csv>
 ```
+
+仅对内置 2026-08-08 历史金样做无留出图回归时，可在第 4 步追加
+`--legacy-reference-only`。命令会校验 camchain/results 的 SHA-256；只有与内置金样
+完全一致才允许工程回归 PASS，但 `release_eligible` 始终为 `false`，不能用于新产品签发。
 
 - IMU 更换：从第 1 步重做。
 - IMU采样率、固件滤波或时间戳链改变：至少重做第 1、2、5、6 步。

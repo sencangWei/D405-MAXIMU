@@ -30,6 +30,7 @@ from product_calibration.kalibr_pipeline import (
     detect_d405,
     d405_factory_stereo_baseline,
     imucam_residuals,
+    heldout_epipolar_report,
     require_capture_stack,
     require_executable,
     solve_camera_imu,
@@ -287,6 +288,21 @@ def run_stereo(args) -> int:
             raise WorkflowError("离线复算必须同时给--input-camchain和--input-results")
         camchain, results = args.input_camchain.resolve(), args.input_results.resolve()
         factory_reference = None
+        validation_recording = args.input_validation.resolve() if args.input_validation else None
+        if validation_recording is None and not args.legacy_reference_only:
+            raise WorkflowError(
+                "离线第4步必须提供--input-validation；只有历史金样回归可显式使用"
+                "--legacy-reference-only（该结果不可发布）"
+            )
+        if args.legacy_reference_only:
+            baseline = yaml.safe_load(BASELINE.read_text(encoding="utf-8")) or {}
+            expected = baseline.get("source_artifacts", {}).get("files", {})
+            expected_hashes = {
+                "calib_intrinsics-camchain.yaml": sha256_file(camchain),
+                "calib_intrinsics-results-cam.txt": sha256_file(results),
+            }
+            if any(expected.get(name) != digest for name, digest in expected_hashes.items()):
+                raise WorkflowError("--legacy-reference-only只允许与内置金样SHA-256完全一致的文件")
         mode = "offline_reanalysis"
     else:
         # Fail before occupying devices or asking the operator to collect.
@@ -297,10 +313,20 @@ def run_stereo(args) -> int:
         factory_reference = d405_factory_stereo_baseline(
             args.capture_runtime, args.rsusb_runtime, device["serial"]
         )
-        input("固定整机，只移动AprilGrid；准备覆盖近中远、四角和多倾角后按回车……")
+        training_root = attempt / "training"
+        training_root.mkdir()
+        input("求解集：固定整机，只移动AprilGrid；准备覆盖近中远、四角和多倾角后按回车……")
         recording = collect_known_good(
-            attempt=attempt, mode="camera", port=port, baud=args.baud,
+            attempt=training_root, mode="camera", port=port, baud=args.baud,
             phase_seconds=args.phase_seconds, capture_root=args.capture_runtime,
+            rsusb_root=args.rsusb_runtime, preview=not args.no_preview,
+        )
+        validation_root = attempt / "heldout_validation"
+        validation_root.mkdir()
+        input("独立留出集：不移动整机，重新独立移动AprilGrid覆盖九宫格；这批图不参与求解，按回车开始……")
+        validation_recording = collect_known_good(
+            attempt=validation_root, mode="camera", port=port, baud=args.baud,
+            phase_seconds=args.validation_phase_seconds, capture_root=args.capture_runtime,
             rsusb_root=args.rsusb_runtime, preview=not args.no_preview,
         )
         bag = attempt / "stereo.bag"
@@ -311,6 +337,21 @@ def run_stereo(args) -> int:
         )
         mode = "live_capture"
     report = stereo_report(camchain, results, BASELINE, factory_reference)
+    if validation_recording is not None:
+        heldout = heldout_epipolar_report(validation_recording, camchain)
+        report["heldout_epipolar"] = heldout
+        report["release_eligible"] = (
+            mode == "live_capture" and report["result"] == "PASS"
+            and heldout["result"] == "PASS"
+        )
+        if heldout["result"] != "PASS":
+            report["result"] = "FAIL"
+    else:
+        report["heldout_epipolar"] = {
+            "result": "NOT_AVAILABLE_LEGACY_REFERENCE",
+            "reason": "历史离线输入未提供与求解集独立的同步左右IR留出图像",
+        }
+        report["release_eligible"] = False
     report["mode"] = mode
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
@@ -521,6 +562,11 @@ def parser() -> argparse.ArgumentParser:
     stereo = visual("d405-stereo")
     stereo.add_argument("--input-camchain", type=Path)
     stereo.add_argument("--input-results", type=Path)
+    stereo.add_argument("--input-validation", type=Path,
+                        help="离线验收用、与求解集独立的双IR录制目录")
+    stereo.add_argument("--legacy-reference-only", action="store_true",
+                        help="仅允许无留出图的历史金样回归；报告不可发布")
+    stereo.add_argument("--validation-phase-seconds", type=float, default=8.0)
 
     camera_imu = visual("camera-imu")
     camera_imu.add_argument("--imu-yaml", type=Path)
