@@ -1,135 +1,117 @@
-# 客户产品标定操作手册（终端向导版）
+# 产品标定操作手册（六步独立命令草案）
 
-适用产品：D405 双 IR＋KT-EX9 IMU＋STM32F070/CP2102N＋AS5047P 编码器。
+适用产品：已经完成最终机械装配的 D405 双 IR＋KT-EX9 IMU 产品。
 
-## 先记住三条
+这不是“一条命令连续采完所有数据”。客户先创建产品档案，然后严格按 1～6 顺序，
+每次只运行当前步骤的一条命令。每条命令内部完成：
 
-1. 看到 `PASS` 才能进入下一项；`FAIL` 按报告重做；`BLOCKED` 表示设备或前置证据不全。
-2. 标定工具不会自动修改生产配置。候选值通过最终 A/B 后才由交付人员启用。
-3. 标定完成后不要再拆相机、IMU、磁钢或夹爪传动；拆了就按失效表重做相应阶段。
+```text
+设备与前置结果检查 → 屏幕动作提示 → 本步骤采集 → 自动求解
+                    → 自动质量判定 → 保存原始数据/参数/报告
+```
 
-## 第一次创建产品档案
+显示 `PASS` 后退出，客户才执行下一条命令。`FAIL` 重做当前步，`BLOCKED` 按屏幕提示
+处理设备或前置步骤。系统不提供 `run-all`。
+
+> 下面六个 `calibrate_*.sh` 是已经冻结的客户命令接口。当前仓库先完成算法与证据
+> 框架，硬件采集后端要逐项实现、逐项 HIL 后才发布给客户，不能用空壳冒充可用。
+
+## 0. 创建本机产品档案（只做一次）
 
 ```bash
 cd /home/robot/ego_vio_calib_kit
-python3 product_calibration_wizard.py init \
-  --product-id 客户产品编号 \
-  --output calibration_sessions/客户产品编号
+./calibrate_init.sh 产品编号
 ```
 
-创建失败时不要手工建目录覆盖，先处理屏幕显示的问题。
+脚本自动读取并绑定 D405 序列号、IMU/控制板身份、固件和机械版本；不让客户手工登记
+PASS。所有输出进入 `calibration_sessions/产品编号/`，重做某一步时创建新的 attempt，
+不覆盖上一份原始数据。
 
-## 每次开始前查看状态
+## 1. IMU 静态 bias
 
 ```bash
-python3 product_calibration_wizard.py status \
-  --session calibration_sessions/客户产品编号
+./calibrate_01_imu_static.sh 产品编号
 ```
 
-状态含义：
+把整机按实际工作姿态刚性放稳，线缆不受力，按回车后保持不动。命令自动预热 2 分钟、
+正式采集 8 分钟，随后计算三轴陀螺 bias、加速度均值/模长、温度、频率、抖动、丢帧和
+复位。输出 `imu_static_bias/report.yaml`。本步不求 IMU 比例矩阵。
 
-- `READY`：可以做这一项。
-- `BLOCKED`：前一项未通过或设备证据缺失。
-- `PASS`：证据存在且 SHA-256 没有变化。
-- `FAIL`：测量超限、证据丢失或文件被修改。
-
-## 查看当前步骤
-
-例如相机—IMU标定：
+## 2. IMU Allan 长时间噪声参数
 
 ```bash
-python3 product_calibration_wizard.py guide camera_imu
+./calibrate_02_imu_noise.sh 产品编号
 ```
 
-可用阶段按顺序为：
+整机继续保持固定、恒温、不断电。命令自动采集 15～24 小时，完成后自动计算加速度计/
+陀螺仪 noise density、random walk、bias stability，生成 Kalibr 单位参数、Allan 曲线和
+`imu_allan/report.yaml`。中途移动、断电、计数器复位、正式窗口丢帧或时长不足直接 FAIL，
+不会仅保存一张图就算完成。
 
-1. `identity`：锁紧整机并登记身份。
-2. `d405_stereo`：D405 双 IR 参数导出和独立核验。
-3. `imu_static_bias`：工作温度静态偏置。
-4. `imu_multipose`：30 个任意姿态 IMU 椭球内参。
-5. `imu_allan`：15–24 小时恒温静止噪声。
-6. `camera_imu`：两份独立动态数据求外参和时间偏移。
-7. `encoder_transport`：STM32 C2 联合包耐久验收。
-8. `encoder_distance`：编码器角度到夹爪距离。
-9. `world_z`：平面正例和真实升降负例。
-10. `final_acceptance`：10 秒、60 秒、90 分钟整机验收。
-
-## 登记结果
-
-分析脚本必须生成含 `result: PASS`、`FAIL` 或 `BLOCKED` 的 YAML/JSON。例如：
+## 3. IMU 任意多姿态内参
 
 ```bash
-python3 product_calibration_wizard.py record \
-  --session calibration_sessions/客户产品编号 \
-  --stage identity \
-  --result PASS \
-  --artifact /绝对路径/identity/report.yaml
+./calibrate_03_imu_intrinsic.sh 产品编号
 ```
 
-向导会记录证据 SHA-256。以后文件被改过，原来的 PASS 会自动失效。
-传入的报告会复制到 session 规定位置，因此原分析目录可以归档或移动；不要手工修改
-session 里的 `_frozen_inputs/`、`session.yaml` 或阶段报告。
+按屏幕逐个改变整套刚体姿态，不要求支架具有标准 ±X/±Y/±Z 六面。每个姿态放稳后按
+回车，脚本自动检查静止并采 30～60 秒；固定采 20 个拟合姿态＋10 个事先锁定的验证
+姿态。采完立即做椭球拟合，输出加速度 bias、scale/非正交矩阵和留出误差到
+`imu_multipose/report.yaml`。验证姿态不会回流参与拟合。
 
-## IMU 任意姿态数据和求解
+这一步校正的是加速度计。陀螺完整比例/非正交参数若无计量转台，应留给第 5 步的视觉
+辅助联合标定，不能用手转“约 90°”当真值。
 
-采集器最终应输出以下 CSV 列，单位是 `m/s²`：
-
-```text
-pose_id,split,ax,ay,az
-P01,fit,0.12,-0.08,9.74
-...
-V01,validation,-4.30,8.61,1.84
-```
-
-同一姿态可以有多行原始样本，求解器会先按 `pose_id` 求均值。至少 20 个不同
-`fit` 姿态和 10 个事先锁定的 `validation` 姿态；不能看完验证误差再把姿态改成拟合集。
+## 4. D405 双 IR 相机内参和双目外参
 
 ```bash
-python3 fit_imu_multipose_ellipsoid.py \
-  --input calibration_sessions/客户产品编号/raw/imu_multipose.csv \
-  --output /tmp/imu_multipose_report.yaml
-
-python3 product_calibration_wizard.py record \
-  --session calibration_sessions/客户产品编号 \
-  --stage imu_multipose --result PASS \
-  --artifact /tmp/imu_multipose_report.yaml
+./calibrate_04_d405_stereo.sh 产品编号
 ```
 
-`FAIL` 时仍按 `--result FAIL` 登记，不要编辑 YAML 把结果改成 PASS。
+整机固定，客户只移动 AprilGrid。屏幕依次提示九宫格、近/中/远距离和不同倾角；左右
+IR 必须同步采集 `1280×720@30`。命令自动导出并哈希 D405 工厂参数、生成双目 Kalibr
+bag、求左右内参与 `T_cam1_cam0`，再用独立留出图像自动验证重投影/极线误差，并与
+2026-08-08 历史 `18.0966 mm` 基线 A/B。输出 `d405_stereo/report.yaml`。
 
-## 相机—IMU两份结果与旧金样 A/B
+客户流程不写 D405 NVRAM，只生成产品侧候选配置。
 
-两次采集和 Kalibr 求解完全独立，输出 `run1-camchain-imucam.yaml` 和
-`run2-camchain-imucam.yaml` 后运行：
+## 5. 相机—IMU 联合外参和时间偏移
 
 ```bash
-python3 compare_camera_imu_calibration.py \
-  --run1 run1-camchain-imucam.yaml \
-  --run2 run2-camchain-imucam.yaml \
-  --output /tmp/camera_imu_report.yaml
+./calibrate_05_camera_imu.sh 产品编号
 ```
 
-工具会从仓库内 `GOLDEN_BASELINE_20260808.yaml` 读取旧的两份外参和时间偏移，报告
-“新两次之间的重复性”和“每次新结果相对对应旧金样的差异”。这里 PASS 只证明新两次
-重复性，不代表可以直接启用；还要人工检查 Kalibr 重投影/IMU 残差并完成最终 SLAM A/B。
+固定 AprilGrid，移动已经锁紧的 D405＋IMU 整套刚体。屏幕引导 XYZ 平移和 roll、pitch、
+yaw，同时控制清晰度和标定板覆盖。命令连续组织两个相互独立的采集 attempt；每个
+attempt 都自动生成双 IR＋IMU Kalibr bag并求 `T_cam0_imu`、`T_cam1_imu` 和两路 `td`。
 
-## 相机和 IMU 到底怎么拿
+两次结果自动互比，再与 2026-08-08 两份已跑通金样 A/B。重复性、重投影或 IMU 残差
+任一超限即 FAIL。输出 `camera_imu/report.yaml`；旧 `td=-11.7 ms` 只作对照，不自动
+复制到新装配。
 
-- 纯 D405 双目标定：整机固定，移动标定板。
-- 相机—IMU联合标定：标定板固定，移动相机＋IMU整套刚体。
-- 相机倾斜安装没有问题，不需要把相机拆下来摆正，也不要求 IMU 轴对准桌面。
-- IMU 多姿态标定移动的是整套支架，不直接掰 IMU 和线缆。
+## 6. 世界 Z 标定矩阵
 
-## 与以前跑通版本的关系
+```bash
+./calibrate_06_world_z.sh 产品编号
+```
 
-向导绑定了 2026-08-08 黄金基线。新标定报告必须显示与历史双目基线、两次 Kalibr
-重复性、`td=-11.7 ms` 和冻结 SLAM 的 A/B。旧硬件数据继续使用旧黄金配置，新装配
-使用新候选；不得用新文件覆盖旧黄金文件再比较。
+脚本分次提示录制已知水平平面运动和真实升降运动。每一条录制结束后自动用第 1～5 步
+候选配置运行冻结 SLAM 链并导出轨迹。至少 3 条平面轨迹用于拟合/leave-one-out，至少
+2 条真实升降轨迹只作负例验证。
 
-## 什么情况下要重做
+命令只允许求一个全局刚体旋转 `R_world_z_from_vins_world`，输出
+`world_z/report.yaml` 和候选矩阵。平面留出轨迹 Z P5–P95 必须 `<10 mm` 且不劣于
+原始结果；真实升降高度保留必须 `≥80%`。禁止逐条压平、固定角度补偿或人工改终点。
 
-- D405 内部模组或工作分辨率/FPS改变：重做 `d405_stereo` 及其后续。
-- D405 与 IMU相对位置改变：重做 `camera_imu`、`world_z`、最终验收。
-- IMU更换：重做所有 IMU 项、`camera_imu`、`world_z`、最终验收。
-- STM32固件、USB桥或时间戳算法改变：重做 `encoder_transport`，并复核 `camera_imu`时间。
-- 磁钢、编码器或夹爪传动改变：重做 `encoder_distance`。
+## 完成和返工规则
+
+六步都 PASS 后，系统生成一份候选标定包，但仍不覆盖历史冻结 Humble 配置。交付人员
+还要用历史数据和新采数据做端到端 SLAM A/B，确认旧 `<1 cm` 回环基线没有退化后，
+才把候选包签名为产品配置。
+
+- IMU 更换：从第 1 步重做。
+- IMU采样率、固件滤波或时间戳链改变：至少重做第 1、2、5、6 步。
+- D405内部模组或工作 profile 改变：从第 4 步重做。
+- D405 与 IMU相对安装改变：重做第 5、6 步。
+- 只改变产品在机器人上的整体倾斜角，而相机与 IMU 相对位置未变：外参仍有效，但
+  世界坐标定义改变时重做第 6 步。

@@ -13,7 +13,7 @@ stages:
       - 核对设备身份后生成identity/report.yaml；身份不明必须BLOCKED。
   d405_stereo:
     title: D405双IR厂内参数导出与独立核验
-    prerequisites: [identity]
+    prerequisites: [imu_multipose]
     evidence: d405_stereo/report.yaml
     invalidated_by: [d405_internal_change, camera_replacement, work_profile_change]
     operator_steps:
@@ -32,7 +32,7 @@ stages:
       - 确认约400 Hz、零丢帧、零复位、时间戳单调后生成报告。
   imu_multipose:
     title: IMU任意多姿态椭球内参
-    prerequisites: [identity]
+    prerequisites: [imu_allan]
     evidence: imu_multipose/report.yaml
     invalidated_by: [imu_replacement]
     operator_steps:
@@ -41,7 +41,7 @@ stages:
       - 覆盖整个球面后运行椭球拟合，只用留出姿态做最终验收。
   imu_allan:
     title: IMU 15至24小时Allan噪声
-    prerequisites: [identity]
+    prerequisites: [imu_static_bias]
     evidence: imu_allan/report.yaml
     invalidated_by: [imu_replacement, firmware_filter_change, sample_rate_change]
     operator_steps:

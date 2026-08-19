@@ -14,6 +14,7 @@ from product_calibration.workflow import (
 ROOT = Path(__file__).parents[1]
 WORKFLOW = ROOT / "product_calibration/workflow.yaml"
 BASELINE = ROOT / "product_calibration/GOLDEN_BASELINE_20260808.yaml"
+COMMAND_CONTRACT = ROOT / "product_calibration/STAGE_COMMAND_CONTRACT.yaml"
 
 
 def test_workflow_dependencies_are_acyclic_and_ordered():
@@ -124,3 +125,35 @@ def test_tampered_golden_baseline_fails_entire_session(tmp_path):
 
     assert report["overall"] == "FAIL"
     assert report["bound_input_integrity"]["golden_baseline"]["reason"] == "HASH_MISMATCH"
+
+
+def test_customer_calibration_is_six_separate_capture_solve_commands():
+    contract = yaml.safe_load(COMMAND_CONTRACT.read_text(encoding="utf-8"))
+    steps = contract["customer_steps"]
+
+    assert contract["run_all_forbidden"] is True
+    assert [step["number"] for step in steps] == list(range(1, 7))
+    assert [step["stage"] for step in steps] == [
+        "imu_static_bias",
+        "imu_allan",
+        "imu_multipose",
+        "d405_stereo",
+        "camera_imu",
+        "world_z",
+    ]
+    assert len({step["command"].split()[0] for step in steps}) == 6
+    assert all(step["captures"] and step["solves"] and step["report"] for step in steps)
+
+
+def test_customer_steps_are_strictly_ordered_in_workflow():
+    workflow = load_workflow(WORKFLOW)
+
+    assert workflow.stages["imu_allan"].prerequisites == ("imu_static_bias",)
+    assert workflow.stages["imu_multipose"].prerequisites == ("imu_allan",)
+    assert workflow.stages["d405_stereo"].prerequisites == ("imu_multipose",)
+    assert set(workflow.stages["camera_imu"].prerequisites) == {
+        "d405_stereo",
+        "imu_multipose",
+        "imu_allan",
+    }
+    assert workflow.stages["world_z"].prerequisites == ("camera_imu",)
