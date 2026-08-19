@@ -20,6 +20,13 @@ PPS 接 IMU DIO2 → counter 每秒清零规整。小电脑不捕获 PPS 边沿�
 
 from .imu_reader import ImuReader, ImuSample, parse_frame, verify_checksum, find_frames
 from .calibration import IMUCalibration
+from .imu_encoder_protocol import (
+    CombinedImuEncoderReader,
+    CombinedPacket,
+    CombinedPacketRecorder,
+    CombinedPacketStream,
+    PacketFlag,
+)
 
 __all__ = [
     "ImuReader",
@@ -28,4 +35,9 @@ __all__ = [
     "parse_frame",
     "verify_checksum",
     "find_frames",
+    "CombinedImuEncoderReader",
+    "CombinedPacket",
+    "CombinedPacketRecorder",
+    "CombinedPacketStream",
+    "PacketFlag",
 ]
