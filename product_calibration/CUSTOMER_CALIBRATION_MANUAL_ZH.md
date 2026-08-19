@@ -29,6 +29,10 @@ BLOCKED。STM32 固件哈希和机械版本字段会在硬件 HIL 阶段补入�
 所有输出进入 `calibration_sessions/产品编号/`，重做某一步时创建新的 attempt，不覆盖
 上一份原始数据。
 
+工程机已经把 Kalibr 隔离在 ROS 1 Noetic 容器中，主机继续使用 ROS 2 Humble；
+`kalibr_calibrate_cameras`、`kalibr_calibrate_imu_camera` 和
+`kalibr_camera_validator` 是本机命令。AprilGrid 检测库安装在主机 Python 环境中。
+
 ## 1. IMU 静态 bias
 
 ```bash
@@ -74,8 +78,14 @@ BLOCKED。STM32 固件哈希和机械版本字段会在硬件 HIL 阶段补入�
 IR 必须同步采集 `1280×720@30`。命令复用历史已跑通的双 IR 分阶段采集器，生成双目
 Kalibr bag、求左右内参与 `T_cam1_cam0`，检查 Kalibr 重投影 RMS，并与历史工厂基线
 `18.079 mm` A/B；实机模式改用当前连接 D405 的 `1280×720@30 Y8` factory profile
-外参作为正式基线。输出 `d405_stereo/report.yaml`。独立留出图像的极线/P95 验收尚未
-接入，客户发布前必须补齐。
+外参作为正式基线。输出 `d405_stereo/report.yaml`。
+
+“独立留出图像的极线/P95 验收尚未接入”不是指 Kalibr 没装好，而是当前命令只检查
+参与求解那批图像的 Kalibr 残差。发布版必须在采集完成、求解开始前固定分出一批
+`held-out` 同步左右图，禁止送入优化；求解后再用固定内外参整流这些留出图，按相同
+AprilGrid 角点计算 `|v_left-v_right|`。其 P95 `≤1.0 px` 表示至少 95% 的独立角点
+纵向极线错位不超过 1 像素。这个独立验收器未接入前，第 4 步只能算工程 PASS，不能
+签成客户发布 PASS。
 
 客户流程不写 D405 NVRAM，只生成产品侧候选配置。
 

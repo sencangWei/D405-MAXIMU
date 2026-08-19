@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE="${EGO_VIO_KALIBR_IMAGE:-ego-vio-kalibr:1f602274-minimal}"
+COMMAND="$(basename "$0")"
+
+case "$COMMAND" in
+  kalibr_calibrate_cameras|kalibr_calibrate_imu_camera|kalibr_camera_validator)
+    ;;
+  *)
+    echo "错误：本脚本必须以受支持的 Kalibr 命令名安装。" >&2
+    exit 64
+    ;;
+esac
+
+if ! docker info >/dev/null 2>&1; then
+  current_user="$(id -un)"
+  docker_members="$(getent group docker | cut -d: -f4 || true)"
+  if [[ "${EGO_VIO_DOCKER_GROUP_ACTIVE:-0}" != 1 &&
+        ",${docker_members}," == *",${current_user},"* ]]; then
+    printf -v escaped_args ' %q' "$0" "$@"
+    exec sg docker -c "EGO_VIO_DOCKER_GROUP_ACTIVE=1 exec${escaped_args}"
+  fi
+  echo "错误：用户不在 docker 组或 Docker 服务不可用。" >&2
+  exit 77
+fi
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  echo "错误：Kalibr 镜像不存在：$IMAGE" >&2
+  exit 69
+fi
+
+mounts=(-v /home/robot:/home/robot -v /tmp:/tmp)
+if [[ -d /media/robot ]]; then
+  mounts+=(-v /media/robot:/media/robot)
+fi
+
+exec docker run --rm --init --network none \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp -e MPLCONFIGDIR=/tmp/kalibr-matplotlib \
+  "${mounts[@]}" -w "$PWD" "$IMAGE" "$COMMAND" "$@"
