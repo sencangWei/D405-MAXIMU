@@ -35,6 +35,7 @@ class Stage:
     evidence: str
     invalidated_by: tuple[str, ...]
     operator_steps: tuple[str, ...]
+    required_for_release: bool
 
 
 class Workflow:
@@ -52,6 +53,7 @@ class Workflow:
                 evidence=str(raw["evidence"]),
                 invalidated_by=tuple(raw.get("invalidated_by", [])),
                 operator_steps=tuple(raw.get("operator_steps", [])),
+                required_for_release=bool(raw.get("required_for_release", True)),
             )
         self.topological_order()
 
@@ -275,14 +277,19 @@ class CalibrationSession:
                 expected_hash = item.get("artifact_sha256", "")
                 if not artifact.is_file():
                     stages[name] = {
-                        "state": "FAIL", "reason": "ARTIFACT_MISSING", **item
+                        "state": "FAIL", "reason": "ARTIFACT_MISSING", **item,
+                        "required_for_release": stage.required_for_release,
                     }
                 elif sha256_file(artifact) != expected_hash:
                     stages[name] = {
-                        "state": "FAIL", "reason": "ARTIFACT_HASH_MISMATCH", **item
+                        "state": "FAIL", "reason": "ARTIFACT_HASH_MISMATCH", **item,
+                        "required_for_release": stage.required_for_release,
                     }
                 else:
-                    stages[name] = {"state": item["result"], **item}
+                    stages[name] = {
+                        "state": item["result"], **item,
+                        "required_for_release": stage.required_for_release,
+                    }
                 continue
             dependencies_passed = all(
                 stages[dependency]["state"] == "PASS"
@@ -291,18 +298,26 @@ class CalibrationSession:
             stages[name] = {
                 "state": "READY" if dependencies_passed else "BLOCKED",
                 "reason": "NOT_RUN" if dependencies_passed else "PREREQUISITES_NOT_PASS",
+                "required_for_release": stage.required_for_release,
             }
 
         final_state = stages.get("final_acceptance", {}).get("state")
         input_integrity_passed = all(
             item["state"] == "PASS" for item in integrity.values()
         )
+        required_states = [
+            item["state"]
+            for item in stages.values()
+            if item["required_for_release"]
+        ]
         if not input_integrity_passed:
             overall = "FAIL"
-        elif final_state == "PASS":
-            overall = "PASS"
-        elif any(item["state"] == "FAIL" for item in stages.values()):
+        elif "FAIL" in required_states:
             overall = "FAIL"
+        elif final_state == "PASS" and all(
+            state == "PASS" for state in required_states
+        ):
+            overall = "PASS"
         else:
             overall = "BLOCKED"
         return {

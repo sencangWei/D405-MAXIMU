@@ -1,8 +1,9 @@
-format_version: 1
+format_version: 2
+schema_migration: v1_customer_steps_renamed_to_customer_release_steps_and_optional_engineering_diagnostics_added
 run_all_forbidden: true
 session_root: calibration_sessions/{product_id}
 common_pipeline: [preflight, guided_capture, automatic_solve, automatic_acceptance, immutable_report]
-customer_steps:
+customer_release_steps:
   - number: 1
     stage: imu_static_bias
     command: ./calibrate_01_imu_static.sh {product_id}
@@ -12,30 +13,30 @@ customer_steps:
   - number: 2
     stage: imu_allan
     command: ./calibrate_02_imu_noise.sh {product_id}
-    captures: imu_15_to_24h_stationary
+    captures: imu_6h_minimum_10h_default_stationary
     solves: allan_noise_density_random_walk_bias_stability
     report: imu_allan/report.yaml
-  - number: 3
-    stage: imu_multipose
-    command: ./calibrate_03_imu_intrinsic.sh {product_id}
-    captures: imu_20_fit_plus_10_heldout_stationary_poses
-    solves: arbitrary_pose_accelerometer_ellipsoid
-    report: imu_multipose/report.yaml
   - number: 4
     stage: d405_stereo
-    command: ./calibrate_04_d405_stereo.sh {product_id}
-    captures: d405_dual_ir_aprilgrid_train_and_validation
-    solves: dual_intrinsics_stereo_extrinsic_reprojection_epipolar_golden_ab
+    command: ./calibrate_04_d405_factory.sh {product_id}
+    captures: d405_dual_ir_60frame_warmup_zero_drop_nine_grid_validation
+    solves: intel_factory_profile_export_fixed_camchain_epipolar_acceptance
     report: d405_stereo/report.yaml
   - number: 5
     stage: camera_imu
     command: ./calibrate_05_camera_imu.sh {product_id}
-    captures: two_independent_d405_dual_ir_plus_imu_dynamic_runs
+    captures: two_independent_60frame_warmup_zero_camera_drop_dual_ir_plus_imu_runs
     solves: kalibr_spatial_temporal_repeatability_residuals_golden_ab
     report: camera_imu/report.yaml
   - number: 6
     stage: world_z
     command: ./calibrate_06_world_z.sh {product_id}
-    captures: at_least_3_planar_plus_2_true_elevation_slam_runs
-    solves: one_rigid_world_rotation_leave_one_out_and_elevation_safety
+    captures: isolated_required_product_live_candidate_3_planar_plus_2_true_elevation
+    solves: candidate_runtime_manifest_one_rigid_world_rotation_leave_one_out_and_elevation_safety
     report: world_z/report.yaml
+optional_engineering_diagnostics:
+  - number: 3
+    stage: imu_multipose
+    command: ./calibrate_03_imu_intrinsic.sh {product_id}
+    purpose: engineering_diagnostics_only_not_applied_to_product_runtime
+    report: imu_multipose/report.yaml

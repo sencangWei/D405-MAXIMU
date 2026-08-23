@@ -1,4 +1,4 @@
-format_version: 1
+format_version: 3
 product_family: D405_KTEX9_AS5047P
 result_values: [PASS, FAIL, BLOCKED]
 stages:
@@ -12,15 +12,15 @@ stages:
       - 记录产品ID、D405序列号、串口by-id、STM32固件SHA256和安装照片。
       - 核对设备身份后生成identity/report.yaml；身份不明必须BLOCKED。
   d405_stereo:
-    title: D405双IR厂内参数导出与独立核验
-    prerequisites: [imu_multipose]
+    title: D405双IR出厂参数锁定与独立核验
+    prerequisites: [imu_allan]
     evidence: d405_stereo/report.yaml
     invalidated_by: [d405_internal_change, camera_replacement, work_profile_change]
     operator_steps:
-      - 固定整机，确认双IR工作模式为1280x720@30并导出设备厂内参数。
-      - 移动AprilGrid覆盖九宫格、近中远和多个倾斜角度，两只IR始终同时看见标定板。
-      - 用独立验证数据计算左右重投影和极线误差，并与黄金18.0966 mm基线比较。
-      - 不写D405 NVRAM；超限时生成FAIL并转服务标定。
+      - 自动读取并锁定当前D405的双IR 1280x720@30 Y8出厂内参和IR1到IR2外参。
+      - 固定整机，只移动AprilGrid覆盖九宫格和多个倾斜角度，两只IR始终同时看见标定板。
+      - 不拟合新相机内参；用独立数据验证正式窗口零丢帧、九格覆盖和极线P95。
+      - 不写D405 NVRAM；factory参数或极线验收超限时生成FAIL并转售后服务诊断。
   imu_static_bias:
     title: IMU工作温度静态偏置
     prerequisites: [identity]
@@ -31,26 +31,28 @@ stages:
       - 连续静止10分钟，前2分钟稳定，后8分钟作为正式窗口。
       - 确认约400 Hz、零丢帧、零复位、时间戳单调后生成报告。
   imu_multipose:
-    title: IMU任意多姿态椭球内参
+    title: IMU任意多姿态椭球内参（可选研发诊断）
     prerequisites: [imu_allan]
+    required_for_release: false
     evidence: imu_multipose/report.yaml
     invalidated_by: [imu_replacement]
     operator_steps:
+      - 本阶段不属于客户签发前置，不会应用到正式Kalibr输入或product-live运行时。
       - 整套支架保持刚性，不要求IMU轴对准桌面。
       - 采集30个分散静止姿态，每个30至60秒；至少20个拟合、10个留出。
       - 覆盖整个球面后运行椭球拟合，只用留出姿态做最终验收。
   imu_allan:
-    title: IMU 15至24小时Allan噪声
+    title: IMU 最低6小时、默认10小时Allan噪声
     prerequisites: [imu_static_bias]
     evidence: imu_allan/report.yaml
     invalidated_by: [imu_replacement, firmware_filter_change, sample_rate_change]
     operator_steps:
       - 在恒温、无振动位置固定整机并记录温度。
-      - 连续采集15至24小时原始400 Hz数据，中途不得移动、断电或重插。
+      - 连续采集至少6小时、默认10小时原始400 Hz数据，中途不得移动、断电或重插。
       - 计算Allan deviation并保存图、参数、原始数据SHA256和Kalibr单位说明。
   camera_imu:
     title: 相机IMU空间外参与时间偏移双数据集复验
-    prerequisites: [d405_stereo, imu_multipose, imu_allan]
+    prerequisites: [d405_stereo, imu_allan]
     evidence: camera_imu/report.yaml
     invalidated_by: [mount_change, camera_replacement, imu_replacement, timestamp_chain_change]
     operator_steps:

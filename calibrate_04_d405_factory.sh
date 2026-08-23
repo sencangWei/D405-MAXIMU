@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-echo "提示：该兼容入口不再拟合相机内参，正式命令为 calibrate_04_d405_factory.sh。" >&2
 exec python3 "$(dirname "$0")/product_calibration_stage.py" d405-factory "$@"

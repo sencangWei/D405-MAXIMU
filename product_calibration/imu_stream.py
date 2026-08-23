@@ -189,6 +189,7 @@ class CaptureStats:
     duration_s: float = 0.0
     rate_hz: float = 0.0
     interrupted: bool = False
+    startup_discard_s: float = 0.0
 
 
 def _counter_gap(previous: int | None, current: int) -> bool:
@@ -203,6 +204,7 @@ def capture_serial(
     output_dir: Path,
     protocol: str = "auto",
     write_timestamp_csv: bool = True,
+    startup_discard_s: float = 0.0,
     serial_factory=None,
 ) -> CaptureStats:
     """Capture normalized imu.bin plus timestamped raw packets and summary.json."""
@@ -220,7 +222,6 @@ def capture_serial(
     previous_counter = None
     previous_sequence = None
     raw_sample_clock = -1
-    start = time.monotonic()
     first_sensor_time = None
     last_sensor_time = None
     raw_path = output_dir / "raw_packets.bin"
@@ -229,6 +230,15 @@ def capture_serial(
         serial_port = stack.enter_context(serial_factory(port, baudrate=baud, timeout=0.1))
         if hasattr(serial_port, "reset_input_buffer"):
             serial_port.reset_input_buffer()
+        if startup_discard_s > 0.0:
+            settle_deadline = time.monotonic() + startup_discard_s
+            while time.monotonic() < settle_deadline:
+                decoder.feed(serial_port.read(4096))
+            # Keep the decoder's aligned partial buffer, but exclude opening
+            # transients from the formal-window transport evidence.
+            decoder.crc_or_checksum_errors = 0
+            decoder.discarded_bytes = 0
+            stats.startup_discard_s = startup_discard_s
         raw_stream = stack.enter_context(raw_path.open("wb"))
         imu_stream = stack.enter_context(imu_path.open("wb"))
         timestamp_stream = (
@@ -238,6 +248,7 @@ def capture_serial(
         timestamp_writer = csv.writer(timestamp_stream) if timestamp_stream else None
         if timestamp_writer:
             timestamp_writer.writerow(["counter", "ts_mono", "rx_mono", "ts_wall"])
+        start = time.monotonic()
         try:
             while time.monotonic() - start < duration_s:
                 chunk = serial_port.read(4096)

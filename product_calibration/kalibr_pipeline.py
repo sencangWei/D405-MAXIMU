@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import importlib.util
 import math
@@ -22,8 +23,12 @@ from .workflow import WorkflowError, sha256_file
 from .imu_stream import NORMALIZED_FORMAT, NORMALIZED_SIZE
 
 
-DEFAULT_CAPTURE_RUNTIME = Path("/home/robot/ego_vio_humble")
-DEFAULT_RSUSB_RUNTIME = Path("/home/robot/D405-MAXIMU")
+DEFAULT_CAPTURE_RUNTIME = Path(
+    os.environ.get("EGO_VIO_CAPTURE_RUNTIME", "/home/robot/ego_vio_humble")
+)
+DEFAULT_RSUSB_RUNTIME = Path(
+    os.environ.get("EGO_VIO_RSUSB_RUNTIME", "/home/robot/D405-MAXIMU")
+)
 
 
 def rsusb_python_path(root: Path) -> Path:
@@ -59,9 +64,8 @@ def detect_d405(capture_root: Path, rsusb_root: Path) -> dict:
     return devices[0]
 
 
-def d405_factory_stereo_baseline(capture_root: Path, rsusb_root: Path,
-                                 serial: str) -> float:
-    """Read the active 1280x720@30 IR1->IR2 factory extrinsic from the device."""
+def _d405_factory_ir_profiles(capture_root: Path, rsusb_root: Path,
+                              serial: str):
     prepare_capture_imports(capture_root, rsusb_root)
     import pyrealsense2 as rs
 
@@ -83,8 +87,184 @@ def d405_factory_stereo_baseline(capture_root: Path, rsusb_root: Path,
                 continue
     if set(profiles) != {1, 2}:
         raise WorkflowError("D405缺少双IR 1280x720@30 Y8 factory profile")
+    return rs, device, profiles
+
+
+def read_d405_factory_calibration(capture_root: Path, rsusb_root: Path,
+                                  serial: str) -> dict:
+    """Export the active D405 dual-IR factory profile without refitting it."""
+    rs, device, profiles = _d405_factory_ir_profiles(
+        capture_root, rsusb_root, serial
+    )
+    camera_names = {1: "cam0_left_ir", 2: "cam1_right_ir"}
+    cameras = {}
+    for index, profile in profiles.items():
+        intrinsic = profile.get_intrinsics()
+        cameras[camera_names[index]] = {
+            "fx": float(intrinsic.fx),
+            "fy": float(intrinsic.fy),
+            "cx": float(intrinsic.ppx),
+            "cy": float(intrinsic.ppy),
+            "distortion_model": str(intrinsic.model).rsplit(".", 1)[-1],
+            "coeffs": [float(value) for value in intrinsic.coeffs],
+        }
     extrinsic = profiles[1].get_extrinsics_to(profiles[2])
-    return float(np.linalg.norm(np.asarray(extrinsic.translation, dtype=float)))
+    rotation = np.asarray(extrinsic.rotation, dtype=float).reshape(3, 3)
+    translation = np.asarray(extrinsic.translation, dtype=float)
+    return {
+        "format_version": 1,
+        "source": "librealsense_active_factory_profile",
+        "device": {
+            "name": device.get_info(rs.camera_info.name),
+            "serial": serial,
+            "firmware": device.get_info(rs.camera_info.firmware_version),
+        },
+        "stream": {"width": 1280, "height": 720, "fps": 30, "format": "y8"},
+        **cameras,
+        "T_cam1_cam0": {
+            "rotation": rotation.tolist(),
+            "translation_m": translation.tolist(),
+        },
+    }
+
+
+def d405_factory_stereo_baseline(capture_root: Path, rsusb_root: Path,
+                                 serial: str) -> float:
+    """Read the active 1280x720@30 IR1->IR2 factory extrinsic from the device."""
+    calibration = read_d405_factory_calibration(capture_root, rsusb_root, serial)
+    translation = calibration["T_cam1_cam0"]["translation_m"]
+    return float(np.linalg.norm(np.asarray(translation, dtype=float)))
+
+
+def factory_calibration_to_camchain(calibration: dict, output: Path) -> Path:
+    """Write a fixed Kalibr-format camchain from a librealsense factory export."""
+    stream = calibration.get("stream", {})
+    width, height = int(stream.get("width", 0)), int(stream.get("height", 0))
+    transform = calibration.get("T_cam1_cam0", {})
+    rotation = np.asarray(transform.get("rotation", []), dtype=float)
+    translation = np.asarray(transform.get("translation_m", []), dtype=float)
+    if rotation.shape != (3, 3) or translation.shape != (3,):
+        raise WorkflowError("D405 factory外参形状错误")
+    matrix = np.eye(4, dtype=float)
+    matrix[:3, :3] = rotation
+    matrix[:3, 3] = translation
+
+    document = {}
+    for index, key in enumerate(("cam0_left_ir", "cam1_right_ir")):
+        camera = calibration.get(key, {})
+        coefficients = [float(value) for value in camera.get("coeffs", [])]
+        if len(coefficients) < 4:
+            raise WorkflowError(f"{key} factory畸变参数不足4项")
+        item = {
+            "camera_model": "pinhole",
+            "intrinsics": [
+                float(camera["fx"]), float(camera["fy"]),
+                float(camera["cx"]), float(camera["cy"]),
+            ],
+            "distortion_model": "radtan",
+            "distortion_coeffs": coefficients[:4],
+            "resolution": [width, height],
+            "rostopic": f"/cam{index}/image_raw",
+        }
+        if index == 1:
+            item["T_cn_cnm1"] = matrix.tolist()
+        document[f"cam{index}"] = item
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        yaml.safe_dump(document, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    return output
+
+
+def factory_stereo_report(calibration: dict, camchain: Path, baseline: Path,
+                          *, export_path: Path | None = None) -> dict:
+    """Validate that a connected D405 profile is safe for the fixed runtime model."""
+    stream = calibration.get("stream", {})
+    cameras = [calibration.get("cam0_left_ir", {}),
+               calibration.get("cam1_right_ir", {})]
+    transform = calibration.get("T_cam1_cam0", {})
+    rotation = np.asarray(transform.get("rotation", []), dtype=float)
+    translation = np.asarray(transform.get("translation_m", []), dtype=float)
+    baseline_m = float(np.linalg.norm(translation)) if translation.shape == (3,) else math.inf
+    golden = yaml.safe_load(Path(baseline).read_text(encoding="utf-8"))["camera_stereo"]
+    reference_m = float(golden["factory_baseline_m"])
+
+    intrinsics_valid = True
+    rectified = True
+    for camera in cameras:
+        values = np.asarray([
+            camera.get("fx"), camera.get("fy"), camera.get("cx"), camera.get("cy")
+        ], dtype=float)
+        coefficients = np.asarray(camera.get("coeffs", []), dtype=float)
+        intrinsics_valid = intrinsics_valid and (
+            values.shape == (4,) and np.all(np.isfinite(values))
+            and values[0] > 0.0 and values[1] > 0.0
+            and 0.0 <= values[2] < int(stream.get("width", 0))
+            and 0.0 <= values[3] < int(stream.get("height", 0))
+        )
+        rectified = rectified and (
+            coefficients.size >= 4 and np.all(np.isfinite(coefficients))
+            and float(np.max(np.abs(coefficients))) <= 1e-9
+        )
+    rigid_rotation = (
+        rotation.shape == (3, 3) and np.all(np.isfinite(rotation))
+        and np.allclose(rotation @ rotation.T, np.eye(3), atol=1e-6)
+        and abs(float(np.linalg.det(rotation)) - 1.0) <= 1e-6
+    )
+    checks = {
+        "source_is_active_librealsense_factory_profile": (
+            calibration.get("source") == "librealsense_active_factory_profile"
+        ),
+        "device_is_d405_with_identity": (
+            "D405" in str(calibration.get("device", {}).get("name", ""))
+            and bool(str(calibration.get("device", {}).get("serial", "")))
+        ),
+        "dual_ir_profile_is_1280x720_30_y8": (
+            int(stream.get("width", 0)) == 1280
+            and int(stream.get("height", 0)) == 720
+            and int(stream.get("fps", 0)) == 30
+            and str(stream.get("format", "")).lower() == "y8"
+        ),
+        "factory_intrinsics_finite_and_in_frame": bool(intrinsics_valid),
+        "factory_ir_profiles_rectified": bool(rectified),
+        "factory_stereo_rotation_is_rigid": bool(rigid_rotation),
+        "baseline_within_0_5mm_of_golden_factory": (
+            math.isfinite(baseline_m) and abs(baseline_m - reference_m) <= 0.0005
+        ),
+    }
+    evidence = {
+        "camchain": str(Path(camchain).resolve()),
+        "camchain_sha256": sha256_file(camchain),
+        "factory_calibration_sha256": None,
+    }
+    if export_path is not None:
+        evidence.update({
+            "factory_calibration": str(Path(export_path).resolve()),
+            "factory_calibration_sha256": sha256_file(export_path),
+        })
+    return {
+        "format_version": 1,
+        "result": "PASS" if all(checks.values()) else "FAIL",
+        "method": "intel_factory_profile_export_and_fixed_camchain_validation",
+        "runtime_policy": "USE_INTEL_FACTORY_RECTIFIED_INTRINSICS",
+        "metrics": {
+            "serial": calibration.get("device", {}).get("serial"),
+            "firmware": calibration.get("device", {}).get("firmware"),
+            "cam0_intrinsics": cameras[0],
+            "cam1_intrinsics": cameras[1],
+            "baseline_m": baseline_m,
+            "golden_factory_baseline_m": reference_m,
+            "baseline_delta_mm": abs(baseline_m - reference_m) * 1000.0,
+        },
+        "thresholds": {
+            "max_abs_rectified_distortion": 1e-9,
+            "max_factory_baseline_delta_mm": 0.5,
+        },
+        "checks": checks,
+        "evidence": evidence,
+    }
 
 
 def require_capture_stack(capture_root: Path, rsusb_root: Path, *, imu: bool) -> None:
@@ -157,12 +337,173 @@ def collect_known_good(*, attempt: Path, mode: str, port: str, baud: int,
     if len(created) != 1:
         raise WorkflowError(f"采集没有生成唯一会话目录: {created}")
     unit = created[0] / "left_hand"
-    required = [unit / "frames", unit / "frames_right", unit / "camera_ts.csv"]
+    required = [unit / "frames", unit / "frames_right", unit / "camera_ts.csv",
+                unit / "camera_capture_health.yaml"]
     if mode == "imucam":
-        required.extend([unit / "imu.bin", unit / "imu_ts.csv"])
+        required.extend([unit / "imu.bin", unit / "imu_ts.csv",
+                         unit / "imu_capture_health.yaml"])
     if any(not item.exists() for item in required):
         raise WorkflowError("采集不完整，缺少双IR或IMU证据")
     return created[0]
+
+
+def camera_capture_health(recording: Path) -> dict:
+    """Verify camera warm-up evidence and zero gaps in the saved formal window."""
+    unit = Path(recording) / "left_hand"
+    health_path = unit / "camera_capture_health.yaml"
+    csv_path = unit / "camera_ts.csv"
+    if not health_path.is_file() or not csv_path.is_file():
+        return {
+            "result": "FAIL",
+            "method": "camera_warmup_and_formal_counter_audit",
+            "checks": {"warmup_and_formal_evidence_present": False},
+            "metrics": {},
+            "evidence": {
+                "recording": str(Path(recording).resolve()),
+                "missing": [str(path) for path in (health_path, csv_path) if not path.is_file()],
+            },
+        }
+    reported = yaml.safe_load(health_path.read_text(encoding="utf-8")) or {}
+    with csv_path.open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    try:
+        frame_numbers = [int(row["frame_number"]) for row in rows]
+    except (KeyError, TypeError, ValueError) as exc:
+        raise WorkflowError(f"相机正式窗口时间戳格式错误: {csv_path}") from exc
+    formal_drops = sum(
+        max(0, current - previous - 1)
+        for previous, current in zip(frame_numbers, frame_numbers[1:])
+    )
+    left_names = {path.name for path in (unit / "frames").glob("*.jpg")}
+    right_names = {path.name for path in (unit / "frames_right").glob("*.jpg")}
+    metrics = reported.get("metrics", {})
+    warmup = metrics.get("warmup", {})
+    checks = {
+        "warmup_and_formal_evidence_present": True,
+        "collector_health_pass": reported.get("result") == "PASS",
+        "warmup_completed": warmup.get("completed") is True,
+        "warmup_consecutive_frames_ge_60": (
+            int(warmup.get("required_consecutive_frames", 0)) >= 60
+        ),
+        "formal_device_frame_drops_zero": formal_drops == 0,
+        "reported_formal_drops_match_csv": (
+            int(metrics.get("formal_dropped_frames", -1)) == formal_drops
+        ),
+        "all_formal_stereo_files_paired": left_names == right_names,
+        "formal_frame_files_match_timestamps": len(left_names) == len(rows),
+        "formal_stereo_pair_mismatches_zero": (
+            int(metrics.get("formal_pair_mismatches", -1)) == 0
+        ),
+    }
+    return {
+        "result": "PASS" if all(checks.values()) else "FAIL",
+        "method": "camera_warmup_and_formal_counter_audit",
+        "metrics": {
+            "formal_frames": len(rows),
+            "formal_device_frame_drops": formal_drops,
+            "left_images": len(left_names),
+            "right_images": len(right_names),
+            "warmup": warmup,
+            "guided_nine_grid": metrics.get("guided_nine_grid", {}),
+        },
+        "checks": checks,
+        "evidence": {
+            "recording": str(Path(recording).resolve()),
+            "camera_capture_health": str(health_path.resolve()),
+            "camera_capture_health_sha256": sha256_file(health_path),
+            "camera_ts": str(csv_path.resolve()),
+            "camera_ts_sha256": sha256_file(csv_path),
+        },
+    }
+
+
+def imu_capture_health(recording: Path) -> dict:
+    """Verify persisted reader counters and the saved formal IMU sequence."""
+    unit = Path(recording) / "left_hand"
+    health_path = unit / "imu_capture_health.yaml"
+    csv_path = unit / "imu_ts.csv"
+    if not health_path.is_file() or not csv_path.is_file():
+        return {
+            "result": "FAIL",
+            "method": "persisted_reader_and_formal_counter_audit",
+            "checks": {"reader_and_formal_evidence_present": False},
+            "metrics": {},
+            "evidence": {
+                "recording": str(Path(recording).resolve()),
+                "missing": [str(path) for path in (health_path, csv_path) if not path.is_file()],
+            },
+        }
+    reported = yaml.safe_load(health_path.read_text(encoding="utf-8")) or {}
+    with csv_path.open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    try:
+        counters = [int(row["counter"]) for row in rows]
+        timestamps = [float(row["ts_mono"]) for row in rows]
+    except (KeyError, TypeError, ValueError) as exc:
+        raise WorkflowError(f"IMU正式窗口时间戳格式错误: {csv_path}") from exc
+    gaps = 0
+    resets = 0
+    stalls = 0
+    for previous, current in zip(counters, counters[1:]):
+        delta = (current - previous) & 0xFFFFFFFF
+        if delta == 0:
+            stalls += 1
+        elif current == 1 and previous != 0:
+            resets += 1
+        elif delta != 1:
+            gaps += max(1, delta - 1) if delta < 4096 else 1
+    regressions = sum(current <= previous for previous, current in zip(timestamps, timestamps[1:]))
+    duration = timestamps[-1] - timestamps[0] if len(timestamps) > 1 else 0.0
+    rate = (len(timestamps) - 1) / duration if duration > 0.0 else 0.0
+    metrics = reported.get("metrics", {})
+    reader = metrics.get("reader", {})
+    zero_reader_fields = (
+        "frames_bad", "resyncs", "dropped_frames",
+        "counter_resets", "counter_stalls", "serial_errors", "serial_reconnects",
+    )
+    protocol = metrics.get("protocol")
+    if protocol == "stm32_combined_v1":
+        zero_reader_fields += (
+            "sequence_gaps", "invalid_imu_flags", "queue_overflow_flags",
+        )
+    checks = {
+        "reader_and_formal_evidence_present": True,
+        "collector_health_pass": reported.get("result") == "PASS",
+        "formal_frames_positive": len(rows) > 0,
+        "reported_formal_frames_match_csv": int(metrics.get("formal_frames", -1)) == len(rows),
+        "formal_counter_gaps_zero": gaps == 0,
+        "formal_counter_resets_zero": resets == 0,
+        "formal_counter_stalls_zero": stalls == 0,
+        "formal_timestamps_strictly_increasing": regressions == 0,
+        "formal_rate_380_to_420hz": 380.0 <= rate <= 420.0,
+        "reader_transport_counters_zero": all(
+            int(reader.get(name, -1)) == 0 for name in zero_reader_fields
+        ),
+        "user_not_aborted": metrics.get("user_aborted") is False,
+    }
+    return {
+        "result": "PASS" if all(checks.values()) else "FAIL",
+        "method": "persisted_reader_and_formal_counter_audit",
+        "metrics": {
+            "formal_frames": len(rows),
+            "formal_counter_gaps": gaps,
+            "formal_counter_resets": resets,
+            "formal_counter_stalls": stalls,
+            "formal_timestamp_regressions": regressions,
+            "formal_rate_hz": rate,
+            "reader": reader,
+            "protocol": protocol,
+            "unavailable_in_protocol": metrics.get("unavailable_in_protocol", []),
+        },
+        "checks": checks,
+        "evidence": {
+            "recording": str(Path(recording).resolve()),
+            "imu_capture_health": str(health_path.resolve()),
+            "imu_capture_health_sha256": sha256_file(health_path),
+            "imu_ts": str(csv_path.resolve()),
+            "imu_ts_sha256": sha256_file(csv_path),
+        },
+    }
 
 
 def convert_to_bag(recording: Path, output: Path, capture_root: Path) -> None:
@@ -211,14 +552,31 @@ def apply_accelerometer_calibration(recording: Path, intrinsic_report: dict) -> 
 def require_executable(name: str) -> str:
     path = shutil.which(name)
     if not path:
+        user_install = Path.home() / ".local/bin" / name
+        if user_install.is_file() and os.access(user_install, os.X_OK):
+            path = str(user_install)
+    if not path:
         raise WorkflowError(f"缺少{name}；请先安装Kalibr环境，再开始硬件采集")
     return path
 
 
-def run_command(command: list[str], cwd: Path, log: Path) -> None:
+def run_command(
+    command: list[str],
+    cwd: Path,
+    log: Path,
+    *,
+    completed_outputs: tuple[Path, ...] = (),
+) -> None:
     with log.open("w", encoding="utf-8") as stream:
         completed = subprocess.run(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT)
     if completed.returncode:
+        solver_completed = (
+            bool(completed_outputs)
+            and all(path.is_file() and path.stat().st_size > 0 for path in completed_outputs)
+            and "Calibration complete." in log.read_text(encoding="utf-8", errors="replace")
+        )
+        if solver_completed:
+            return
         raise WorkflowError(f"求解命令失败({completed.returncode})，见 {log}")
 
 
@@ -226,6 +584,8 @@ def solve_stereo(bag: Path, target: Path, output_dir: Path) -> tuple[Path, Path]
     executable = require_executable("kalibr_calibrate_cameras")
     output_dir.mkdir(parents=True, exist_ok=True)
     local_bag = output_dir / "stereo.bag"
+    camchain = output_dir / "stereo-camchain.yaml"
+    results = output_dir / "stereo-results-cam.txt"
     if bag.resolve() != local_bag.resolve():
         os.symlink(bag.resolve(), local_bag)
     run_command([
@@ -233,8 +593,8 @@ def solve_stereo(bag: Path, target: Path, output_dir: Path) -> tuple[Path, Path]
         "--topics", "/cam0/image_raw", "/cam1/image_raw",
         "--models", "pinhole-radtan", "pinhole-radtan",
         "--target", str(target), "--dont-show-report",
-    ], output_dir, output_dir / "kalibr_stereo.log")
-    return output_dir / "stereo-camchain.yaml", output_dir / "stereo-results-cam.txt"
+    ], output_dir, output_dir / "kalibr_stereo.log", completed_outputs=(camchain, results))
+    return camchain, results
 
 
 def stereo_report(camchain: Path, results: Path, baseline: Path,
@@ -394,6 +754,7 @@ def heldout_epipolar_report(
     valid_views = 0
     invalid_images = 0
     resolution_mismatches = 0
+    detector_errors = 0
     digest = hashlib.sha256()
     digest.update(("left=" + "\n".join(sorted(left_names)) + "\nright="
                    + "\n".join(sorted(right_names))).encode("utf-8"))
@@ -410,10 +771,18 @@ def heldout_epipolar_report(
         if (width, height) != expected_resolution:
             resolution_mismatches += 1
             continue
-        detections_left = {int(item.tag_id): np.asarray(item.corners, dtype=float).reshape(4, 2)
-                           for item in detector_left.detect(left_image)}
-        detections_right = {int(item.tag_id): np.asarray(item.corners, dtype=float).reshape(4, 2)
-                            for item in detector_right.detect(right_image)}
+        try:
+            detections_left = {
+                int(item.tag_id): np.asarray(item.corners, dtype=float).reshape(4, 2)
+                for item in detector_left.detect(left_image)
+            }
+            detections_right = {
+                int(item.tag_id): np.asarray(item.corners, dtype=float).reshape(4, 2)
+                for item in detector_right.detect(right_image)
+            }
+        except (cv2.error, RuntimeError, ValueError):
+            detector_errors += 1
+            continue
         common_ids = sorted(set(detections_left) & set(detections_right) & set(range(36)))
         if len(common_ids) < 4:
             continue
@@ -454,6 +823,7 @@ def heldout_epipolar_report(
             "unpaired_right_images": len(unpaired_right),
             "invalid_or_mismatched_stereo_images": invalid_images,
             "resolution_mismatches": resolution_mismatches,
+            "detector_errors": detector_errors,
             "valid_matched_views": valid_views,
             "matched_tags": len(matched),
             "matched_corners": int(errors.size),
@@ -477,14 +847,19 @@ def solve_camera_imu(bag: Path, camchain: Path, imu_yaml: Path,
     executable = require_executable("kalibr_calibrate_imu_camera")
     output_dir.mkdir(parents=True, exist_ok=True)
     local_bag = output_dir / "imucam.bag"
+    solved_camchain = output_dir / "imucam-camchain-imucam.yaml"
+    results = output_dir / "imucam-results-imucam.txt"
     if bag.resolve() != local_bag.resolve():
         os.symlink(bag.resolve(), local_bag)
     run_command([
         executable, "--bag", str(local_bag), "--cam", str(camchain),
-        "--imu", str(imu_yaml), "--target", str(target), "--time-calibration",
+        # This Kalibr build estimates camera-IMU temporal offset by default.
+        # It exposes only --no-time-calibration; --time-calibration is invalid.
+        "--imu", str(imu_yaml), "--target", str(target),
         "--dont-show-report",
-    ], output_dir, output_dir / "kalibr_imucam.log")
-    return output_dir / "imucam-camchain-imucam.yaml", output_dir / "imucam-results-imucam.txt"
+    ], output_dir, output_dir / "kalibr_imucam.log",
+        completed_outputs=(solved_camchain, results))
+    return solved_camchain, results
 
 
 def imucam_residuals(path: Path) -> dict:

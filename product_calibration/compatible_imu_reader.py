@@ -11,6 +11,21 @@ from typing import Callable
 from .imu_stream import StreamDecoder, TimerUnwrapper, _counter_gap
 
 
+TRANSPORT_COUNTER_KEYS = (
+    "frames_ok",
+    "frames_bad",
+    "resyncs",
+    "dropped_frames",
+    "sequence_gaps",
+    "counter_resets",
+    "counter_stalls",
+    "invalid_imu_flags",
+    "queue_overflow_flags",
+    "serial_errors",
+    "serial_reconnects",
+)
+
+
 @dataclass
 class ImuSample:
     ts: float
@@ -61,6 +76,13 @@ class CompatibleImuReader:
         self.serial_errors = 0
         self.serial_reconnects = 0
         self.recent_dt = deque(maxlen=400)
+        self.detected_protocols = set()
+        self._formal_detected_protocols = set()
+        self._warmup_stats = self._transport_snapshot() if self._warmup_frames == 0 else None
+
+    def _transport_snapshot(self) -> dict:
+        current = self.stats()
+        return {key: int(current.get(key, 0)) for key in TRANSPORT_COUNTER_KEYS}
 
     def _open_port(self) -> bool:
         try:
@@ -78,6 +100,9 @@ class CompatibleImuReader:
             return False
         self._running = True
         self._warmup_remaining = self._warmup_frames
+        self.detected_protocols.clear()
+        self._formal_detected_protocols.clear()
+        self._warmup_stats = self._transport_snapshot() if self._warmup_frames == 0 else None
         self._thread = threading.Thread(target=self._loop, name=f"imu-{self.name}", daemon=True)
         self._thread.start()
         return True
@@ -101,55 +126,74 @@ class CompatibleImuReader:
                 return
             if not data:
                 continue
-            for packet in self._decoder.feed(data):
-                rx = time.monotonic()
-                self.frames_ok += 1
-                if not packet.imu_valid:
-                    self.invalid_imu_flags += 1
-                    continue
-                if self.last_counter is not None:
-                    delta = (packet.counter - self.last_counter) & 0xFFFFFFFF
-                    if delta == 0:
-                        self.counter_stalls += 1
-                    elif packet.counter == 1 and self.last_counter != 0:
-                        self.counter_resets += 1
-                    elif delta != 1:
-                        self.dropped_frames += max(1, delta - 1) if delta < 4096 else 1
-                self.last_counter = packet.counter
-                if packet.sequence is not None:
-                    if _counter_gap(self.last_sequence, packet.sequence):
-                        self.sequence_gaps += 1
-                    self.last_sequence = packet.sequence
-                if packet.flags & ((1 << 5) | (1 << 6)):
-                    self.queue_overflow_flags += 1
-                if self._last_rx is not None:
-                    self.recent_dt.append(rx - self._last_rx)
-                self._first_rx = rx if self._first_rx is None else self._first_rx
-                self._last_rx = rx
-                if packet.imu_first_byte_rx_us is not None:
-                    device_time = self._mcu_timer.extend(packet.imu_first_byte_rx_us) / 1_000_000.0
-                    if self._mcu_to_host_offset is None:
-                        self._mcu_to_host_offset = rx - device_time
-                    sample_time = device_time + self._mcu_to_host_offset
-                else:
-                    sample_time = rx
-                sample = ImuSample(
-                    ts=sample_time, rx_time=rx, counter=packet.counter,
-                    gx=packet.gx, gy=packet.gy, gz=packet.gz,
-                    ax=packet.ax, ay=packet.ay, az=packet.az,
-                    temp=packet.temperature_c,
-                )
-                if self._warmup_remaining:
-                    self._warmup_remaining -= 1
-                elif self.on_sample:
-                    self.on_sample(sample)
+            self._consume_data(data)
         self.frames_bad = self._decoder.crc_or_checksum_errors
         self.resyncs = self._decoder.discarded_bytes
+
+    def _consume_data(self, data: bytes) -> None:
+        """Decode one serial batch and open the formal window on a batch boundary."""
+        formal_batch = self._warmup_stats is not None
+        for packet in self._decoder.feed(data):
+            rx = time.monotonic()
+            self.detected_protocols.add(packet.protocol)
+            if formal_batch:
+                self._formal_detected_protocols.add(packet.protocol)
+            self.frames_ok += 1
+            if not packet.imu_valid:
+                self.invalid_imu_flags += 1
+                continue
+            if self.last_counter is not None:
+                delta = (packet.counter - self.last_counter) & 0xFFFFFFFF
+                if delta == 0:
+                    self.counter_stalls += 1
+                elif packet.counter == 1 and self.last_counter != 0:
+                    self.counter_resets += 1
+                elif delta != 1:
+                    self.dropped_frames += max(1, delta - 1) if delta < 4096 else 1
+            self.last_counter = packet.counter
+            if packet.sequence is not None:
+                if _counter_gap(self.last_sequence, packet.sequence):
+                    self.sequence_gaps += 1
+                self.last_sequence = packet.sequence
+            if packet.flags & ((1 << 5) | (1 << 6)):
+                self.queue_overflow_flags += 1
+            if self._last_rx is not None:
+                self.recent_dt.append(rx - self._last_rx)
+            self._first_rx = rx if self._first_rx is None else self._first_rx
+            self._last_rx = rx
+            if packet.imu_first_byte_rx_us is not None:
+                device_time = self._mcu_timer.extend(packet.imu_first_byte_rx_us) / 1_000_000.0
+                if self._mcu_to_host_offset is None:
+                    self._mcu_to_host_offset = rx - device_time
+                sample_time = device_time + self._mcu_to_host_offset
+            else:
+                sample_time = rx
+            sample = ImuSample(
+                ts=sample_time, rx_time=rx, counter=packet.counter,
+                gx=packet.gx, gy=packet.gy, gz=packet.gz,
+                ax=packet.ax, ay=packet.ay, az=packet.az,
+                temp=packet.temperature_c,
+            )
+            if self._warmup_remaining:
+                self._warmup_remaining -= 1
+            elif formal_batch and self.on_sample:
+                self.on_sample(sample)
+        if self._warmup_remaining == 0 and self._warmup_stats is None:
+            # The decoder reports byte faults per input batch, not per emitted
+            # packet. Discard the whole transition batch so no formal fault can
+            # be hidden inside the warm-up snapshot.
+            self._warmup_stats = self._transport_snapshot()
 
     def stats(self) -> dict:
         duration = (self._last_rx - self._first_rx) if self._first_rx is not None and self._last_rx else 0.0
         dt_ms = [value * 1000.0 for value in self.recent_dt]
+        detected_protocol = (
+            next(iter(self.detected_protocols))
+            if len(self.detected_protocols) == 1
+            else "mixed" if self.detected_protocols else "unknown"
+        )
         return {
+            "protocol": detected_protocol,
             "frames_ok": self.frames_ok,
             "frames_bad": self._decoder.crc_or_checksum_errors,
             "resyncs": self._decoder.discarded_bytes,
@@ -167,6 +211,25 @@ class CompatibleImuReader:
             "dt_max_ms": max(dt_ms) if dt_ms else 0.0,
             "dt_jitter_ms": max(dt_ms) - min(dt_ms) if dt_ms else 0.0,
         }
+
+    def warmup_stats(self) -> dict:
+        """Return cumulative transport counters at the formal batch boundary."""
+        return dict(self._warmup_stats or {})
+
+    def stats_since_warmup(self) -> dict:
+        """Return statistics with transport counters scoped to formal batches."""
+        current = self.stats()
+        if self._warmup_stats is None:
+            return {}
+        formal = dict(current)
+        for key in TRANSPORT_COUNTER_KEYS:
+            formal[key] = int(current.get(key, 0)) - int(self._warmup_stats.get(key, 0))
+        formal["protocol"] = (
+            next(iter(self._formal_detected_protocols))
+            if len(self._formal_detected_protocols) == 1
+            else "mixed" if self._formal_detected_protocols else "unknown"
+        )
+        return formal
 
 
 # The legacy script imports this exact name.

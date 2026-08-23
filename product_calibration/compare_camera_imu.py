@@ -57,6 +57,43 @@ def _pair_metrics(first: dict[str, Any], second: dict[str, Any]) -> dict[str, fl
     }
 
 
+def _mean_transform(first: np.ndarray, second: np.ndarray) -> np.ndarray:
+    """Average two rigid transforms without averaging rotation entries directly."""
+    rotation_sum = first[:3, :3] + second[:3, :3]
+    u, _, vt = np.linalg.svd(rotation_sum)
+    rotation = u @ vt
+    if np.linalg.det(rotation) < 0.0:
+        u[:, -1] *= -1.0
+        rotation = u @ vt
+    transform = np.eye(4, dtype=float)
+    transform[:3, :3] = rotation
+    transform[:3, 3] = (first[:3, 3] + second[:3, 3]) / 2.0
+    return transform
+
+
+def candidate_consensus(first: dict[str, Any], second: dict[str, Any]) -> dict[str, Any]:
+    """Return the isolated two-run candidate consumed by later product stages."""
+    cam0 = _mean_transform(_transform(first, "cam0"), _transform(second, "cam0"))
+    cam1 = _mean_transform(_transform(first, "cam1"), _transform(second, "cam1"))
+    cam0_td = (
+        float(first["cam0"]["timeshift_cam_imu"])
+        + float(second["cam0"]["timeshift_cam_imu"])
+    ) / 2.0
+    cam1_td = (
+        float(first["cam1"]["timeshift_cam_imu"])
+        + float(second["cam1"]["timeshift_cam_imu"])
+    ) / 2.0
+    return {
+        "selection": "two_run_chordal_rotation_and_arithmetic_translation_mean",
+        "td_s": cam0_td,
+        "cam0_td_s": cam0_td,
+        "cam1_td_s": cam1_td,
+        "T_cam0_imu": cam0.tolist(),
+        "T_cam1_imu": cam1.tolist(),
+        "activation": "CANDIDATE_ONLY_REQUIRES_WORLD_Z_AND_END_TO_END_SLAM_AB",
+    }
+
+
 def _golden_run(baseline: dict[str, Any], name: str) -> dict[str, Any]:
     raw = baseline["camera_imu"][name]
     return {
@@ -104,6 +141,7 @@ def compare_runs(
         "result": "PASS" if all(checks.values()) else "FAIL",
         "method": "two_independent_kalibr_runs_with_20260808_golden_ab",
         "candidate_repeatability": candidate,
+        "candidate": candidate_consensus(run1, run2),
         "golden_20260808_repeatability": golden,
         "candidate_to_corresponding_golden": candidate_to_golden,
         "thresholds": {

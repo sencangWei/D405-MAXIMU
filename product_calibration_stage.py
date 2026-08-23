@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import glob
 import json
+import os
 import shutil
 import socket
 import subprocess
@@ -17,20 +17,25 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from product_calibration.imu_analysis import analyze_allan, analyze_static, load_capture
+from product_calibration.imu_analysis import analyze_allan, analyze_static
 from product_calibration.imu_ellipsoid import fit_and_validate, load_pose_means
+from product_calibration.imu_multipose_capture import capture_pose_csv
 from product_calibration.imu_stream import capture_serial
 from product_calibration.compare_camera_imu import compare_runs
+from product_calibration.runtime_candidate import build_stage6_runtime
 from product_calibration.kalibr_pipeline import (
     DEFAULT_CAPTURE_RUNTIME,
     DEFAULT_RSUSB_RUNTIME,
+    camera_capture_health,
     collect_known_good,
     convert_to_bag,
-    apply_accelerometer_calibration,
     detect_d405,
-    d405_factory_stereo_baseline,
+    factory_calibration_to_camchain,
+    factory_stereo_report,
     imucam_residuals,
     heldout_epipolar_report,
+    imu_capture_health,
+    read_d405_factory_calibration,
     require_capture_stack,
     require_executable,
     solve_camera_imu,
@@ -43,7 +48,31 @@ from product_calibration.workflow import CalibrationSession, WorkflowError, load
 ROOT = Path(__file__).resolve().parent
 WORKFLOW = ROOT / "product_calibration/workflow.yaml"
 BASELINE = ROOT / "product_calibration/GOLDEN_BASELINE_20260808.yaml"
-DEFAULT_SESSION_ROOT = ROOT / "calibration_sessions"
+DEFAULT_SESSION_ROOT = Path(
+    os.environ.get("EGO_VIO_CALIBRATION_SESSIONS", ROOT / "calibration_sessions")
+)
+
+
+def finish_stage(result: str, report_path: Path, product_id: str,
+                 next_script: str | None) -> int:
+    print(f"{result}：{report_path}")
+    if result == "PASS" and next_script:
+        print(f"下一步：./{next_script} {product_id}")
+    elif result == "PASS":
+        print("五个必需标定阶段已完成；下一步执行端到端SLAM与长稳签发验收。")
+    elif result == "FAIL":
+        print("本阶段未通过；原始数据已保留，请按报告原因只重做本阶段。")
+    else:
+        print("本阶段尚未具备签发条件；请按报告中的blocking_reason处理。")
+    return 0 if result == "PASS" else 2 if result == "BLOCKED" else 1
+
+
+def finish_optional_diagnostic(result: str, report_path: Path,
+                               product_id: str) -> int:
+    print(f"{result}：{report_path}")
+    print("第3步仅为研发诊断，结果不会应用到产品运行时，也不阻塞客户签发链。")
+    print(f"下一必需步骤：./calibrate_04_d405_factory.sh {product_id}")
+    return 0 if result == "PASS" else 2 if result == "BLOCKED" else 1
 
 
 def dump_yaml(path: Path, document: dict) -> None:
@@ -74,7 +103,32 @@ def init_product(args) -> int:
     if not imu_port.startswith("/dev/serial/by-id/"):
         raise WorkflowError("产品档案必须使用稳定的/dev/serial/by-id/端口，不能绑定ttyUSB序号")
     d405 = detect_d405(args.capture_runtime, args.rsusb_runtime)
+    if bool(args.firmware_bin) != bool(args.flash_evidence):
+        raise WorkflowError("--firmware-bin与--flash-evidence必须同时提供")
+    stm32 = None
+    if args.firmware_bin:
+        firmware_bin = args.firmware_bin.resolve()
+        flash_evidence = args.flash_evidence.resolve()
+        if not firmware_bin.is_file():
+            raise WorkflowError(f"STM32固件不存在: {firmware_bin}")
+        if not flash_evidence.is_file():
+            raise WorkflowError(f"STM32烧录证据不存在: {flash_evidence}")
+        stm32 = {
+            "transport_protocol": "stm32_combined_v1",
+            "firmware_bin": str(firmware_bin),
+            "firmware_sha256": sha256_file(firmware_bin),
+            "flash_evidence": str(flash_evidence),
+            "flash_evidence_sha256": sha256_file(flash_evidence),
+        }
     session = CalibrationSession.create(workflow, root, args.product_id, BASELINE)
+    devices = {"d405": d405, "imu_port": imu_port}
+    checks = {
+        "one_d405": True,
+        "imu_port_by_id_exists": imu_port.startswith("/dev/serial/by-id/"),
+    }
+    if stm32:
+        devices["stm32"] = stm32
+        checks["stm32_firmware_evidence_complete"] = True
     report = {
         "format_version": 1,
         "result": "PASS",
@@ -82,13 +136,14 @@ def init_product(args) -> int:
         "product_id": args.product_id,
         "host": socket.gethostname(),
         "created_at": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "devices": {"d405": d405, "imu_port": imu_port},
-        "checks": {"one_d405": True, "imu_port_by_id_exists": imu_port.startswith("/dev/serial/by-id/")},
+        "devices": devices,
+        "checks": checks,
     }
     report_path = root / "identity/attempt_001/report.yaml"
     dump_yaml(report_path, report)
     session.record_result("identity", "PASS", report_path)
     print(f"PASS：产品档案已创建 {root}")
+    print(f"下一步：./calibrate_01_imu_static.sh {args.product_id}")
     return 0
 
 
@@ -139,7 +194,7 @@ def run_static(args) -> int:
         input("将整机按工作姿态放稳，确认线缆不受力后按回车开始10分钟采集……")
         capture_serial(
             port=find_imu_port(args.port), baud=args.baud, duration_s=args.duration,
-            output_dir=capture_dir, protocol=args.protocol,
+            output_dir=capture_dir, protocol=args.protocol, startup_discard_s=1.0,
         )
         mode = "live_capture"
     report = analyze_static(capture_dir, warmup_s=args.warmup, formal_s=args.formal)
@@ -147,8 +202,10 @@ def run_static(args) -> int:
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
     session.record_result(stage, report["result"], report_path)
-    print(f"{report['result']}：{report_path}")
-    return 0 if report["result"] == "PASS" else 1
+    return finish_stage(
+        report["result"], report_path, args.product_id,
+        "calibrate_02_imu_noise.sh",
+    )
 
 
 def save_allan_plot(report: dict, path: Path) -> None:
@@ -188,6 +245,7 @@ def run_allan(args) -> int:
         capture_serial(
             port=find_imu_port(args.port), baud=args.baud, duration_s=args.duration,
             output_dir=capture_dir, protocol=args.protocol, write_timestamp_csv=False,
+            startup_discard_s=1.0,
         )
         mode = "live_capture"
     report = analyze_allan(capture_dir, min_duration_s=args.minimum_duration)
@@ -210,47 +268,10 @@ def run_allan(args) -> int:
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
     session.record_result(stage, report["result"], report_path)
-    print(f"{report['result']}：{report_path}")
-    return 0 if report["result"] == "PASS" else 1
-
-
-def pose_stable(samples) -> tuple[bool, dict]:
-    gyro = np.asarray(samples["gyro_deg_s"], dtype=float)
-    accel = np.asarray(samples["accel_g"], dtype=float)
-    metrics = {
-        "gyro_std_max_deg_s": float(np.max(np.std(gyro, axis=0))),
-        "accel_std_max_g": float(np.max(np.std(accel, axis=0))),
-    }
-    return metrics["gyro_std_max_deg_s"] <= 0.15 and metrics["accel_std_max_g"] <= 0.006, metrics
-
-
-def capture_pose_csv(args, attempt: Path) -> tuple[Path, list[dict]]:
-    csv_path = attempt / "imu_multipose.csv"
-    pose_reports = []
-    with csv_path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=["pose_id", "split", "ax", "ay", "az"])
-        writer.writeheader()
-        for index in range(30):
-            split = "fit" if index < 20 else "validation"
-            pose_id = f"P{index + 1:02d}"
-            trial = 0
-            while True:
-                trial += 1
-                input(f"摆到分散姿态 {index + 1}/30（{split}），放稳后按回车采集……")
-                pose_dir = attempt / "poses" / f"{pose_id}_try_{trial:02d}"
-                capture_serial(
-                    port=find_imu_port(args.port), baud=args.baud, duration_s=args.pose_duration,
-                    output_dir=pose_dir, protocol=args.protocol, write_timestamp_csv=False,
-                )
-                samples = load_capture(pose_dir / "imu.bin")
-                stable, metrics = pose_stable(samples)
-                if stable:
-                    break
-                print(f"{pose_id}本次有移动，已保留失败数据并重采；指标={metrics}")
-            mean = np.mean(np.asarray(samples["accel_g"], dtype=float), axis=0) * 9.80665
-            writer.writerow({"pose_id": pose_id, "split": split, "ax": mean[0], "ay": mean[1], "az": mean[2]})
-            pose_reports.append({"pose_id": pose_id, "split": split, **metrics, "capture_sha256": sha256_file(pose_dir / "imu.bin")})
-    return csv_path, pose_reports
+    return finish_stage(
+        report["result"], report_path, args.product_id,
+        "calibrate_04_d405_factory.sh",
+    )
 
 
 def run_intrinsic(args) -> int:
@@ -264,7 +285,13 @@ def run_intrinsic(args) -> int:
         mode = "offline_reanalysis"
     else:
         args.port = find_imu_port(args.port)
-        csv_path, poses = capture_pose_csv(args, attempt)
+        csv_path, poses = capture_pose_csv(
+            port=args.port,
+            baud=args.baud,
+            protocol=args.protocol,
+            pose_duration_s=args.pose_duration,
+            attempt=attempt,
+        )
         mode = "live_capture"
     fit, validation = load_pose_means(csv_path)
     report = fit_and_validate(fit, validation)
@@ -274,8 +301,30 @@ def run_intrinsic(args) -> int:
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
     session.record_result(stage, report["result"], report_path)
-    print(f"{report['result']}：{report_path}")
-    return 0 if report["result"] == "PASS" else 1
+    return finish_optional_diagnostic(report["result"], report_path, args.product_id)
+
+
+def _passed_stage_report(session: CalibrationSession, stage: str) -> dict:
+    path = session.root / session.workflow.stages[stage].evidence
+    document = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if document.get("result") != "PASS":
+        raise WorkflowError(f"{stage}没有可用PASS报告")
+    return document
+
+
+def _verified_report_evidence(report: dict, key: str) -> Path:
+    """Resolve a stage artifact and fail closed if its recorded hash changed."""
+    evidence = report.get("evidence", {})
+    raw_path = evidence.get(key)
+    expected_hash = evidence.get(f"{key}_sha256")
+    if not raw_path or not expected_hash:
+        raise WorkflowError(f"前置报告缺少{key}路径或SHA-256")
+    path = Path(raw_path).resolve()
+    if not path.is_file():
+        raise WorkflowError(f"前置证据不存在: {path}")
+    if sha256_file(path) != expected_hash:
+        raise WorkflowError(f"前置证据SHA-256不匹配: {path}")
+    return path
 
 
 def run_stereo(args) -> int:
@@ -283,11 +332,12 @@ def run_stereo(args) -> int:
     stage = "d405_stereo"
     require_stage_ready(session, stage)
     attempt = next_attempt(session, stage)
-    if args.input_camchain or args.input_results:
+
+    legacy = bool(args.input_camchain or args.input_results or args.legacy_reference_only)
+    if legacy:
         if not args.input_camchain or not args.input_results:
-            raise WorkflowError("离线复算必须同时给--input-camchain和--input-results")
+            raise WorkflowError("历史工程回归必须同时给--input-camchain和--input-results")
         camchain, results = args.input_camchain.resolve(), args.input_results.resolve()
-        factory_reference = None
         validation_recording = args.input_validation.resolve() if args.input_validation else None
         if validation_recording is None and not args.legacy_reference_only:
             raise WorkflowError(
@@ -303,73 +353,108 @@ def run_stereo(args) -> int:
             }
             if any(expected.get(name) != digest for name, digest in expected_hashes.items()):
                 raise WorkflowError("--legacy-reference-only只允许与内置金样SHA-256完全一致的文件")
-        mode = "offline_reanalysis"
+        report = stereo_report(camchain, results, BASELINE)
+        camera_health_pass = True
+        if validation_recording is not None:
+            camera_health = camera_capture_health(validation_recording)
+            heldout = heldout_epipolar_report(validation_recording, camchain)
+            camera_health_pass = camera_health["result"] == "PASS"
+            report["camera_capture_health"] = {"heldout_validation": camera_health}
+            report["heldout_epipolar"] = heldout
+            if heldout["result"] != "PASS" or not camera_health_pass:
+                report["result"] = "FAIL"
+        else:
+            report["heldout_epipolar"] = {
+                "result": "NOT_AVAILABLE_LEGACY_REFERENCE",
+                "reason": "历史离线输入未提供与求解集独立的同步左右IR留出图像",
+            }
+        report["mode"] = "legacy_engineering_reanalysis"
+        report["runtime_policy"] = "REFERENCE_ONLY_DO_NOT_INSTALL_FREE_FIT_INTRINSICS"
+        report["release_eligible"] = False
     else:
-        # Fail before occupying devices or asking the operator to collect.
-        require_executable("kalibr_calibrate_cameras")
+        identity = _passed_stage_report(session, "identity")
+        expected_serial = str(
+            identity.get("devices", {}).get("d405", {}).get("serial", "")
+        )
+        if not expected_serial:
+            raise WorkflowError("产品identity报告缺少D405序列号")
+
+    if not legacy and args.input_factory_calibration:
+        if not args.input_validation:
+            raise WorkflowError("离线factory复验必须提供--input-validation")
+        source = args.input_factory_calibration.resolve()
+        factory = yaml.safe_load(source.read_text(encoding="utf-8")) or {}
+        if str(factory.get("device", {}).get("serial", "")) != expected_serial:
+            raise WorkflowError("factory参数中的D405序列号与产品identity不一致")
+        factory_export = attempt / "d405_factory_calibration.yaml"
+        shutil.copy2(source, factory_export)
+        camchain = factory_calibration_to_camchain(
+            factory, attempt / "d405_factory_camchain.yaml"
+        )
+        validation_recording = args.input_validation.resolve()
+        report = factory_stereo_report(
+            factory, camchain, BASELINE, export_path=factory_export
+        )
+        camera_health = camera_capture_health(validation_recording)
+        heldout = heldout_epipolar_report(validation_recording, camchain)
+        report["camera_capture_health"] = {"heldout_validation": camera_health}
+        report["heldout_epipolar"] = heldout
+        report["mode"] = "offline_factory_reanalysis"
+        report["release_eligible"] = False
+        if camera_health["result"] != "PASS" or heldout["result"] != "PASS":
+            report["result"] = "FAIL"
+    elif not legacy:
         require_capture_stack(args.capture_runtime, args.rsusb_runtime, imu=True)
         port = find_imu_port(args.port)
         device = detect_d405(args.capture_runtime, args.rsusb_runtime)
-        factory_reference = d405_factory_stereo_baseline(
-            args.capture_runtime, args.rsusb_runtime, device["serial"]
+        if device["serial"] != expected_serial:
+            raise WorkflowError(
+                f"当前D405序列号{device['serial']}与产品identity {expected_serial}不一致"
+            )
+        factory = read_d405_factory_calibration(
+            args.capture_runtime, args.rsusb_runtime, expected_serial
         )
-        training_root = attempt / "training"
-        training_root.mkdir()
-        input("求解集：固定整机，只移动AprilGrid；准备覆盖近中远、四角和多倾角后按回车……")
-        recording = collect_known_good(
-            attempt=training_root, mode="camera", port=port, baud=args.baud,
-            phase_seconds=args.phase_seconds, capture_root=args.capture_runtime,
-            rsusb_root=args.rsusb_runtime, preview=not args.no_preview,
+        factory_export = attempt / "d405_factory_calibration.yaml"
+        dump_yaml(factory_export, factory)
+        camchain = factory_calibration_to_camchain(
+            factory, attempt / "d405_factory_camchain.yaml"
         )
         validation_root = attempt / "heldout_validation"
         validation_root.mkdir()
-        input("独立留出集：不移动整机，重新独立移动AprilGrid覆盖九宫格；这批图不参与求解，按回车开始……")
+        input(
+            "D405出厂参数已导出。保持整机固定，只移动AprilGrid；预览将从左上到"
+            "右下逐格高亮，九格全部通过才结束。此数据只做独立极线验收，不拟合"
+            "相机内参；按回车开始……"
+        )
         validation_recording = collect_known_good(
-            attempt=validation_root, mode="camera", port=port, baud=args.baud,
+            attempt=validation_root, mode="camera_validation", port=port, baud=args.baud,
             phase_seconds=args.validation_phase_seconds, capture_root=args.capture_runtime,
             rsusb_root=args.rsusb_runtime, preview=not args.no_preview,
         )
-        bag = attempt / "stereo.bag"
-        convert_to_bag(recording, bag, args.capture_runtime)
-        camchain, results = solve_stereo(
-            bag, Path(args.capture_runtime) / "config/aprilgrid_6x6_35mm.yaml",
-            attempt / "solve",
+        report = factory_stereo_report(
+            factory, camchain, BASELINE, export_path=factory_export
         )
-        mode = "live_capture"
-    report = stereo_report(camchain, results, BASELINE, factory_reference)
-    if validation_recording is not None:
+        validation_health = camera_capture_health(validation_recording)
         heldout = heldout_epipolar_report(validation_recording, camchain)
+        report["camera_capture_health"] = {"heldout_validation": validation_health}
         report["heldout_epipolar"] = heldout
         report["release_eligible"] = (
-            mode == "live_capture" and report["result"] == "PASS"
-            and heldout["result"] == "PASS"
+            report["result"] == "PASS" and heldout["result"] == "PASS"
+            and validation_health["result"] == "PASS"
         )
-        if heldout["result"] != "PASS":
+        report["mode"] = "live_factory_export_and_validation"
+        if heldout["result"] != "PASS" or validation_health["result"] != "PASS":
             report["result"] = "FAIL"
-    else:
-        report["heldout_epipolar"] = {
-            "result": "NOT_AVAILABLE_LEGACY_REFERENCE",
-            "reason": "历史离线输入未提供与求解集独立的同步左右IR留出图像",
-        }
-        report["release_eligible"] = False
-    report["mode"] = mode
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
     session.record_result(stage, report["result"], report_path)
-    print(f"{report['result']}：{report_path}")
-    return 0 if report["result"] == "PASS" else 1
+    return finish_stage(
+        report["result"], report_path, args.product_id,
+        "calibrate_05_camera_imu.sh",
+    )
 
-
-def _passed_stage_report(session: CalibrationSession, stage: str) -> dict:
-    path = session.root / session.workflow.stages[stage].evidence
-    document = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    if document.get("result") != "PASS":
-        raise WorkflowError(f"{stage}没有可用PASS报告")
-    return document
-
-
-def _run_one_imucam(args, attempt: Path, index: int, stereo_camchain: Path,
-                    intrinsic: dict) -> tuple[Path, Path, dict, dict]:
+def _run_one_imucam(args, attempt: Path, index: int,
+                    stereo_camchain: Path) -> tuple[Path, Path, dict, dict, dict, dict]:
     run_dir = attempt / f"run_{index}"
     run_dir.mkdir()
     port = find_imu_port(args.port)
@@ -379,14 +464,28 @@ def _run_one_imucam(args, attempt: Path, index: int, stereo_camchain: Path,
         phase_seconds=args.phase_seconds, capture_root=args.capture_runtime,
         rsusb_root=args.rsusb_runtime, preview=not args.no_preview,
     )
-    applied = apply_accelerometer_calibration(recording, intrinsic)
     bag = run_dir / "imucam.bag"
     convert_to_bag(recording, bag, args.capture_runtime)
     camchain, results = solve_camera_imu(
         bag, stereo_camchain, args.imu_yaml,
         Path(args.capture_runtime) / "config/aprilgrid_6x6_35mm.yaml", run_dir / "solve",
     )
-    return camchain, results, imucam_residuals(results), applied
+    unit = recording / "left_hand"
+    source_evidence = {
+        "recording": str(recording.resolve()),
+        "kalibr_bag": str(bag.resolve()),
+        "kalibr_bag_sha256": sha256_file(bag),
+        "raw_imu": str((unit / "imu.bin").resolve()),
+        "raw_imu_sha256": sha256_file(unit / "imu.bin"),
+    }
+    return (
+        camchain,
+        results,
+        imucam_residuals(results),
+        camera_capture_health(recording),
+        imu_capture_health(recording),
+        source_evidence,
+    )
 
 
 def run_camera_imu(args) -> int:
@@ -395,25 +494,47 @@ def run_camera_imu(args) -> int:
     require_stage_ready(session, stage)
     attempt = next_attempt(session, stage)
     stereo = _passed_stage_report(session, "d405_stereo")
-    intrinsic = _passed_stage_report(session, "imu_multipose")
-    stereo_camchain = Path(stereo["evidence"]["camchain"])
+    stereo_camchain = _verified_report_evidence(stereo, "camchain")
     if args.run1 or args.run2:
         if not args.run1 or not args.run2 or not args.results1 or not args.results2:
             raise WorkflowError("离线复算必须提供--run1/--run2/--results1/--results2")
         run1, run2 = args.run1.resolve(), args.run2.resolve()
         residual1, residual2 = imucam_residuals(args.results1), imucam_residuals(args.results2)
-        applied1 = applied2 = {"mode": "already_applied_by_input_owner"}
+        camera_health1 = camera_health2 = {"result": "NOT_AVAILABLE_OFFLINE_REANALYSIS"}
+        imu_health1 = imu_health2 = {"result": "NOT_AVAILABLE_OFFLINE_REANALYSIS"}
+        source1 = source2 = {"release_evidence": "NOT_AVAILABLE_OFFLINE_REANALYSIS"}
         mode = "offline_reanalysis"
     else:
         require_executable("kalibr_calibrate_imu_camera")
         require_capture_stack(args.capture_runtime, args.rsusb_runtime, imu=True)
         args.port = find_imu_port(args.port)
-        detect_d405(args.capture_runtime, args.rsusb_runtime)
-        if args.imu_yaml is None:
-            allan = _passed_stage_report(session, "imu_allan")
-            args.imu_yaml = Path(allan["evidence"]["imu_kalibr_yaml"])
-        run1, results1, residual1, applied1 = _run_one_imucam(args, attempt, 1, stereo_camchain, intrinsic)
-        run2, results2, residual2, applied2 = _run_one_imucam(args, attempt, 2, stereo_camchain, intrinsic)
+        identity = _passed_stage_report(session, "identity")
+        bound_devices = identity.get("devices", {})
+        bound_serial = str(bound_devices.get("d405", {}).get("serial", ""))
+        bound_port = str(bound_devices.get("imu_port", ""))
+        connected_d405 = detect_d405(args.capture_runtime, args.rsusb_runtime)
+        if connected_d405.get("serial") != bound_serial:
+            raise WorkflowError(
+                f"当前D405序列号{connected_d405.get('serial')}与产品identity {bound_serial}不一致"
+            )
+        if str(Path(args.port).resolve()) != str(Path(bound_port).resolve()):
+            raise WorkflowError("当前IMU串口与产品identity绑定端口不一致")
+        allan = _passed_stage_report(session, "imu_allan")
+        bound_imu_yaml = _verified_report_evidence(allan, "imu_kalibr_yaml")
+        if args.imu_yaml is not None and args.imu_yaml.resolve() != bound_imu_yaml:
+            raise WorkflowError(
+                "正式第5步--imu-yaml必须是第2步绑定的imu_kalibr.yaml；"
+                "自定义模型只能走研发复算"
+            )
+        args.imu_yaml = bound_imu_yaml
+        if stereo.get("release_eligible") is not True:
+            raise WorkflowError("正式第5步要求第4步live factory留出验收PASS")
+        run1, results1, residual1, camera_health1, imu_health1, source1 = _run_one_imucam(
+            args, attempt, 1, stereo_camchain
+        )
+        run2, results2, residual2, camera_health2, imu_health2, source2 = _run_one_imucam(
+            args, attempt, 2, stereo_camchain
+        )
         args.results1, args.results2 = results1, results2
         mode = "live_capture"
     report = compare_runs(run1, run2, BASELINE)
@@ -426,43 +547,90 @@ def run_camera_imu(args) -> int:
         "run2_accel_mean_le_0_25m_s2": residual2["accelerometer_mean_m_s2"] <= 0.25,
     }
     report["result"] = "PASS" if report["result"] == "PASS" and all(residual_checks.values()) else "FAIL"
+    capture_health_pass = mode == "live_capture" and all(
+        item["result"] == "PASS"
+        for item in (camera_health1, camera_health2, imu_health1, imu_health2)
+    )
+    if mode == "live_capture" and not capture_health_pass:
+        report["result"] = "FAIL"
+    numerical_result = report["result"]
+    if mode == "offline_reanalysis":
+        report["result"] = "BLOCKED"
+        report["blocking_reason"] = (
+            "离线输入未包含两次原始录制及相机/IMU正式窗口健康证据；"
+            "数值结果仅供研发复算，不能推进产品第6步"
+        )
     report["mode"] = mode
+    report["numerical_result"] = numerical_result
+    report["release_eligible"] = (
+        mode == "live_capture" and numerical_result == "PASS" and capture_health_pass
+    )
     report["residuals"] = {"run1": residual1, "run2": residual2}
-    report["accelerometer_intrinsic_application"] = {"run1": applied1, "run2": applied2}
+    if mode == "live_capture":
+        report["bound_device_identity"] = {
+            "d405": connected_d405,
+            "imu_port": args.port,
+        }
+    report["accelerometer_intrinsic_application"] = {
+        "policy": "NOT_APPLIED_PRODUCT_BASELINE",
+        "input": "raw_imu",
+        "vins_bias": "estimated_online",
+    }
+    report["camera_capture_health"] = {"run1": camera_health1, "run2": camera_health2}
+    report["imu_capture_health"] = {"run1": imu_health1, "run2": imu_health2}
     report["residual_checks"] = residual_checks
     report["evidence"] = {
+        "input_stereo_camchain": str(stereo_camchain),
+        "input_stereo_camchain_sha256": sha256_file(stereo_camchain),
         "run1_camchain": str(run1.resolve()), "run1_camchain_sha256": sha256_file(run1),
         "run2_camchain": str(run2.resolve()), "run2_camchain_sha256": sha256_file(run2),
         "run1_results": str(Path(args.results1).resolve()), "run1_results_sha256": sha256_file(args.results1),
         "run2_results": str(Path(args.results2).resolve()), "run2_results_sha256": sha256_file(args.results2),
+        "run1_source": source1,
+        "run2_source": source2,
     }
+    if mode == "live_capture":
+        report["evidence"].update({
+            "input_imu_yaml": str(args.imu_yaml.resolve()),
+            "input_imu_yaml_sha256": sha256_file(args.imu_yaml),
+        })
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
     session.record_result(stage, report["result"], report_path)
-    print(f"{report['result']}：{report_path}")
-    return 0 if report["result"] == "PASS" else 1
+    return finish_stage(
+        report["result"], report_path, args.product_id,
+        "calibrate_06_world_z.sh",
+    )
 
 
-def _capture_world_z(args, attempt: Path, name: str, instruction: str) -> Path:
+def _capture_world_z(args, attempt: Path, name: str, instruction: str,
+                     runtime_candidate: dict) -> Path:
     input(f"{instruction}；完成准备后按回车开始 {args.duration:.0f} 秒录制……")
     runtime = Path(args.vins_runtime).resolve()
     launcher = runtime / "run_vins_realtime.sh"
     if not launcher.is_file():
-        raise WorkflowError(f"冻结SLAM入口不存在: {launcher}")
-    before = set(Path("/tmp").glob("ego_vio_vins_live_*"))
+        raise WorkflowError(f"product-live入口不存在: {launcher}")
+    run_dir = attempt / f"{name}_runtime"
+    environment = os.environ.copy()
+    environment.update({
+        "EGO_VIO_PRODUCT_LIVE_DEVICE_CONFIG": runtime_candidate["device_config"],
+        "EGO_VIO_PRODUCT_LIVE_CONFIG": runtime_candidate["vins_config"],
+        "EGO_VIO_PRODUCT_CALIBRATION_LABEL": "本产品必需前置阶段隔离候选",
+        "EGO_VIO_RUN_DIR": str(run_dir),
+        "EGO_VIO_DISABLE_VIEWER": "1",
+    })
     log = attempt / f"{name}_capture.log"
     with log.open("w", encoding="utf-8") as stream:
         completed = subprocess.run(
-            [str(launcher), "frozen-record", "--duration", str(args.duration)],
-            cwd=runtime, stdout=stream, stderr=subprocess.STDOUT,
+            [str(launcher), "product-live", "--duration-s", str(args.duration)],
+            cwd=runtime, env=environment, stdout=stream, stderr=subprocess.STDOUT,
         )
     if completed.returncode:
-        raise WorkflowError(f"{name}冻结链录制失败，见{log}")
-    created = sorted(set(Path("/tmp").glob("ego_vio_vins_live_*")) - before)
-    if len(created) != 1 or not (created[0] / "odometry_rect.csv").is_file():
-        raise WorkflowError(f"{name}没有生成唯一odometry_rect.csv")
+        raise WorkflowError(f"{name}候选product-live录制失败，见{log}")
+    if not (run_dir / "odometry_rect.csv").is_file():
+        raise WorkflowError(f"{name}没有生成odometry_rect.csv，见{log}")
     destination = attempt / f"{name}_odometry_rect.csv"
-    shutil.copy2(created[0] / "odometry_rect.csv", destination)
+    shutil.copy2(run_dir / "odometry_rect.csv", destination)
     return destination
 
 
@@ -476,16 +644,26 @@ def run_world_z(args) -> int:
             raise WorkflowError("世界Z离线复算要求至少3条平面和2条真实升降轨迹")
         planar, elevation = args.planar, args.elevation
         mode = "offline_reanalysis"
+        runtime_candidate = None
     else:
+        runtime_candidate = build_stage6_runtime(
+            destination=attempt / "candidate_runtime",
+            runtime_root=Path(args.vins_runtime).resolve(),
+            identity=_passed_stage_report(session, "identity"),
+            stereo=_passed_stage_report(session, "d405_stereo"),
+            camera_imu=_passed_stage_report(session, "camera_imu"),
+        )
         planar = []
         for index in range(1, 4):
             path = _capture_world_z(args, attempt, f"planar_{index}",
-                                    f"平面正例{index}/3：只在已知水平面内做丰富二维运动")
+                                    f"平面正例{index}/3：只在已知水平面内做丰富二维运动",
+                                    runtime_candidate)
             planar.append(f"planar_{index}={path}")
         elevation = []
         for index in range(1, 3):
             path = _capture_world_z(args, attempt, f"elevation_{index}",
-                                    f"升降负例{index}/2：执行有量具真值的真实上下运动")
+                                    f"升降负例{index}/2：执行有量具真值的真实上下运动",
+                                    runtime_candidate)
             elevation.append(f"elevation_{index}={path}")
         mode = "live_capture"
     raw_report = attempt / "world_z_fit.json"
@@ -500,21 +678,18 @@ def run_world_z(args) -> int:
         raise WorkflowError("世界Z自动求解未生成有效报告")
     report = json.loads(raw_report.read_text(encoding="utf-8"))
     report["mode"] = mode
-    exit_code = 0 if report["result"] == "PASS" else 1
     if mode == "live_capture":
-        report["fit_result_before_runtime_gate"] = report["result"]
-        report["result"] = "BLOCKED"
-        report["activation"] = "FORBIDDEN_HISTORICAL_RUNTIME_NOT_CANDIDATE_CONFIG"
-        report["blocking_reason"] = (
-            "实时入口仍使用历史冻结配置，尚未把本产品第1至5步候选参数和63字节IMU"
-            "校正链接入冻结VINS；本次轨迹只作开发证据。"
+        report["runtime_candidate"] = runtime_candidate
+        report["activation"] = "CANDIDATE_ONLY_NOT_INSTALLED"
+        report["release_eligible"] = False
+        report["release_blocking_reason"] = (
+            "世界Z本阶段即使PASS，仍须完成历史/新数据SLAM A/B和长稳验收；"
+            "脚本不会覆盖已签发product-live配置。"
         )
-        exit_code = 2
     report_path = attempt / "report.yaml"
     dump_yaml(report_path, report)
     session.record_result(stage, report["result"], report_path)
-    print(f"{report['result']}：{report_path}")
-    return exit_code
+    return finish_stage(report["result"], report_path, args.product_id, None)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -526,6 +701,8 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--port")
     init.add_argument("--capture-runtime", type=Path, default=DEFAULT_CAPTURE_RUNTIME)
     init.add_argument("--rsusb-runtime", type=Path, default=DEFAULT_RSUSB_RUNTIME)
+    init.add_argument("--firmware-bin", type=Path)
+    init.add_argument("--flash-evidence", type=Path)
 
     def common(name):
         item = sub.add_parser(name)
@@ -543,8 +720,8 @@ def parser() -> argparse.ArgumentParser:
     static.add_argument("--input-capture", type=Path)
 
     allan = common("imu-noise")
-    allan.add_argument("--duration", type=float, default=16 * 3600.0)
-    allan.add_argument("--minimum-duration", type=float, default=15 * 3600.0)
+    allan.add_argument("--duration", type=float, default=10 * 3600.0)
+    allan.add_argument("--minimum-duration", type=float, default=6 * 3600.0)
     allan.add_argument("--input-capture", type=Path)
 
     intrinsic = common("imu-intrinsic")
@@ -559,14 +736,23 @@ def parser() -> argparse.ArgumentParser:
         item.add_argument("--no-preview", action="store_true")
         return item
 
+    def add_factory_arguments(item):
+        item.add_argument("--input-factory-calibration", type=Path,
+                          help="离线复验用的librealsense factory导出YAML")
+        item.add_argument("--input-validation", type=Path,
+                          help="离线验收用的双IR九宫格录制目录")
+        item.add_argument("--input-camchain", type=Path,
+                          help="仅供历史工程回归，不用于客户产品参数")
+        item.add_argument("--input-results", type=Path,
+                          help="仅供历史工程回归，不用于客户产品参数")
+        item.add_argument("--legacy-reference-only", action="store_true",
+                          help="仅允许内置历史金样回归；报告不可发布")
+        item.add_argument("--validation-phase-seconds", type=float, default=8.0)
+
+    factory = visual("d405-factory")
+    add_factory_arguments(factory)
     stereo = visual("d405-stereo")
-    stereo.add_argument("--input-camchain", type=Path)
-    stereo.add_argument("--input-results", type=Path)
-    stereo.add_argument("--input-validation", type=Path,
-                        help="离线验收用、与求解集独立的双IR录制目录")
-    stereo.add_argument("--legacy-reference-only", action="store_true",
-                        help="仅允许无留出图的历史金样回归；报告不可发布")
-    stereo.add_argument("--validation-phase-seconds", type=float, default=8.0)
+    add_factory_arguments(stereo)
 
     camera_imu = visual("camera-imu")
     camera_imu.add_argument("--imu-yaml", type=Path)
@@ -578,7 +764,10 @@ def parser() -> argparse.ArgumentParser:
     world_z = sub.add_parser("world-z")
     world_z.add_argument("product_id")
     world_z.add_argument("--session-root", type=Path, default=DEFAULT_SESSION_ROOT)
-    world_z.add_argument("--vins-runtime", type=Path, default=Path("/home/robot/ego_vio_humble"))
+    world_z.add_argument(
+        "--vins-runtime", type=Path,
+        default=Path(os.environ.get("EGO_VIO_VINS_RUNTIME", "/home/robot/ego_vio_humble")),
+    )
     world_z.add_argument("--duration", type=float, default=120.0)
     world_z.add_argument("--planar", action="append")
     world_z.add_argument("--elevation", action="append")
@@ -593,6 +782,7 @@ def main() -> int:
             "imu-static": run_static,
             "imu-noise": run_allan,
             "imu-intrinsic": run_intrinsic,
+            "d405-factory": run_stereo,
             "d405-stereo": run_stereo,
             "camera-imu": run_camera_imu,
             "world-z": run_world_z,

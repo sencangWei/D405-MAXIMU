@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$repo_dir"
+exec python3 -m product_calibration.imu_bench allan \
+  --duration 21600 --minimum-duration 21600 "$@"

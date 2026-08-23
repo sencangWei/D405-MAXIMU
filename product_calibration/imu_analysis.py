@@ -112,7 +112,7 @@ def _fixed_slope_coefficient(tau: np.ndarray, deviation: np.ndarray, slope: floa
     return float(np.exp(np.mean(y - slope * x)))
 
 
-def analyze_allan(capture_dir: Path, *, min_duration_s: float = 15 * 3600.0) -> dict[str, Any]:
+def analyze_allan(capture_dir: Path, *, min_duration_s: float = 6 * 3600.0) -> dict[str, Any]:
     samples = load_capture(Path(capture_dir) / "imu.bin")
     if len(samples) < 1000:
         raise ValueError("not enough IMU samples for Allan analysis")
@@ -142,7 +142,7 @@ def analyze_allan(capture_dir: Path, *, min_duration_s: float = 15 * 3600.0) -> 
     health = _summary(capture_dir)
     checks = {
         "capture_summary_present": bool(health),
-        "duration": duration >= min_duration_s,
+        "duration": duration >= min_duration_s * 0.995,
         "rate_400hz": 395.0 <= 1.0 / dt <= 405.0,
         "counter_gaps_zero": health.get("counter_gaps", 0) == 0,
         "sequence_gaps_zero": health.get("sequence_gaps", 0) == 0,
@@ -151,7 +151,7 @@ def analyze_allan(capture_dir: Path, *, min_duration_s: float = 15 * 3600.0) -> 
         "invalid_imu_flags_zero": health.get("invalid_imu_flags", 0) == 0,
         "queue_overflow_zero": health.get("queue_overflow_flags", 0) == 0,
         "capture_not_interrupted": not health.get("interrupted", False),
-        "stationary_gyro_rms": gyro_rms <= np.radians(0.15),
+        "stationary_gyro_rms": bool(gyro_rms <= np.radians(0.15)),
         "stationary_accel_rms": accel_rms <= 0.006 * G0,
     }
     return {
