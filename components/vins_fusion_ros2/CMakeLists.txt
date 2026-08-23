@@ -60,6 +60,14 @@ if(BUILD_TESTING)
   target_include_directories(test_stationary_motion_gate PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/vins/include
   )
+  ament_add_gtest(test_pose_integrity_guard
+    test/test_pose_integrity_guard.cpp
+  )
+  target_include_directories(test_pose_integrity_guard PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vins/include
+  )
+  target_link_libraries(test_pose_integrity_guard vins_lib)
 endif()
 
 # Install launch files

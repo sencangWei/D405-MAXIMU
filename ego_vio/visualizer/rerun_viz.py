@@ -4,7 +4,7 @@
 轨迹点全程保留(点很小, 内存大头是图像)。
 
 限频: log_pose 由 IMU 回调以 400Hz 触发, 内部对坐标轴(30Hz)、
-轨迹抽点(20Hz)、轨迹重绘(15Hz)、历史姿态轴(2Hz)、图像(15Hz)、
+轨迹抽点(20Hz)、轨迹重绘(15Hz)、历史姿态轴(2Hz)、图像(30Hz)、
 视锥(10Hz)分别限流。
 
 布局(Blueprint 显式指定, 保证 3D 视图一定出现):
@@ -295,7 +295,7 @@ class RerunVisualizer:
     TRAJ_DRAW_HZ = 8.0        # 轨迹线重绘限频
     HISTORY_DRAW_HZ = 1.0     # 历史姿态轴重绘限频
     FRUSTUM_HZ = 5.0          # 视锥重绘限频
-    IMAGE_HZ = 15.0           # 图像限频
+    IMAGE_HZ = 30.0           # 操作员 RGB 预览目标帧率
     CAMERA_HZ = 8.0           # 自动取景更新频率
     SCENE_HZ = 8.0            # 紧边界网格更新频率
     CAMERA_DISTANCE_MIN = 0.12
@@ -322,7 +322,11 @@ class RerunVisualizer:
         self._epoch_offset = float(epoch_offset)
 
         if connect_addr:
-            rr.init(app_id, connect=connect_addr)
+            rr.init(app_id, spawn=False)
+            connect_tcp = getattr(rr, "connect_tcp", None)
+            if connect_tcp is None:
+                connect_tcp = rr.connect
+            connect_tcp(connect_addr)
         else:
             rr.init(app_id, spawn=spawn)
 
@@ -331,9 +335,10 @@ class RerunVisualizer:
         except ImportError as exc:
             raise RuntimeError("当前 rerun-sdk 缺少 Blueprint API") from exc
         self._rrb = rrb
+        eye_controls_type = getattr(rrb, "EyeControls3D", None)
         required_eye_fields = ("position", "look_target", "eye_up", "spin_speed")
-        self._supports_eye_pose = all(
-            hasattr(rrb.EyeControls3D, name) for name in required_eye_fields
+        self._supports_eye_pose = eye_controls_type is not None and all(
+            hasattr(eye_controls_type, name) for name in required_eye_fields
         )
         if not self._supports_eye_pose:
             print(
@@ -372,12 +377,19 @@ class RerunVisualizer:
 
     def _set_time(self, ts: float) -> None:
         """Convert the internal monotonic clock to wall time for Rerun."""
+        wall_ts = float(ts) + float(getattr(self, "_epoch_offset", 0.0))
         set_time = getattr(self.rr, "set_time", None)
         if set_time is not None:
-            set_time(
-                "time",
-                timestamp=float(ts) + float(getattr(self, "_epoch_offset", 0.0)),
-            )
+            set_time("time", timestamp=wall_ts)
+            return
+        self.rr.set_time_seconds("time", wall_ts)
+
+    def _make_scalar(self, value: float):
+        """Return the scalar archetype provided by the installed Rerun SDK."""
+        scalar = getattr(self.rr, "Scalar", None)
+        if scalar is not None:
+            return scalar(float(value))
+        return self.rr.Scalars([float(value)])
 
     def log_pose(self, unit: str, pose, cam_fx: float = 600.0, cam_fy: float = 600.0,
                  cam_cx: float = 320.0, cam_cy: float = 240.0,
@@ -496,7 +508,7 @@ class RerunVisualizer:
             self._last_history_draw[unit] = history_ts
             self._log_pose_axes_history(unit)
 
-    def log_image(self, unit: str, color, ts: float, max_hz: float = 15.0):
+    def log_image(self, unit: str, color, ts: float, max_hz: float = 30.0):
         """更新最新一帧彩色图像(覆盖, 不累积历史, 限频)。"""
         rr = self.rr
         image_due, image_ts = _rate_due(ts, self._last_image_ts[unit], max_hz)
@@ -504,7 +516,8 @@ class RerunVisualizer:
             return
         self._last_image_ts[unit] = image_ts
         self._set_time(ts)
-        rr.log(f"world/{unit}/image", rr.Image(color))
+        image_kwargs = {"color_model": "BGR"} if getattr(color, "ndim", 0) == 3 else {}
+        rr.log(f"world/{unit}/image", rr.Image(color, **image_kwargs))
 
     def log_imu(self, unit: str, sample, max_hz: float = 50.0):
         """记录 IMU 六轴实时曲线(输入单位 g 和 deg/s, 显示为 SI 单位)。"""
@@ -526,7 +539,34 @@ class RerunVisualizer:
             "imu/gyro_rad_s/z": float(sample.gz) * gyro_scale,
         }
         for path, value in values.items():
-            self.rr.log(f"world/{unit}/{path}", self.rr.Scalars([value]))
+            self.rr.log(f"world/{unit}/{path}", self._make_scalar(value))
+
+    def log_imu_si(
+        self,
+        unit: str,
+        ts: float,
+        accel_mps2,
+        gyro_rad_s,
+        max_hz: float = 50.0,
+    ):
+        """记录已经是 SI 单位的 ROS IMU 数据，避免重复单位换算。"""
+        due, sample_ts = _rate_due(
+            float(ts), self._last_imu_ts[unit], max_hz
+        )
+        if not due:
+            return
+        self._last_imu_ts[unit] = sample_ts
+        self._set_time(float(ts))
+        values = {
+            "imu/accel_mps2/x": float(accel_mps2[0]),
+            "imu/accel_mps2/y": float(accel_mps2[1]),
+            "imu/accel_mps2/z": float(accel_mps2[2]),
+            "imu/gyro_rad_s/x": float(gyro_rad_s[0]),
+            "imu/gyro_rad_s/y": float(gyro_rad_s[1]),
+            "imu/gyro_rad_s/z": float(gyro_rad_s[2]),
+        }
+        for path, value in values.items():
+            self.rr.log(f"world/{unit}/{path}", self._make_scalar(value))
 
     def log_stats(self, stats: dict, ts: float):
         """记录统计文本(覆盖, 不累积历史)。"""
@@ -566,26 +606,32 @@ class RerunVisualizer:
         right = rrb.Vertical(
             *(panel_views + [rrb.TextLogView(origin="stats", name="stats")])
         )
-        eye_controls_kwargs = {
-            "kind": rrb.Eye3DKind.FirstPerson,
-            "speed": max(distance, 1.0),
+        spatial_3d_kwargs = {
+            "origin": "world",
+            "name": "3D Pose / Trajectory",
+            "background": [40, 40, 40],
         }
-        if self._supports_eye_pose:
-            eye_controls_kwargs.update(
-                position=position.tolist(),
-                look_target=np.asarray(center, dtype=float).tolist(),
-                eye_up=[0.0, 0.0, 1.0],
-                spin_speed=0.0,
+        eye_controls_type = getattr(rrb, "EyeControls3D", None)
+        eye_kind_type = getattr(rrb, "Eye3DKind", None)
+        if eye_controls_type is not None and eye_kind_type is not None:
+            spatial_3d_kwargs["line_grid"] = False
+            eye_controls_kwargs = {
+                "kind": eye_kind_type.FirstPerson,
+                "speed": max(distance, 1.0),
+            }
+            if self._supports_eye_pose:
+                eye_controls_kwargs.update(
+                    position=position.tolist(),
+                    look_target=np.asarray(center, dtype=float).tolist(),
+                    eye_up=[0.0, 0.0, 1.0],
+                    spin_speed=0.0,
+                )
+            spatial_3d_kwargs["eye_controls"] = eye_controls_type(
+                **eye_controls_kwargs
             )
         blueprint = rrb.Blueprint(
             rrb.Horizontal(
-                rrb.Spatial3DView(
-                    origin="world",
-                    name="3D Pose / Trajectory",
-                    line_grid=False,
-                    background=[40, 40, 40],
-                    eye_controls=rrb.EyeControls3D(**eye_controls_kwargs),
-                ),
+                rrb.Spatial3DView(**spatial_3d_kwargs),
                 right,
                 column_shares=[0.7, 0.3],
             ),

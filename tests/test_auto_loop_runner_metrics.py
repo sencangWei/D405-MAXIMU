@@ -3,6 +3,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from test_vins_auto_loop import (
@@ -11,15 +13,98 @@ from test_vins_auto_loop import (
     classify_run_scope,
     drain_is_complete,
     expected_pose_samples,
+    executable_runtime_environment,
+    executable_runtime_library_directories,
+    evaluate_z_axis,
     load_accel_calibration,
+    loop_closure_error_m,
     run_provenance,
+    runtime_config_text,
     parse_loop_configuration,
     parse_loop_retrieval,
     parse_loop_stage_counts,
+    parse_loop_input_keyframes,
+    pose_graph_rows_are_monotonic,
+    parse_feature_tracking,
     parse_pnp_quality,
     parse_pose_graph_health,
     trajectory_diagnostics,
 )
+
+
+def test_pose_graph_evidence_requires_multiple_monotonic_rows():
+    assert parse_loop_input_keyframes(
+        "[LOOP_INPUT] atomic_keyframes=50 transport_drops=0\n"
+        "[LOOP_INPUT] atomic_keyframes=100 transport_drops=0\n"
+    ) == 100
+    assert pose_graph_rows_are_monotonic([[1.0], [2.0], [3.0]])
+    assert not pose_graph_rows_are_monotonic([])
+    assert not pose_graph_rows_are_monotonic([[1.0], [1.0]])
+
+
+def test_executable_uses_its_own_build_libraries_before_inherited_paths(
+    tmp_path, monkeypatch
+):
+    package = tmp_path / "build" / "vins_fusion_ros2"
+    executable = package / "loop_fusion" / "loop_fusion_node"
+    (package / "vins").mkdir(parents=True)
+    executable.parent.mkdir(parents=True)
+    executable.touch()
+    monkeypatch.setenv("LD_LIBRARY_PATH", "/candidate/shared:/other")
+
+    directories = executable_runtime_library_directories(executable)
+    environment = executable_runtime_environment(executable)
+
+    assert directories == [package / "vins", package]
+    assert environment["LD_LIBRARY_PATH"].split(":")[:2] == [
+        str(package / "vins"),
+        str(package),
+    ]
+
+
+def test_feature_tracking_requires_no_sustained_severe_collapse():
+    log = "\n".join(
+        (
+            "pos: 0 0 0 feat: 180 ba: 0 0 0 bg: 0 0 0",
+            "pos: 0 0 0 feat: 4 ba: 0 0 0 bg: 0 0 0",
+            "pos: 0 0 0 feat: 3 ba: 0 0 0 bg: 0 0 0",
+            "pos: 0 0 0 feat: 1 ba: 0 0 0 bg: 0 0 0",
+            "pos: 0 0 0 feat: 160 ba: 0 0 0 bg: 0 0 0",
+        )
+    )
+
+    report = parse_feature_tracking(log)
+
+    assert report == {
+        "result": "FAIL",
+        "samples": 5,
+        "minimum_features": 1,
+        "low_feature_samples": 3,
+        "max_consecutive_low_samples": 3,
+        "thresholds": {
+            "low_feature_count": 20,
+            "maximum_consecutive_low_samples": 2,
+        },
+    }
+
+
+def test_feature_tracking_accepts_isolated_low_sample_but_not_missing_evidence():
+    assert parse_feature_tracking("feat: 160\nfeat: 8\nfeat: 170\n")["result"] == "PASS"
+    assert parse_feature_tracking("unrelated log\n")["result"] == "BLOCKED"
+
+
+def test_runtime_config_redirects_nondefault_candidate_outputs(tmp_path):
+    source = '\n'.join((
+        'output_path: "/isolated/candidate/output/"',
+        'pose_graph_save_path: "/isolated/candidate/output/pose_graph/"',
+        'save_image: 0',
+    ))
+
+    rewritten = runtime_config_text(source, tmp_path / "run")
+
+    assert f'output_path: "{tmp_path}/run/"' in rewritten
+    assert f'pose_graph_save_path: "{tmp_path}/run/pose_graph/"' in rewritten
+    assert "save_image: 1" in rewritten
 
 
 def test_accelerometer_calibration_is_validated_and_forwarded(tmp_path):
@@ -66,6 +151,42 @@ accelerometer:
         "-0.002",
         "0.003",
     ]
+
+
+def test_arbitrary_pose_ellipsoid_report_is_converted_to_replay_contract(tmp_path):
+    calibration = tmp_path / "multipose.yaml"
+    calibration.write_text(
+        "result: PASS\n"
+        "method: arbitrary_pose_accelerometer_ellipsoid_with_heldout_validation\n"
+        "gravity_m_s2: 10.0\n"
+        "bias_m_s2: [0.1, -0.2, 0.3]\n"
+        "correction_matrix:\n"
+        "  - [1.0, 0.0, 0.0]\n"
+        "  - [0.0, 2.0, 0.0]\n"
+        "  - [0.0, 0.0, 3.0]\n",
+        encoding="utf-8",
+    )
+
+    loaded = load_accel_calibration(calibration)
+
+    assert loaded["source_format"] == "arbitrary_pose_ellipsoid_report"
+    assert loaded["matrix"] == [1.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 3.0]
+    assert loaded["offset_g"] == pytest.approx([-0.01, 0.04, -0.09])
+
+
+def test_failed_ellipsoid_report_is_rejected(tmp_path):
+    calibration = tmp_path / "multipose.yaml"
+    calibration.write_text(
+        "result: FAIL\n"
+        "method: arbitrary_pose_accelerometer_ellipsoid_with_heldout_validation\n"
+        "gravity_m_s2: 9.80665\n"
+        "bias_m_s2: [0.0, 0.0, 0.0]\n"
+        "correction_matrix: [[1,0,0],[0,1,0],[0,0,1]]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="not PASS"):
+        load_accel_calibration(calibration)
 
 
 def test_drain_requires_target_pose_coverage_before_quiet_exit():
@@ -129,6 +250,30 @@ def test_trajectory_diagnostics_reports_step_and_vertical_span():
     assert abs(metrics["max_step_m"] - (0.03**2 + 0.03**2) ** 0.5) < 1e-12
     assert abs(metrics["z_span_m"] - 0.03) < 1e-12
     assert abs(metrics["endpoint_delta_m"] - (0.01**2 + 0.03**2 + 0.01**2) ** 0.5) < 1e-12
+    assert abs(metrics["endpoint_xy_m"] - (0.01**2 + 0.03**2) ** 0.5) < 1e-12
+    assert abs(metrics["endpoint_z_abs_m"] - 0.01) < 1e-12
+
+
+def test_loop_closure_metric_can_exclude_z_without_hiding_z_score():
+    diagnostics = {
+        "endpoint_delta_m": 0.05099,
+        "endpoint_xy_m": 0.01,
+        "endpoint_z_abs_m": 0.05,
+    }
+
+    assert loop_closure_error_m(diagnostics, "3d") == 0.05099
+    assert loop_closure_error_m(diagnostics, "xy") == 0.01
+
+
+def test_z_axis_evaluation_is_a_separate_scored_result():
+    evaluation = evaluate_z_axis(
+        {"z_span_m": 0.20, "endpoint_z_abs_m": 0.01},
+        {"z_span_m": 0.15, "endpoint_z_abs_m": 0.02},
+    )
+
+    assert evaluation["result"] == "FAIL"
+    assert evaluation["span_retention_ratio"] == pytest.approx(0.75)
+    assert evaluation["failure"] == "true-elevation retention 0.750 < 0.900"
 
 
 def test_trajectory_diagnostics_handles_incomplete_trajectory():
@@ -136,6 +281,8 @@ def test_trajectory_diagnostics_handles_incomplete_trajectory():
         "max_step_m": None,
         "z_span_m": None,
         "endpoint_delta_m": None,
+        "endpoint_xy_m": None,
+        "endpoint_z_abs_m": None,
     }
 
 
@@ -230,10 +377,16 @@ def test_parse_loop_configuration_reports_effective_spatial_threshold():
     assert parse_loop_configuration(
         "min_loop_spatial_support: 0.0617 (enabled)\n"
         "max_loop_candidates: 24\n"
-    ) == {"min_loop_spatial_support": 0.0617, "max_loop_candidates": 24}
+        "expanded_loop_min_retrieval_score: 0.10000\n"
+    ) == {
+        "min_loop_spatial_support": 0.0617,
+        "max_loop_candidates": 24,
+        "expanded_loop_min_retrieval_score": 0.1,
+    }
     assert parse_loop_configuration("unrelated log\n") == {
         "min_loop_spatial_support": None,
         "max_loop_candidates": None,
+        "expanded_loop_min_retrieval_score": None,
     }
 
 
@@ -315,6 +468,7 @@ def test_run_provenance_hashes_effective_config_and_calibration(
         left,
         right,
         "cpp",
+        vins_executable=executable,
         loop_executable=loop_executable,
     )
 
@@ -331,5 +485,8 @@ def test_run_provenance_hashes_effective_config_and_calibration(
     )
     assert provenance["files"]["loop_executable"]["path"] == str(
         loop_executable.resolve()
+    )
+    assert provenance["files"]["vins_executable"]["path"] == str(
+        executable.resolve()
     )
     assert provenance["source_db3_hashed"] is False

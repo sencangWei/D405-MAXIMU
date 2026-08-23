@@ -33,6 +33,7 @@ from ego_vio.camera.realsense_capture import RealSenseCapture, CameraFrame
 IMU_PACK_FMT = "<dI7f"
 IMU_PACK_SIZE = struct.calcsize(IMU_PACK_FMT)
 PREVIEW_FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
+NINE_GRID_LABELS = ["左上", "上中", "右上", "左中", "正中", "右中", "左下", "下中", "右下"]
 
 # 标定板固定墙上, 手持相机+IMU 移动。
 # 六个阶段: (名称, 最小持续时间, 检查指标)
@@ -231,19 +232,76 @@ class AprilGridPoseTracker:
         return roll, pitch, yaw
 
 
+def aprilgrid_image_center(detections, grid_cfg: dict) -> Optional[np.ndarray]:
+    """Project the full AprilGrid center from known tag IDs and detected corners."""
+    object_corners = []
+    image_corners = []
+    cols = int(grid_cfg["tagCols"])
+    rows = int(grid_cfg["tagRows"])
+    pitch = 1.0 + float(grid_cfg["tagSpacing"])
+    for detection in detections:
+        tag_id = int(getattr(detection, "tag_id", -1))
+        corners = np.asarray(getattr(detection, "corners", []), dtype=float)
+        if tag_id < 0 or tag_id >= cols * rows or corners.size != 8:
+            continue
+        row, column = divmod(tag_id, cols)
+        x0, y0 = column * pitch, row * pitch
+        object_corners.extend([
+            [x0, y0], [x0 + 1.0, y0],
+            [x0 + 1.0, y0 + 1.0], [x0, y0 + 1.0],
+        ])
+        image_corners.extend(corners.reshape(4, 2).tolist())
+    if len(object_corners) < 16:
+        return None
+    homography, _ = cv2.findHomography(
+        np.asarray(object_corners, dtype=float),
+        np.asarray(image_corners, dtype=float),
+        0,
+    )
+    if homography is None:
+        return None
+    extent_x = cols + (cols - 1) * float(grid_cfg["tagSpacing"])
+    extent_y = rows + (rows - 1) * float(grid_cfg["tagSpacing"])
+    center = cv2.perspectiveTransform(
+        np.asarray([[[extent_x / 2.0, extent_y / 2.0]]], dtype=float),
+        homography,
+    ).reshape(2)
+    return center if np.all(np.isfinite(center)) else None
+
+
+def nine_grid_cell(center: Optional[np.ndarray], width: int, height: int) -> tuple[Optional[int], bool]:
+    """Return cell 0..8 and whether the point is safely away from cell borders."""
+    if center is None or width <= 0 or height <= 0:
+        return None, False
+    x, y = (float(value) for value in center)
+    if not (0.0 <= x < width and 0.0 <= y < height):
+        return None, False
+    scaled_x, scaled_y = 3.0 * x / width, 3.0 * y / height
+    column, row = min(2, int(scaled_x)), min(2, int(scaled_y))
+    local_x, local_y = scaled_x - column, scaled_y - row
+    safely_inside = 0.2 <= local_x <= 0.8 and 0.2 <= local_y <= 0.8
+    return row * 3 + column, safely_inside
+
+
 class StageQuality:
     """单阶段质量评估(基于 AprilGrid PnP, IMU 仅作备用)。"""
 
-    def __init__(self, pose_tracker: Optional[AprilGridPoseTracker] = None):
+    def __init__(self, pose_tracker: Optional[AprilGridPoseTracker] = None,
+                 grid_cfg: Optional[dict] = None):
         self.frames = 0
         self.detected = 0
         self.tag_counts = []
         self.pose_tracker = pose_tracker
+        self.grid_cfg = grid_cfg
         self.pose_ok_frames = 0
         self.last_image = None
         self.last_tag_count = 0
         self.last_detections = []
         self.last_pose_ok = False
+        self.last_grid_center = None
+        self.last_grid_cell = None
+        self.last_grid_safely_inside = False
+        self.grid_cell_counts = {cell: 0 for cell in range(9)}
 
         # IMU 激励检测
         self.q = np.array([0.0, 0.0, 0.0, 1.0])
@@ -254,7 +312,7 @@ class StageQuality:
         self.accel_samples = []
 
     def reset(self):
-        self.__init__(self.pose_tracker)
+        self.__init__(self.pose_tracker, self.grid_cfg)
         if self.pose_tracker is not None:
             self.pose_tracker.reset()
 
@@ -318,6 +376,16 @@ class StageQuality:
         if n >= 4:
             self.detected += 1
 
+        self.last_grid_center = (
+            aprilgrid_image_center(dets, self.grid_cfg)
+            if self.grid_cfg is not None else None
+        )
+        self.last_grid_cell, self.last_grid_safely_inside = nine_grid_cell(
+            self.last_grid_center, img.shape[1], img.shape[0]
+        )
+        if self.last_grid_cell is not None and self.last_grid_safely_inside:
+            self.grid_cell_counts[self.last_grid_cell] += 1
+
         self.last_pose_ok = False
         if self.pose_tracker is not None and dets:
             if self.pose_tracker.feed_detections(img, dets):
@@ -361,6 +429,23 @@ class StageQuality:
             ok_list.append(f"AprilGrid识别 OK ({avg_tags:.1f} tags, {detect_rate*100:.0f}%)")
         else:
             fail_list.append(f"AprilGrid识别不足 ({avg_tags:.1f} tags, {detect_rate*100:.0f}%), 请让板子占满画面")
+
+        if "grid_cell" in requirement:
+            target = int(requirement["grid_cell"])
+            need = int(requirement.get("grid_hits_min", 15))
+            got = self.grid_cell_counts.get(target, 0)
+            if got >= need:
+                ok_list.append(f"九宫格{NINE_GRID_LABELS[target]} OK ({got}/{need}帧)")
+            else:
+                current = (
+                    NINE_GRID_LABELS[self.last_grid_cell]
+                    if self.last_grid_cell is not None else "未检测到中心"
+                )
+                border = "，请移到格子中央" if not self.last_grid_safely_inside else ""
+                fail_list.append(
+                    f"九宫格{NINE_GRID_LABELS[target]}不足 ({got}/{need}帧)，"
+                    f"当前={current}{border}"
+                )
 
         motion = self._pose_motion(requirement)
         using_pnp = self.pose_tracker is not None and self.pose_ok_frames >= 3
@@ -486,6 +571,9 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
         # 标定用高曝光: D405 IR 无激光, 默认20ms太暗检测不到 AprilGrid
         exposure_us=exposure_us,
         gain=gain,
+        # D405启动早期偶发设备帧号跳变。连续收到60组配对双IR帧后
+        # 才开放正式回调，预热异常另行留证。
+        warmup_consecutive_frames=60,
         on_frame=on_frame, name=unit.name,
     )
 
@@ -611,6 +699,17 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
             "标定板倾斜约45度，并移动到画面四角",
         ]
         mode_hint = "手持标定板多角度晃动, 覆盖画面全区域"
+    elif mode == "camera_validation":
+        phases = [
+            (f"九宫格 {cell + 1}/9：把整张标定板中心放到{NINE_GRID_LABELS[cell]}",
+             2, {"tags_min": 4, "grid_cell": cell, "grid_hits_min": 15})
+            for cell in range(9)
+        ]
+        preview_hints = [
+            f"移动整张AprilGrid，让板中心进入高亮的{label}格中央"
+            for label in NINE_GRID_LABELS
+        ]
+        mode_hint = "按左上到右下顺序完成九宫格，每格至少15个稳定检测帧"
     else:
         phases = PHASES  # use the imucam phases defined above
         preview_hints = [
@@ -629,6 +728,11 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
         print("输出目录:", out_dir)
         print("手持标定板在相机前多角度晃动, 覆盖画面四角+中心")
         print("距离: 近(板子占80%画面) → 中 → 远(板子占30%画面)")
+    elif mode == "camera_validation":
+        print("D405 双目独立九宫格留出集采集")
+        print("输出目录:", out_dir)
+        print("整机固定，只移动AprilGrid；预览会高亮当前目标格并列出剩余格")
+        print("必须按顺序完成九格，未检测到目标格时不会自动进入下一步")
     else:
         print("Kalibr 相机-IMU 外参标定数据采集")
         print("输出目录:", out_dir)
@@ -641,7 +745,7 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
         print(f"动作提示: {mode_hint}")
     print("=" * 60)
 
-    stage = StageQuality(pose_tracker=pose_tracker)
+    stage = StageQuality(pose_tracker=pose_tracker, grid_cfg=grid_cfg)
 
     preview_enabled = bool(preview)
     preview_font = None
@@ -684,6 +788,8 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
     stage.reset()
 
     phase_idx = 0
+    completed_grid_cells = []
+    user_aborted = False
     t_phase_start = time.monotonic()
     last_report = time.monotonic()
     last_gate_report = 0.0
@@ -710,6 +816,8 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                     if preview_enabled:
                         if stage.last_image is not None:
                             vis = stage.last_image.copy()
+                            if vis.ndim == 2:
+                                vis = cv2.cvtColor(vis, cv2.COLOR_GRAY2BGR)
                             for det in stage.last_detections:
                                 corners = np.asarray(getattr(det, "corners", []), dtype=np.int32)
                                 if corners.size == 8:
@@ -720,6 +828,26 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                             vis = preview_img.copy() if preview_img is not None else None
 
                         if vis is not None:
+                            if vis.ndim == 2:
+                                vis = cv2.cvtColor(vis, cv2.COLOR_GRAY2BGR)
+                            if mode == "camera_validation":
+                                height, width = vis.shape[:2]
+                                for split in (1, 2):
+                                    cv2.line(vis, (width * split // 3, 0),
+                                             (width * split // 3, height), (255, 255, 0), 2)
+                                    cv2.line(vis, (0, height * split // 3),
+                                             (width, height * split // 3), (255, 255, 0), 2)
+                                target = int(req["grid_cell"])
+                                row, column = divmod(target, 3)
+                                x0, x1 = column * width // 3, (column + 1) * width // 3
+                                y0, y1 = row * height // 3, (row + 1) * height // 3
+                                cv2.rectangle(vis, (x0 + 4, y0 + 4), (x1 - 4, y1 - 4),
+                                              (0, 255, 255), 5)
+                                if stage.last_grid_center is not None:
+                                    point = tuple(np.rint(stage.last_grid_center).astype(int))
+                                    cv2.circle(vis, point, 10,
+                                               (0, 255, 0) if stage.last_grid_safely_inside
+                                               else (0, 0, 255), -1)
                             status_ok, status_fails, _ = stage.check(req)
                             detect_rate = (
                                 sum(n >= 4 for n in stage.tag_counts) / len(stage.tag_counts)
@@ -739,6 +867,16 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                                 (f"当前识别 {stage.last_tag_count}/36    平均 {avg_tags:.1f}    最近有效率 {detect_rate*100:.0f}%", (255, 255, 255)),
                                 (f"位姿解算：{'有效' if stage.last_pose_ok else '未更新'}    计时 {elapsed_phase:.0f}/{required_secs:.0f} 秒", (255, 255, 255)),
                             ]
+                            if mode == "camera_validation":
+                                current = (
+                                    NINE_GRID_LABELS[stage.last_grid_cell]
+                                    if stage.last_grid_cell is not None else "未检测"
+                                )
+                                remaining = "、".join(NINE_GRID_LABELS[phase_idx:])
+                                lines.append((
+                                    f"板中心当前位置：{current}    尚缺：{remaining}",
+                                    (255, 255, 255),
+                                ))
                             required_motion = []
                             for key in ("tx", "ty", "tz"):
                                 if key in req:
@@ -786,6 +924,7 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                             cv2.imshow("ego_vio calibration camera", vis)
                             if cv2.waitKey(1) & 0xFF == ord("q"):
                                 print("[预览] 收到 q，结束采集")
+                                user_aborted = True
                                 phase_idx = len(phases)
                                 break
 
@@ -801,6 +940,8 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                             continue
 
                         print(f"\n✅ [{name}] 完成")
+                        if mode == "camera_validation":
+                            completed_grid_cells.append(int(req["grid_cell"]))
                         for o in oks:
                             print(f"   {o}")
                         if not ok:
@@ -832,6 +973,7 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
                     time.sleep(0.05)
         except KeyboardInterrupt:
             print("\n[采集] 用户中断 (Ctrl+C), 正在清理...")
+            user_aborted = True
             phase_idx = len(phases)  # 退出循环, 走清理
 
     print("\n" + "=" * 60)
@@ -840,7 +982,11 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
 
     print("\n正在关闭设备并保存文件...")
     cam.stop()
+    camera_stats = cam.stats()
     imu_reader.stop()
+    imu_lifetime_stats = imu_reader.stats()
+    imu_warmup_stats = imu_reader.warmup_stats()
+    imu_stats = imu_reader.stats_since_warmup()
     q_write.put(None)
     writer.join(timeout=5.0)
 
@@ -850,7 +996,108 @@ def collect_calib_data(config_path, duration_per_phase: float, out_root: Path,
     if preview_enabled:
         cv2.destroyWindow("ego_vio calibration camera")
 
+    import yaml
+    warmup = camera_stats.get("warmup", {})
+    camera_stats["guided_nine_grid"] = {
+        "required_cells": list(range(9)) if mode == "camera_validation" else [],
+        "completed_cells": completed_grid_cells,
+        "missing_cells": (
+            sorted(set(range(9)) - set(completed_grid_cells))
+            if mode == "camera_validation" else []
+        ),
+        "user_aborted": user_aborted,
+    }
+    camera_checks = {
+        "warmup_completed": bool(warmup.get("completed")),
+        "warmup_consecutive_frames_ge_60": (
+            int(warmup.get("required_consecutive_frames", 0)) >= 60
+        ),
+        "formal_device_frame_drops_zero": (
+            int(camera_stats.get("formal_dropped_frames", -1)) == 0
+        ),
+        "formal_stereo_pair_mismatches_zero": (
+            int(camera_stats.get("formal_pair_mismatches", -1)) == 0
+        ),
+    }
+    if mode == "camera_validation":
+        camera_checks["guided_nine_grid_all_cells_completed"] = (
+            completed_grid_cells == list(range(9)) and not user_aborted
+        )
+    camera_health = {
+        "format_version": 1,
+        "result": "PASS" if all(camera_checks.values()) else "FAIL",
+        "method": "consecutive_paired_frame_warmup_then_formal_counter_gate",
+        "metrics": camera_stats,
+        "checks": camera_checks,
+    }
+    health_path = out_dir / "camera_capture_health.yaml"
+    health_path.write_text(
+        yaml.safe_dump(camera_health, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    imu_stats["formal_frames"] = int(written_imu)
+    imu_stats["user_aborted"] = bool(user_aborted)
+    imu_protocol = str(imu_stats.get("protocol", "legacy_37_byte_ttl"))
+    imu_checks = {
+        "formal_frames_positive": written_imu > 0,
+        "warmup_boundary_recorded": bool(imu_warmup_stats),
+        "reader_formal_frames_match_written": (
+            int(imu_stats.get("frames_ok", -1)) == written_imu
+        ),
+        "crc_or_checksum_errors_zero": int(imu_stats.get("frames_bad", -1)) == 0,
+        "discarded_bytes_zero": int(imu_stats.get("resyncs", -1)) == 0,
+        "counter_gaps_zero": int(imu_stats.get("dropped_frames", -1)) == 0,
+        "counter_resets_zero": int(imu_stats.get("counter_resets", -1)) == 0,
+        "counter_stalls_zero": int(imu_stats.get("counter_stalls", -1)) == 0,
+        "serial_errors_zero": int(imu_stats.get("serial_errors", -1)) == 0,
+        "serial_reconnects_zero": int(imu_stats.get("serial_reconnects", -1)) == 0,
+        "reader_rate_380_to_420hz": 380.0 <= float(imu_stats.get("rate_hz", 0.0)) <= 420.0,
+        "user_not_aborted": not user_aborted,
+    }
+    unavailable_transport_checks = []
+    if imu_protocol == "stm32_combined_v1":
+        imu_checks.update({
+            "sequence_gaps_zero": int(imu_stats.get("sequence_gaps", -1)) == 0,
+            "invalid_imu_flags_zero": int(imu_stats.get("invalid_imu_flags", -1)) == 0,
+            "queue_overflow_flags_zero": int(imu_stats.get("queue_overflow_flags", -1)) == 0,
+        })
+    else:
+        unavailable_transport_checks.extend([
+            "packet_sequence_gaps",
+            "invalid_imu_flags",
+            "queue_overflow_flags",
+        ])
+    imu_checks["single_supported_protocol_detected"] = imu_protocol in {
+        "kt_ex9_37", "legacy_37_byte_ttl", "stm32_combined_v1",
+    }
+    imu_health = {
+        "format_version": 1,
+        "result": "PASS" if all(imu_checks.values()) else "FAIL",
+        "method": "compatible_reader_warmup_then_formal_transport_gate",
+        "metrics": {"formal_frames": written_imu, "user_aborted": user_aborted,
+                    "protocol": imu_protocol,
+                    "reader": imu_stats,
+                    "warmup_cumulative_reader": imu_warmup_stats,
+                    "lifetime_reader": imu_lifetime_stats,
+                    "unavailable_in_protocol": unavailable_transport_checks},
+        "checks": imu_checks,
+    }
+    imu_health_path = out_dir / "imu_capture_health.yaml"
+    imu_health_path.write_text(
+        yaml.safe_dump(imu_health, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
     print(f"\n图像帧: {written_frames}  |  IMU帧: {written_imu}")
+    print(
+        "相机预热: "
+        f"连续{warmup.get('required_consecutive_frames', 0)}帧后启用正式窗口, "
+        f"预热丢帧{warmup.get('dropped_frames', 0)}, "
+        f"正式窗口丢帧{camera_stats.get('formal_dropped_frames', 0)}"
+    )
+    print(f"相机采集健康: {camera_health['result']} ({health_path})")
+    print(f"IMU采集健康: {imu_health['result']} ({imu_health_path})")
     print(f"数据保存到: {out_dir}")
     print("下一步: python scripts\\convert_to_kalibr_bag.py --input "
           f"{out_root / session} --output calib.bag")
@@ -870,8 +1117,10 @@ def main():
                     help="AprilTag 家族: t36h11 (Kalibr 2-bit, 默认) 或 t36h11b1 (1-bit)")
     ap.add_argument("--preview", action="store_true",
                     help="打开实时相机预览窗口, 与采集同步显示")
-    ap.add_argument("--mode", default="imucam", choices=["imucam", "camera"],
-                    help="imucam=相机+IMU外参(板子固定晃相机) camera=纯相机内参(晃板子拍全)")
+    ap.add_argument("--mode", default="imucam",
+                    choices=["imucam", "camera", "camera_validation"],
+                    help=("imucam=相机+IMU外参 camera=纯相机内参 "
+                          "camera_validation=独立九宫格留出集"))
     ap.add_argument("--exposure-us", type=int, default=30000,
                     help="标定用 IR 曝光(us). 默认30000: D405 IR 无激光, 20ms太暗"
                          "检测不到 AprilGrid (实测 20ms→0 tag, 30ms→20 tag)")
@@ -882,6 +1131,8 @@ def main():
 
     if args.mode == "camera":
         print("=== 相机内参标定: 手持标定板在相机前多角度晃动, 覆盖画面 ===")
+    elif args.mode == "camera_validation":
+        print("=== 双目独立留出集: 按预览高亮依次完成九宫格 ===")
     else:
         print("=== 相机-IMU 外参标定: 标定板固定墙上, 手持相机+IMU晃动 ===")
 

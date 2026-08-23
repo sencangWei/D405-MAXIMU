@@ -14,6 +14,18 @@ from ego_vio.imu.imu_reader import (
 )
 
 
+COMBINED_SIZE = 63
+
+
+def crc16_ccitt_false(data):
+    crc = 0xFFFF
+    for value in data:
+        crc ^= value << 8
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x1021) & 0xFFFF if crc & 0x8000 else (crc << 1) & 0xFFFF
+    return crc
+
+
 def make_frame(gx=1.0, gy=2.0, gz=3.0, ax=0.0, ay=0.0, az=1.0, temp=25.0, counter=1):
     buf = bytearray(FRAME_SIZE)
     buf[0] = HEADER0
@@ -25,6 +37,15 @@ def make_frame(gx=1.0, gy=2.0, gz=3.0, ax=0.0, ay=0.0, az=1.0, temp=25.0, counte
     # 校验和: 字节[0..35] 累加低 8 位(含帧头)
     buf[36] = sum(buf[0:36]) & 0xFF
     return bytes(buf)
+
+
+def make_combined(sequence=1, counter=1, imu_us=1000, flags=0x03):
+    packet = bytearray(COMBINED_SIZE)
+    packet[:4] = b"\xa5\x5a\x01\x3f"
+    struct.pack_into("<HIIIIH", packet, 4, flags, sequence, imu_us, imu_us + 40, counter, 0x1234)
+    packet[24:61] = make_frame(counter=counter)
+    struct.pack_into("<H", packet, 61, crc16_ccitt_false(packet[:61]))
+    return bytes(packet)
 
 
 def test_checksum_valid():
@@ -78,6 +99,79 @@ def test_reader_does_not_publish_warmup_frames():
     reader._handle(make_frame(counter=3))
 
     assert [sample.counter for sample in received] == [3]
+
+
+def test_reader_formal_stats_exclude_warmup_transport_faults():
+    reader = ImuReader("unused", warmup_frames=2)
+    reader.frames_bad = 1
+    reader.resyncs = 46
+
+    reader._handle(make_frame(counter=10))
+    reader._handle(make_frame(counter=12))
+    reader._handle(make_frame(counter=13))
+
+    formal = reader.stats_since_warmup()
+    assert formal["frames_ok"] == 1
+    assert formal["frames_bad"] == 0
+    assert formal["resyncs"] == 0
+    assert formal["dropped_frames"] == 0
+    assert reader.warmup_stats()["dropped_frames"] == 1
+
+
+def test_reader_formal_stats_retain_faults_after_warmup():
+    reader = ImuReader("unused", warmup_frames=1)
+    reader._handle(make_frame(counter=20))
+
+    reader.frames_bad += 1
+    reader.resyncs += 37
+    reader._handle(make_frame(counter=22))
+
+    formal = reader.stats_since_warmup()
+    assert formal["frames_ok"] == 1
+    assert formal["frames_bad"] == 1
+    assert formal["resyncs"] == 37
+    assert formal["dropped_frames"] == 1
+
+
+def test_reader_decodes_stm32_combined_packet_and_uses_mcu_spacing():
+    received = []
+    reader = ImuReader("unused", on_sample=received.append, warmup_frames=0)
+
+    reader._consume_data(
+        make_combined(sequence=10, counter=20, imu_us=100000)
+        + make_combined(sequence=11, counter=21, imu_us=102500)
+    )
+
+    assert [sample.counter for sample in received] == [20, 21]
+    assert abs((received[1].ts - received[0].ts) - 0.0025) < 1e-9
+    assert reader.stats_since_warmup()["protocol"] == "stm32_combined_v1"
+    assert reader.stats_since_warmup()["sequence_gaps"] == 0
+
+
+def test_bad_stm32_crc_cannot_leak_embedded_legacy_frame():
+    received = []
+    reader = ImuReader("unused", on_sample=received.append, warmup_frames=0)
+    damaged = bytearray(make_combined())
+    damaged[-1] ^= 1
+
+    reader._consume_data(bytes(damaged))
+
+    assert received == []
+    assert reader.stats_since_warmup()["frames_bad"] == 1
+    assert reader.stats_since_warmup()["resyncs"] == COMBINED_SIZE
+
+
+def test_stm32_transport_flags_and_sequence_gap_remain_visible():
+    reader = ImuReader("unused", warmup_frames=0)
+    reader._consume_data(make_combined(sequence=5, counter=30, imu_us=1000))
+    reader._consume_data(
+        make_combined(sequence=7, counter=31, imu_us=3500, flags=0x01 | (1 << 5))
+    )
+
+    formal = reader.stats_since_warmup()
+    assert formal["sequence_gaps"] == 1
+    assert formal["queue_overflow_flags"] == 1
+    assert formal["invalid_imu_flags"] == 0
 
 
 def test_reader_uses_continuous_host_clock_across_device_counter_resets():

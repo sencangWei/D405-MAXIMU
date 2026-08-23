@@ -94,15 +94,22 @@ def parse_args() -> argparse.Namespace:
 
 def load_epoch_minus_mono(session: Path) -> float:
     rows = list(csv.DictReader((session / "d405_frames.csv").open()))
-    offsets = [
-        float(r["color_device_ms"]) / 1000.0 - float(r["color_mono"])
-        for r in rows
-        if r.get("color_device_ms") and r.get("color_mono")
-    ]
-    if not offsets:
-        raise RuntimeError("d405_frames.csv 缺少 color_device_ms/color_mono")
-    offsets.sort()
-    return offsets[len(offsets) // 2]
+    time_field_pairs = (
+        ("color_device_ms", "color_mono"),
+        ("depth_device_ms", "depth_mono"),
+        ("infrared_left_device_ms", "infrared_left_mono"),
+    )
+    for device_field, mono_field in time_field_pairs:
+        offsets = [
+            float(r[device_field]) / 1000.0 - float(r[mono_field])
+            for r in rows
+            if r.get(device_field) and r.get(mono_field)
+        ]
+        if offsets:
+            offsets.sort()
+            return offsets[len(offsets) // 2]
+    supported = ", ".join(f"{device}/{mono}" for device, mono in time_field_pairs)
+    raise RuntimeError(f"d405_frames.csv 缺少受支持的时间列对：{supported}")
 
 
 def compute_auto_align(session: Path) -> float:

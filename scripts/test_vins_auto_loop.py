@@ -24,12 +24,13 @@ from pathlib import Path
 import numpy as np
 import rclpy
 import yaml
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry, Path as NavPath
 from rclpy.node import Node
 
 from slam_benchmark_environment import (
     capture_environment,
     evaluate_environment,
+    find_processes,
     validate_environment_report,
 )
 from slam_run_health import evaluate_slam_health
@@ -58,10 +59,28 @@ REPLAY_EXECUTABLE = Path(
 def load_accel_calibration(path: Path) -> dict[str, object]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     accelerometer = data.get("accelerometer") if isinstance(data, dict) else None
-    if not isinstance(accelerometer, dict):
-        raise ValueError("IMU calibration lacks accelerometer section")
-    matrix = np.asarray(accelerometer.get("matrix"), dtype=float)
-    offset_g = np.asarray(accelerometer.get("offset_g"), dtype=float)
+    if isinstance(accelerometer, dict):
+        matrix = np.asarray(accelerometer.get("matrix"), dtype=float)
+        offset_g = np.asarray(accelerometer.get("offset_g"), dtype=float)
+        source_format = "legacy_accelerometer_section"
+    elif isinstance(data, dict) and data.get("method") == (
+        "arbitrary_pose_accelerometer_ellipsoid_with_heldout_validation"
+    ):
+        if data.get("result") != "PASS":
+            raise ValueError("IMU ellipsoid calibration is not PASS")
+        matrix = np.asarray(data.get("correction_matrix"), dtype=float)
+        bias_m_s2 = np.asarray(data.get("bias_m_s2"), dtype=float)
+        if bias_m_s2.shape != (3,):
+            raise ValueError("IMU ellipsoid bias must contain 3 values")
+        gravity_m_s2 = float(data.get("gravity_m_s2", 9.80665))
+        if not np.isfinite(gravity_m_s2) or gravity_m_s2 <= 0.0:
+            raise ValueError("IMU ellipsoid gravity must be positive")
+        # Ellipsoid report: a_cal = M @ (a_raw*m/s2 - bias) / g.
+        # Replay contract: a_cal = M @ a_raw_g + offset_g.
+        offset_g = -(matrix @ bias_m_s2) / gravity_m_s2
+        source_format = "arbitrary_pose_ellipsoid_report"
+    else:
+        raise ValueError("IMU calibration lacks a supported accelerometer model")
     if matrix.shape != (3, 3) or offset_g.shape != (3,):
         raise ValueError("accelerometer calibration must be a 3x3 matrix plus 3 offsets")
     if not np.isfinite(matrix).all() or not np.isfinite(offset_g).all():
@@ -70,6 +89,7 @@ def load_accel_calibration(path: Path) -> dict[str, object]:
         "path": str(path.resolve()),
         "matrix": matrix.reshape(-1).tolist(),
         "offset_g": offset_g.tolist(),
+        "source_format": source_format,
     }
 
 
@@ -105,12 +125,58 @@ def git_revision(repository: Path) -> str | None:
     return revision if completed.returncode == 0 and revision else None
 
 
+def executable_runtime_library_directories(executable: Path) -> list[Path]:
+    """Return library directories belonging to the executable's own build."""
+    resolved = executable.resolve()
+    for ancestor in (resolved.parent, *resolved.parents):
+        if ancestor.name != "vins_fusion_ros2":
+            continue
+        if ancestor.parent.name == "build":
+            return [path for path in (ancestor / "vins", ancestor) if path.is_dir()]
+        if ancestor.parent.name == "install":
+            library_root = ancestor / "lib"
+            return [
+                path for path in (library_root / "vins", library_root) if path.is_dir()
+            ]
+    return []
+
+
+def executable_runtime_environment(executable: Path) -> dict[str, str]:
+    environment = dict(os.environ)
+    owned = [str(path) for path in executable_runtime_library_directories(executable)]
+    inherited = [
+        value
+        for value in environment.get("LD_LIBRARY_PATH", "").split(":")
+        if value and value not in owned
+    ]
+    environment["LD_LIBRARY_PATH"] = ":".join([*owned, *inherited])
+    return environment
+
+
+def executable_runtime_libraries(executable: Path) -> dict[str, dict[str, str]]:
+    result = {}
+    for name in (
+        "libvins_lib.so",
+        "libvins_fusion_ros2__rosidl_typesupport_fastrtps_cpp.so",
+    ):
+        for directory in executable_runtime_library_directories(executable):
+            path = directory / name
+            if path.is_file():
+                result[name] = {
+                    "path": str(path.resolve()),
+                    "sha256": sha256_file(path),
+                }
+                break
+    return result
+
+
 def run_provenance(
     session: Path,
     run_config: Path,
     left_calibration: Path,
     right_calibration: Path,
     replay_backend: str,
+    vins_executable: Path = VINS_EXECUTABLE,
     loop_executable: Path = LOOP_EXECUTABLE,
     replay_executable: Path | None = None,
     imu_accel_calibration: Path | None = None,
@@ -120,7 +186,7 @@ def run_provenance(
         "run_config": run_config.resolve(),
         "left_calibration": left_calibration.resolve(),
         "right_calibration": right_calibration.resolve(),
-        "vins_executable": VINS_EXECUTABLE.resolve(),
+        "vins_executable": vins_executable.resolve(),
         "loop_executable": loop_executable.resolve(),
     }
     if replay_backend == "cpp":
@@ -138,6 +204,14 @@ def run_provenance(
     imu_samples = session.resolve() / "external_imu" / "imu.bin"
     if imu_samples.is_file():
         files["imu_samples"] = imu_samples
+    runtime_libraries = {
+        "vins": executable_runtime_libraries(vins_executable),
+        "loop": executable_runtime_libraries(loop_executable),
+    }
+    if replay_backend == "cpp":
+        runtime_libraries["replay"] = executable_runtime_libraries(
+            REPLAY_EXECUTABLE if replay_executable is None else replay_executable
+        )
     return {
         "files": {
             name: {"path": str(path), "sha256": sha256_file(path)}
@@ -151,7 +225,31 @@ def run_provenance(
         },
         "source_db3_hashed": False,
         "source_db3_identity": "capture acceptance hash plus immutable manifest",
+        "runtime_libraries": runtime_libraries,
     }
+
+
+def runtime_config_text(source_text: str, loop_output: Path) -> str:
+    """Redirect all mutable VINS/loop outputs into this run directory."""
+    replacements = (
+        (
+            r'(?m)^output_path:\s*"[^"]*"\s*$',
+            f'output_path: "{loop_output}/"',
+            "output_path",
+        ),
+        (
+            r'(?m)^pose_graph_save_path:\s*"[^"]*"\s*$',
+            f'pose_graph_save_path: "{loop_output}/pose_graph/"',
+            "pose_graph_save_path",
+        ),
+        (r"(?m)^save_image:\s*[01]\s*$", "save_image: 1", "save_image"),
+    )
+    result = source_text
+    for pattern, replacement, name in replacements:
+        result, count = re.subn(pattern, replacement, result)
+        if count != 1:
+            raise ValueError(f"expected exactly one {name}, found {count}")
+    return result
 
 
 def classify_run_scope(
@@ -166,6 +264,48 @@ def classify_run_scope(
     if runtime_error is not None:
         return "SLAM_RUNTIME"
     return "SLAM"
+
+
+def parse_feature_tracking(
+    vins_log: str,
+    *,
+    low_feature_count: int = 20,
+    maximum_consecutive_low_samples: int = 2,
+) -> dict[str, object]:
+    """Summarize the one-Hz backend feature diagnostics emitted by VINS."""
+    feature_counts = [
+        int(match.group(1))
+        for match in re.finditer(r"\bfeat:\s*(\d+)\b", vins_log)
+    ]
+    consecutive_low = 0
+    maximum_consecutive_low = 0
+    low_samples = 0
+    for count in feature_counts:
+        if count < low_feature_count:
+            low_samples += 1
+            consecutive_low += 1
+            maximum_consecutive_low = max(
+                maximum_consecutive_low, consecutive_low
+            )
+        else:
+            consecutive_low = 0
+    if not feature_counts:
+        result = "BLOCKED"
+    elif maximum_consecutive_low > maximum_consecutive_low_samples:
+        result = "FAIL"
+    else:
+        result = "PASS"
+    return {
+        "result": result,
+        "samples": len(feature_counts),
+        "minimum_features": min(feature_counts) if feature_counts else None,
+        "low_feature_samples": low_samples,
+        "max_consecutive_low_samples": maximum_consecutive_low,
+        "thresholds": {
+            "low_feature_count": low_feature_count,
+            "maximum_consecutive_low_samples": maximum_consecutive_low_samples,
+        },
+    }
 
 
 def parse_pnp_quality(loop_log: str) -> dict:
@@ -230,12 +370,18 @@ def parse_loop_configuration(loop_log: str) -> dict:
         loop_log,
     )
     max_candidates = re.search(r"max_loop_candidates:\s*(\d+)", loop_log)
+    expanded_score = re.search(
+        r"expanded_loop_min_retrieval_score:\s*([0-9.]+)", loop_log
+    )
     return {
         "min_loop_spatial_support": (
             float(spatial_support.group(1)) if spatial_support is not None else None
         ),
         "max_loop_candidates": (
             int(max_candidates.group(1)) if max_candidates is not None else None
+        ),
+        "expanded_loop_min_retrieval_score": (
+            float(expanded_score.group(1)) if expanded_score is not None else None
         ),
     }
 
@@ -283,6 +429,20 @@ def parse_loop_stage_counts(loop_log: str) -> dict[str, int]:
     }
 
 
+def parse_loop_input_keyframes(loop_log: str) -> int:
+    counts = [
+        int(value)
+        for value in re.findall(r"\[LOOP_INPUT\] atomic_keyframes=(\d+)", loop_log)
+    ]
+    return max(counts, default=0)
+
+
+def pose_graph_rows_are_monotonic(rows: list[list[float]]) -> bool:
+    return len(rows) >= 2 and all(
+        current[0] > previous[0] for previous, current in zip(rows, rows[1:])
+    )
+
+
 def stop_process(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
@@ -310,13 +470,71 @@ def write_rows(path: Path, rows: list[list[float]]) -> None:
 
 def trajectory_diagnostics(rows: list[list[float]]) -> dict[str, float | None]:
     if len(rows) < 2:
-        return {"max_step_m": None, "z_span_m": None, "endpoint_delta_m": None}
+        return {
+            "max_step_m": None,
+            "z_span_m": None,
+            "endpoint_delta_m": None,
+            "endpoint_xy_m": None,
+            "endpoint_z_abs_m": None,
+        }
     points = np.asarray([row[1:4] for row in rows], dtype=float)
+    endpoint_delta = points[-1] - points[0]
     return {
         "max_step_m": float(np.linalg.norm(np.diff(points, axis=0), axis=1).max()),
         "z_span_m": float(np.ptp(points[:, 2])),
-        "endpoint_delta_m": float(np.linalg.norm(points[-1] - points[0])),
+        "endpoint_delta_m": float(np.linalg.norm(endpoint_delta)),
+        "endpoint_xy_m": float(np.linalg.norm(endpoint_delta[:2])),
+        "endpoint_z_abs_m": float(abs(endpoint_delta[2])),
     }
+
+
+def loop_closure_error_m(
+    diagnostics: dict[str, float | None], metric: str
+) -> float | None:
+    if metric == "3d":
+        return diagnostics["endpoint_delta_m"]
+    if metric == "xy":
+        return diagnostics["endpoint_xy_m"]
+    raise ValueError(f"unsupported loop closure metric: {metric}")
+
+
+def evaluate_z_axis(
+    raw: dict[str, float | None],
+    corrected: dict[str, float | None],
+    *,
+    minimum_true_elevation_span_m: float = 0.10,
+    minimum_retention_ratio: float = 0.90,
+) -> dict[str, object]:
+    raw_span = raw["z_span_m"]
+    corrected_span = corrected["z_span_m"]
+    evaluation: dict[str, object] = {
+        "scope": "separate_from_loop_closure",
+        "result": "MEASURED",
+        "raw_span_m": raw_span,
+        "raw_endpoint_abs_m": raw["endpoint_z_abs_m"],
+        "corrected_span_m": corrected_span,
+        "corrected_endpoint_abs_m": corrected["endpoint_z_abs_m"],
+        "minimum_true_elevation_span_m": minimum_true_elevation_span_m,
+        "minimum_retention_ratio": minimum_retention_ratio,
+        "span_retention_ratio": None,
+        "failure": None,
+    }
+    if raw_span is None or corrected_span is None:
+        evaluation["result"] = "NOT_SCORED"
+        return evaluation
+    if raw_span < minimum_true_elevation_span_m:
+        return evaluation
+    retention_ratio = corrected_span / raw_span
+    evaluation["span_retention_ratio"] = retention_ratio
+    if retention_ratio < minimum_retention_ratio:
+        evaluation["result"] = "FAIL"
+        evaluation["failure"] = (
+            f"true-elevation retention {retention_ratio:.3f} < "
+            f"{minimum_retention_ratio:.3f}"
+        )
+    else:
+        evaluation["result"] = "PASS"
+    return evaluation
 
 
 def camera_frame_count(session: Path, image_db3: Path | None) -> tuple[int, str | None]:
@@ -374,6 +592,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("session", type=Path)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument(
+        "--vins-executable",
+        type=Path,
+        default=VINS_EXECUTABLE,
+        help="显式指定VINS节点二进制，并将该精确文件写入运行证据",
+    )
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--rate", type=float, default=1.0)
     parser.add_argument("--skip-s", type=float, default=1.5)
@@ -417,6 +641,12 @@ def main() -> int:
         type=float,
         default=0.01,
         help="--expect-loop yes时的后验闭环误差门槛；只评分，不输入SLAM",
+    )
+    parser.add_argument(
+        "--loop-closure-metric",
+        choices=("3d", "xy"),
+        default="3d",
+        help="闭环首尾误差评分维度；xy模式将Z单列报告但不计入回环结论",
     )
     parser.add_argument("--min-pose-coverage", type=float, default=0.98)
     parser.add_argument(
@@ -467,16 +697,10 @@ def main() -> int:
     loop_output.mkdir(exist_ok=True)
     (loop_output / "pose_graph").mkdir(exist_ok=True)
 
-    config_text = args.config.read_text(encoding="utf-8")
-    config_text = config_text.replace(
-        'output_path: "/home/robot/vins_output/"',
-        f'output_path: "{loop_output}/"',
-    ).replace(
-        'pose_graph_save_path: "/home/robot/vins_output/pose_graph/"',
-        f'pose_graph_save_path: "{loop_output}/pose_graph/"',
-    ).replace(
-        "save_image: 0",
-        "save_image: 1",
+    if not args.vins_executable.is_file():
+        raise FileNotFoundError(f"missing VINS executable: {args.vins_executable}")
+    config_text = runtime_config_text(
+        args.config.read_text(encoding="utf-8"), loop_output
     )
     run_config = args.out_dir / "vins_auto_loop_config.yaml"
     run_config.write_text(config_text, encoding="utf-8")
@@ -494,6 +718,7 @@ def main() -> int:
         calibration_paths["left.yaml"],
         calibration_paths["right.yaml"],
         args.replay_backend,
+        vins_executable=args.vins_executable,
         loop_executable=args.loop_executable,
         replay_executable=args.replay_executable,
         imu_accel_calibration=args.imu_accel_calibration,
@@ -508,22 +733,24 @@ def main() -> int:
     replay_log_path = args.out_dir / "replay.log"
     processes: list[subprocess.Popen[bytes]] = []
 
-    stale = subprocess.run(
-        ["pgrep", "-af", "loop_fusion_node"],
-        check=False,
-        capture_output=True,
-        text=True,
+    loop_markers = tuple(
+        dict.fromkeys(("loop_fusion_node", args.loop_executable.name))
     )
-    if stale.stdout.strip():
+    stale = find_processes(loop_markers)
+    if stale:
+        stale_text = "\n".join(
+            f"{entry['pid']} {entry['command']}" for entry in stale
+        )
         raise RuntimeError(
             "stale loop_fusion_node exists; stop it before a deterministic run:\n"
-            + stale.stdout.strip()
+            + stale_text
         )
 
     rclpy.init()
     node = Node("auto_loop_trajectory_sink")
     raw_rows: list[list[float]] = []
     corrected_rows: list[list[float]] = []
+    pose_graph_rows: list[list[float]] = []
     runtime_error: str | None = None
     runtime_watchdog = SlamRuntimeWatchdog(start_monotonic_s=time.monotonic())
 
@@ -562,17 +789,43 @@ def main() -> int:
         2000,
     )
 
+    # The real-time corrected stream cannot rewrite poses that were already
+    # published.  VINS-Fusion's /pose_graph_path does republish the complete,
+    # latest 4DoF-optimized keyframe history.  Preserve that historical product
+    # output instead of reconstructing it from an abrupt live transform.
+    def replace_pose_graph(message: NavPath) -> None:
+        latest: list[list[float]] = []
+        for pose_stamped in message.poses:
+            pose = pose_stamped.pose
+            stamp = pose_stamped.header.stamp
+            timestamp_s = stamp.sec + stamp.nanosec * 1e-9
+            latest.append([
+                timestamp_s,
+                pose.position.x,
+                pose.position.y,
+                pose.position.z,
+                pose.orientation.w,
+                pose.orientation.x,
+                pose.orientation.y,
+                pose.orientation.z,
+            ])
+        if latest:
+            pose_graph_rows[:] = latest
+
+    node.create_subscription(NavPath, "/pose_graph_path", replace_pose_graph, 10)
+
     try:
         with vins_log_path.open("wb") as vins_log, loop_log_path.open("wb") as loop_log:
             vins = subprocess.Popen(
                 [
-                    "ros2", "run", "vins_fusion_ros2", "vins_fusion_ros2_node",
+                    str(args.vins_executable.resolve()),
                     "--ros-args", "-p", "use_sim_time:=false",
                     "-p", f"config_file:={run_config}",
                 ],
                 stdout=vins_log,
                 stderr=subprocess.STDOUT,
                 preexec_fn=os.setsid,
+                env=executable_runtime_environment(args.vins_executable),
             )
             processes.append(vins)
             loop = subprocess.Popen(
@@ -581,6 +834,7 @@ def main() -> int:
                 stdout=loop_log,
                 stderr=subprocess.STDOUT,
                 preexec_fn=os.setsid,
+                env=executable_runtime_environment(args.loop_executable),
             )
             processes.append(loop)
             time.sleep(6)
@@ -645,6 +899,11 @@ def main() -> int:
                     stdout=replay_log,
                     stderr=subprocess.STDOUT,
                     preexec_fn=os.setsid,
+                    env=(
+                        executable_runtime_environment(args.replay_executable)
+                        if args.replay_backend == "cpp"
+                        else None
+                    ),
                 )
                 processes.append(replay)
                 deadline = time.monotonic() + args.timeout_s
@@ -686,6 +945,7 @@ def main() -> int:
             stop_process(process)
         write_rows(args.out_dir / "vio_raw.csv", raw_rows)
         write_rows(args.out_dir / "vio_corrected_stream.csv", corrected_rows)
+        write_rows(args.out_dir / "vio_pose_graph_final.csv", pose_graph_rows)
         node.destroy_node()
         rclpy.shutdown()
 
@@ -698,12 +958,19 @@ def main() -> int:
         for line in loop_log.splitlines()
         if "[AUTO_LOOP_CORRECTION_REJECT]" in line
     ]
+    retrieval_score_rejected = [
+        line
+        for line in loop_log.splitlines()
+        if "[AUTO_LOOP_RETRIEVAL_SCORE_REJECT]" in line
+    ]
     spatial_rejected = [
         line for line in loop_log.splitlines() if "[AUTO_LOOP_SPATIAL_REJECT]" in line
     ]
     pose_graph_health = parse_pose_graph_health(loop_log)
     loop_configuration = parse_loop_configuration(loop_log)
     loop_stage_counts = parse_loop_stage_counts(loop_log)
+    loop_atomic_keyframes = parse_loop_input_keyframes(loop_log)
+    feature_tracking = parse_feature_tracking(vins_log)
     input_drops = [line for line in loop_log.splitlines() if "[LOOP_INPUT_DROP]" in line]
     estimator_queue_drops = [
         line
@@ -713,6 +980,7 @@ def main() -> int:
     pose_coverage = min(len(raw_rows), len(corrected_rows)) / expected_poses
     raw_diagnostics = trajectory_diagnostics(raw_rows)
     corrected_diagnostics = trajectory_diagnostics(corrected_rows)
+    pose_graph_diagnostics = trajectory_diagnostics(pose_graph_rows)
     runtime_watchdog_report = runtime_watchdog.completion_snapshot()
     failures: list[str] = []
     if runtime_watchdog_report["state"] != "SLAM_HEALTHY":
@@ -732,6 +1000,18 @@ def main() -> int:
             "pose graph unusable solutions: "
             f"{pose_graph_health['rejected_optimizations']}"
         )
+    if loop_atomic_keyframes > 0 and not pose_graph_rows_are_monotonic(pose_graph_rows):
+        failures.append(
+            "final pose graph missing or timestamps are not strictly increasing "
+            f"after {loop_atomic_keyframes} observed keyframes"
+        )
+    if feature_tracking["result"] != "PASS":
+        failures.append(
+            "feature tracking "
+            f"{feature_tracking['result'].lower()}: minimum="
+            f"{feature_tracking['minimum_features']}, consecutive_low="
+            f"{feature_tracking['max_consecutive_low_samples']}"
+        )
     if camera_frames and pose_coverage < args.min_pose_coverage:
         failures.append(
             f"pose coverage {pose_coverage:.4f} < {args.min_pose_coverage:.4f}"
@@ -740,14 +1020,17 @@ def main() -> int:
         failures.append("expected an automatic loop, but none was accepted")
     if args.expect_loop == "no" and accepted:
         failures.append(f"expected no automatic loop, but accepted {len(accepted)}")
-    corrected_endpoint_delta = corrected_diagnostics["endpoint_delta_m"]
+    corrected_endpoint_delta = loop_closure_error_m(
+        corrected_diagnostics, args.loop_closure_metric
+    )
     if (
         args.expect_loop == "yes"
         and corrected_endpoint_delta is not None
         and corrected_endpoint_delta >= args.max_loop_closure_m
     ):
         failures.append(
-            f"automatic-loop endpoint error {corrected_endpoint_delta:.4f}m >= "
+            f"automatic-loop {args.loop_closure_metric} endpoint error "
+            f"{corrected_endpoint_delta:.4f}m >= "
             f"{args.max_loop_closure_m:.4f}m"
         )
     raw_max_step = raw_diagnostics["max_step_m"]
@@ -759,15 +1042,10 @@ def main() -> int:
                 f"corrected trajectory jump {corrected_max_step:.4f}m > "
                 f"{max_allowed_step:.4f}m"
             )
-    raw_z_span = raw_diagnostics["z_span_m"]
-    corrected_z_span = corrected_diagnostics["z_span_m"]
-    z_retention_ratio = None
-    if raw_z_span is not None and corrected_z_span is not None and raw_z_span >= 0.10:
-        z_retention_ratio = corrected_z_span / raw_z_span
-        if z_retention_ratio < 0.90:
-            failures.append(
-                f"true-elevation retention {z_retention_ratio:.3f} < 0.900"
-            )
+    z_axis_evaluation = evaluate_z_axis(raw_diagnostics, corrected_diagnostics)
+    z_retention_ratio = z_axis_evaluation["span_retention_ratio"]
+    if args.loop_closure_metric == "3d" and z_axis_evaluation["failure"]:
+        failures.append(str(z_axis_evaluation["failure"]))
     run_acceptance = {
         "result": "PASS" if return_code == 0 and not failures else "FAIL",
         "failure_scope": classify_run_scope(
@@ -785,6 +1063,8 @@ def main() -> int:
         "imu_accel_calibration": accel_calibration,
         "raw_odometry_samples": len(raw_rows),
         "corrected_odometry_samples": len(corrected_rows),
+        "final_pose_graph_samples": len(pose_graph_rows),
+        "loop_atomic_keyframes_observed": loop_atomic_keyframes,
         "camera_frames": camera_frames,
         "camera_frame_count_source": camera_frame_count_source,
         "expected_pose_samples_after_skip": expected_poses,
@@ -792,14 +1072,26 @@ def main() -> int:
         "automatic_loop_accepts": len(accepted),
         "automatic_loop_rejects": len(rejected),
         "automatic_correction_rejects": len(correction_rejected),
+        "automatic_retrieval_score_rejects": len(retrieval_score_rejected),
         "automatic_spatial_rejects": len(spatial_rejected),
         **loop_configuration,
         "loop_retrieval": parse_loop_retrieval(loop_log),
         "loop_stage_counts": loop_stage_counts,
         "pnp_quality": parse_pnp_quality(loop_log),
         "pose_graph_health": pose_graph_health,
+        "feature_tracking": feature_tracking,
         "raw_trajectory_diagnostics": raw_diagnostics,
         "corrected_trajectory_diagnostics": corrected_diagnostics,
+        "final_pose_graph_diagnostics": pose_graph_diagnostics,
+        "loop_closure_evaluation": {
+            "metric": args.loop_closure_metric,
+            "maximum_m": args.max_loop_closure_m,
+            "corrected_endpoint_error_m": corrected_endpoint_delta,
+        },
+        "z_axis_evaluation": {
+            **z_axis_evaluation,
+            "included_in_run_result": args.loop_closure_metric == "3d",
+        },
         "z_span_retention_ratio": z_retention_ratio,
         "loop_input_drop_events": len(input_drops),
         "estimator_keyframe_queue_drop_events": len(estimator_queue_drops),
@@ -812,15 +1104,23 @@ def main() -> int:
     )
     print(f"raw odometry: {len(raw_rows)} samples")
     print(f"corrected odometry: {len(corrected_rows)} samples")
+    print(f"final pose graph: {len(pose_graph_rows)} keyframes")
     print(f"automatic loop accepts: {len(accepted)}")
     for line in accepted:
         print(line)
     print(f"automatic loop rejects after geometry: {len(rejected)}")
     print(f"automatic correction safety rejects: {len(correction_rejected)}")
+    print(f"automatic expanded-retrieval rejects: {len(retrieval_score_rejected)}")
     print(f"automatic spatial-support rejects: {len(spatial_rejected)}")
     print(f"pose coverage: {pose_coverage:.4f}")
     print(f"loop input drop events: {len(input_drops)}")
     print(f"estimator keyframe queue drop events: {len(estimator_queue_drops)}")
+    print(
+        "feature tracking: "
+        f"{feature_tracking['result']} "
+        f"(minimum={feature_tracking['minimum_features']}, "
+        f"consecutive_low={feature_tracking['max_consecutive_low_samples']})"
+    )
     print(f"keyframe trajectory: {loop_output / 'vio_loop.csv'}")
     for failure in failures:
         print(f"FAIL: {failure}")

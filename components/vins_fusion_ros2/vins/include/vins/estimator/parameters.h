@@ -14,10 +14,12 @@
 #include <vins/utility/utility.h>
 
 #include <Eigen/Dense>
+#include <cmath>
 #include <fstream>
 #include <map>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
+#include <stdexcept>
 #include <vector>
 
 using namespace std;
@@ -77,6 +79,7 @@ struct VINSOptions {
   int show_track = 0;
   int enable_reverse_optical_flow_check = 0;
   int enable_zupt = 0;
+  double raw_odometry_failure_step_m = 0.0;
   ///////////////////////////////////////////////////////////////////////////
 
   // 读取参数函数
@@ -96,6 +99,15 @@ struct VINSOptions {
     this->enable_reverse_optical_flow_check = (int)fsSettings["flow_back"];
     if (!fsSettings["enable_zupt"].empty()) {
       this->enable_zupt = (int)fsSettings["enable_zupt"];
+    }
+    if (!fsSettings["raw_odometry_failure_step_m"].empty()) {
+      this->raw_odometry_failure_step_m =
+          (double)fsSettings["raw_odometry_failure_step_m"];
+      if (!std::isfinite(this->raw_odometry_failure_step_m) ||
+          this->raw_odometry_failure_step_m < 0.0) {
+        throw std::invalid_argument(
+            "raw_odometry_failure_step_m must be finite and non-negative");
+      }
     }
 
     this->USE_GPU = (int)fsSettings["use_gpu"];
@@ -204,6 +216,9 @@ struct VINSOptions {
   bool isStereoWithImu() const { return isUsingStereo() && hasImu(); }
   bool shouldShowTrack() const { return show_track; }
   bool shouldUseZupt() const { return enable_zupt; }
+  double rawOdometryFailureStepM() const {
+    return raw_odometry_failure_step_m;
+  }
   bool isExtrinsicEstimationApproximate() const {
     return extrinsic_estimation_mode == ExtrinsicEstimationMode::APPROXIMATE;
   }

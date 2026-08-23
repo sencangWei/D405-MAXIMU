@@ -4,7 +4,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from slam_runtime_watchdog import SlamRuntimeWatchdog, write_json_atomic
+from slam_runtime_watchdog import (
+    SlamRuntimeWatchdog,
+    parse_pose_integrity_failure,
+    write_json_atomic,
+)
 
 
 def add_pose(
@@ -152,3 +156,60 @@ def test_runtime_watchdog_records_ros_setup_failure_as_infrastructure():
         "raw_stream_missing",
         "corrected_stream_missing",
     ]
+
+
+def test_runtime_watchdog_rejects_fresh_arrivals_with_old_sensor_timestamps():
+    monitor = SlamRuntimeWatchdog(
+        start_monotonic_s=0.0,
+        timestamp_epoch_offset_s=1000.0,
+        max_data_age_s=0.5,
+    )
+    for index in range(12):
+        arrival = index / 30.0
+        timestamp = 1000.0 + arrival - 1.25
+        point = (index * 0.001, 0.0, 0.0)
+        monitor.ingest(
+            "raw",
+            timestamp_s=timestamp,
+            point=point,
+            arrival_monotonic_s=arrival,
+        )
+        monitor.ingest(
+            "corrected",
+            timestamp_s=timestamp,
+            point=point,
+            arrival_monotonic_s=arrival,
+        )
+
+    snapshot = monitor.snapshot(11 / 30.0)
+
+    assert snapshot["state"] == "SLAM_FAILED"
+    assert set(snapshot["failures"]) == {
+        "raw_timestamp_stale",
+        "corrected_timestamp_stale",
+    }
+    assert snapshot["streams"]["raw"]["timestamp_age_s"] == 1.25
+    assert snapshot["thresholds"]["max_data_age_s"] == 0.5
+
+
+def test_runtime_watchdog_latches_estimator_pose_integrity_failure():
+    monitor = healthy_monitor()
+    reason = parse_pose_integrity_failure(
+        '{"state":"SLAM_FAILED","reason":"position_step_exceeded",'
+        '"step_m":0.25,"limit_m":0.10}'
+    )
+
+    assert reason == "estimator_pose_integrity:position_step_exceeded"
+    monitor.mark_runtime_failure(reason)
+    snapshot = monitor.snapshot(0.4)
+
+    assert snapshot["state"] == "SLAM_FAILED"
+    assert snapshot["product_usable"] is False
+    assert snapshot["failures"] == [
+        "estimator_pose_integrity:position_step_exceeded"
+    ]
+
+
+def test_pose_integrity_parser_ignores_non_failure_and_malformed_payloads():
+    assert parse_pose_integrity_failure('{"state":"SLAM_HEALTHY"}') is None
+    assert parse_pose_integrity_failure("not-json") is None

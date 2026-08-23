@@ -53,6 +53,19 @@ DEPTH_STEREO_STREAMS = (
 
 STREAM_KEYS = tuple(name for name, *_ in STREAMS)
 IMU_WARMUP_FRAMES = 500
+IMU_TRANSPORT_COUNTER_KEYS = (
+    "frames_ok",
+    "frames_bad",
+    "resyncs",
+    "dropped_frames",
+    "counter_resets",
+    "counter_stalls",
+    "sequence_gaps",
+    "invalid_imu_flags",
+    "queue_overflow_flags",
+    "serial_errors",
+    "serial_reconnects",
+)
 MIN_CAMERA_RATE_HZ = 29.5
 MAX_CAMERA_GAP_RATIO = 0.001
 MIN_IMU_RATE_HZ = 399.0
@@ -152,6 +165,39 @@ class MetadataFrame:
 
 def stats_delta(start: dict, end: dict) -> dict:
     return {key: end.get(key, 0) - value for key, value in start.items()}
+
+
+def imu_transport_accepted(
+    protocol: str, rate_hz: float, formal: dict, recorder_drops: int
+) -> bool:
+    """Apply protocol-aware IMU transport gates to the formal capture window."""
+    if protocol not in {"kt_ex9_37", "stm32_combined_v1"}:
+        return False
+    common_keys = (
+        "frames_bad",
+        "resyncs",
+        "dropped_frames",
+        "counter_resets",
+        "counter_stalls",
+        "serial_errors",
+        "serial_reconnects",
+    )
+    if not (
+        MIN_IMU_RATE_HZ <= rate_hz <= MAX_IMU_RATE_HZ
+        and all(int(formal.get(key, -1)) == 0 for key in common_keys)
+        and recorder_drops == 0
+    ):
+        return False
+    if protocol == "stm32_combined_v1":
+        return all(
+            int(formal.get(key, -1)) == 0
+            for key in (
+                "sequence_gaps",
+                "invalid_imu_flags",
+                "queue_overflow_flags",
+            )
+        )
+    return True
 
 
 def timestamps_aligned(timestamps_ms: list[float], tolerance_ms: float) -> bool:
@@ -609,7 +655,7 @@ def main() -> int:
     imu = ImuReader(
         args.imu_port,
         baud=args.imu_baud,
-        warmup_frames=0,
+        warmup_frames=IMU_WARMUP_FRAMES,
         on_sample=record_imu,
         name="all_streams_imu",
     )
@@ -643,6 +689,7 @@ def main() -> int:
     formal_stop_mono = None
     imu_stats_start = {}
     imu_stats_end = {}
+    imu_warmup_stats = {}
     capture_error = None
     imu_recorder_started = False
     imu_started = False
@@ -728,23 +775,15 @@ def main() -> int:
                 count >= max(0, args.warmup_frames)
                 for count in warmup_counts.values()
             )
-            if camera_ready and imu.frames_ok >= IMU_WARMUP_FRAMES:
+            if camera_ready and imu.warmup_stats():
                 break
             if time.monotonic() >= warmup_deadline:
                 raise RuntimeError(
                     f"预热超时: camera={warmup_counts}, imu={imu.frames_ok}"
                 )
 
-        imu_counter_keys = (
-            "frames_ok",
-            "frames_bad",
-            "resyncs",
-            "dropped_frames",
-            "counter_resets",
-            "counter_stalls",
-            "serial_errors",
-            "serial_reconnects",
-        )
+        imu_warmup_stats = imu.warmup_stats()
+
         while True:
             queued_frame = frame_queue.poll_for_frame()
             if not queued_frame:
@@ -753,9 +792,10 @@ def main() -> int:
             if key is not None:
                 warmup_cutoff[key] = int(queued_frame.get_frame_number())
 
-        imu_stats_snapshot = imu.stats()
+        imu_stats_snapshot = imu.stats_since_warmup()
         imu_stats_start = {
-            key: imu_stats_snapshot.get(key, 0) for key in imu_counter_keys
+            key: imu_stats_snapshot.get(key, 0)
+            for key in IMU_TRANSPORT_COUNTER_KEYS
         }
         recorder_device.resume()
         recorder_resumed = True
@@ -842,7 +882,7 @@ def main() -> int:
             except Exception:
                 pass
         if imu_started:
-            imu_stats_end = imu.stats()
+            imu_stats_end = imu.stats_since_warmup()
         if sensor_started:
             try:
                 sensor.stop()
@@ -906,20 +946,11 @@ def main() -> int:
         limit_us=args.ir_auto_exposure_limit_us,
     )
 
-    imu_counter_keys = (
-        "frames_ok",
-        "frames_bad",
-        "resyncs",
-        "dropped_frames",
-        "counter_resets",
-        "counter_stalls",
-        "serial_errors",
-        "serial_reconnects",
-    )
     imu_formal = stats_delta(
-        {key: imu_stats_start.get(key, 0) for key in imu_counter_keys},
-        {key: imu_stats_end.get(key, 0) for key in imu_counter_keys},
+        {key: imu_stats_start.get(key, 0) for key in IMU_TRANSPORT_COUNTER_KEYS},
+        {key: imu_stats_end.get(key, 0) for key in IMU_TRANSPORT_COUNTER_KEYS},
     ) if imu_stats_start and imu_stats_end else {}
+    imu_protocol = str(imu_stats_end.get("protocol", "unknown"))
     imu_path = session / "external_imu" / "imu.bin"
     imu_samples_written = (
         imu_path.stat().st_size // IMU_PACK_SIZE if imu_path.exists() else 0
@@ -944,17 +975,8 @@ def main() -> int:
             for stream in bag_streams.values()
         )
     )
-    imu_ok = (
-        bool(imu_formal)
-        and MIN_IMU_RATE_HZ <= imu_rate_hz <= MAX_IMU_RATE_HZ
-        and imu_formal.get("frames_bad", 1) == 0
-        and imu_formal.get("resyncs", 1) == 0
-        and imu_formal.get("dropped_frames", 1) == 0
-        and imu_formal.get("counter_resets", 1) == 0
-        and imu_formal.get("counter_stalls", 1) == 0
-        and imu_formal.get("serial_errors", 1) == 0
-        and imu_formal.get("serial_reconnects", 1) == 0
-        and imu_recorder.dropped == 0
+    imu_ok = bool(imu_formal) and imu_transport_accepted(
+        imu_protocol, imu_rate_hz, imu_formal, imu_recorder.dropped
     )
     live_vins_ok = (
         not args.publish_vins
@@ -1017,7 +1039,9 @@ def main() -> int:
         },
         "imu": {
             "result": "PASS" if imu_ok else "FAIL",
-            "warmup_cumulative_stats": imu_stats_start,
+            "protocol": imu_protocol,
+            "warmup_cumulative_stats": imu_warmup_stats,
+            "pre_formal_post_warmup_stats": imu_stats_start,
             "formal_window_stats": imu_formal,
             "samples_written": imu_samples_written,
             "rate_hz": imu_rate_hz,

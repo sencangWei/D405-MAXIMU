@@ -92,6 +92,10 @@ class Runtime:
                 epoch_offset=self._epoch_offset,
                 cam_latency_ms=unit.camera.cam_latency_ms,
                 imu_level_calibration=unit.vio.imu_level_calibration,
+                preview_topic="/rgb_preview/image_raw"
+                if unit.camera.rgb_preview
+                else "",
+                preview_hz=30.0,
             )
         # 默认 stub
         return StubVIO(name=f"stub_{unit.name}")
@@ -194,6 +198,7 @@ class Runtime:
                 port=u_cfg.imu.port, baud=u_cfg.imu.baud,
                 on_sample=lambda s, name=u_cfg.name: self._on_imu(name, s),
                 name=u_cfg.name,
+                protocol=u_cfg.imu.protocol,
             )
             # 相机
             ur.cam = RealSenseCapture(
@@ -201,9 +206,12 @@ class Runtime:
                 width=u_cfg.camera.width, height=u_cfg.camera.height,
                 fps=u_cfg.camera.fps, enable_depth=u_cfg.camera.enable_depth,
                 stereo_ir=u_cfg.camera.stereo_ir,
+                rgb_preview=u_cfg.camera.rgb_preview,
                 auto_exposure=u_cfg.camera.auto_exposure,
                 exposure_us=u_cfg.camera.exposure_us,
                 gain=u_cfg.camera.gain,
+                auto_exposure_limit_us=u_cfg.camera.auto_exposure_limit_us,
+                auto_gain_limit=u_cfg.camera.auto_gain_limit,
                 on_frame=lambda f, name=u_cfg.name: self._on_camera(name, f),
                 name=u_cfg.name,
             )
@@ -326,6 +334,8 @@ class Runtime:
             if ur.cam:
                 ok = ur.cam.start()
                 print(f"[{name}] 相机 {'OK' if ok else 'FAIL'} serial={ur.cfg.camera.serial!r}")
+                if ok and ur.cfg.camera.stereo_ir and ur.cfg.camera.rgb_preview:
+                    print(f"[{name}] 图像分流: 双IR -> VINS，RGB -> Rerun")
         for name, ur in self.units.items():
             if ur.imu:
                 ok = ur.imu.start()
@@ -402,6 +412,12 @@ class Runtime:
                     f" | ROS pub imu={s['ros_imu_pub']} cam={s['ros_cam_pub']}"
                     f" warmup={s.get('ros_cam_warmup_discard', 0)}"
                     f" drop={s['ros_cam_drop']} q={s['ros_cam_queue']}"
+                )
+            if "ros_cam_cycle_p95_ms" in s:
+                line += (
+                    f" | CAMROS p95={s['ros_cam_cycle_p95_ms']:.1f}ms"
+                    f" copy={s['ros_cam_prepare0_p95_ms'] + s['ros_cam_prepare1_p95_ms']:.1f}ms"
+                    f" pub={s['ros_cam_publish0_p95_ms'] + s['ros_cam_publish1_p95_ms']:.1f}ms"
                 )
             print(line)
 

@@ -171,12 +171,20 @@ void Estimator::inputImage(const ImageData &image) {
   }
   const double tracker_ms = featureTrackerTime.toc();
 
+  // Keep camera capture and feature tracking at 30 Hz, but preserve the
+  // proven dual-IR stable fork's roughly 15 Hz estimator cadence.  Enqueuing
+  // every tracked frame overloads this backend and creates an ever-growing
+  // seconds-long latency; an empty queue may still take the current frame.
   {
     std::lock_guard<std::mutex> lock(featureBufferMutex);
-    featureBuffer.push(make_pair(image.timestamp, featureFrame));
-    enqueuedImageCount.fetch_add(1);
+    const bool enqueue_for_backend =
+        inputImageCount % 2 == 0 || featureBuffer.empty();
+    if (enqueue_for_backend) {
+      featureBuffer.push(make_pair(image.timestamp, featureFrame));
+      enqueuedImageCount.fetch_add(1);
+      featureCondition.notify_one();
+    }
   }
-  featureCondition.notify_one();
 
   if (inputImageCount % 30 == 0) {
     size_t queue_depth;

@@ -42,6 +42,17 @@ def healthy_report() -> dict:
         "loop_input_drop_events": 0,
         "estimator_keyframe_queue_drop_events": 0,
         "pose_graph_health": {"rejected_optimizations": 0},
+        "feature_tracking": {
+            "result": "PASS",
+            "samples": 58,
+            "minimum_features": 80,
+            "low_feature_samples": 0,
+            "max_consecutive_low_samples": 0,
+            "thresholds": {
+                "low_feature_count": 20,
+                "maximum_consecutive_low_samples": 2,
+            },
+        },
         "raw_trajectory_diagnostics": {"max_step_m": 0.01, "z_span_m": 0.2},
         "corrected_trajectory_diagnostics": {
             "max_step_m": 0.02,
@@ -134,6 +145,24 @@ def test_runtime_watchdog_failure_rejects_otherwise_passing_run():
 
     assert health["state"] == "SLAM_FAILED"
     assert "runtime_watchdog" in health["failures"]
+
+
+def test_sustained_feature_collapse_rejects_otherwise_passing_run():
+    report = healthy_report()
+    report["feature_tracking"].update(
+        {
+            "result": "FAIL",
+            "minimum_features": 1,
+            "low_feature_samples": 3,
+            "max_consecutive_low_samples": 3,
+        }
+    )
+
+    health = evaluate_slam_health(report)
+
+    assert health["state"] == "SLAM_FAILED"
+    assert health["product_usable"] is False
+    assert "feature_tracking" in health["failures"]
 
 
 def test_trajectory_diagnostics_reject_timestamp_regression(tmp_path):

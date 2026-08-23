@@ -100,6 +100,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sample-every", type=int, default=15)
     parser.add_argument("--max-frames", type=int, default=0)
     parser.add_argument("--grid-stride", type=int, default=12)
+    parser.add_argument(
+        "--roi-top-fraction",
+        type=float,
+        default=0.0,
+        help=(
+            "只在该归一化图像高度以下拟合平面；0使用原全图，"
+            "0.5用于隔离下半图地面候选"
+        ),
+    )
     parser.add_argument("--min-depth-m", type=float, default=0.07)
     parser.add_argument("--max-depth-m", type=float, default=1.5)
     parser.add_argument("--ransac-threshold-m", type=float, default=0.006)
@@ -111,7 +120,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-horizontal-tilt-deg", type=float, default=12.0)
     parser.add_argument("--plane-factor-gain", type=float, default=0.35)
     parser.add_argument("--plane-factor-max-correction-m", type=float, default=0.03)
-    parser.add_argument("--plane-factor-max-gap-s", type=float, default=0.5)
+    parser.add_argument("--plane-factor-max-gap-s", type=float, default=0.75)
     parser.add_argument("--plane-factor-min-support", type=int, default=5)
     parser.add_argument("--plane-factor-max-slew-mps", type=float, default=0.03)
     parser.add_argument(
@@ -284,10 +293,17 @@ def depth_points(
     stride: int,
     min_depth_m: float,
     max_depth_m: float,
+    roi_top_fraction: float = 0.0,
 ) -> np.ndarray:
+    if not 0.0 <= roi_top_fraction < 0.9:
+        raise ValueError("roi_top_fraction must be in [0, 0.9)")
     margin_x = intrinsics.width // 10
     margin_y = intrinsics.height // 10
-    ys = np.arange(margin_y, intrinsics.height - margin_y, stride)
+    roi_top = max(margin_y, int(np.ceil(intrinsics.height * roi_top_fraction)))
+    roi_bottom = intrinsics.height - margin_y
+    if roi_top >= roi_bottom:
+        raise ValueError("depth ROI is empty after applying image margins")
+    ys = np.arange(roi_top, roi_bottom, stride)
     xs = np.arange(margin_x, intrinsics.width - margin_x, stride)
     xx, yy = np.meshgrid(xs, ys)
     zz = image[yy, xx].astype(np.float64) * depth_unit_m
@@ -311,6 +327,7 @@ def extract_observations(
     min_inlier_ratio: float,
     min_inlier_points: int,
     max_p95_residual_m: float,
+    roi_top_fraction: float = 0.0,
 ) -> tuple[list[PlaneObservation], Intrinsics, float, Path]:
     from rclpy.serialization import deserialize_message
     from sensor_msgs.msg import Image as RosImage
@@ -363,6 +380,7 @@ def extract_observations(
             grid_stride,
             min_depth_m,
             max_depth_m,
+            roi_top_fraction,
         )
         if len(points) < 100:
             continue
@@ -711,6 +729,33 @@ def plane_factor_correction(
         disabled["support_observations"] = len(eligible)
         return trajectory_positions.copy(), np.zeros(len(trajectory_times)), disabled
 
+    applied_max = float(np.max(np.abs(correction)))
+    if applied_max <= 1e-12:
+        disabled.update(
+            {
+                "reason": "plane support produced no nonzero correction",
+                "support_observations": support_used,
+                "activations": activations,
+                "resets": resets,
+                "active_trajectory_samples": 0,
+                "correction_axis_world": gravity_axis.tolist(),
+                "gain": gain,
+                "max_correction_m": max_correction_m,
+                "max_gap_s": max_gap_s,
+                "min_support": min_support,
+                "max_slew_mps": max_slew_mps,
+                "max_horizontal_tilt_deg": max_horizontal_tilt_deg,
+                "angle_gate_deg": angle_gate_deg,
+                "offset_gate_m": offset_gate_m,
+                "applied_correction_max_abs_m": 0.0,
+                "applied_correction_rms_m": 0.0,
+                "raw_gravity_axis_span_m": raw_vertical_span,
+                "corrected_gravity_axis_span_m": raw_vertical_span,
+                "gravity_axis_span_retention_ratio": 1.0,
+            }
+        )
+        return trajectory_positions.copy(), np.zeros(len(trajectory_times)), disabled
+
     report = {
         "status": "ACTIVE",
         "reason": None,
@@ -733,7 +778,7 @@ def plane_factor_correction(
         "angle_gate_deg": angle_gate_deg,
         "offset_gate_m": offset_gate_m,
         "causal": True,
-        "applied_correction_max_abs_m": float(np.max(np.abs(correction))),
+        "applied_correction_max_abs_m": applied_max,
         "applied_correction_rms_m": float(np.sqrt(np.mean(correction**2))),
         "raw_gravity_axis_span_m": raw_vertical_span,
         "corrected_gravity_axis_span_m": corrected_vertical_span,
@@ -746,6 +791,155 @@ def plane_factor_correction(
         "uses_endpoint_constraint": False,
     }
     return corrected, correction, report
+
+
+def plane_factor_observation_metrics(
+    observations: list[PlaneObservation],
+    trajectory_times: np.ndarray,
+    correction: np.ndarray,
+    max_gap_s: float,
+) -> dict[str, object]:
+    """Measure plane-offset consistency before/after a candidate correction.
+
+    This is an offline diagnostic only.  It uses observations already accepted
+    by the world temporal gate and never feeds a result back into the factor.
+    Segment-local metrics avoid treating a long loss of plane support as proof
+    that a later horizontal plane is the same physical landmark.
+    """
+    if len(trajectory_times) != len(correction):
+        raise ValueError("trajectory time/correction length mismatch")
+    if len(trajectory_times) < 2 or np.any(np.diff(trajectory_times) <= 0.0):
+        raise ValueError("trajectory timestamps must be strictly increasing")
+    if max_gap_s <= 0.0:
+        raise ValueError("max_gap_s must be positive")
+
+    samples: list[tuple[float, float, float]] = []
+    gravity_axis = np.array([0.0, 0.0, 1.0])
+    for item in sorted(observations, key=lambda observation: observation.epoch_s):
+        if (
+            not item.temporal_gate_pass
+            or not item.pose_matched
+            or item.normal_world is None
+            or item.offset_world_m is None
+        ):
+            continue
+        normal = np.asarray(item.normal_world, dtype=float)
+        normal_norm = float(np.linalg.norm(normal))
+        if normal.shape != (3,) or normal_norm < 1e-8:
+            continue
+        normal /= normal_norm
+        offset = float(item.offset_world_m)
+        if normal @ gravity_axis < 0.0:
+            normal = -normal
+            offset = -offset
+        applied = float(
+            np.interp(item.epoch_s, trajectory_times, correction)
+        )
+        corrected_offset = offset - float(normal @ gravity_axis) * applied
+        samples.append((float(item.epoch_s), offset, corrected_offset))
+
+    if len(samples) < 2:
+        return {
+            "status": "INSUFFICIENT_SUPPORT",
+            "accepted_observations": len(samples),
+            "segments": 0,
+            "segment_metrics": [],
+            "offline_diagnostic_only": True,
+        }
+
+    segments: list[list[tuple[float, float, float]]] = []
+    current: list[tuple[float, float, float]] = []
+    for sample in samples:
+        if current and sample[0] - current[-1][0] > max_gap_s:
+            segments.append(current)
+            current = []
+        current.append(sample)
+    if current:
+        segments.append(current)
+
+    def distribution(values: np.ndarray) -> tuple[float, float]:
+        center = float(np.median(values))
+        return (
+            float(np.std(values)),
+            float(np.quantile(np.abs(values - center), 0.95)),
+        )
+
+    raw_all = np.asarray([sample[1] for sample in samples], dtype=float)
+    corrected_all = np.asarray([sample[2] for sample in samples], dtype=float)
+    raw_std, raw_p95 = distribution(raw_all)
+    corrected_std, corrected_p95 = distribution(corrected_all)
+    segment_metrics = []
+    improved_segments = 0
+    for index, segment in enumerate(segments, start=1):
+        raw = np.asarray([sample[1] for sample in segment], dtype=float)
+        corrected = np.asarray([sample[2] for sample in segment], dtype=float)
+        segment_raw_std, segment_raw_p95 = distribution(raw)
+        segment_corrected_std, segment_corrected_p95 = distribution(corrected)
+        improved = bool(
+            segment_corrected_std < segment_raw_std
+            and segment_corrected_p95 < segment_raw_p95
+        )
+        improved_segments += int(improved)
+        segment_metrics.append(
+            {
+                "segment": index,
+                "observations": len(segment),
+                "start_epoch_s": segment[0][0],
+                "end_epoch_s": segment[-1][0],
+                "raw_offset_std_m": segment_raw_std,
+                "corrected_offset_std_m": segment_corrected_std,
+                "raw_p95_abs_error_m": segment_raw_p95,
+                "corrected_p95_abs_error_m": segment_corrected_p95,
+                "improved": improved,
+            }
+        )
+
+    raw_within = np.concatenate(
+        [
+            np.asarray([sample[1] for sample in segment], dtype=float)
+            - np.median([sample[1] for sample in segment])
+            for segment in segments
+        ]
+    )
+    corrected_within = np.concatenate(
+        [
+            np.asarray([sample[2] for sample in segment], dtype=float)
+            - np.median([sample[2] for sample in segment])
+            for segment in segments
+        ]
+    )
+    raw_within_std, raw_within_p95 = distribution(raw_within)
+    corrected_within_std, corrected_within_p95 = distribution(corrected_within)
+    changed = bool(np.max(np.abs(corrected_all - raw_all)) > 1e-12)
+    within_segment_improved = bool(
+        corrected_within_std < raw_within_std
+        and corrected_within_p95 < raw_within_p95
+    )
+    status = (
+        "UNCHANGED"
+        if not changed
+        else "IMPROVED"
+        if within_segment_improved
+        else "NO_NET_IMPROVEMENT"
+    )
+    return {
+        "status": status,
+        "accepted_observations": len(samples),
+        "segments": len(segments),
+        "improved_segments": improved_segments,
+        "raw_offset_std_m": raw_std,
+        "corrected_offset_std_m": corrected_std,
+        "raw_p95_abs_error_m": raw_p95,
+        "corrected_p95_abs_error_m": corrected_p95,
+        "within_segment_raw_std_m": raw_within_std,
+        "within_segment_corrected_std_m": corrected_within_std,
+        "within_segment_raw_p95_abs_error_m": raw_within_p95,
+        "within_segment_corrected_p95_abs_error_m": corrected_within_p95,
+        "decisive_metric_scope": "within_segment",
+        "pooled_cross_segment_metrics_decisive": False,
+        "segment_metrics": segment_metrics,
+        "offline_diagnostic_only": True,
+    }
 
 
 def write_trajectory(
@@ -810,6 +1004,7 @@ def main() -> int:
             min_inlier_ratio=args.min_inlier_ratio,
             min_inlier_points=args.min_inlier_points,
             max_p95_residual_m=args.max_p95_residual_m,
+            roi_top_fraction=args.roi_top_fraction,
         )
     temporal_report = None
     plane_factor_report = None
@@ -828,7 +1023,7 @@ def main() -> int:
         trajectory_times, trajectory_positions, trajectory_quaternions = load_trajectory(
             args.trajectory.resolve()
         )
-        corrected_positions, _, plane_factor_report = plane_factor_correction(
+        corrected_positions, correction, plane_factor_report = plane_factor_correction(
             observations,
             trajectory_times,
             trajectory_positions,
@@ -840,6 +1035,12 @@ def main() -> int:
             angle_gate_deg=args.world_angle_gate_deg,
             offset_gate_m=args.world_offset_gate_m,
             max_horizontal_tilt_deg=args.max_horizontal_tilt_deg,
+        )
+        plane_factor_report["observation_metrics"] = plane_factor_observation_metrics(
+            observations,
+            trajectory_times,
+            correction,
+            max_gap_s=args.plane_factor_max_gap_s,
         )
         if args.corrected_trajectory is not None:
             write_trajectory(
@@ -858,6 +1059,9 @@ def main() -> int:
         "intrinsics": asdict(intrinsics) if intrinsics else None,
         "depth_unit_m": depth_unit_m,
         "sample_every": args.sample_every if observation_source is None else None,
+        "roi_top_fraction": (
+            args.roi_top_fraction if observation_source is None else None
+        ),
         "observations": len(observations),
         "local_gate_passes": local_passes,
         "local_gate_fraction": local_passes / len(observations),

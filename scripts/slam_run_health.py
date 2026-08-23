@@ -12,7 +12,7 @@ from pathlib import Path
 from slam_benchmark_environment import validate_environment_report
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 MIN_POSE_COVERAGE = 0.98
 MIN_TRUE_ELEVATION_RETENTION = 0.90
 MIN_ABSOLUTE_JUMP_LIMIT_M = 0.03
@@ -208,6 +208,14 @@ def evaluate_slam_health(report: dict) -> dict:
         isinstance(rejected_optimizations, int) and rejected_optimizations == 0,
         rejected_optimizations,
         {"maximum": 0},
+    )
+    feature_tracking = report.get("feature_tracking")
+    add(
+        "feature_tracking",
+        isinstance(feature_tracking, dict)
+        and feature_tracking.get("result") == "PASS",
+        feature_tracking,
+        {"result": "PASS"},
     )
 
     raw_diagnostics = report.get("raw_trajectory_diagnostics", {})

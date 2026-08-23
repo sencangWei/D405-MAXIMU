@@ -1,6 +1,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <vins_fusion_ros2/vins_estimator.h>
 
+#include <iomanip>
+#include <sstream>
+
 VinsEstimator::VinsEstimator() : rclcpp::Node("vins_estimator") {
   options = std::make_shared<VINSOptions>();
   estimator_ = std::make_shared<Estimator>();
@@ -21,6 +24,8 @@ void VinsEstimator::initializeParamters() {
   body_frame_id = readParam<std::string>(this, "body_frame_id", "body");
   camera_frame_id = readParam<std::string>(this, "camera_frame_id", "camera");
   options->readParameters(config_file);
+  pose_integrity_guard_ = std::make_unique<PoseIntegrityGuard>(
+      options->rawOdometryFailureStepM());
   estimator_->initialize(options);
 }
 void VinsEstimator::initializeSubscribers() {
@@ -136,6 +141,10 @@ void VinsEstimator::initializerPublishers() {
       this->create_publisher<sensor_msgs::msg::PointCloud>("keyframe_point", 1);
   pub_keyframe_pose =
       this->create_publisher<nav_msgs::msg::Odometry>("keyframe_pose", 1);
+  auto integrity_qos = rclcpp::QoS(rclcpp::KeepLast(1));
+  integrity_qos.reliable().transient_local();
+  pub_pose_integrity = this->create_publisher<std_msgs::msg::String>(
+      "/vins/pose_integrity", integrity_qos);
 }
 
 void VinsEstimator::stereoCallback(
@@ -197,6 +206,7 @@ void VinsEstimator::publishImage() {
 void VinsEstimator::publishImuData() {
   OdomData imu_odom;
   if (estimator_->getIntegratedImuOdom(imu_odom)) {
+    if (pose_integrity_failed_.load()) return;
     nav_msgs::msg::Odometry odometry = toMsg(imu_odom);
     odometry.header.frame_id = world_frame_id;
     odometry.child_frame_id = body_frame_id;
@@ -206,6 +216,12 @@ void VinsEstimator::publishImuData() {
 void VinsEstimator::publishOdometry() {
   OdomData vio_odom;
   if (estimator_->getVisualInertialOdom(vio_odom)) {
+    const auto decision = pose_integrity_guard_->update(vio_odom);
+    if (decision == PoseIntegrityDecision::kLatchFailure) {
+      latchPoseIntegrityFailure();
+      return;
+    }
+    if (decision != PoseIntegrityDecision::kAccept) return;
     nav_msgs::msg::Odometry odometry = toMsg(vio_odom);
     odometry.header.frame_id = world_frame_id;
     odometry.child_frame_id = body_frame_id;
@@ -247,9 +263,30 @@ void VinsEstimator::publishOdometry() {
   }
 }
 
+void VinsEstimator::latchPoseIntegrityFailure() {
+  pose_integrity_failed_.store(true);
+  std::ostringstream payload;
+  payload << std::fixed << std::setprecision(6)
+          << "{\"state\":\"SLAM_FAILED\",\"reason\":\""
+          << pose_integrity_guard_->failureReason()
+          << "\",\"step_m\":" << pose_integrity_guard_->failureStepM()
+          << ",\"limit_m\":"
+          << pose_integrity_guard_->maximumPositionStepM()
+          << ",\"last_trusted_timestamp\":"
+          << pose_integrity_guard_->lastAcceptedTimestamp() << "}";
+  std_msgs::msg::String message;
+  message.data = payload.str();
+  pub_pose_integrity->publish(message);
+  RCLCPP_ERROR(this->get_logger(),
+               "[POSE_INTEGRITY_FAIL] %s; pose/keyframe output is latched "
+               "until a clean process restart",
+               message.data.c_str());
+}
+
 void VinsEstimator::publishKeyFrameData() {
   KeyFrameData keyframe;
   while (estimator_->getKeyFrameData(keyframe)) {
+    if (pose_integrity_failed_.load()) continue;
     const auto &pose = keyframe.pose;
     nav_msgs::msg::Odometry odometry;
     odometry.header.stamp = toMsg(pose.timestamp);

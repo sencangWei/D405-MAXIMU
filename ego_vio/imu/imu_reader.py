@@ -17,12 +17,26 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 from ..timing import OnlineCounterFitter
+from .stream_protocol import StreamDecoder, TimerUnwrapper
 
 FRAME_SIZE = 37
 HEADER0 = 0xEB
 HEADER1 = 0x90
 EXPECTED_LEN = 0x22     # 数据包长度字节
 IMU_HZ = 400            # 名义采样率，用于丢帧诊断
+TRANSPORT_COUNTER_KEYS = (
+    "frames_ok",
+    "frames_bad",
+    "resyncs",
+    "dropped_frames",
+    "counter_resets",
+    "counter_stalls",
+    "sequence_gaps",
+    "invalid_imu_flags",
+    "queue_overflow_flags",
+    "serial_errors",
+    "serial_reconnects",
+)
 
 
 @dataclass
@@ -161,13 +175,20 @@ class ImuReader:
         on_sample: Optional[Callable[[ImuSample], None]] = None,
         name: str = "imu",
         warmup_frames: int = 500,
+        protocol: str = "auto",
     ):
         self.port = port
         self.baud = baud
         self.on_sample = on_sample
         self.name = name
+        self.protocol = protocol
         self._warmup_frames = max(0, int(warmup_frames))
         self._warmup_remaining = self._warmup_frames
+        self._decoder = StreamDecoder(protocol)
+        self._mcu_timer = TimerUnwrapper()
+        self._mcu_to_host_offset = None
+        self.detected_protocols = set()
+        self._formal_detected_protocols = set()
 
         self._ser = None
         self._running = False
@@ -200,9 +221,17 @@ class ImuReader:
         self.dropped_frames = 0      # counter 不连续 = 丢帧
         self.counter_resets = 0
         self.counter_stalls = 0      # counter 原地不增（如 DIO2 毛刺后连续为 1）
+        self.sequence_gaps = 0
+        self.last_sequence = None
+        self.invalid_imu_flags = 0
+        self.queue_overflow_flags = 0
         self.serial_errors = 0
         self.serial_reconnects = 0
         self.recent_dt = deque(maxlen=400)   # 最近帧间隔，算抖动
+        self._warmup_stats = self._transport_snapshot() if self._warmup_frames == 0 else None
+
+    def _transport_snapshot(self) -> dict:
+        return {key: int(getattr(self, key, 0)) for key in TRANSPORT_COUNTER_KEYS}
 
     def _open_port(self) -> bool:
         try:
@@ -227,8 +256,15 @@ class ImuReader:
 
         self._running = True
         self._warmup_remaining = self._warmup_frames
+        self._decoder = StreamDecoder(self.protocol)
+        self._mcu_timer = TimerUnwrapper()
+        self._mcu_to_host_offset = None
+        self.detected_protocols.clear()
+        self._formal_detected_protocols.clear()
+        self._warmup_stats = self._transport_snapshot() if self._warmup_frames == 0 else None
         self._clock_counter = 0
         self.last_counter = None
+        self.last_sequence = None
         self._ts_fitter.reset()
         self._thread = threading.Thread(target=self._loop, name=f"imu-{self.name}", daemon=True)
         self._thread.start()
@@ -249,6 +285,9 @@ class ImuReader:
             return False
         self.serial_reconnects += 1
         self._buf.clear()
+        self._decoder = StreamDecoder(self.protocol)
+        self._mcu_timer = TimerUnwrapper()
+        self._mcu_to_host_offset = None
         self._warmup_remaining = self._warmup_frames
         # 断线期间的样本无法恢复。重新锚定到当前主机时钟，保留真实
         # 时间空档；主机虚拟 counter 继续单调，设备 raw counter 仍用于
@@ -292,36 +331,78 @@ class ImuReader:
                 continue
             if not data:
                 continue
-            self._buf.extend(data)
-            self._consume()
+            self._consume_data(data)
 
     def _consume(self):
-        """从 buffer 里尽量抽出完整帧。"""
-        buf = self._buf
-        n = len(buf)
-        i = 0
-        consumed = 0
-        while i <= n - FRAME_SIZE:
-            if buf[i] == HEADER0 and buf[i + 1] == HEADER1 and buf[i + 2] == EXPECTED_LEN:
-                frame = bytes(buf[i:i + FRAME_SIZE])
-                if verify_checksum(frame):
-                    self._handle(frame)
-                    i += FRAME_SIZE
-                    consumed = i
-                    continue
-                else:
-                    self.frames_bad += 1
-            # 不匹配，前进一字节找下一个帧头
-            self.resyncs += 1
-            i += 1
-        # 丢弃已消费部分，保留尾巴
-        del buf[:consumed]
+        """兼容旧调用：把暂存字节交给双协议流解码器。"""
+        if self._buf:
+            data = bytes(self._buf)
+            self._buf.clear()
+            self._consume_data(data)
+
+    def _consume_data(self, data: bytes) -> None:
+        """解析一个串口批次，并在批次边界开启正式统计窗口。"""
+        formal_batch = self._warmup_stats is not None
+        for packet in self._decoder.feed(data):
+            self.detected_protocols.add(packet.protocol)
+            if formal_batch:
+                self._formal_detected_protocols.add(packet.protocol)
+            self.frames_ok += 1
+            if not packet.imu_valid:
+                self.invalid_imu_flags += 1
+                continue
+            if packet.sequence is not None:
+                if self.last_sequence is not None:
+                    delta = (int(packet.sequence) - int(self.last_sequence)) & 0xFFFFFFFF
+                    if delta != 1:
+                        self.sequence_gaps += 1
+                self.last_sequence = packet.sequence
+            if packet.flags & ((1 << 5) | (1 << 6)):
+                self.queue_overflow_flags += 1
+            rx = time.monotonic()
+            sample = ImuSample(
+                ts=rx,
+                counter=packet.counter,
+                gx=packet.gx,
+                gy=packet.gy,
+                gz=packet.gz,
+                ax=packet.ax,
+                ay=packet.ay,
+                az=packet.az,
+                temp=packet.temperature_c,
+                rx_time=rx,
+            )
+            self._accept_sample(
+                sample,
+                formal_batch=formal_batch,
+                imu_first_byte_rx_us=packet.imu_first_byte_rx_us,
+                count_frame=False,
+            )
+        self.frames_bad = self._decoder.crc_or_checksum_errors
+        self.resyncs = self._decoder.discarded_bytes
+        self._finish_batch()
 
     def _handle(self, frame: bytes):
         s = parse_frame(frame)
         if s is None:
             return
-        self.frames_ok += 1
+        formal_batch = self._warmup_stats is not None
+        self.detected_protocols.add("kt_ex9_37")
+        if formal_batch:
+            self._formal_detected_protocols.add("kt_ex9_37")
+        self._accept_sample(s, formal_batch=formal_batch, count_frame=True)
+        self._finish_batch()
+
+    def _accept_sample(
+        self,
+        s: ImuSample,
+        *,
+        formal_batch: bool,
+        imu_first_byte_rx_us: Optional[int] = None,
+        count_frame: bool,
+    ) -> None:
+        if count_frame:
+            self.frames_ok += 1
 
         # 丢帧检测: counter 应连续递增。
         # 当前系统不接 PPS，counter 应自由递增。回到 1 说明 IMU/DIO
@@ -355,9 +436,16 @@ class ImuReader:
         self.last_counter = s.counter
         self._clock_counter += clock_step
 
-        # 时间戳去抖: 无 PPS 时用主机侧连续样本序号。设备 counter
-        # 仍保留在 sample.counter 中用于诊断，但归 1 不再影响发布时间轴。
-        s.ts = self._ts_fitter.feed(self._clock_counter, s.ts)
+        if imu_first_byte_rx_us is not None:
+            # 新STM32包使用MCU捕获到IMU首字节的时间。Kalibr标定和SLAM
+            # 录制采用同一映射，USB批量到达抖动不进入逐帧时间戳。
+            device_time = self._mcu_timer.extend(imu_first_byte_rx_us) / 1_000_000.0
+            if self._mcu_to_host_offset is None:
+                self._mcu_to_host_offset = s.rx_time - device_time
+            s.ts = device_time + self._mcu_to_host_offset
+        else:
+            # 旧TTL链继续使用主机侧连续样本序号去抖。
+            s.ts = self._ts_fitter.feed(self._clock_counter, s.ts)
 
         # 时间间隔抖动统计(仍用原始接收时刻, 作为链路质量诊断)
         if not hasattr(self, "_first_rx"):
@@ -372,11 +460,17 @@ class ImuReader:
             self._warmup_remaining -= 1
             return
 
-        if self.on_sample:
+        if formal_batch and self.on_sample:
             try:
                 self.on_sample(s)
             except Exception:
                 pass
+
+    def _finish_batch(self) -> None:
+        if self._warmup_remaining == 0 and self._warmup_stats is None:
+            # 解码器的坏字节统计按输入批次更新。转换批次整体归入预热，
+            # 防止同一USB批次中的启动噪声被藏进正式窗口。
+            self._warmup_stats = self._transport_snapshot()
 
     @property
     def _last_rx(self):
@@ -394,13 +488,22 @@ class ImuReader:
         rate = 0.0
         if first_rx is not None and self._last_rx > first_rx:
             rate = self.frames_ok / (self._last_rx - first_rx)
+        detected_protocol = (
+            next(iter(self.detected_protocols))
+            if len(self.detected_protocols) == 1
+            else "mixed" if self.detected_protocols else "unknown"
+        )
         return {
+            "protocol": detected_protocol,
             "frames_ok": self.frames_ok,
             "frames_bad": self.frames_bad,
             "resyncs": self.resyncs,
             "dropped_frames": self.dropped_frames,
             "counter_resets": self.counter_resets,
             "counter_stalls": self.counter_stalls,
+            "sequence_gaps": self.sequence_gaps,
+            "invalid_imu_flags": self.invalid_imu_flags,
+            "queue_overflow_flags": self.queue_overflow_flags,
             "serial_errors": self.serial_errors,
             "serial_reconnects": self.serial_reconnects,
             "serial_connected": self._ser is not None,
@@ -409,3 +512,22 @@ class ImuReader:
             "dt_max_ms": max(dt_ms) if dt_ms else 0.0,
             "dt_jitter_ms": (max(dt_ms) - min(dt_ms)) if dt_ms else 0.0,
         }
+
+    def warmup_stats(self) -> dict:
+        """Return cumulative transport counters at the warm-up boundary."""
+        return dict(self._warmup_stats or {})
+
+    def stats_since_warmup(self) -> dict:
+        """Return reader statistics with transport counters scoped to formal data."""
+        current = self.stats()
+        if self._warmup_stats is None:
+            return {}
+        formal = dict(current)
+        for key in TRANSPORT_COUNTER_KEYS:
+            formal[key] = int(current.get(key, 0)) - int(self._warmup_stats.get(key, 0))
+        formal["protocol"] = (
+            next(iter(self._formal_detected_protocols))
+            if len(self._formal_detected_protocols) == 1
+            else "mixed" if self._formal_detected_protocols else "unknown"
+        )
+        return formal

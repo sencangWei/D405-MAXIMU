@@ -20,6 +20,7 @@ from scripts.capture_d405_720p_rgb_stereo_ir import (
     stats_delta,
     timestamps_aligned,
     live_vins_timestamp_monotonic,
+    imu_transport_accepted,
     write_frames_csv,
 )
 
@@ -167,6 +168,41 @@ def test_stats_delta_excludes_warmup_counts():
         "frames_bad": 0,
         "dropped_frames": 0,
     }
+
+
+def test_stm32_transport_gate_requires_outer_protocol_evidence():
+    clean = {
+        "frames_bad": 0,
+        "resyncs": 0,
+        "dropped_frames": 0,
+        "counter_resets": 0,
+        "counter_stalls": 0,
+        "sequence_gaps": 0,
+        "invalid_imu_flags": 0,
+        "queue_overflow_flags": 0,
+        "serial_errors": 0,
+        "serial_reconnects": 0,
+    }
+
+    assert imu_transport_accepted("stm32_combined_v1", 400.0, clean, 0)
+    assert not imu_transport_accepted("mixed", 400.0, clean, 0)
+    assert not imu_transport_accepted(
+        "stm32_combined_v1", 400.0, {**clean, "sequence_gaps": 1}, 0
+    )
+
+
+def test_legacy_transport_gate_remains_backward_compatible():
+    clean = {
+        "frames_bad": 0,
+        "resyncs": 0,
+        "dropped_frames": 0,
+        "counter_resets": 0,
+        "counter_stalls": 0,
+        "serial_errors": 0,
+        "serial_reconnects": 0,
+    }
+
+    assert imu_transport_accepted("kt_ex9_37", 400.0, clean, 0)
 
 
 def test_timestamps_aligned_matches_d405_rgb_and_ir_without_equal_frame_numbers():

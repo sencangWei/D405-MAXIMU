@@ -5,6 +5,7 @@
 #include <message_filters/synchronizer.h>
 #include <vins/estimator/estimator.h>
 #include <vins_fusion_ros2/visualization.h>
+#include <vins_fusion_ros2/pose_integrity_guard.h>
 #include <vins_fusion_ros2/msg/loop_key_frame.hpp>
 
 #include <nav_msgs/msg/odometry.hpp>
@@ -12,7 +13,9 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/point_cloud.hpp>
+#include <std_msgs/msg/string.hpp>
 
+#include <atomic>
 #include <deque>
 
 using sensor_msgs::msg::Image;
@@ -41,6 +44,7 @@ class VinsEstimator : public rclcpp::Node {
   void publishOdometry();
   void publishImage();
   void publishKeyFrameData();
+  void latchPoseIntegrityFailure();
   bool buildLoopStereoKeyFrame(double timestamp,
                                sensor_msgs::msg::Image &stereo);
 
@@ -77,6 +81,7 @@ class VinsEstimator : public rclcpp::Node {
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pub_path;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud>::SharedPtr pub_point_cloud,
       pub_margin_cloud, pub_keyframe_point;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_pose_integrity;
 
   //
   std::string world_frame_id;
@@ -85,6 +90,8 @@ class VinsEstimator : public rclcpp::Node {
 
   nav_msgs::msg::Path path;
   std::shared_ptr<VINSOptions> options;
+  std::unique_ptr<PoseIntegrityGuard> pose_integrity_guard_;
+  std::atomic<bool> pose_integrity_failed_{false};
 };
 
 #endif  // VINS_ESTIMATOR_H

@@ -69,8 +69,19 @@ def test_build_variant_evidence_creates_hashed_distinct_artifacts(tmp_path):
         "automatic_loop_accepts": 1,
         "loop_input_drop_events": 0,
         "estimator_keyframe_queue_drop_events": 0,
-        "pose_graph_health": {"rejected_optimizations": 0},
-        "raw_trajectory_diagnostics": {"max_step_m": 0.01, "z_span_m": 0.0},
+            "pose_graph_health": {"rejected_optimizations": 0},
+            "feature_tracking": {
+                "result": "PASS",
+                "samples": sample_count,
+                "minimum_features": 100,
+                "low_feature_samples": 0,
+                "max_consecutive_low_samples": 0,
+                "thresholds": {
+                    "low_feature_count": 20,
+                    "maximum_consecutive_low_samples": 2,
+                },
+            },
+            "raw_trajectory_diagnostics": {"max_step_m": 0.01, "z_span_m": 0.0},
         "corrected_trajectory_diagnostics": {
             "max_step_m": 0.01,
             "z_span_m": 0.0,

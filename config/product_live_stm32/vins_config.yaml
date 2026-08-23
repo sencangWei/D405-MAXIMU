@@ -1,0 +1,81 @@
+%YAML:1.0
+
+# Product-live candidate for the assembled D405 260322273737 + STM32 bridge.
+# Spatial/temporal calibration is the repeatable 2026-08-22 two-run Kalibr
+# consensus. Factory rectified IR intrinsics remain selected because the
+# recorded-data A/B rejected the new free-fit intrinsics for VINS runtime.
+
+imu: 1
+num_of_cam: 2
+imu_topic: "/imu0"
+image0_topic: "/cam0/image_raw"
+image1_topic: "/cam1/image_raw"
+output_path: "/tmp/ego_vio_product_live_output/"
+cam0_calib: "left.yaml"
+cam1_calib: "right.yaml"
+image_width: 1280
+image_height: 720
+
+estimate_extrinsic: 0
+estimate_td: 0
+td: -0.009312
+
+body_T_cam0: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ 0.999951001263,  0.004000299257, -0.009054980843, -0.011649026284,
+          -0.008888369803, -0.039869269088, -0.999165370829, -0.027337390226,
+          -0.004357975959,  0.999196897007, -0.039831759405, -0.012371766409,
+           0.0, 0.0, 0.0, 1.0 ]
+
+body_T_cam1: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ 0.999944121148,  0.004011375623, -0.009780769256,  0.006352339609,
+          -0.009613993261, -0.039676930385, -0.999166308644, -0.027350858231,
+          -0.004396102275,  0.999204508627, -0.039636147946, -0.012433583848,
+           0.0, 0.0, 0.0, 1.0 ]
+
+multiple_thread: 1
+max_cnt: 400
+min_dist: 20
+freq: 10
+F_threshold: 1.0
+show_track: 0
+flow_back: 1
+enable_zupt: 1
+# Fail closed before a dynamic-foreground estimator failure can emit the
+# 0.30--0.56 m single-frame jumps observed in live HIL.  Normal signed-off
+# sessions stayed below 0.034 m; 0 disables this product-only guard.  The
+# 0.05 m limit matches /slam/health, so failure reporting and output isolation
+# cannot disagree.
+raw_odometry_failure_step_m: 0.05
+max_solver_time: 0.04
+max_num_iterations: 8
+keyframe_parallax: 10.0
+
+acc_n: 8.28e-3
+gyr_n: 1.03e-3
+acc_w: 3.92e-6
+gyr_w: 2.89e-7
+g_norm: 9.805
+
+load_previous_pose_graph: 0
+pose_graph_save_path: "/tmp/ego_vio_product_live_output/pose_graph/"
+save_image: 1
+min_loop_spatial_support: 0.0
+max_loop_candidates: 24
+base_loop_correction_limit_m: 0.03
+loop_correction_extent_ratio: 0.25
+confirmed_loop_correction_ceiling_m: 0.50
+expanded_loop_min_retrieval_score: 0.10
+odometry_edge_full_support_points: 0
+odometry_edge_minimum_weight: 1.0
+preserve_loop_excursion_anchor: 1
+freeze_loop_outbound_to_anchor: 1
+accepted_loop_cooldown_keyframes: 10
+loop_edge_weight: 1.0
+realtime_drift_translation_rate_mps: 0.05
+realtime_drift_rotation_rate_deg_s: 10.0

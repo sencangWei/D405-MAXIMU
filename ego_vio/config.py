@@ -13,6 +13,7 @@ class IMUConfig:
     port: str
     baud: int = 921600
     calibration: str = ""
+    protocol: str = "auto"
 
 
 @dataclass
@@ -23,9 +24,12 @@ class CameraConfig:
     fps: int = 30
     enable_depth: bool = False
     stereo_ir: bool = False
+    rgb_preview: bool = False
     auto_exposure: bool = True
     exposure_us: int = 20000
     gain: int = 48
+    auto_exposure_limit_us: float = 0.0
+    auto_gain_limit: float = 0.0
     cam_latency_ms: float = 0.0   # 相机传输延迟, 非 global_time 时从 fitted_arrival 里减去
 
 
@@ -87,6 +91,7 @@ def load_config(path: str | Path = None) -> AppConfig:
             imu=IMUConfig(
                 port=imu_raw.get("port", ""),
                 baud=imu_raw.get("baud", 921600),
+                protocol=imu_raw.get("protocol", "auto"),
                 calibration=(
                     str((path.parent / imu_raw["calibration"]).resolve())
                     if imu_raw.get("calibration")
@@ -101,9 +106,14 @@ def load_config(path: str | Path = None) -> AppConfig:
                 fps=cam_raw.get("fps", 30),
                 enable_depth=cam_raw.get("enable_depth", False),
                 stereo_ir=cam_raw.get("stereo_ir", False),
+                rgb_preview=cam_raw.get("rgb_preview", False),
                 auto_exposure=cam_raw.get("auto_exposure", True),
                 exposure_us=cam_raw.get("exposure_us", 20000),
                 gain=cam_raw.get("gain", 48),
+                auto_exposure_limit_us=cam_raw.get(
+                    "auto_exposure_limit_us", 0.0
+                ),
+                auto_gain_limit=cam_raw.get("auto_gain_limit", 0.0),
                 cam_latency_ms=cam_raw.get("cam_latency_ms", 0.0),
             ),
             vio=VIOConfig(

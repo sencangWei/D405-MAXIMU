@@ -14,7 +14,21 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
+
+
+def parse_pose_integrity_failure(payload_text: str) -> str | None:
+    """Return a stable watchdog reason for a latched estimator failure."""
+    try:
+        payload = json.loads(payload_text)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(payload, dict) or payload.get("state") != "SLAM_FAILED":
+        return None
+    reason = payload.get("reason")
+    if not isinstance(reason, str) or not reason:
+        reason = "unknown"
+    return f"estimator_pose_integrity:{reason}"
 
 
 @dataclass
@@ -39,13 +53,20 @@ class SlamRuntimeWatchdog:
         start_monotonic_s: float,
         startup_grace_s: float = 3.0,
         stale_timeout_s: float = 0.5,
+        timestamp_epoch_offset_s: float = 0.0,
+        max_data_age_s: float = 0.5,
         max_stream_skew_s: float = 0.1,
         min_samples_healthy: int = 10,
         min_absolute_jump_m: float = 0.03,
         max_raw_step_m: float = 0.05,
         raw_step_multiplier: float = 3.5,
     ) -> None:
-        if startup_grace_s <= 0 or stale_timeout_s <= 0 or max_stream_skew_s <= 0:
+        if (
+            startup_grace_s <= 0
+            or stale_timeout_s <= 0
+            or max_data_age_s <= 0
+            or max_stream_skew_s <= 0
+        ):
             raise ValueError("time thresholds must be positive")
         if min_samples_healthy <= 1:
             raise ValueError("min_samples_healthy must be greater than one")
@@ -58,6 +79,8 @@ class SlamRuntimeWatchdog:
         self.start_monotonic_s = start_monotonic_s
         self.startup_grace_s = startup_grace_s
         self.stale_timeout_s = stale_timeout_s
+        self.timestamp_epoch_offset_s = timestamp_epoch_offset_s
+        self.max_data_age_s = max_data_age_s
         self.max_stream_skew_s = max_stream_skew_s
         self.min_samples_healthy = min_samples_healthy
         self.min_absolute_jump_m = min_absolute_jump_m
@@ -78,6 +101,9 @@ class SlamRuntimeWatchdog:
     def mark_infrastructure_failure(self, reason: str) -> None:
         if reason not in self.infrastructure_failures:
             self.infrastructure_failures.append(reason)
+
+    def mark_runtime_failure(self, reason: str) -> None:
+        self._latch(reason)
 
     def _evaluate_pending_corrected_steps(self, *, force: bool) -> None:
         raw_state = self.streams["raw"]
@@ -189,6 +215,14 @@ class SlamRuntimeWatchdog:
                     and now_monotonic_s - state.last_arrival_s > self.stale_timeout_s
                 ):
                     runtime_failures.append(f"{name}_stream_stale")
+                if state.last_timestamp_s is not None:
+                    timestamp_age_s = (
+                        now_monotonic_s
+                        + self.timestamp_epoch_offset_s
+                        - state.last_timestamp_s
+                    )
+                    if timestamp_age_s > self.max_data_age_s:
+                        runtime_failures.append(f"{name}_timestamp_stale")
             timestamps = [
                 state.last_timestamp_s for state in self.streams.values()
             ]
@@ -231,6 +265,13 @@ class SlamRuntimeWatchdog:
                         if state.last_arrival_s is not None
                         else None
                     ),
+                    "timestamp_age_s": (
+                        now_monotonic_s
+                        + self.timestamp_epoch_offset_s
+                        - state.last_timestamp_s
+                        if state.last_timestamp_s is not None
+                        else None
+                    ),
                 }
                 for name, state in self.streams.items()
             },
@@ -242,6 +283,7 @@ class SlamRuntimeWatchdog:
             "thresholds": {
                 "startup_grace_s": self.startup_grace_s,
                 "stale_timeout_s": self.stale_timeout_s,
+                "max_data_age_s": self.max_data_age_s,
                 "max_stream_skew_s": self.max_stream_skew_s,
                 "min_samples_healthy": self.min_samples_healthy,
                 "min_absolute_jump_m": self.min_absolute_jump_m,
@@ -275,9 +317,11 @@ def main() -> int:
     parser.add_argument("--corrected-topic", default="/odometry_rect")
     parser.add_argument("--diagnostics-topic", default="/slam/diagnostics")
     parser.add_argument("--json-topic", default="/slam/health")
+    parser.add_argument("--integrity-topic", default="/vins/pose_integrity")
     parser.add_argument("--output-json", type=Path)
     parser.add_argument("--startup-grace-s", type=float, default=3.0)
     parser.add_argument("--stale-timeout-s", type=float, default=0.5)
+    parser.add_argument("--max-data-age-s", type=float, default=0.5)
     parser.add_argument("--max-stream-skew-s", type=float, default=0.1)
     parser.add_argument("--max-raw-step-m", type=float, default=0.05)
     parser.add_argument("--publish-hz", type=float, default=5.0)
@@ -289,6 +333,8 @@ def main() -> int:
         start_monotonic_s=time.monotonic(),
         startup_grace_s=args.startup_grace_s,
         stale_timeout_s=args.stale_timeout_s,
+        timestamp_epoch_offset_s=time.time() - time.monotonic(),
+        max_data_age_s=args.max_data_age_s,
         max_stream_skew_s=args.max_stream_skew_s,
         max_raw_step_m=args.max_raw_step_m,
     )
@@ -302,6 +348,12 @@ def main() -> int:
         from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
         from nav_msgs.msg import Odometry
         from rclpy.node import Node
+        from rclpy.qos import (
+            DurabilityPolicy,
+            HistoryPolicy,
+            QoSProfile,
+            ReliabilityPolicy,
+        )
         from std_msgs.msg import String
 
         rclpy.init()
@@ -322,14 +374,43 @@ def main() -> int:
                 arrival_monotonic_s=time.monotonic(),
             )
 
+        # A health observer must never make the estimator wait or diagnose its
+        # own queued history as estimator latency.  Always sample only the
+        # newest pose from both streams.
+        watch_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+        )
         node.create_subscription(
-            Odometry, args.raw_topic, lambda message: receive("raw", message), 100
+            Odometry,
+            args.raw_topic,
+            lambda message: receive("raw", message),
+            watch_qos,
         )
         node.create_subscription(
             Odometry,
             args.corrected_topic,
             lambda message: receive("corrected", message),
-            100,
+            watch_qos,
+        )
+        integrity_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            history=HistoryPolicy.KEEP_LAST,
+        )
+
+        def receive_integrity(message: String) -> None:
+            reason = parse_pose_integrity_failure(message.data)
+            if reason is not None:
+                monitor.mark_runtime_failure(reason)
+
+        node.create_subscription(
+            String,
+            args.integrity_topic,
+            receive_integrity,
+            integrity_qos,
         )
 
         def publish() -> None:
@@ -360,6 +441,12 @@ def main() -> int:
                 KeyValue(
                     key="corrected_samples",
                     value=str(payload["streams"]["corrected"]["samples"]),
+                ),
+                KeyValue(
+                    key="corrected_timestamp_age_s",
+                    value=str(
+                        payload["streams"]["corrected"]["timestamp_age_s"]
+                    ),
                 ),
             ]
             diagnostics = DiagnosticArray()

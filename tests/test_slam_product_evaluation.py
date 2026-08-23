@@ -13,10 +13,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 from evaluate_slam_ground_truth import body_trajectory_to_camera, pose_errors
 from analyze_depth_plane_constraint import (
     PlaneObservation,
+    Intrinsics,
     apply_temporal_gate,
+    depth_points,
     fit_plane_ransac,
     load_observations_csv,
+    parse_args as parse_depth_plane_args,
     plane_factor_correction,
+    plane_factor_observation_metrics,
     transform_plane_to_world,
     write_outputs,
 )
@@ -71,6 +75,17 @@ def passing_run_report(variant: str) -> dict:
         "min_loop_spatial_support": 0.06165,
         "benchmark_environment": passing_benchmark_environment(),
         "pose_graph_health": {"rejected_optimizations": 0},
+        "feature_tracking": {
+            "result": "PASS",
+            "samples": 100,
+            "minimum_features": 100,
+            "low_feature_samples": 0,
+            "max_consecutive_low_samples": 0,
+            "thresholds": {
+                "low_feature_count": 20,
+                "maximum_consecutive_low_samples": 2,
+            },
+        },
         "raw_trajectory_diagnostics": {"max_step_m": 0.01, "z_span_m": 0.0},
         "corrected_trajectory_diagnostics": {
             "max_step_m": 0.0,
@@ -457,6 +472,47 @@ def test_plane_factor_releases_to_zero_when_plane_support_disappears():
     assert corrected[-1, 2] == raw[-1, 2]
 
 
+def test_plane_factor_disables_when_warmup_never_produces_a_correction():
+    times = np.linspace(0.0, 4.0, 121)
+    raw = np.zeros((len(times), 3))
+    observations = []
+    for timestamp in np.linspace(0.0, 2.0, 5):
+        observations.append(
+            PlaneObservation(
+                epoch_s=float(timestamp),
+                relative_s=float(timestamp),
+                valid_points=1000,
+                inlier_ratio=0.8,
+                median_residual_m=0.001,
+                p95_residual_m=0.003,
+                normal_camera=[0.0, 0.0, 1.0],
+                offset_camera_m=0.3,
+                local_gate_pass=True,
+                pose_matched=True,
+                normal_world=[0.0, 0.0, 1.0],
+                offset_world_m=0.1,
+                temporal_gate_pass=True,
+            )
+        )
+
+    corrected, correction, report = plane_factor_correction(
+        observations,
+        times,
+        raw,
+        gain=0.35,
+        max_correction_m=0.03,
+        max_gap_s=0.75,
+        min_support=5,
+        max_slew_mps=0.03,
+    )
+
+    assert report["status"] == "DISABLED"
+    assert report["reason"] == "plane support produced no nonzero correction"
+    assert report["active_trajectory_samples"] == 0
+    np.testing.assert_allclose(correction, 0.0)
+    np.testing.assert_allclose(corrected, raw)
+
+
 def test_plane_factor_is_causal_and_future_observations_do_not_change_past():
     times = np.linspace(0.0, 8.0, 241)
     raw = np.column_stack((np.zeros_like(times), np.zeros_like(times), 0.01 * times))
@@ -546,7 +602,7 @@ def test_plane_factor_changes_only_world_gravity_axis_for_tilted_plane():
                 local_gate_pass=True,
                 pose_matched=True,
                 normal_world=normal.tolist(),
-                offset_world_m=0.01,
+                offset_world_m=0.01 + 0.005 * timestamp,
                 temporal_gate_pass=True,
             )
         )
@@ -565,6 +621,123 @@ def test_plane_factor_changes_only_world_gravity_axis_for_tilted_plane():
     np.testing.assert_allclose(corrected[:, :2], raw[:, :2], atol=1e-12)
     np.testing.assert_allclose(corrected[:, 2] - raw[:, 2], correction)
     assert report["correction_axis_world"] == [0.0, 0.0, 1.0]
+
+
+def test_depth_plane_cli_gap_default_exceeds_nominal_half_second_sampling(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "analyze_depth_plane_constraint.py",
+            "--observations-csv",
+            "observations.csv",
+            "--output-dir",
+            "output",
+        ],
+    )
+
+    args = parse_depth_plane_args()
+
+    assert args.sample_every == 15
+    assert args.plane_factor_max_gap_s == 0.75
+
+
+def test_depth_points_can_restrict_plane_search_to_lower_image_region():
+    image = np.ones((10, 10), dtype=np.uint16)
+    intrinsics = Intrinsics(width=10, height=10, fx=1.0, fy=1.0, cx=0.0, cy=0.0)
+
+    points = depth_points(
+        image,
+        intrinsics,
+        depth_unit_m=1.0,
+        stride=1,
+        min_depth_m=0.5,
+        max_depth_m=1.5,
+        roi_top_fraction=0.5,
+    )
+
+    assert len(points) > 0
+    assert np.min(points[:, 1]) >= 5.0
+
+
+def test_plane_factor_reports_segment_local_observation_improvement():
+    times = np.linspace(0.0, 2.5, 76)
+    correction = np.interp(times, np.linspace(0.0, 2.5, 6), np.linspace(0.0, 0.005, 6))
+    observations = []
+    for timestamp, offset in zip(np.linspace(0.0, 2.5, 6), np.linspace(0.0, 0.01, 6)):
+        observations.append(
+            PlaneObservation(
+                epoch_s=float(timestamp),
+                relative_s=float(timestamp),
+                valid_points=1000,
+                inlier_ratio=0.8,
+                median_residual_m=0.001,
+                p95_residual_m=0.003,
+                normal_camera=[0.0, 0.0, 1.0],
+                offset_camera_m=0.3,
+                local_gate_pass=True,
+                pose_matched=True,
+                normal_world=[0.0, 0.0, 1.0],
+                offset_world_m=float(offset),
+                temporal_gate_pass=True,
+            )
+        )
+
+    metrics = plane_factor_observation_metrics(
+        observations,
+        times,
+        correction,
+        max_gap_s=0.75,
+    )
+
+    assert metrics["status"] == "IMPROVED"
+    assert metrics["accepted_observations"] == 6
+    assert metrics["segments"] == 1
+    assert metrics["corrected_offset_std_m"] < metrics["raw_offset_std_m"]
+    assert metrics["segment_metrics"][0]["corrected_p95_abs_error_m"] < metrics["segment_metrics"][0]["raw_p95_abs_error_m"]
+
+
+def test_plane_factor_status_does_not_use_cross_segment_plane_baselines():
+    times = np.linspace(0.0, 12.0, 121)
+    correction = np.zeros_like(times)
+    correction[times >= 10.0] = 0.5
+    observations = []
+    for timestamp, offset in (
+        (0.0, -0.01),
+        (0.5, 0.0),
+        (1.0, 0.01),
+        (10.0, 0.49),
+        (10.5, 0.50),
+        (11.0, 0.51),
+    ):
+        observations.append(
+            PlaneObservation(
+                epoch_s=timestamp,
+                relative_s=timestamp,
+                valid_points=1000,
+                inlier_ratio=0.8,
+                median_residual_m=0.001,
+                p95_residual_m=0.003,
+                normal_camera=[0.0, 0.0, 1.0],
+                offset_camera_m=0.3,
+                local_gate_pass=True,
+                pose_matched=True,
+                normal_world=[0.0, 0.0, 1.0],
+                offset_world_m=offset,
+                temporal_gate_pass=True,
+            )
+        )
+
+    metrics = plane_factor_observation_metrics(
+        observations,
+        times,
+        correction,
+        max_gap_s=0.75,
+    )
+
+    assert metrics["corrected_offset_std_m"] < metrics["raw_offset_std_m"]
+    assert metrics["status"] == "NO_NET_IMPROVEMENT"
+    assert metrics["decisive_metric_scope"] == "within_segment"
 
 
 def test_plane_factor_release_evidence_rejects_unobservable_active_factor():

@@ -1,0 +1,30 @@
+calibration_id: imu_accel_092447_runtime_candidate_20260823
+source:
+  report: /home/robot/ego_vio_calib_kit/imu_bench_results/20260821_092447_483220_imu_multipose_bench/report.yaml
+  report_sha256: b2bac45482058f83f8ef2c94e8a22e8cbad0f7219c7655d978ce1e469c4b6194
+  method: arbitrary_pose_accelerometer_ellipsoid_with_heldout_validation
+  fit_pose_count: 21
+  validation_pose_count: 10
+purpose: >-
+  真实升降隔离 A/B 候选。只在 product-live-z-candidate 中应用，
+  不覆盖 product-live，不代表动态 Z 已完成产品签发。
+accelerometer:
+  matrix:
+    - [0.9998117562600883, -0.00041625862959804305, -0.0005567968634530573]
+    - [-0.00041625862959804305, 0.999859786653393, 0.0000854783833772188]
+    - [-0.0005567968634530018, 0.00008547838337724656, 0.9994799773983573]
+  offset_g: [0.0021808864839423345, 0.0010338718236909095, -0.0030959932145016886]
+  conversion: offset_g = -(correction_matrix @ bias_m_s2) / 9.80665
+gyroscope:
+  matrix:
+    - [1.0, 0.0, 0.0]
+    - [0.0, 1.0, 0.0]
+    - [0.0, 0.0, 1.0]
+  bias_deg_s: [0.0, 0.0, 0.0]
+  policy: raw_gyro_vins_online_bias
+acceptance:
+  status: PASS
+  runtime_applied: true
+  scope: diagnostic_candidate
+  release_eligible: false
+  evidence: /home/robot/ego_vio_humble/.planning/2026-08-22-z-yaw-only-postprocess-and-imu-intrinsic/TRUE_ELEVATION_AB_RESULTS_ZH.md

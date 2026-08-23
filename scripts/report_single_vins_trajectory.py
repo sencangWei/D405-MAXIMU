@@ -107,10 +107,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("trajectory", type=Path)
     parser.add_argument("--out-dir", type=Path, required=True)
-    parser.add_argument("--expected-x-cm", type=float, default=82.0)
-    parser.add_argument("--expected-y-cm", type=float, default=63.0)
+    parser.add_argument("--expected-x-cm", type=float)
+    parser.add_argument("--expected-y-cm", type=float)
     parser.add_argument("--dwell-window-s", type=float, default=3.0)
     args = parser.parse_args()
+    if (args.expected_x_cm is None) != (args.expected_y_cm is None):
+        parser.error("--expected-x-cm 与 --expected-y-cm 必须同时提供")
 
     time_s, points = load_trajectory(args.trajectory)
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -134,10 +136,12 @@ def main() -> int:
     world_axis_extent_cm = np.ptp(points[:, :2], axis=0) * 100.0
     rectangle = horizontal_rectangle_metrics(points[:, :2])
     horizontal_extent_cm = np.asarray(rectangle["robust_extent_cm"])
-    expected_extent_cm = np.sort(
-        np.array([args.expected_x_cm, args.expected_y_cm])
-    )[::-1]
-    horizontal_error_cm = horizontal_extent_cm - expected_extent_cm
+    expected_rectangle_cm = None
+    horizontal_error_cm = None
+    if args.expected_x_cm is not None:
+        expected_rectangle_cm = [args.expected_x_cm, args.expected_y_cm]
+        expected_extent_cm = np.sort(np.array(expected_rectangle_cm))[::-1]
+        horizontal_error_cm = horizontal_extent_cm - expected_extent_cm
 
     low_level = points[:, 2] <= points[:, 2].min() + 0.02
     low_points = points[low_level]
@@ -156,6 +160,10 @@ def main() -> int:
         "trajectory_points": len(points),
         "duration_s": float(time_s[-1] - time_s[0]),
         "path_m": path_m,
+        "path_interpretation": (
+            "sum_of_sample_to_sample_displacements_including_jitter_and_dwell; "
+            "not rectangle side length or surveyed perimeter"
+        ),
         "point_closure_cm": point_closure_cm,
         "point_closure_delta_xyz_cm": point_closure_delta_cm.tolist(),
         "closure_cm": closure_cm,
@@ -163,10 +171,12 @@ def main() -> int:
         "dwell_closure": dwell_closure,
         "horizontal_closure_cm": horizontal_closure_cm,
         "vertical_closure_cm": vertical_closure_cm,
-        "expected_rectangle_cm": [args.expected_x_cm, args.expected_y_cm],
+        "expected_rectangle_cm": expected_rectangle_cm,
         "world_axis_horizontal_extent_cm": world_axis_extent_cm.tolist(),
         "horizontal_extent_cm": horizontal_extent_cm.tolist(),
-        "horizontal_extent_error_cm": horizontal_error_cm.tolist(),
+        "horizontal_extent_error_cm": (
+            horizontal_error_cm.tolist() if horizontal_error_cm is not None else None
+        ),
         "horizontal_rectangle_geometry": rectangle,
         "pca_extent_cm": pca_cm.tolist(),
         "pca_p1_p99_extent_cm": pca_p1p99_cm.tolist(),
@@ -214,23 +224,32 @@ def main() -> int:
         json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
+    target_lines = ""
+    if expected_rectangle_cm is not None:
+        target_lines = (
+            f"外部实测目标矩形: {args.expected_x_cm:.1f} × "
+            f"{args.expected_y_cm:.1f} cm\n"
+            f"俯视尺寸误差: {horizontal_error_cm[0]:+.1f} / "
+            f"{horizontal_error_cm[1]:+.1f} cm\n"
+        )
+
     report = (
         "VINS 双IR+IMU 轨迹误差报告\n"
         + ("\n".join(capture_lines) + "\n\n" if capture_lines else "")
         +
         f"轨迹点数: {len(points)}\n"
         f"有效时长: {metrics['duration_s']:.2f} s\n"
-        f"累计路径: {path_m:.3f} m\n"
+        f"累计采样步长（含抖动/停靠，不等于矩形边长或实测周长）: {path_m:.3f} m\n"
         f"静止窗口中位数闭环误差: {closure_cm:.2f} cm\n"
         f"单帧首尾闭环误差: {point_closure_cm:.2f} cm\n"
         f"闭环XYZ有符号差: {closure_delta_cm[0]:+.2f} / "
         f"{closure_delta_cm[1]:+.2f} / {closure_delta_cm[2]:+.2f} cm\n"
         f"水平闭环误差: {horizontal_closure_cm:.2f} cm\n"
         f"垂直闭环误差: {vertical_closure_cm:.2f} cm\n"
-        f"目标矩形: {args.expected_x_cm:.1f} × {args.expected_y_cm:.1f} cm\n"
+        + target_lines
+        +
         f"世界XY轴向范围: {world_axis_extent_cm[0]:.1f} × {world_axis_extent_cm[1]:.1f} cm\n"
         f"旋转不变矩形范围: {horizontal_extent_cm[0]:.1f} × {horizontal_extent_cm[1]:.1f} cm\n"
-        f"俯视尺寸误差: {horizontal_error_cm[0]:+.1f} / {horizontal_error_cm[1]:+.1f} cm\n"
         f"矩形边界RMS/P95: {rectangle['boundary_rms_mm']:.2f} / "
         f"{rectangle['boundary_p95_mm']:.2f} mm\n"
         f"轨迹PCA外包: {pca_cm[0]:.1f} × {pca_cm[1]:.1f} cm\n"
@@ -272,7 +291,7 @@ def main() -> int:
         axis.axis("equal")
         axis.legend(prop=chinese_font)
     fig.suptitle(
-        f"VINS轨迹｜闭环 {closure_cm:.1f}cm｜路径 {path_m:.2f}m｜Z跨度 {z_span_cm:.1f}cm",
+        f"VINS轨迹｜闭环 {closure_cm:.1f}cm｜累计采样步长 {path_m:.2f}m｜Z跨度 {z_span_cm:.1f}cm",
         fontproperties=chinese_font,
     )
     fig.tight_layout()

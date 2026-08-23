@@ -34,6 +34,106 @@ class CameraFrame:
     infrared_right: Optional[np.ndarray] = None
 
 
+class ConsecutiveFrameWarmup:
+    """Discard startup frames until a gap-free device-counter run is observed."""
+
+    def __init__(self, required_frames: int = 0):
+        self.required_frames = max(0, int(required_frames))
+        self.completed = self.required_frames == 0
+        self.observed_frames = 0
+        self.consecutive_frames = 0
+        self.dropped_frames = 0
+        self.reset_events = 0
+        self.last_frame_number: Optional[int] = None
+
+    def observe(self, frame_number: int) -> bool:
+        """Return True only for frames after the complete warm-up run."""
+        if self.completed:
+            return True
+        frame_number = int(frame_number)
+        self.observed_frames += 1
+        if self.last_frame_number is None:
+            self.consecutive_frames = 1
+        else:
+            delta = frame_number - self.last_frame_number
+            if delta == 1:
+                self.consecutive_frames += 1
+            else:
+                if delta > 1:
+                    self.dropped_frames += delta - 1
+                self.reset_events += 1
+                self.consecutive_frames = 1
+        self.last_frame_number = frame_number
+        if self.consecutive_frames >= self.required_frames:
+            self.completed = True
+        return False
+
+    def reject_pair(self) -> None:
+        if self.completed:
+            return
+        self.reset_events += 1
+        self.consecutive_frames = 0
+        self.last_frame_number = None
+
+    def stats(self) -> dict:
+        return {
+            "required_consecutive_frames": self.required_frames,
+            "completed": self.completed,
+            "observed_frames": self.observed_frames,
+            "consecutive_frames": self.consecutive_frames,
+            "dropped_frames": self.dropped_frames,
+            "reset_events": self.reset_events,
+        }
+
+
+def configure_sensor_exposure(
+    rs,
+    sensor,
+    *,
+    auto_exposure: bool,
+    exposure_us: float,
+    gain: float,
+    auto_exposure_limit_us: float = 0.0,
+    auto_gain_limit: float = 0.0,
+) -> dict:
+    """Configure and read back the exposure policy before starting streams."""
+    sensor.set_option(
+        rs.option.enable_auto_exposure, 1.0 if auto_exposure else 0.0
+    )
+    if auto_exposure and auto_exposure_limit_us > 0:
+        sensor.set_option(rs.option.auto_exposure_limit_toggle, 1.0)
+        sensor.set_option(rs.option.auto_exposure_limit, auto_exposure_limit_us)
+        if auto_gain_limit > 0:
+            sensor.set_option(rs.option.auto_gain_limit_toggle, 1.0)
+            sensor.set_option(rs.option.auto_gain_limit, auto_gain_limit)
+        applied_exposure = sensor.get_option(rs.option.auto_exposure_limit)
+        applied_gain = (
+            sensor.get_option(rs.option.auto_gain_limit)
+            if auto_gain_limit > 0
+            else 0.0
+        )
+        if abs(applied_exposure - auto_exposure_limit_us) > 1e-6:
+            raise RuntimeError(
+                "自动曝光上限读回不一致: "
+                f"{applied_exposure} != {auto_exposure_limit_us}"
+            )
+        if auto_gain_limit > 0 and abs(applied_gain - auto_gain_limit) > 1e-6:
+            raise RuntimeError(
+                "自动增益上限读回不一致: "
+                f"{applied_gain} != {auto_gain_limit}"
+            )
+        return {
+            "mode": "auto_limited",
+            "exposure_limit_us": applied_exposure,
+            "gain_limit": applied_gain,
+        }
+    if not auto_exposure:
+        sensor.set_option(rs.option.exposure, exposure_us)
+        sensor.set_option(rs.option.gain, gain)
+        return {"mode": "manual", "exposure_us": exposure_us, "gain": gain}
+    return {"mode": "auto_unlimited"}
+
+
 class RealSenseCapture:
     def __init__(
         self,
@@ -43,9 +143,13 @@ class RealSenseCapture:
         fps: int = 30,
         enable_depth: bool = False,
         stereo_ir: bool = False,
+        rgb_preview: bool = False,
         auto_exposure: bool = True,
         exposure_us: int = 20000,
         gain: int = 48,
+        auto_exposure_limit_us: float = 0.0,
+        auto_gain_limit: float = 0.0,
+        warmup_consecutive_frames: int = 0,
         on_frame: Optional[Callable[[CameraFrame], None]] = None,
         name: str = "cam",
     ):
@@ -55,9 +159,13 @@ class RealSenseCapture:
         self.fps = fps
         self.enable_depth = enable_depth
         self.stereo_ir = stereo_ir
+        self.rgb_preview = rgb_preview
         self.auto_exposure = auto_exposure
         self.exposure_us = exposure_us
         self.gain = gain
+        self.auto_exposure_limit_us = float(auto_exposure_limit_us)
+        self.auto_gain_limit = float(auto_gain_limit)
+        self._warmup = ConsecutiveFrameWarmup(warmup_consecutive_frames)
         self.on_frame = on_frame
         self.name = name
 
@@ -68,6 +176,9 @@ class RealSenseCapture:
         self.frame_count = 0
         self.recent_dt = []
         self._last_ts = 0.0
+        self._formal_last_frame_number: Optional[int] = None
+        self.formal_dropped_frames = 0
+        self.formal_pair_mismatches = 0
 
         # 在线时间戳去抖(无 global_time 时用帧序号拟合估计曝光时刻)
         self._ts_fitter = OnlineCounterFitter(counter_wrap=None, window_size=60, fit_every=10)
@@ -95,10 +206,22 @@ class RealSenseCapture:
 
         sensor = device.first_depth_sensor()
         try:
-            sensor.set_option(rs.option.enable_auto_exposure, 1.0 if self.auto_exposure else 0.0)
-            if not self.auto_exposure:
-                sensor.set_option(rs.option.exposure, float(self.exposure_us))
-                sensor.set_option(rs.option.gain, float(self.gain))
+            exposure_policy = configure_sensor_exposure(
+                rs,
+                sensor,
+                auto_exposure=self.auto_exposure,
+                exposure_us=float(self.exposure_us),
+                gain=float(self.gain),
+                auto_exposure_limit_us=self.auto_exposure_limit_us,
+                auto_gain_limit=self.auto_gain_limit,
+            )
+            if exposure_policy["mode"] == "auto_limited":
+                print(
+                    f"[{self.name}] 相机自动曝光上限 "
+                    f"{self.auto_exposure_limit_us:.0f} us, "
+                    f"自动增益上限 {self.auto_gain_limit:.0f}"
+                )
+            elif exposure_policy["mode"] == "manual":
                 print(
                     f"[{self.name}] 相机固定曝光 {self.exposure_us} us, "
                     f"gain={self.gain}"
@@ -118,6 +241,14 @@ class RealSenseCapture:
             self._cfg.enable_stream(
                 rs.stream.infrared, 2, self.width, self.height, rs.format.y8, self.fps
             )
+            if self.rgb_preview:
+                self._cfg.enable_stream(
+                    rs.stream.color,
+                    self.width,
+                    self.height,
+                    rs.format.bgr8,
+                    self.fps,
+                )
         else:
             self._cfg.enable_stream(
                 rs.stream.color, self.width, self.height, rs.format.bgr8, self.fps
@@ -170,13 +301,22 @@ class RealSenseCapture:
                 if not left_frame or not right_frame:
                     continue
                 if left_frame.get_frame_number() != right_frame.get_frame_number():
+                    if self._warmup.completed:
+                        self.formal_pair_mismatches += 1
+                    else:
+                        self._warmup.reject_pair()
                     continue
                 infrared_left = np.asanyarray(left_frame.get_data())
                 infrared_right = np.asanyarray(right_frame.get_data())
-                # Keep the existing preview/recording path useful: show the
-                # left rectified infrared image as the primary image.
+                # VINS always consumes the calibrated left/right IR arrays.
+                # RGB is an independent operator preview and must never
+                # replace either SLAM input image.
                 color_frame = left_frame
                 color = infrared_left
+                if self.rgb_preview:
+                    rgb_frame = frames.get_color_frame()
+                    if rgb_frame:
+                        color = np.asanyarray(rgb_frame.get_data())
             else:
                 color_frame = frames.get_color_frame()
                 if not color_frame:
@@ -188,6 +328,15 @@ class RealSenseCapture:
                 depth_frame = frames.get_depth_frame()
                 if depth_frame:
                     depth = np.asanyarray(depth_frame.get_data())
+
+            frame_number = color_frame.get_frame_number()
+            if not self._warmup.observe(frame_number):
+                continue
+            if self._formal_last_frame_number is not None:
+                delta = frame_number - self._formal_last_frame_number
+                if delta > 1:
+                    self.formal_dropped_frames += delta - 1
+            self._formal_last_frame_number = frame_number
 
             now = time.monotonic()
             self.frame_count += 1
@@ -213,7 +362,7 @@ class RealSenseCapture:
                     domain = "global_time"
                 else:
                     # 没有 global_time 时, 用帧序号在线拟合去抖
-                    ts = self._ts_fitter.feed(color_frame.get_frame_number(), now)
+                    ts = self._ts_fitter.feed(frame_number, now)
                     domain = "fitted_arrival"
             except Exception:
                 pass
@@ -225,7 +374,7 @@ class RealSenseCapture:
                 frame_idx=self.frame_count,
                 ts_arrival=now,
                 ts_domain=domain,
-                frame_number=color_frame.get_frame_number(),
+                frame_number=frame_number,
                 infrared_left=infrared_left,
                 infrared_right=infrared_right,
             )
@@ -269,4 +418,7 @@ class RealSenseCapture:
             "dt_min_ms": min(dt_ms) if dt_ms else 0.0,
             "dt_max_ms": max(dt_ms) if dt_ms else 0.0,
             "dt_jitter_ms": (max(dt_ms) - min(dt_ms)) if dt_ms else 0.0,
+            "warmup": self._warmup.stats(),
+            "formal_dropped_frames": self.formal_dropped_frames,
+            "formal_pair_mismatches": self.formal_pair_mismatches,
         }
