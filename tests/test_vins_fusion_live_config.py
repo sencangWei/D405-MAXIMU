@@ -20,6 +20,27 @@ def test_customer_wrapper_defaults_to_product_and_rejects_legacy_modes() -> None
     assert "/.planning/" not in wrapper
 
 
+def test_customer_checkout_excludes_historical_runtime_trees() -> None:
+    for relative in (
+        "JAZZY_HANDOFF_20260816",
+        "frozen_chain_a3a38b8",
+        "FROZEN_CHAIN_A3A38B8.md",
+        "components/ego_vio_calib_kit",
+        "run_slam_rgbd_orb.sh",
+        "run_slam_stereo_vins.sh",
+        "config/devices_vins_fusion_live.yaml",
+        "config/devices_vins_fusion_live_level_candidate.yaml",
+        "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+    ):
+        assert not (ROOT / relative).exists(), relative
+
+    manifest = yaml.safe_load(
+        (ROOT / "release-manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["release"] == "humble-stm32-product-v1.1-20260824"
+    assert manifest["historical_runtime_included"] is False
+
+
 def test_product_live_config_locks_stm32_protocol_and_current_devices() -> None:
     config = load_config(ROOT / "config/devices_product_live_stm32.yaml")
     unit = config.units[0]

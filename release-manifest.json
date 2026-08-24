@@ -1,45 +1,17 @@
 {
-  "version": "2026.8.17",
-  "files": [
-    {
-      "path": "CURRENT_ACTIVE.md",
-      "sha256": "c8ae6306710bc62dd44dc664caf747118a2a1eafc02326c33d558c34419f6f7c"
-    },
-    {
-      "path": "run_vins_realtime.sh",
-      "sha256": "a0840472fe367275558a2c0ce2766e4658598d58420329f6ecb9c70ce6b996bc"
-    },
-    {
-      "path": "scripts/capture_d405_720p_rgb_stereo_ir.py",
-      "sha256": "a83f4aeb9fa2f3e1e5168e798883c29afbdbf0dffcfb1d574be8e1064ff9d0b9"
-    },
-    {
-      "path": "config/devices_vins_fusion_live.yaml",
-      "sha256": "74523c42d20a699490268e6cb15c3ed27c84a15511d3de582596f5e3c76fd29d"
-    },
-    {
-      "path": "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
-      "sha256": "ff299e6b686450a0ab59e8f183e0760bbaa541b097eb1d73e96c3346d6b71e81"
-    },
-    {
-      "path": "tests/test_vins_fusion_live_config.py",
-      "sha256": "2fad671e415415e28863f96dbc88830e63301bccc7aed3a045448c2c774beb72"
-    },
-    {
-      "path": "frozen_builds/20260817_191957/build/vins_fusion_ros2/vins_fusion_ros2_node",
-      "sha256": "0c1ad5df575b03b18fba1899b596351215f3d3b21655e5f4064353076072d162"
-    },
-    {
-      "path": "frozen_builds/20260817_191957/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml",
-      "sha256": "1933cc28c8a4f5082deb1c2b10e78834c4134a9752b12b97476d05590c667caf"
-    },
-    {
-      "path": "frozen_chain_a3a38b8/bin/lfn_product_origin_ready_v7",
-      "sha256": "8148cc99945e56c38151254da7aae38269892efb5d6786c6b003e97e8d550001"
-    },
-    {
-      "path": "frozen_chain_a3a38b8/MANIFEST.txt",
-      "sha256": "9d2257c6a7d61b606309ee2da9873f5ff58a38a1a4ed1bd0a7ff6859ad294f8a"
-    }
-  ]
+  "release": "humble-stm32-product-v1.1-20260824",
+  "platform": "Ubuntu 22.04 + ROS 2 Humble",
+  "git_branch": "release/humble-stm32-product-v1-20260824",
+  "git_tag": "humble-stm32-product-v1.1-20260824",
+  "runtime_entrypoint": "run_vins_realtime.sh",
+  "offline_entrypoint": "run_slam_postprocess.sh",
+  "device_config": "config/devices_product_live_stm32.yaml",
+  "vins_config": "config/product_live_stm32/vins_config.yaml",
+  "gripper_config": "config/gripper/umi_manual_gripper_20260824.yaml",
+  "vins_source": "components/vins_fusion_ros2",
+  "loop_source": "components/vins_fusion_ros2_product_loop",
+  "firmware_source": "firmware/stm32f070_imu_encoder",
+  "calibration_release": "calibration-product-v4-20260824",
+  "historical_runtime_included": false,
+  "notes": "Build artifacts are generated locally and verified by .product_live_build/product_live_hashes.env"
 }

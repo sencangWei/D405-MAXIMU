@@ -4,7 +4,7 @@
 用法:
   python scripts/run_realtime.py
   python scripts/run_realtime.py --no-record       # 不录，只看可视化
-  python scripts/run_realtime.py --config config/devices.yaml
+  python scripts/run_realtime.py --config config/devices_product_live_stm32.yaml
 """
 import argparse
 import sys
@@ -18,7 +18,11 @@ from ego_vio.runtime import Runtime
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config", default=None, help="devices.yaml 路径")
+    ap.add_argument(
+        "--config",
+        default=None,
+        help="设备配置；默认使用正式 devices_product_live_stm32.yaml",
+    )
     ap.add_argument("--session", default=None, help="录制会话名(默认时间戳)")
     ap.add_argument("--no-record", action="store_true", help="不录制，只跑可视化")
     ap.add_argument("--no-viz", action="store_true", help="不启动 Rerun")

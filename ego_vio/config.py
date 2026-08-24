@@ -1,4 +1,4 @@
-"""配置加载。读取 config/devices.yaml。"""
+"""配置加载。默认读取正式 STM32 产品设备配置。"""
 
 from __future__ import annotations
 from dataclasses import dataclass, field
@@ -75,7 +75,11 @@ class AppConfig:
 
 def load_config(path: str | Path = None) -> AppConfig:
     if path is None:
-        path = Path(__file__).resolve().parent.parent / "config" / "devices.yaml"
+        path = (
+            Path(__file__).resolve().parent.parent
+            / "config"
+            / "devices_product_live_stm32.yaml"
+        )
     path = Path(path)
     with open(path, "r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)

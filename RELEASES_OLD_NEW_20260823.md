@@ -7,7 +7,7 @@
 | 历史 Humble | `release/humble-known-good-20260816`、`humble-known-good-20260816` | `76d6623a8d189d8d861ec77d1534e26fb02f323b` | 只用于复现 a3 direct-BRIEF + v7 历史报告 |
 | 历史 Jazzy | `handoff/jazzy-20260816` | `9020dea60815c77b7e6eac7cf9afd0ef3261f6d0` | 只用于迁移研究，不是客户产品 |
 | STM32 RC1 | `release/humble-stm32-product-live-rc1-20260823`、`humble-stm32-product-live-rc1-20260823` | 已封存开发候选 | 只用于回溯 2026-08-23 HIL |
-| 正式产品 | `release/humble-stm32-product-v1-20260824`、`humble-stm32-product-v1-20260824` | 以远端标签解引用提交为准 | 客户部署和小电脑迁移唯一来源 |
+| 正式产品 | `release/humble-stm32-product-v1-20260824`、`humble-stm32-product-v1.1-20260824` | 以远端标签解引用提交为准 | 客户部署和小电脑迁移唯一来源；v1.1 已移除历史运行文件 |
 | 标定工具 | `release/calibration-product-v4-20260824`、`calibration-product-v4-20260824` | 独立历史分支 | 产品标定、夹爪 App 接口和不可替代证据 |
 
 正式产品分支包含：
