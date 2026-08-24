@@ -122,6 +122,17 @@ class OnlineCounterFitter:
             max_correction = correction_fraction * period
             correction = min(max(phase_error, -max_correction), max_correction)
             output_ts = base + correction
+        elif (
+            self.nominal_rate_hz is not None
+            and self.nominal_rate_hz > 0.0
+            and self._last_output_ts is not None
+            and self._last_unwrapped_counter is not None
+        ):
+            # Before the first ten-sample fit, preserve the device's nominal
+            # spacing instead of exposing multiple packets from one USB read
+            # batch with nearly identical host-arrival timestamps.
+            delta = max(uc - self._last_unwrapped_counter, 1)
+            output_ts = self._last_output_ts + delta / self.nominal_rate_hz
         else:
             output_ts = raw_ts
             if self._last_output_ts is not None:

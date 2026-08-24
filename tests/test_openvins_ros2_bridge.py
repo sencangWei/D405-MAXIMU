@@ -8,6 +8,7 @@ from ego_vio.vio.openvins_ros2_bridge import OpenVINSROS2Bridge
 from ego_vio.vio.openvins_ros2_bridge import _put_latest
 from ego_vio.vio.openvins_ros2_bridge import _rotate_imu_to_vins
 from ego_vio.vio.openvins_ros2_bridge import _summarize_camera_publish_timings
+from ego_vio.vio.openvins_ros2_bridge import _camera_has_imu_lead
 
 
 def test_live_imu_transform_matches_vins_replay_matrix():
@@ -76,6 +77,13 @@ def test_live_camera_discards_only_until_first_post_warmup_imu():
 
     assert bridge._cam_queue.empty()
     assert bridge._cam_warmup_discarded == 1
+
+
+def test_product_signed_imu_boundary_uses_td_plus_one_sample_margin():
+    guard_s = (-9.312 + 2.5) / 1000.0
+
+    assert not _camera_has_imu_lead(99.9930, 100.0, guard_s)
+    assert _camera_has_imu_lead(99.9932, 100.0, guard_s)
 
 
 def test_operator_preview_queue_replaces_old_frame_without_blocking():

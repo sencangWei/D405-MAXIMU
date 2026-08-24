@@ -194,7 +194,6 @@ class ImuReader:
         self._warmup_remaining = self._warmup_frames
         self._decoder = StreamDecoder(protocol)
         self._mcu_timer = TimerUnwrapper()
-        self._mcu_to_host_offset = None
         self.detected_protocols = set()
         self._formal_detected_protocols = set()
 
@@ -266,7 +265,6 @@ class ImuReader:
         self._warmup_remaining = self._warmup_frames
         self._decoder = StreamDecoder(self.protocol)
         self._mcu_timer = TimerUnwrapper()
-        self._mcu_to_host_offset = None
         self.detected_protocols.clear()
         self._formal_detected_protocols.clear()
         self._warmup_stats = self._transport_snapshot() if self._warmup_frames == 0 else None
@@ -295,7 +293,6 @@ class ImuReader:
         self._buf.clear()
         self._decoder = StreamDecoder(self.protocol)
         self._mcu_timer = TimerUnwrapper()
-        self._mcu_to_host_offset = None
         self._warmup_remaining = self._warmup_frames
         # 断线期间的样本无法恢复。重新锚定到当前主机时钟，保留真实
         # 时间空档；主机虚拟 counter 继续单调，设备 raw counter 仍用于
@@ -453,20 +450,20 @@ class ImuReader:
         self._clock_counter += clock_step
 
         if imu_first_byte_rx_us is not None:
-            # 新STM32包使用MCU捕获到IMU首字节的时间。Kalibr标定和SLAM
-            # 录制采用同一映射，USB批量到达抖动不进入逐帧时间戳。
+            # 新STM32包使用MCU捕获到IMU首字节的时间。MCU晶振与
+            # D405/主机时钟存在频差，不能只在第一帧计算一次固定偏移，
+            # 否则约一分钟后相机线程会持续等待“未来IMU”。沿用400 Hz
+            # 设备节拍，并用主机接收时钟缓慢驯服相位；逐帧USB抖动不会
+            # 直接进入发布时间戳。
             imu_device_us = self._mcu_timer.extend(imu_first_byte_rx_us)
-            device_time = imu_device_us / 1_000_000.0
-            if self._mcu_to_host_offset is None:
-                self._mcu_to_host_offset = s.rx_time - device_time
-            s.ts = device_time + self._mcu_to_host_offset
+            s.ts = self._ts_fitter.feed(self._clock_counter, s.rx_time)
             # Encoder and IMU timestamps are captured by the same STM32 timer.
-            # Map both with the one frozen MCU->host offset; USB arrival time is
-            # intentionally not used as a per-sample training timestamp.
+            # Preserve their measured sub-frame MCU gap on the disciplined
+            # common host timeline used by camera/VINS/model-training export.
             if encoder_read_us not in (None, 0):
                 encoder_device_us = self._mcu_timer.extend(encoder_read_us)
-                s.encoder_ts = encoder_device_us / 1_000_000.0 + self._mcu_to_host_offset
                 s.encoder_sensor_gap_us = encoder_device_us - imu_device_us
+                s.encoder_ts = s.ts + s.encoder_sensor_gap_us / 1_000_000.0
         else:
             # 旧TTL链继续使用主机侧连续样本序号去抖。
             s.ts = self._ts_fitter.feed(self._clock_counter, s.ts)

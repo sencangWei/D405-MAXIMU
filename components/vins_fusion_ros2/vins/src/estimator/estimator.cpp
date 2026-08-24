@@ -180,13 +180,13 @@ void Estimator::inputImage(const ImageData &image) {
   const double tracker_ms = featureTrackerTime.toc();
 
   // Keep camera capture and feature tracking at 30 Hz, but preserve the
-  // proven dual-IR stable fork's roughly 15 Hz estimator cadence.  Enqueuing
-  // every tracked frame overloads this backend and creates an ever-growing
-  // seconds-long latency; an empty queue may still take the current frame.
+  // proven dual-IR stable fork's deterministic 15 Hz estimator cadence.
+  // Do not enqueue extra odd frames merely because the backend queue happens
+  // to be empty: that made the effective cadence vary with machine load and
+  // reached 26 Hz in live HIL despite the advertised 15 Hz contract.
   {
     std::lock_guard<std::mutex> lock(featureBufferMutex);
-    const bool enqueue_for_backend =
-        inputImageCount % 2 == 0 || featureBuffer.empty();
+    const bool enqueue_for_backend = inputImageCount % 2 == 0;
     if (enqueue_for_backend) {
       featureBuffer.push(make_pair(image.timestamp, featureFrame));
       enqueuedImageCount.fetch_add(1);
@@ -403,25 +403,24 @@ void Estimator::processMeasurements() {
         frame_gyro_mean < 0.008 && std::sqrt(frame_gyro_variance) < 0.005 &&
         frame_gyro_max < 0.025 && std::sqrt(frame_accel_variance) < 0.025 &&
         std::abs(frame_accel_mean - gravity.norm()) < 0.08;
-    // Live D405 scenes commonly retain 30--80 tracks while the validated
-    // offline sequence retains more than 100.  Requiring 100 tracks made the
-    // stationary detector impossible to enter live.  Do not gate entry on the
-    // estimated velocity either: IMU bias can push that estimate above the
-    // threshold before ZUPT has had a chance to correct it.
-    const bool visual_stationary =
-        frame_flow_norms.size() >= 20 &&
-        frame_flow_median < 0.008 && frame_flow_p90 < 0.12;
     // Leaving a confirmed stationary state needs positive motion evidence.
     // Missing/temporarily noisy samples are not motion: treating them as such
     // unlocked ZUPT after a few dozen seconds on a completely still rig.
     const bool translational_inertial_motion_evidence =
         frame_imu_samples >= 5 &&
-        (std::sqrt(frame_accel_variance) > 0.08 ||
-         std::abs(frame_accel_mean - gravity.norm()) > 0.15);
+        vins::hasInertialTranslationEvidence(
+            std::sqrt(frame_accel_variance),
+            std::abs(frame_accel_mean - gravity.norm()));
     const bool visual_motion_evidence =
         vins::hasVisualTranslationEvidence(
             frame_flow_norms.size(), frame_flow_median, frame_flow_p90,
             frame_flow_coherence);
+    // Live D405 scenes commonly retain 30--80 tracks while the validated
+    // offline sequence retains more than 100. Incoherent sub-pixel flow is
+    // image noise, not camera translation, and must not continuously reset
+    // the stationary confidence accumulated from the IMU.
+    const bool visual_stationary =
+        frame_flow_norms.size() >= 20 && !visual_motion_evidence;
     // ZUPT constrains linear velocity, so angular velocity alone must not
     // release it. A small in-place rotation previously unlocked a large
     // latent linear velocity even though image flow still said stationary.
@@ -430,21 +429,18 @@ void Estimator::processMeasurements() {
     const bool stationary_candidate =
         options->shouldUseZupt() && solver_flag == SolverState::NON_LINEAR &&
         inertial_stationary && visual_stationary;
-    if (stationary_candidate) {
-      stationaryFrameCount = std::min(stationaryFrameCount + 1, 15);
+    if (!zeroVelocityActive) {
+      stationaryFrameCount = vins::updateStationaryConfidence(
+          stationaryFrameCount, stationary_candidate, motion_evidence, 15);
       movingFrameCount = 0;
       zeroVelocityActive = stationaryFrameCount >= 15;
-    } else if (zeroVelocityActive) {
+    } else {
       movingFrameCount = motion_evidence ? movingFrameCount + 1 : 0;
       if (movingFrameCount >= 3) {
         stationaryFrameCount = 0;
         movingFrameCount = 0;
         zeroVelocityActive = false;
       }
-    } else {
-      stationaryFrameCount = 0;
-      movingFrameCount = 0;
-      zeroVelocityActive = false;
     }
     if (zeroVelocityActive != was_zero_velocity_active) {
       if (zeroVelocityActive) {

@@ -278,6 +278,14 @@ def test_product_live_wrapper_pins_candidate_identity_and_health_monitor() -> No
     runtime = (ROOT / "ego_vio/runtime.py").read_text(encoding="utf-8")
     assert 'preview_topic="/rgb_preview/image_raw"' in runtime
     assert "preview_hz=30.0" in runtime
+    assert "imu_lead_guard_ms=unit.vio.imu_lead_guard_ms" in runtime
+
+    product_device = yaml.safe_load(
+        (ROOT / "config/devices_product_live_stm32.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert product_device["units"][0]["vio"]["imu_lead_guard_ms"] == -6.812
 
 
 def test_estimator_logs_each_tracking_constraint_stage() -> None:
@@ -309,7 +317,8 @@ def test_product_live_tracks_30hz_but_rate_limits_the_backend_like_old_stable() 
     track_position = estimator.index("featureTracker.trackImage")
     enqueue_position = estimator.index("const bool enqueue_for_backend")
     assert track_position < enqueue_position
-    assert "inputImageCount % 2 == 0 || featureBuffer.empty()" in estimator
+    assert "const bool enqueue_for_backend = inputImageCount % 2 == 0;" in estimator
+    assert "inputImageCount % 2 == 0 || featureBuffer.empty()" not in estimator
     assert "if (enqueue_for_backend)" in estimator
 
 

@@ -92,6 +92,7 @@ class Runtime:
                 epoch_offset=self._epoch_offset,
                 cam_latency_ms=unit.camera.cam_latency_ms,
                 imu_level_calibration=unit.vio.imu_level_calibration,
+                imu_lead_guard_ms=unit.vio.imu_lead_guard_ms,
                 preview_topic="/rgb_preview/image_raw"
                 if unit.camera.rgb_preview
                 else "",

@@ -109,11 +109,14 @@ class OpenVINSROS2Bridge(VIOBackend):
         epoch_offset: float = 0.0,
         cam_latency_ms: float = 0.0,
         imu_level_calibration: str = "",
+        imu_lead_guard_ms: float = 10.0,
         preview_topic: str = "",
         preview_hz: float = 30.0,
     ):
         if preview_hz <= 0.0:
             raise ValueError("preview_hz must be positive")
+        if not math.isfinite(imu_lead_guard_ms):
+            raise ValueError("imu_lead_guard_ms must be finite")
         self.name = name
         self._epoch_offset = epoch_offset
         self._cam_latency_s = cam_latency_ms / 1000.0
@@ -168,7 +171,7 @@ class OpenVINSROS2Bridge(VIOBackend):
         self._preview_published = 0
         self._preview_queue_dropped = 0
         self._stop = threading.Event()
-        self._imu_guard_s = 0.010
+        self._imu_guard_s = imu_lead_guard_ms / 1000.0
         self._latest_imu_t = float("-inf")
         self._imu_ready = threading.Condition()
 
@@ -211,9 +214,11 @@ class OpenVINSROS2Bridge(VIOBackend):
 
             t, h, w, data0, data1 = item
             cycle_started = time.perf_counter()
-            # DDS does not preserve ordering across the image and IMU topics.
-            # Publish an image only after later IMU samples have already been
-            # handed to DDS, so OpenVINS can always propagate to image time.
+            # DDS does not preserve ordering across image and IMU topics.
+            # Wait until the IMU publisher has crossed VINS' actual integration
+            # boundary (camera timestamp + calibrated td) plus one IMU sample
+            # of delivery margin. Product-live supplies that signed boundary;
+            # waiting for camera+10 ms double-counted its negative td.
             with self._imu_ready:
                 ready = self._imu_ready.wait_for(
                     lambda: self._stop.is_set()

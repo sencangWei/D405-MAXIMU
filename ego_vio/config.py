@@ -45,6 +45,7 @@ class VIOConfig:
     qos_reliable: bool = True            # openvins_ros2 用
     odom_topic: str = "/odometry"         # ROS2 VIO/SLAM 轨迹可视化输入
     imu_level_calibration: str = ""      # 离线/实时VINS共用的固定IMU调平旋转
+    imu_lead_guard_ms: float = 10.0       # 图像发布前所需IMU时间边界；可为负
 
 
 @dataclass
@@ -132,6 +133,7 @@ def load_config(path: str | Path = None) -> AppConfig:
                     and not Path(vio_raw["imu_level_calibration"]).is_absolute()
                     else vio_raw.get("imu_level_calibration", "")
                 ),
+                imu_lead_guard_ms=float(vio_raw.get("imu_lead_guard_ms", 10.0)),
             ),
         ))
 
