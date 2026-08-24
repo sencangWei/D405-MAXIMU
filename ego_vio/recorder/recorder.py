@@ -15,6 +15,7 @@
       imu.bin
       camera_ts.csv    (idx, frame_number, ts_mono, rx_mono, ts_wall, has_depth)
       imu_ts.csv       (counter, ts_mono, rx_mono, ts_wall)
+      gripper_encoder.csv (STM32 encoder state on the shared monotonic timeline)
 """
 
 from __future__ import annotations
@@ -27,6 +28,8 @@ from pathlib import Path
 from queue import Queue
 
 import numpy as np
+
+from ..gripper import ManualGripperCalibration, ManualGripperTracker
 
 # IMU 二进制记录(40 字节):
 #   double ts, uint32 counter, float gx gy gz ax ay az temp
@@ -42,6 +45,7 @@ class UnitRecorder:
         jpg_quality: int = 90,
         save_depth: bool = False,
         imu_bin: bool = True,
+        record_gripper: bool = False,
         max_queue: int = 600,
     ):
         self.unit_name = unit_name
@@ -50,6 +54,7 @@ class UnitRecorder:
         self.jpg_quality = jpg_quality
         self.save_depth = save_depth
         self.imu_bin = imu_bin
+        self.record_gripper = record_gripper
 
         self._q: Queue = Queue(maxsize=max_queue)
         self._running = False
@@ -59,7 +64,13 @@ class UnitRecorder:
         self._cam_csv_w = None
         self._imu_csv = None
         self._imu_csv_w = None
+        self._gripper_csv = None
+        self._gripper_csv_w = None
+        self._gripper_calibration = None
+        self._gripper_tracker = None
         self.dropped = 0     # 队列满丢掉的帧
+        self.gripper_samples_written = 0
+        self.gripper_invalid_samples = 0
 
     def start(self):
         self.frames_dir.mkdir(parents=True, exist_ok=True)
@@ -73,6 +84,22 @@ class UnitRecorder:
         self._imu_csv = open(self.dir / "imu_ts.csv", "w", newline="", encoding="utf-8")
         self._imu_csv_w = csv.writer(self._imu_csv)
         self._imu_csv_w.writerow(["counter", "ts_mono", "rx_mono", "ts_wall"])
+        if self.record_gripper:
+            self._gripper_calibration = ManualGripperCalibration.load()
+            self._gripper_tracker = ManualGripperTracker(self._gripper_calibration)
+            self._gripper_csv = open(
+                self.dir / "gripper_encoder.csv", "w", newline="", encoding="utf-8"
+            )
+            self._gripper_csv_w = csv.writer(self._gripper_csv)
+            self._gripper_csv_w.writerow([
+                "schema", "calibration_id", "protocol", "sequence", "imu_counter",
+                "imu_ts_mono", "encoder_ts_mono", "sensor_pair_delta_us",
+                "imu_first_byte_rx_us", "encoder_read_us", "raw_flags",
+                "encoder_valid", "raw_count", "angle_deg", "direction",
+                "closure_ratio", "estimated_no_load_gap_mm",
+                "no_load_uncertainty_mm", "dual_closing_distance_mm",
+                "single_jaw_travel_mm", "loaded_object_size_valid", "status",
+            ])
 
         self._running = True
         self._thread = threading.Thread(target=self._loop, name=f"rec-{self.unit_name}", daemon=True)
@@ -83,7 +110,7 @@ class UnitRecorder:
         self._q.put(None)   # 哨兵
         if self._thread:
             self._thread.join(timeout=3.0)
-        for fp in (self._imu_fp, self._cam_csv, self._imu_csv):
+        for fp in (self._imu_fp, self._cam_csv, self._imu_csv, self._gripper_csv):
             if fp:
                 fp.close()
 
@@ -158,10 +185,52 @@ class UnitRecorder:
                         f"{s.rx_time:.9f}",
                         f"{time.time():.6f}",
                     ])
+                    if self._gripper_csv_w is not None and s.protocol == "stm32_combined_v1":
+                        valid = (
+                            s.encoder_ts is not None
+                            and s.encoder_response is not None
+                            and bool(s.flags & (1 << 1))
+                            and not bool(s.flags & ((1 << 2) | (1 << 3)))
+                        )
+                        raw_count = (
+                            int(s.encoder_response) & 0x3FFF
+                            if s.encoder_response is not None else 0
+                        )
+                        angle_deg = raw_count * 360.0 / 16384.0
+                        state = self._gripper_tracker.update(
+                            angle_deg, encoder_valid=valid
+                        )
+                        self._gripper_csv_w.writerow([
+                            "umi_gripper_sample_v1",
+                            self._gripper_calibration.profile_id,
+                            s.protocol,
+                            "" if s.sequence is None else s.sequence,
+                            s.counter,
+                            f"{s.ts:.9f}",
+                            "" if s.encoder_ts is None else f"{s.encoder_ts:.9f}",
+                            "" if s.encoder_sensor_gap_us is None else s.encoder_sensor_gap_us,
+                            "" if s.imu_first_byte_rx_us is None else s.imu_first_byte_rx_us,
+                            "" if s.encoder_read_us is None else s.encoder_read_us,
+                            s.flags,
+                            int(valid),
+                            raw_count,
+                            f"{angle_deg:.9f}",
+                            state.direction,
+                            "" if state.closure_ratio is None else f"{state.closure_ratio:.9f}",
+                            "" if state.estimated_no_load_gap_mm is None else f"{state.estimated_no_load_gap_mm:.6f}",
+                            "" if state.no_load_uncertainty_mm is None else f"{state.no_load_uncertainty_mm:.6f}",
+                            "" if state.dual_closing_distance_mm is None else f"{state.dual_closing_distance_mm:.6f}",
+                            "" if state.single_jaw_travel_mm is None else f"{state.single_jaw_travel_mm:.6f}",
+                            0,
+                            state.status,
+                        ])
+                        self.gripper_samples_written += 1
+                        if not valid:
+                            self.gripper_invalid_samples += 1
             except Exception as e:
                 print(f"[rec-{self.unit_name}] 写盘错误: {e}")
 
-        for fp in (self._imu_fp, self._cam_csv, self._imu_csv):
+        for fp in (self._imu_fp, self._cam_csv, self._imu_csv, self._gripper_csv):
             try:
                 fp.flush()
             except Exception:

@@ -48,6 +48,14 @@ class ImuSample:
     ax: float; ay: float; az: float    # g
     temp: float         # ℃
     rx_time: float      # 原始收到时刻(诊断抖动用)
+    protocol: str = "kt_ex9_37"
+    sequence: int | None = None
+    flags: int = 0
+    imu_first_byte_rx_us: int | None = None
+    encoder_read_us: int | None = None
+    encoder_response: int | None = None
+    encoder_ts: float | None = None
+    encoder_sensor_gap_us: int | None = None
 
 
 def verify_checksum(buf: bytes) -> bool:
@@ -371,11 +379,18 @@ class ImuReader:
                 az=packet.az,
                 temp=packet.temperature_c,
                 rx_time=rx,
+                protocol=packet.protocol,
+                sequence=packet.sequence,
+                flags=packet.flags,
+                imu_first_byte_rx_us=packet.imu_first_byte_rx_us,
+                encoder_read_us=packet.encoder_read_us,
+                encoder_response=packet.encoder_response,
             )
             self._accept_sample(
                 sample,
                 formal_batch=formal_batch,
                 imu_first_byte_rx_us=packet.imu_first_byte_rx_us,
+                encoder_read_us=packet.encoder_read_us,
                 count_frame=False,
             )
         self.frames_bad = self._decoder.crc_or_checksum_errors
@@ -399,6 +414,7 @@ class ImuReader:
         *,
         formal_batch: bool,
         imu_first_byte_rx_us: Optional[int] = None,
+        encoder_read_us: Optional[int] = None,
         count_frame: bool,
     ) -> None:
         if count_frame:
@@ -439,10 +455,18 @@ class ImuReader:
         if imu_first_byte_rx_us is not None:
             # 新STM32包使用MCU捕获到IMU首字节的时间。Kalibr标定和SLAM
             # 录制采用同一映射，USB批量到达抖动不进入逐帧时间戳。
-            device_time = self._mcu_timer.extend(imu_first_byte_rx_us) / 1_000_000.0
+            imu_device_us = self._mcu_timer.extend(imu_first_byte_rx_us)
+            device_time = imu_device_us / 1_000_000.0
             if self._mcu_to_host_offset is None:
                 self._mcu_to_host_offset = s.rx_time - device_time
             s.ts = device_time + self._mcu_to_host_offset
+            # Encoder and IMU timestamps are captured by the same STM32 timer.
+            # Map both with the one frozen MCU->host offset; USB arrival time is
+            # intentionally not used as a per-sample training timestamp.
+            if encoder_read_us not in (None, 0):
+                encoder_device_us = self._mcu_timer.extend(encoder_read_us)
+                s.encoder_ts = encoder_device_us / 1_000_000.0 + self._mcu_to_host_offset
+                s.encoder_sensor_gap_us = encoder_device_us - imu_device_us
         else:
             # 旧TTL链继续使用主机侧连续样本序号去抖。
             s.ts = self._ts_fitter.feed(self._clock_counter, s.ts)

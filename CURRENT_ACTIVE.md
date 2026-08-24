@@ -41,3 +41,9 @@ CP2102N、63字节 `stm32_combined_v1`、新装配外参与 `td=-0.009312`，并
 或专用测距观测。
 
 GitHub 单仓库恢复时，配套标定工具和修改后的 VINS 源码快照位于 `components/`。
+
+训练采集已把 STM32 联合包内的磁编码器作为独立 400 Hz 状态流接入，但不送入
+VINS／SLAM。正式会话新增 `external_imu/gripper_encoder.csv` 和逐相机帧的
+`gripper_camera_alignment.csv`；编码器与 IMU 共用 MCU→主机单调时钟映射，相机
+关联复用 `td=-0.009312 s`。字段、加载物体时的距离语义和验收门见
+`docs/TRAINING_GRIPPER_SYNC_ZH.md`。

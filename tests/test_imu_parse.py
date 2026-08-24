@@ -5,6 +5,7 @@ import types
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -42,7 +43,10 @@ def make_frame(gx=1.0, gy=2.0, gz=3.0, ax=0.0, ay=0.0, az=1.0, temp=25.0, counte
 def make_combined(sequence=1, counter=1, imu_us=1000, flags=0x03):
     packet = bytearray(COMBINED_SIZE)
     packet[:4] = b"\xa5\x5a\x01\x3f"
-    struct.pack_into("<HIIIIH", packet, 4, flags, sequence, imu_us, imu_us + 40, counter, 0x1234)
+    struct.pack_into(
+        "<HIIIIH", packet, 4, flags, sequence, imu_us,
+        (imu_us + 40) & 0xFFFFFFFF, counter, 0x1234,
+    )
     packet[24:61] = make_frame(counter=counter)
     struct.pack_into("<H", packet, 61, crc16_ccitt_false(packet[:61]))
     return bytes(packet)
@@ -144,6 +148,11 @@ def test_reader_decodes_stm32_combined_packet_and_uses_mcu_spacing():
 
     assert [sample.counter for sample in received] == [20, 21]
     assert abs((received[1].ts - received[0].ts) - 0.0025) < 1e-9
+    assert received[0].protocol == "stm32_combined_v1"
+    assert received[0].sequence == 10
+    assert received[0].encoder_response == 0x1234
+    assert received[0].encoder_sensor_gap_us == 40
+    assert abs((received[0].encoder_ts - received[0].ts) - 0.000040) < 1e-9
     assert reader.stats_since_warmup()["protocol"] == "stm32_combined_v1"
     assert reader.stats_since_warmup()["sequence_gaps"] == 0
 
@@ -159,6 +168,18 @@ def test_bad_stm32_crc_cannot_leak_embedded_legacy_frame():
     assert received == []
     assert reader.stats_since_warmup()["frames_bad"] == 1
     assert reader.stats_since_warmup()["resyncs"] == COMBINED_SIZE
+
+
+def test_encoder_and_imu_stay_aligned_across_mcu_timer_wrap():
+    received = []
+    reader = ImuReader("unused", on_sample=received.append, warmup_frames=0)
+    reader._consume_data(
+        make_combined(sequence=1, counter=1, imu_us=(1 << 32) - 20)
+        + make_combined(sequence=2, counter=2, imu_us=2480)
+    )
+    assert [sample.encoder_sensor_gap_us for sample in received] == [40, 40]
+    assert (received[1].ts - received[0].ts) == pytest.approx(0.0025)
+    assert (received[1].encoder_ts - received[0].encoder_ts) == pytest.approx(0.0025)
 
 
 def test_stm32_transport_flags_and_sequence_gap_remain_visible():

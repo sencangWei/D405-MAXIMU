@@ -37,6 +37,12 @@ from ego_vio.imu.imu_reader import ImuReader
 from ego_vio.imu.calibration import IMUCalibration
 from ego_vio.camera.realsense_capture import CameraFrame
 from ego_vio.recorder.recorder import IMU_PACK_SIZE, UnitRecorder
+from ego_vio.gripper.training_sync import (
+    MAX_CAMERA_GRIPPER_DELTA_MS,
+    MAX_ENCODER_PAIR_GAP_US,
+    analyze_gripper_csv,
+    write_gripper_camera_alignment,
+)
 
 
 STREAMS = (
@@ -71,6 +77,7 @@ MAX_CAMERA_GAP_RATIO = 0.001
 MIN_IMU_RATE_HZ = 399.0
 MAX_IMU_RATE_HZ = 401.0
 SYNC_TOLERANCE_MS = 2.0
+PRODUCT_CAMERA_IMU_TD_S = -0.009312
 CAMERA_RAW_BYTES_PER_SECOND = 1280 * 720 * (2 + 1 + 1) * 30
 STAGING_HEADROOM_RATIO = 1.15
 MONITOR_QUEUE_CAPACITY = 64
@@ -634,7 +641,9 @@ def main() -> int:
             )
         record_path = args.ram_stage_root / f"{session.name}_{bag_path.name}"
 
-    imu_recorder = UnitRecorder("external_imu", session, save_depth=False, max_queue=8000)
+    imu_recorder = UnitRecorder(
+        "external_imu", session, save_depth=False, record_gripper=True, max_queue=8000
+    )
     recording_active = threading.Event()
     vins_bridge = None
     vins_imu_calibration = None
@@ -956,6 +965,30 @@ def main() -> int:
         imu_path.stat().st_size // IMU_PACK_SIZE if imu_path.exists() else 0
     )
     imu_rate_hz = imu_samples_written / duration if duration > 0 else 0.0
+    gripper_path = session / "external_imu" / "gripper_encoder.csv"
+    gripper_alignment_path = session / "gripper_camera_alignment.csv"
+    if imu_protocol == "stm32_combined_v1":
+        gripper_stream = analyze_gripper_csv(gripper_path)
+        gripper_alignment = write_gripper_camera_alignment(
+            frame_csv_path,
+            gripper_path,
+            gripper_alignment_path,
+            camera_to_imu_td_s=PRODUCT_CAMERA_IMU_TD_S,
+        )
+        gripper_ok = (
+            gripper_stream["result"] == "PASS"
+            and gripper_stream["rows"] == imu_samples_written
+            and gripper_alignment["result"] == "PASS"
+            and gripper_alignment["rows"] == csv_rows
+        )
+    else:
+        gripper_stream = {
+            "result": "SKIPPED",
+            "reason": f"protocol={imu_protocol}; gripper requires stm32_combined_v1",
+            "rows": 0,
+        }
+        gripper_alignment = {"result": "SKIPPED", "rows": 0}
+        gripper_ok = True
 
     camera_ok = (
         capture_error is None
@@ -987,7 +1020,7 @@ def main() -> int:
         )
     )
     report = {
-        "result": "PASS" if camera_ok and imu_ok and live_vins_ok else "FAIL",
+        "result": "PASS" if camera_ok and imu_ok and gripper_ok and live_vins_ok else "FAIL",
         "session": str(session),
         "bag": str(bag_path),
         "capture_error": capture_error,
@@ -1025,6 +1058,9 @@ def main() -> int:
             "ir_actual_exposure_max_us": args.ir_auto_exposure_limit_us,
             "ir_exposure_tolerance_us": IR_EXPOSURE_LIMIT_TOLERANCE_US,
             "imu_rate_hz": [MIN_IMU_RATE_HZ, MAX_IMU_RATE_HZ],
+            "encoder_sensor_pair_delta_us": [0, MAX_ENCODER_PAIR_GAP_US],
+            "camera_gripper_nearest_max_ms": MAX_CAMERA_GRIPPER_DELTA_MS,
+            "camera_to_imu_td_s": PRODUCT_CAMERA_IMU_TD_S,
         },
         "camera": {
             "result": "PASS" if camera_ok else "FAIL",
@@ -1046,6 +1082,24 @@ def main() -> int:
             "samples_written": imu_samples_written,
             "rate_hz": imu_rate_hz,
             "recorder_drops": imu_recorder.dropped,
+        },
+        "gripper_encoder": {
+            "required_for_training": imu_protocol == "stm32_combined_v1",
+            "result": "PASS" if gripper_ok else "FAIL",
+            "stream": gripper_stream,
+            "camera_alignment": gripper_alignment,
+            "samples_written_by_recorder": imu_recorder.gripper_samples_written,
+            "invalid_samples_seen_by_recorder": imu_recorder.gripper_invalid_samples,
+            "timestamp_contract": (
+                "encoder_ts_mono uses the same frozen STM32 MCU-to-host monotonic "
+                "mapping as imu_ts_mono; camera rows use D405 global_time mapped "
+                "to the same host monotonic domain; camera association queries "
+                "encoder at camera_ts_mono + calibrated td"
+            ),
+            "training_semantics": (
+                "raw_count/angle_deg/closure_ratio are valid under load; "
+                "estimated_no_load_gap_mm is not loaded object size"
+            ),
         },
         "live_vins": {
             "enabled": args.publish_vins,

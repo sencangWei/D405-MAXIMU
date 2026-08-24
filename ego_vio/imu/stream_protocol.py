@@ -45,6 +45,8 @@ class ImuPacket:
     sequence: int | None = None
     flags: int = 0
     imu_first_byte_rx_us: int | None = None
+    encoder_read_us: int | None = None
+    encoder_response: int | None = None
 
     @property
     def imu_valid(self) -> bool:
@@ -81,9 +83,10 @@ def parse_combined(packet: bytes) -> ImuPacket:
     if crc16_ccitt_false(packet[:61]) != expected_crc:
         raise ValueError("invalid combined packet CRC")
     flags = struct.unpack_from("<H", packet, 4)[0]
-    sequence, imu_us, _encoder_us, outer_counter = struct.unpack_from(
+    sequence, imu_us, encoder_us, outer_counter = struct.unpack_from(
         "<IIII", packet, 6
     )
+    encoder_response = struct.unpack_from("<H", packet, 22)[0]
     embedded = parse_raw_imu(packet[24:61])
     if embedded.counter != outer_counter:
         raise ValueError("combined/embedded IMU counter mismatch")
@@ -101,6 +104,8 @@ def parse_combined(packet: bytes) -> ImuPacket:
         sequence=sequence,
         flags=flags,
         imu_first_byte_rx_us=imu_us,
+        encoder_read_us=encoder_us,
+        encoder_response=encoder_response,
     )
 
 
