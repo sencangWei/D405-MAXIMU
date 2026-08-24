@@ -13,6 +13,13 @@
   结果不进入正式 Kalibr 或 product-live。
 - `fit_multisession_world_z.py`：已有的多平面 leave-one-out 和真实升降保护工具；其
   PASS 仍禁止直接启用，须经过端到端 SLAM 验收。
+- `manual_gripper.py`：UMI 手动夹爪绝对角到开合状态的换算层；按张开/闭合方向保留
+  回差，输出空载间距、双边闭合距离和单边行程，但不推断受力物体尺寸。
+- `../umi_gripper_live.sh`：STM32 63 字节联合包的夹爪状态实时终端。默认自动选择唯一
+  `/dev/serial/by-id/` 设备，原始角度和开合比例是权威输出，毫米值带空载估计标记。
+- `gripper_encoder.py`：供 App 使用的独立采集/处理模块；包含共享串口集成用的
+  `GripperEncoderProcessor`、台架独占串口用的 `GripperEncoderCollector`、健康快照和
+  JSONL 记录器。稳定 JSON 合同和显示规则见 `GRIPPER_ENCODER_APP_INTERFACE_ZH.md`。
 
 客户最终入口严格是 `STAGE_COMMAND_CONTRACT.yaml` 中五条必需独立命令。保留编号 3
 的多姿态工具仅属研发诊断。每条客户命令执行

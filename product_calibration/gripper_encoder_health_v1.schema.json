@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sencangwei.github.io/D405-MAXIMU/schemas/gripper_encoder_health_v1.schema.json",
+  "title": "UMI gripper encoder health v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "state", "port", "baud", "calibration_id", "frames",
+    "valid_frames", "invalid_frames", "rate_hz", "sequence_gaps", "device_time_regressions",
+    "crc_errors", "discarded_bytes", "device_queue_overflow_flags",
+    "callback_queue_drops", "callback_errors", "serial_errors",
+    "last_sample_age_ms", "last_error_code"
+  ],
+  "properties": {
+    "schema": {"const": "umi_gripper_health_v1"},
+    "state": {"enum": ["STOPPED", "RUNNING", "FAULT"]},
+    "port": {"type": "string"},
+    "baud": {"type": "integer", "minimum": 1},
+    "calibration_id": {"type": "string"},
+    "frames": {"type": "integer", "minimum": 0},
+    "valid_frames": {"type": "integer", "minimum": 0},
+    "invalid_frames": {"type": "integer", "minimum": 0},
+    "rate_hz": {"type": "number", "minimum": 0.0},
+    "sequence_gaps": {"type": "integer", "minimum": 0},
+    "device_time_regressions": {"type": "integer", "minimum": 0},
+    "crc_errors": {"type": "integer", "minimum": 0},
+    "discarded_bytes": {"type": "integer", "minimum": 0},
+    "device_queue_overflow_flags": {"type": "integer", "minimum": 0},
+    "callback_queue_drops": {"type": "integer", "minimum": 0},
+    "callback_errors": {"type": "integer", "minimum": 0},
+    "serial_errors": {"type": "integer", "minimum": 0},
+    "last_sample_age_ms": {"type": ["number", "null"], "minimum": 0.0},
+    "last_error_code": {"type": ["string", "null"]}
+  }
+}

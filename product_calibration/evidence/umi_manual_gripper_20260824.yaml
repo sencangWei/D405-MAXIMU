@@ -1,0 +1,81 @@
+schema: umi_manual_gripper_calibration_evidence_v1
+date: 2026-08-24
+device:
+  protocol: stm32_combined_v1
+  baud: 921600
+  firmware_sha256: 1030e78c9fe4f7b949350b100d6389f219a8b650c649c834693619006953cd8a
+mechanism:
+  operation: manual_hand_operated
+  fully_open_gap_mm: 66.900
+  encoder_measures: one_jaw_angle
+  jaws_move_symmetrically: true
+  nominal_radius_mm_informational_only: 25.150
+transport:
+  result: PASS
+  duration_s: 10.004
+  frames: 3999
+  rate_hz: 399.755
+  encoder_valid_ratio: 1.0
+  sequence_gaps: 0
+  imu_counter_gaps: 0
+  crc_errors: 0
+  queue_overflows: 0
+  static_angle_std_deg: 0.028790
+model:
+  selected: direction_specific_piecewise_linear_no_load_gap
+  rejected:
+    - fixed_radius_r_times_theta
+    - single_curve_without_direction_hysteresis
+  reason: Intermediate caliper points were nonlinear and opening/closing hysteresis was measurable.
+blind_holdout:
+  acceptance_frozen_before_measurement:
+    count: 3
+    maximum_absolute_error_mm: 1.500
+    mean_absolute_error_mm: 1.000
+  points:
+    - id: H1
+      approach: closing
+      angle_median_deg: 31.135254
+      angle_std_deg: 0.032993
+      frames_valid: 1200
+      frames_invalid: 0
+      sequence_gaps: 0
+      crc_errors: 0
+      predicted_gap_mm: 18.366218
+      actual_gap_mm: 17.640
+      signed_error_mm: 0.726218
+      absolute_error_mm: 0.726218
+      result: PASS
+    - id: H2
+      approach: closing
+      angle_median_deg: 38.540039
+      angle_std_deg: 0.183423
+      frames_valid: 1200
+      frames_invalid: 0
+      sequence_gaps: 0
+      crc_errors: 0
+      predicted_gap_mm: 24.865388
+      actual_gap_mm: 23.670
+      signed_error_mm: 1.195388
+      absolute_error_mm: 1.195388
+      result: PASS
+    - id: H3
+      approach: opening
+      angle_median_deg: 52.031250
+      angle_std_deg: 0.029733
+      frames_valid: 1200
+      frames_invalid: 0
+      sequence_gaps: 0
+      crc_errors: 0
+      predicted_gap_mm: 36.064812
+      actual_gap_mm: 36.630
+      signed_error_mm: -0.565188
+      absolute_error_mm: 0.565188
+      result: PASS
+  maximum_absolute_error_mm: 1.195388
+  mean_absolute_error_mm: 0.828932
+  result: PASS
+release_semantics:
+  manual_state_and_no_load_gap_estimate: PASS
+  loaded_object_size: NOT_SUPPORTED_WITHOUT_FORCE_COMPRESSION_MODEL
+  no_load_uncertainty_mm: 1.500

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sencangwei.github.io/D405-MAXIMU/schemas/gripper_encoder_sample_v1.schema.json",
+  "title": "UMI gripper encoder sample v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "calibration_id", "protocol", "sequence", "imu_counter",
+    "device_time_us", "sensor_pair_delta_us", "host_monotonic_ns",
+    "raw_flags", "raw_count", "angle_deg", "direction", "closure_ratio",
+    "estimated_no_load_gap_mm", "no_load_uncertainty_mm",
+    "dual_closing_distance_mm", "single_jaw_travel_mm",
+    "loaded_object_size_valid", "valid", "status"
+  ],
+  "properties": {
+    "schema": {"const": "umi_gripper_sample_v1"},
+    "calibration_id": {"type": "string"},
+    "protocol": {"const": "stm32_combined_v1"},
+    "sequence": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "imu_counter": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "device_time_us": {"type": "integer", "minimum": 0},
+    "sensor_pair_delta_us": {"type": "integer"},
+    "host_monotonic_ns": {"type": "integer", "minimum": 0},
+    "raw_flags": {"type": "integer", "minimum": 0, "maximum": 65535},
+    "raw_count": {"type": "integer", "minimum": 0, "maximum": 16383},
+    "angle_deg": {"type": "number", "minimum": 0.0, "exclusiveMaximum": 360.0},
+    "direction": {"enum": ["unknown", "closing", "opening"]},
+    "closure_ratio": {"type": ["number", "null"], "minimum": 0.0, "maximum": 1.0},
+    "estimated_no_load_gap_mm": {"type": ["number", "null"], "minimum": 0.0},
+    "no_load_uncertainty_mm": {"type": ["number", "null"], "minimum": 0.0},
+    "dual_closing_distance_mm": {"type": ["number", "null"], "minimum": 0.0},
+    "single_jaw_travel_mm": {"type": ["number", "null"], "minimum": 0.0},
+    "loaded_object_size_valid": {"const": false},
+    "valid": {"type": "boolean"},
+    "status": {"enum": ["OK", "DIRECTION_UNKNOWN", "ENCODER_INVALID"]}
+  }
+}
