@@ -781,6 +781,10 @@ void Estimator::processNonLinearSolver(Timestamp timestamp) {
                              cameraRotation);
   lastTriangulateMs = stage_time.toc();
 
+  const int total_before_optimization =
+      static_cast<int>(featureManager.feature.size());
+  const int mature_before_optimization = featureManager.getFeatureCount();
+
   // optimization
   stage_time.tic();
   optimize();
@@ -789,6 +793,9 @@ void Estimator::processNonLinearSolver(Timestamp timestamp) {
   set<int> removeIndex;
   outliersRejection(removeIndex);
   featureManager.removeOutlier(removeIndex);
+  const int total_after_outlier =
+      static_cast<int>(featureManager.feature.size());
+  const int mature_after_outlier = featureManager.getFeatureCount();
   lastOutlierMs = stage_time.toc();
   if (failureDetection()) {
     failure_occur = 1;
@@ -800,7 +807,45 @@ void Estimator::processNonLinearSolver(Timestamp timestamp) {
   stage_time.tic();
   slideWindow();
   lastSlideMs = stage_time.toc();
+  const int total_after_slide =
+      static_cast<int>(featureManager.feature.size());
+  const int mature_after_slide = featureManager.getFeatureCount();
+  int solve_failures = 0;
+  for (const auto &feature : featureManager.feature) {
+    if (feature.isSolveFailed()) {
+      ++solve_failures;
+    }
+  }
   featureManager.removeFailures();
+  const int total_after_failures =
+      static_cast<int>(featureManager.feature.size());
+  const int mature_after_failures = featureManager.getFeatureCount();
+
+  const bool material_outlier_rejection =
+      removeIndex.size() >= 20 ||
+      (mature_before_optimization >= 40 &&
+       mature_after_outlier * 2 < mature_before_optimization);
+  const bool material_slide_loss =
+      mature_after_outlier >= 40 && mature_after_slide * 2 < mature_after_outlier;
+  const bool mature_constraint_collapse =
+      featureManager.last_track_num >= 40 && mature_after_failures < 20;
+  if (material_outlier_rejection || material_slide_loss ||
+      mature_constraint_collapse) {
+    VINS_WARN << "[BACKEND-FEATURE-LIFECYCLE] timestamp=" << timestamp
+              << " marginalization="
+              << (isNewMarginalization() ? "second_new" : "old")
+              << " total=" << total_before_optimization << "->"
+              << total_after_outlier << "->" << total_after_slide << "->"
+              << total_after_failures << " mature="
+              << mature_before_optimization << "->" << mature_after_outlier
+              << "->" << mature_after_slide << "->"
+              << mature_after_failures
+              << " outliers=" << removeIndex.size()
+              << " solve_failures=" << solve_failures
+              << " tracked_from_previous=" << featureManager.last_track_num
+              << " new_features=" << featureManager.new_feature_num
+              << " long_tracks=" << featureManager.long_track_num;
+  }
   // prepare output of VINS
   {
     key_poses.timestamp = timestamp;
