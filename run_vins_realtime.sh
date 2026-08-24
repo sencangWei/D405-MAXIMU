@@ -13,6 +13,7 @@ RSUSB_PYTHON="$ROOT/.deps/librealsense-rsusb-2.58.2/python"
 RUN_DIR="${EGO_VIO_RUN_DIR:-/tmp/ego_vio_vins_live_$(date +%Y%m%d_%H%M%S)}"
 PRODUCT_LIVE_CALIBRATION_LABEL="${EGO_VIO_PRODUCT_CALIBRATION_LABEL:-assembled STM32 consensus td=-0.009312 s}"
 DISABLE_VIEWER="${EGO_VIO_DISABLE_VIEWER:-0}"
+FAIL_FAST_SLAM="${EGO_VIO_FAIL_FAST_SLAM:-1}"
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
 MODE="${1:-stable}"
 if [[ $# -gt 0 ]]; then
@@ -311,6 +312,35 @@ wait_with_viewer_supervision() {
       tail -n 20 "$RUN_DIR/rerun.log" >&2 || true
       return 1
     fi
+    if is_product_live_mode \
+      && [[ "$FAIL_FAST_SLAM" == "1" ]] \
+      && [[ -s "$RUN_DIR/slam_health.json" ]]; then
+      local fatal_health
+      fatal_health="$(
+        "$PYTHON_BIN" - "$RUN_DIR/slam_health.json" <<'PY' 2>/dev/null || true
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as stream:
+        payload = json.load(stream)
+except (OSError, ValueError, TypeError):
+    raise SystemExit(0)
+failures = [str(item) for item in payload.get("failures", [])]
+fatal = [item for item in failures if item.startswith("estimator_pose_integrity:")]
+if payload.get("state") == "SLAM_FAILED" and fatal:
+    print(",".join(fatal))
+PY
+      )"
+      if [[ -n "$fatal_health" ]]; then
+        echo "错误：实时定位已失效，产品主链立即停止；禁止继续显示冻结旧轨迹。" >&2
+        echo "原因：$fatal_health" >&2
+        echo "健康证据：$RUN_DIR/slam_health.json" >&2
+        echo "VINS证据：$RUN_DIR/vins.log" >&2
+        echo "请重新对准静态纹理区域，保持静止5秒后重新启动；新启动属于新轨迹段。" >&2
+        return 9
+      fi
+    fi
     sleep 0.5
   done
   wait "$owner_pid"
@@ -335,6 +365,7 @@ if is_product_live_mode; then
   echo "product-live VINS核心库 SHA256: $PRODUCT_LIVE_VINS_LIBRARY_SHA256"
   echo "VINS节拍: 相机/特征30Hz，旧机稳定策略后端约15Hz"
   echo "动态近景失效保护: 单步>0.05m即锁存失败，冻结轨迹并阻断回环直至重启"
+  echo "交付失效策略: 定位锁存失败后主链退出并关闭旧窗口，禁止静默卡住"
   echo "自适应回环 SHA256: $PRODUCT_LIVE_LOOP_SHA256"
   echo "标定: $PRODUCT_LIVE_CALIBRATION_LABEL"
 fi
@@ -342,7 +373,7 @@ if [[ "$MODE" == "product-live-z-candidate" ]]; then
   echo "Z候选: 092447 加速度内参 + acc_n=0.1"
   echo "状态: 诊断候选，未签发，不覆盖 product-live"
 fi
-if is_product_live_mode && [[ "$DISABLE_VIEWER" != "1" ]]; then
+if is_product_live_mode; then
   setsid env LD_LIBRARY_PATH="$PRODUCT_LIVE_VINS_WS/build/vins_fusion_ros2:$PRODUCT_LIVE_VINS_WS/build/vins_fusion_ros2/vins${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
     "$PRODUCT_LIVE_VINS_EXECUTABLE" \
     --ros-args -p use_sim_time:=false -p config_file:="$VINS_CONFIG" \

@@ -164,6 +164,14 @@ void Estimator::inputImage(const ImageData &image) {
     featureFrame =
         featureTracker.trackImage(image.timestamp, image.image0, image.image1);
   }
+  const size_t frontend_left = featureTracker.cur_pts.size();
+  const size_t frontend_new = featureTracker.n_pts.size();
+  const size_t frontend_temporal =
+      frontend_left >= frontend_new ? frontend_left - frontend_new : 0;
+  const size_t frontend_stereo = featureTracker.ids_right.size();
+  const size_t frontend_mature = static_cast<size_t>(std::count_if(
+      featureTracker.track_cnt.begin(), featureTracker.track_cnt.end(),
+      [](int count) { return count >= 4; }));
   if (options->shouldShowTrack()) {
     track_image.image0 = featureTracker.getTrackImage();
     track_image.timestamp = image.timestamp;
@@ -195,7 +203,20 @@ void Estimator::inputImage(const ImageData &image) {
     VINS_INFO << "[PERF-FRONTEND] input=" << inputImageCount
               << " enqueued=" << enqueuedImageCount.load()
               << " tracker_ms=" << tracker_ms
-              << " queue=" << queue_depth;
+              << " queue=" << queue_depth << " left=" << frontend_left
+              << " temporal=" << frontend_temporal
+              << " new=" << frontend_new << " stereo=" << frontend_stereo
+              << " mature30hz=" << frontend_mature;
+  }
+  if (inputImageCount > 60 && inputImageCount % 5 == 0 &&
+      (frontend_temporal < 20 || frontend_mature < 20 ||
+       (options->isUsingStereo() && frontend_stereo < 20))) {
+    VINS_WARN << "[TRACKING-DEGRADED] input=" << inputImageCount
+              << " left=" << frontend_left
+              << " temporal=" << frontend_temporal
+              << " new=" << frontend_new << " stereo=" << frontend_stereo
+              << " mature30hz=" << frontend_mature
+              << " reason=insufficient_persistent_visual_constraints";
   }
 }
 
@@ -481,6 +502,11 @@ void Estimator::processMeasurements() {
                   << window_marginalize_sum_ms / 30.0
                   << " marginalize_max30_ms=" << window_marginalize_max_ms
                   << " tracks=" << featureManager.getFeatureCount()
+                  << " frame_features=" << feature.second.size()
+                  << " tracked_from_previous="
+                  << featureManager.last_track_num
+                  << " new_features=" << featureManager.new_feature_num
+                  << " long_tracks=" << featureManager.long_track_num
                   << " position="
                   << estimator_state[WINDOW_SIZE].position.transpose()
                   << " velocity="

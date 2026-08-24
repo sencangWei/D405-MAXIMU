@@ -240,6 +240,14 @@ def test_product_live_wrapper_pins_candidate_identity_and_health_monitor() -> No
     assert 'kill -0 "$VIEWER_PID"' in wrapper
     assert 'wait_with_viewer_supervision "$CAPTURE_PID"' in wrapper
     assert 'wait_with_viewer_supervision "$RUNTIME_PID"' in wrapper
+    assert "EGO_VIO_FAIL_FAST_SLAM" in wrapper
+    assert "estimator_pose_integrity:" in wrapper
+    assert "产品主链立即停止" in wrapper
+    assert 'if is_product_live_mode; then\n  setsid env LD_LIBRARY_PATH=' in wrapper
+    assert (
+        'if is_product_live_mode && [[ "$DISABLE_VIEWER" != "1" ]]; then'
+        not in wrapper
+    )
     assert "EGO_VIO_PRODUCT_LIVE_DEVICE_CONFIG" in wrapper
     assert "EGO_VIO_PRODUCT_LIVE_CONFIG" in wrapper
     assert "EGO_VIO_PRODUCT_CALIBRATION_LABEL" in wrapper
@@ -270,6 +278,27 @@ def test_product_live_wrapper_pins_candidate_identity_and_health_monitor() -> No
     runtime = (ROOT / "ego_vio/runtime.py").read_text(encoding="utf-8")
     assert 'preview_topic="/rgb_preview/image_raw"' in runtime
     assert "preview_hz=30.0" in runtime
+
+
+def test_estimator_logs_each_tracking_constraint_stage() -> None:
+    estimator = (
+        ROOT
+        / "components/vins_fusion_ros2/vins/src/estimator/estimator.cpp"
+    ).read_text(encoding="utf-8")
+
+    for field in (
+        "left=",
+        "temporal=",
+        "new=",
+        "stereo=",
+        "mature30hz=",
+        "frame_features=",
+        "tracked_from_previous=",
+        "new_features=",
+        "long_tracks=",
+    ):
+        assert field in estimator
+    assert "[TRACKING-DEGRADED]" in estimator
 
 
 def test_product_live_tracks_30hz_but_rate_limits_the_backend_like_old_stable() -> None:
