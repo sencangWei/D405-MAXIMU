@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import subprocess
 
 import yaml
 
@@ -20,6 +21,39 @@ def test_customer_wrapper_defaults_to_product_and_rejects_legacy_modes() -> None
     assert "/.planning/" not in wrapper
 
 
+def test_product_entrypoints_clear_inherited_ros_overlays() -> None:
+    reset = ROOT / "scripts/reset_ros_environment.sh"
+    assert reset.is_file()
+
+    dirty_names = (
+        "AMENT_PREFIX_PATH",
+        "CMAKE_PREFIX_PATH",
+        "COLCON_PREFIX_PATH",
+        "COLCON_CURRENT_PREFIX",
+        "AMENT_CURRENT_PREFIX",
+        "PYTHONPATH",
+        "LD_LIBRARY_PATH",
+        "PKG_CONFIG_PATH",
+        "ROS_DISTRO",
+        "ROS_VERSION",
+        "ROS_PYTHON_VERSION",
+    )
+    exports = "; ".join(f"export {name}=/fake/old_overlay" for name in dirty_names)
+    assertions = "; ".join(f'[[ -z "${{{name}:-}}" ]]' for name in dirty_names)
+    subprocess.run(
+        ["bash", "-c", f'{exports}; source "$1"; {assertions}', "bash", str(reset)],
+        check=True,
+    )
+
+    for entrypoint in (
+        ROOT / "build_product_live.sh",
+        ROOT / "run_slam_postprocess.sh",
+        ROOT / "run_vins_realtime.sh",
+    ):
+        source = entrypoint.read_text(encoding="utf-8")
+        assert 'source "$ROOT/scripts/reset_ros_environment.sh"' in source
+
+
 def test_customer_checkout_excludes_historical_runtime_trees() -> None:
     for relative in (
         "JAZZY_HANDOFF_20260816",
@@ -37,8 +71,11 @@ def test_customer_checkout_excludes_historical_runtime_trees() -> None:
     manifest = yaml.safe_load(
         (ROOT / "release-manifest.json").read_text(encoding="utf-8")
     )
-    assert manifest["release"] == "humble-stm32-product-v1.1-20260824"
+    assert manifest["release"] == "humble-stm32-product-v1.2-20260824"
     assert manifest["historical_runtime_included"] is False
+    assert manifest["live_estimator_rate_hz"] == 15
+    assert manifest["offline_estimator_rate_hz"] == 30
+    assert manifest["environment_reset"] == "scripts/reset_ros_environment.sh"
 
 
 def test_product_live_config_locks_stm32_protocol_and_current_devices() -> None:
@@ -170,6 +207,17 @@ def test_product_live_tracks_30hz_but_rate_limits_the_backend_like_old_stable() 
     assert "if (enqueue_for_backend)" in estimator
 
 
+def test_product_offline_source_enqueues_every_30hz_stereo_frame() -> None:
+    estimator = (
+        ROOT
+        / "components/vins_fusion_ros2_product_loop/vins/src/estimator/estimator.cpp"
+    ).read_text(encoding="utf-8")
+
+    assert "featureTracker.trackImage" in estimator
+    assert "featureBuffer.push(make_pair(image.timestamp, featureFrame));" in estimator
+    assert "inputImageCount % 2" not in estimator
+
+
 def test_product_live_pose_integrity_failure_blocks_every_pose_consumer() -> None:
     source = (
         ROOT / "components/vins_fusion_ros2/src/vins_estimator.cpp"
@@ -247,9 +295,23 @@ def test_customer_offline_entrypoint_uses_only_signed_product_artifacts() -> Non
     assert "config/product_live_stm32/vins_config.yaml" in wrapper
     assert ".product_live_build/vins_ws" not in wrapper
     assert 'BUILD_ROOT="$ROOT/.product_live_build"' in wrapper
-    assert "PRODUCT_LIVE_VINS_SHA256" in wrapper
+    assert 'VINS_EXECUTABLE="$BUILD_ROOT/loop_ws/build/vins_fusion_ros2/vins_fusion_ros2_node"' in wrapper
+    assert 'VINS_LIBRARY="$BUILD_ROOT/loop_ws/build/vins_fusion_ros2/vins/libvins_lib.so"' in wrapper
+    assert "PRODUCT_OFFLINE_VINS_SHA256" in wrapper
+    assert "PRODUCT_OFFLINE_VINS_LIBRARY_SHA256" in wrapper
     assert "PRODUCT_LIVE_LOOP_SHA256" in wrapper
     assert "PRODUCT_LIVE_REPLAY_SHA256" in wrapper
     assert "/home/robot/ros2_ws" not in wrapper
     assert "/.planning/" not in wrapper
     assert "product_live_z_candidate" not in wrapper
+    assert 'OFFLINE_SETUP="$BUILD_ROOT/loop_ws/install/setup.bash"' in wrapper
+    assert 'source "$OFFLINE_SETUP"' in wrapper
+
+
+def test_product_builder_signs_distinct_live_and_offline_vins_artifacts() -> None:
+    builder = (ROOT / "build_product_live.sh").read_text(encoding="utf-8")
+
+    assert 'OFFLINE_VINS_EXECUTABLE="$LOOP_WS/build/vins_fusion_ros2/vins_fusion_ros2_node"' in builder
+    assert 'OFFLINE_VINS_LIBRARY="$LOOP_WS/build/vins_fusion_ros2/vins/libvins_lib.so"' in builder
+    assert "PRODUCT_OFFLINE_VINS_SHA256" in builder
+    assert "PRODUCT_OFFLINE_VINS_LIBRARY_SHA256" in builder

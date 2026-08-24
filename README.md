@@ -7,8 +7,8 @@
 ## 正式组成
 
 - 采集与时间同步：`ego_vio/`、`scripts/capture_d405_720p_rgb_stereo_ir.py`
-- VINS：`components/vins_fusion_ros2/`
-- 自适应回环：`components/vins_fusion_ros2_product_loop/`
+- 实时VINS：`components/vins_fusion_ros2/`，相机/跟踪30 Hz、估计器后端15 Hz
+- 离线30 Hz VINS与自适应回环：`components/vins_fusion_ros2_product_loop/`
 - STM32 Mode-B：`firmware/stm32f070_imu_encoder/`
 - 设备配置：`config/devices_product_live_stm32.yaml`
 - VINS 标定：`config/product_live_stm32/vins_config.yaml`
@@ -43,7 +43,10 @@ cd /home/robot/ego_vio_humble
 ./run_slam_postprocess.sh /绝对路径/录制会话 /绝对路径/输出目录
 ```
 
-后处理校验 VINS、回环和 DB3 replay 的构建哈希，并使用与实时链相同的产品配置。
+后处理校验离线30 Hz VINS、回环和 DB3 replay 的独立构建哈希，并使用与实时链
+相同的产品标定。实时15 Hz和离线30 Hz是两个明确分离的产品产物。
+构建、实时和离线入口启动时都会清除终端继承的 ROS/colcon overlay，再只加载
+ROS 2 Humble 与本产品签名工作区，避免旧机工作区或 Jazzy 环境污染。
 原始录制不提交 Git，应由客户数据盘单独管理。
 
 ## 标定与 App 接口

@@ -192,6 +192,8 @@ def test_failed_ellipsoid_report_is_rejected(tmp_path):
 def test_drain_requires_target_pose_coverage_before_quiet_exit():
     expected = expected_pose_samples(camera_frames=1799, skip_s=1.5)
 
+    # Formal offline SLAM consumes every reliable 30 Hz stereo frame.  The
+    # 15 Hz stride belongs only to the real-time product-live estimator.
     assert expected == 1754
     assert not drain_is_complete(
         raw_poses=1020,

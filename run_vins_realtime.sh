@@ -3,6 +3,7 @@
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$ROOT/scripts/reset_ros_environment.sh"
 PRODUCT_LIVE_DEVICE_CONFIG="${EGO_VIO_PRODUCT_LIVE_DEVICE_CONFIG:-$ROOT/config/devices_product_live_stm32.yaml}"
 PRODUCT_LIVE_CONFIG="${EGO_VIO_PRODUCT_LIVE_CONFIG:-$ROOT/config/product_live_stm32/vins_config.yaml}"
 RSUSB_PYTHON="$ROOT/.deps/librealsense-rsusb-2.58.2/python"

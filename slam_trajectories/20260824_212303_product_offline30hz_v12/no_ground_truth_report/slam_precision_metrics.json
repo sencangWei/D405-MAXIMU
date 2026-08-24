@@ -1,0 +1,364 @@
+{
+  "scope": "no_external_ground_truth_consistency_report",
+  "absolute_accuracy_status": "NOT_MEASURED",
+  "reason": "未提供测量尺逐点轨迹、动捕、全站仪或标定靶真值",
+  "session": "recordings/d405_720p_rgb_stereo_ir_20260824_212303",
+  "capture": {
+    "result": "PASS",
+    "session": "/home/robot/releases/ego_vio_humble/product_v1_20260824/recordings/d405_720p_rgb_stereo_ir_20260824_212303",
+    "bag": "/home/robot/releases/ego_vio_humble/product_v1_20260824/recordings/d405_720p_rgb_stereo_ir_20260824_212303/d405_720p_rgb_stereo_ir.db3",
+    "capture_error": null,
+    "resolution": [
+      1280,
+      720
+    ],
+    "fps_requested": 30,
+    "capture_mode": "rgb_stereo_ir",
+    "color_record_format": "YUYV",
+    "depth_record_format": null,
+    "preview_color_format": "BGR",
+    "capture_backend": "rs.recorder + direct sensor frame_queue (RSUSB)",
+    "realsense_python_module": "/home/robot/releases/ego_vio_humble/product_v1_20260824/.deps/librealsense-rsusb-2.58.2/python/pyrealsense2.cpython-310-x86_64-linux-gnu.so",
+    "monitor_queue_capacity": 64,
+    "camera_storage": {
+      "ram_staged": false,
+      "staging_path": null,
+      "staging_required_bytes": 0,
+      "move_duration_s": 0.0,
+      "move_error": null
+    },
+    "camera_serial": "260322273737",
+    "camera_firmware": "5.17.0.10",
+    "usb_type": "3.2",
+    "warmup_frames": 30,
+    "imu_warmup_frames": 500,
+    "warmup_recorded": false,
+    "complete_framesets_for_csv": 1799,
+    "monitor_complete_framesets": 1799,
+    "csv_sync_tolerance_ms": 2.0,
+    "duration_s": 60.01652425999055,
+    "thresholds": {
+      "camera_min_rate_hz": 29.5,
+      "camera_max_gap_ratio": 0.001,
+      "ir_actual_exposure_max_us": 8000.0,
+      "ir_exposure_tolerance_us": 100.0,
+      "imu_rate_hz": [
+        399.0,
+        401.0
+      ],
+      "encoder_sensor_pair_delta_us": [
+        0,
+        250
+      ],
+      "camera_gripper_nearest_max_ms": 2.0,
+      "camera_to_imu_td_s": -0.009312
+    },
+    "camera": {
+      "result": "PASS",
+      "monitor_queue_streams": {
+        "color": {
+          "received": 1799,
+          "first_frame_number": 30,
+          "last_frame_number": 1828,
+          "skipped_frames": 0,
+          "gap_events": 0,
+          "gap_ratio": 0.0,
+          "rate_hz": 29.99445,
+          "repeated_frames": 0,
+          "frame_number_resets": 0,
+          "timestamp_regressions": 0
+        },
+        "infrared_left": {
+          "received": 1799,
+          "first_frame_number": 30,
+          "last_frame_number": 1828,
+          "skipped_frames": 0,
+          "gap_events": 0,
+          "gap_ratio": 0.0,
+          "rate_hz": 29.994449,
+          "repeated_frames": 0,
+          "frame_number_resets": 0,
+          "timestamp_regressions": 0
+        },
+        "infrared_right": {
+          "received": 1799,
+          "first_frame_number": 30,
+          "last_frame_number": 1828,
+          "skipped_frames": 0,
+          "gap_events": 0,
+          "gap_ratio": 0.0,
+          "rate_hz": 29.994449,
+          "repeated_frames": 0,
+          "frame_number_resets": 0,
+          "timestamp_regressions": 0
+        }
+      },
+      "db3_streams": {
+        "color": {
+          "received": 1800,
+          "first_frame_number": 30,
+          "last_frame_number": 1829,
+          "skipped_frames": 0,
+          "gap_events": 0,
+          "gap_ratio": 0.0,
+          "rate_hz": 29.994448,
+          "repeated_frames": 0,
+          "frame_number_resets": 0,
+          "timestamp_regressions": 0
+        },
+        "infrared_left": {
+          "received": 1799,
+          "first_frame_number": 30,
+          "last_frame_number": 1828,
+          "skipped_frames": 0,
+          "gap_events": 0,
+          "gap_ratio": 0.0,
+          "rate_hz": 29.994449,
+          "repeated_frames": 0,
+          "frame_number_resets": 0,
+          "timestamp_regressions": 0
+        },
+        "infrared_right": {
+          "received": 1799,
+          "first_frame_number": 30,
+          "last_frame_number": 1828,
+          "skipped_frames": 0,
+          "gap_events": 0,
+          "gap_ratio": 0.0,
+          "rate_hz": 29.994449,
+          "repeated_frames": 0,
+          "frame_number_resets": 0,
+          "timestamp_regressions": 0
+        }
+      },
+      "db3_analysis_error": null,
+      "csv_rebuild_error": null,
+      "authoritative_stream_stats": "db3_streams",
+      "ir_auto_exposure_configuration": {
+        "result": "PASS",
+        "requested": {
+          "auto_exposure_limit_us": 8000.0,
+          "auto_gain_limit": 248.0
+        },
+        "applied": {
+          "enable_auto_exposure": 1.0,
+          "auto_exposure_limit_toggle": 1.0,
+          "auto_exposure_limit_us": 8000.0,
+          "auto_gain_limit_toggle": 1.0,
+          "auto_gain_limit": 248.0
+        },
+        "takes_effect": "next_streaming_session"
+      },
+      "ir_exposure_acceptance": {
+        "result": "PASS",
+        "requested_limit_us": 8000.0,
+        "tolerance_us": 100.0,
+        "streams": {
+          "infrared_left": {
+            "result": "PASS",
+            "metadata_complete": true,
+            "metadata_frames": 1799,
+            "exposure_samples": 1799,
+            "gain_samples": 1799,
+            "exposure_us": {
+              "min": 7954.0,
+              "median": 7954.0,
+              "p95": 7954.0,
+              "max": 7954.0
+            },
+            "gain": {
+              "min": 246.0,
+              "median": 246.0,
+              "p95": 246.0,
+              "max": 246.0
+            }
+          },
+          "infrared_right": {
+            "result": "PASS",
+            "metadata_complete": true,
+            "metadata_frames": 1799,
+            "exposure_samples": 1799,
+            "gain_samples": 1799,
+            "exposure_us": {
+              "min": 7954.0,
+              "median": 7954.0,
+              "p95": 7954.0,
+              "max": 7954.0
+            },
+            "gain": {
+              "min": 246.0,
+              "median": 246.0,
+              "p95": 246.0,
+              "max": 246.0
+            }
+          }
+        }
+      },
+      "db3_size_bytes": 6644928512
+    },
+    "imu": {
+      "result": "PASS",
+      "protocol": "stm32_combined_v1",
+      "warmup_cumulative_stats": {
+        "frames_ok": 500,
+        "frames_bad": 0,
+        "resyncs": 7,
+        "dropped_frames": 0,
+        "counter_resets": 0,
+        "counter_stalls": 0,
+        "sequence_gaps": 0,
+        "invalid_imu_flags": 0,
+        "queue_overflow_flags": 0,
+        "serial_errors": 0,
+        "serial_reconnects": 0
+      },
+      "pre_formal_post_warmup_stats": {
+        "frames_ok": 887,
+        "frames_bad": 0,
+        "resyncs": 0,
+        "dropped_frames": 0,
+        "counter_resets": 0,
+        "counter_stalls": 0,
+        "sequence_gaps": 0,
+        "invalid_imu_flags": 0,
+        "queue_overflow_flags": 0,
+        "serial_errors": 0,
+        "serial_reconnects": 0
+      },
+      "formal_window_stats": {
+        "frames_ok": 24001,
+        "frames_bad": 0,
+        "resyncs": 0,
+        "dropped_frames": 0,
+        "counter_resets": 0,
+        "counter_stalls": 0,
+        "sequence_gaps": 0,
+        "invalid_imu_flags": 0,
+        "queue_overflow_flags": 0,
+        "serial_errors": 0,
+        "serial_reconnects": 0
+      },
+      "samples_written": 24001,
+      "rate_hz": 399.9065306752534,
+      "recorder_drops": 0
+    },
+    "gripper_encoder": {
+      "required_for_training": true,
+      "result": "PASS",
+      "stream": {
+        "result": "PASS",
+        "path": "/home/robot/releases/ego_vio_humble/product_v1_20260824/recordings/d405_720p_rgb_stereo_ir_20260824_212303/external_imu/gripper_encoder.csv",
+        "rows": 24001,
+        "valid_rows": 24001,
+        "invalid_rows": 0,
+        "timestamp_regressions": 0,
+        "sensor_pair_delta_us": {
+          "min": 65,
+          "p50": 65.0,
+          "p95": 66.0,
+          "p99": 66.0,
+          "max": 67
+        },
+        "calibration_id": "UMI_MANUAL_GRIPPER_20260824_V1"
+      },
+      "camera_alignment": {
+        "result": "PASS",
+        "path": "/home/robot/releases/ego_vio_humble/product_v1_20260824/recordings/d405_720p_rgb_stereo_ir_20260824_212303/gripper_camera_alignment.csv",
+        "rows": 1799,
+        "camera_imu_td_s": -0.009312,
+        "absolute_delta_ms": {
+          "p50": 0.6217019981704652,
+          "p95": 1.185018994146958,
+          "p99": 1.2339403890655376,
+          "max": 1.2492270034272224
+        }
+      },
+      "samples_written_by_recorder": 24001,
+      "invalid_samples_seen_by_recorder": 0,
+      "timestamp_contract": "encoder_ts_mono uses the same frozen STM32 MCU-to-host monotonic mapping as imu_ts_mono; camera rows use D405 global_time mapped to the same host monotonic domain; camera association queries encoder at camera_ts_mono + calibrated td",
+      "training_semantics": "raw_count/angle_deg/closure_ratio are valid under load; estimated_no_load_gap_mm is not loaded object size"
+    },
+    "live_vins": {
+      "enabled": false,
+      "result": "PASS",
+      "frames_forwarded": 0,
+      "imu_calibration": null,
+      "transport": {}
+    }
+  },
+  "synchronization": {
+    "framesets": 1799,
+    "color_left_median_ms": 0.5419921875,
+    "color_left_abs_p95_ms": 0.542236328125,
+    "color_left_abs_max_ms": 0.54296875,
+    "left_right_median_ms": 0.0,
+    "left_right_abs_p95_ms": 0.0,
+    "left_right_abs_max_ms": 0.0
+  },
+  "baseline": {
+    "samples": 1743,
+    "duration_s": 58.080960512161255,
+    "path_length_m": 2.039118196343776,
+    "xyz_span_cm": [
+      35.08684021180525,
+      40.952304774597216,
+      22.162307468436918
+    ],
+    "pca_xy_span_cm": [
+      47.910811365333785,
+      49.30252106796081
+    ],
+    "pca_xy_p1_p99_span_cm": [
+      47.73385130700277,
+      48.75577424657098
+    ],
+    "dwell_window_s": 3.0,
+    "start_dwell_samples": 91,
+    "end_dwell_samples": 90,
+    "start_dwell_rms_mm": 0.9614764746826499,
+    "end_dwell_rms_mm": 0.6902386264527964,
+    "dwell_center_delta_cm": [
+      0.16816422285904375,
+      1.4408834947783058,
+      0.017875479668171122
+    ],
+    "dwell_center_distance_cm": 1.4507735812826539,
+    "dwell_horizontal_distance_cm": 1.450663452139858,
+    "dwell_vertical_distance_cm": 0.017875479668171122
+  },
+  "automatic_loop_candidate": {
+    "samples": 369,
+    "duration_s": 35.443591833114624,
+    "path_length_m": 1.9008637627721927,
+    "xyz_span_cm": [
+      34.830010829994485,
+      41.007282656045994,
+      21.766904696696198
+    ],
+    "pca_xy_span_cm": [
+      46.81933517963355,
+      46.9766211758547
+    ],
+    "pca_xy_p1_p99_span_cm": [
+      45.71449611464505,
+      44.69271503078733
+    ],
+    "dwell_window_s": 3.0,
+    "start_dwell_samples": 13,
+    "end_dwell_samples": 7,
+    "start_dwell_rms_mm": 47.72481320682083,
+    "end_dwell_rms_mm": 0.6012123199084233,
+    "dwell_center_delta_cm": [
+      0.5338656489219047,
+      -3.951103918551619,
+      0.14543109328317538
+    ],
+    "dwell_center_distance_cm": 3.9896597485482777,
+    "dwell_horizontal_distance_cm": 3.9870082400582976,
+    "dwell_vertical_distance_cm": 0.14543109328317538
+  },
+  "automatic_loop_accepts": [
+    "[AUTO_LOOP_ACCEPT] current=357 matched=6 confirmations=3 inliers_gate=>99 retrieval_score=0.08942 fused_correction_t_m=0.0149 fused_correction_xyz_m=(0.0062,0.0134,0.0013) fused_correction_yaw_deg=0.69"
+  ],
+  "dwell_center_improvement_percent": -175.00223329273413
+}

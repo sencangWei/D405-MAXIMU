@@ -4,11 +4,12 @@
 
 - 传感器读取、录制、Rerun 桥接：`ego_vio/`、`scripts/run_realtime.py`、
   `scripts/capture_d405_720p_rgb_stereo_ir.py`
-- VINS：`components/vins_fusion_ros2/`
-- 回环：`components/vins_fusion_ros2_product_loop/`
+- 实时VINS（后端15 Hz）：`components/vins_fusion_ros2/`
+- 离线VINS（后端30 Hz）与回环：`components/vins_fusion_ros2_product_loop/`
 - 固件：`firmware/stm32f070_imu_encoder/`
 - 实时入口：`run_vins_realtime.sh`
 - 离线入口：`run_slam_postprocess.sh`
+- 环境隔离：`scripts/reset_ros_environment.sh`（正式入口加载 ROS 前必须 source）
 
 ## 生效标定
 

@@ -1,17 +1,20 @@
 {
-  "release": "humble-stm32-product-v1.1-20260824",
+  "release": "humble-stm32-product-v1.2-20260824",
   "platform": "Ubuntu 22.04 + ROS 2 Humble",
   "git_branch": "release/humble-stm32-product-v1-20260824",
-  "git_tag": "humble-stm32-product-v1.1-20260824",
+  "git_tag": "humble-stm32-product-v1.2-20260824",
   "runtime_entrypoint": "run_vins_realtime.sh",
   "offline_entrypoint": "run_slam_postprocess.sh",
   "device_config": "config/devices_product_live_stm32.yaml",
   "vins_config": "config/product_live_stm32/vins_config.yaml",
   "gripper_config": "config/gripper/umi_manual_gripper_20260824.yaml",
-  "vins_source": "components/vins_fusion_ros2",
-  "loop_source": "components/vins_fusion_ros2_product_loop",
+  "live_vins_source": "components/vins_fusion_ros2",
+  "live_estimator_rate_hz": 15,
+  "offline_vins_and_loop_source": "components/vins_fusion_ros2_product_loop",
+  "offline_estimator_rate_hz": 30,
+  "environment_reset": "scripts/reset_ros_environment.sh",
   "firmware_source": "firmware/stm32f070_imu_encoder",
   "calibration_release": "calibration-product-v4-20260824",
   "historical_runtime_included": false,
-  "notes": "Build artifacts are generated locally and verified by .product_live_build/product_live_hashes.env"
+  "notes": "Live 15 Hz and offline 30 Hz artifacts are built and signed separately; inherited ROS/colcon overlays are cleared before product startup"
 }
