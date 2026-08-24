@@ -14,7 +14,7 @@ from nav_msgs.msg import Odometry
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = os.environ.get("VINS_CONFIG",
-    "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml")
+    str(ROOT / "config/product_live_stm32/vins_config.yaml"))
 OUT = os.environ.get("VINS_OUT", "/tmp/vins_test_odom.csv")
 VINS_LOG = os.environ.get("VINS_LOG", "/tmp/vins_t.log")
 REPLAY_LOG = os.environ.get("REPLAY_LOG", "/tmp/replay_t.log")

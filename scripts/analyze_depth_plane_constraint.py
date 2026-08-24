@@ -91,10 +91,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path(
-            "/home/robot/ros2_ws/src/vins_fusion_ros2/config/"
-            "d405_stereo_imu/d405_stereo_imu_config.yaml"
-        ),
+        default=ROOT / "config/product_live_stm32/vins_config.yaml",
     )
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--sample-every", type=int, default=15)

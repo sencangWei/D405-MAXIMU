@@ -65,17 +65,30 @@ def test_customer_checkout_excludes_historical_runtime_trees() -> None:
         "config/devices_vins_fusion_live.yaml",
         "config/devices_vins_fusion_live_level_candidate.yaml",
         "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+        "scripts/apply_calibration.py",
     ):
         assert not (ROOT / relative).exists(), relative
 
     manifest = yaml.safe_load(
         (ROOT / "release-manifest.json").read_text(encoding="utf-8")
     )
-    assert manifest["release"] == "humble-stm32-product-v1.2-20260824"
+    assert manifest["release"] == "humble-stm32-product-v1.2.1-20260824"
     assert manifest["historical_runtime_included"] is False
     assert manifest["live_estimator_rate_hz"] == 15
     assert manifest["offline_estimator_rate_hz"] == 30
     assert manifest["environment_reset"] == "scripts/reset_ros_environment.sh"
+
+
+def test_maintained_tools_do_not_fall_back_to_retired_ros_workspace() -> None:
+    for relative in (
+        "scripts/verify_recorded_session.py",
+        "scripts/extract_aprilgrid_ground_truth.py",
+        "scripts/analyze_depth_plane_constraint.py",
+        "scripts/_test_vins_dynamic.py",
+    ):
+        source = (ROOT / relative).read_text(encoding="utf-8")
+        assert "/home/robot/ros2_ws" not in source, relative
+        assert "/opt/ros/jazzy" not in source, relative
 
 
 def test_product_live_config_locks_stm32_protocol_and_current_devices() -> None:

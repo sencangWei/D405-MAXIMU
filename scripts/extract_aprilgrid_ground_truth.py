@@ -103,10 +103,7 @@ def main() -> int:
     parser.add_argument(
         "--camera-yaml",
         type=Path,
-        default=Path(
-            "/home/robot/ros2_ws/src/vins_fusion_ros2/config/"
-            "d405_stereo_imu/left.yaml"
-        ),
+        default=ROOT / "config/product_live_stm32/left.yaml",
     )
     parser.add_argument("--min-tags", type=int, default=4)
     parser.add_argument("--max-reprojection-rmse-px", type=float, default=1.5)

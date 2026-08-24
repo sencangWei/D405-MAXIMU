@@ -110,8 +110,9 @@ def main():
     t0 = time.time()
     # 经 bash 先 source ROS 环境再跑 harness (rclpy 依赖 ROS python 路径)
     cmd = (
+        "source /home/robot/ego_vio_humble/scripts/reset_ros_environment.sh; "
         "source /opt/ros/humble/setup.bash; "
-        "source /home/robot/ros2_ws/install/setup.bash; "
+        "source /home/robot/ego_vio_humble/.product_live_build/loop_ws/install/setup.bash; "
         f"python3 scripts/_test_vins_dynamic.py {shlex.quote(str(sess))} "
         f"{shlex.quote(str(args.skip_s))} {shlex.quote(str(args.rate))} 0 0"
         # skip, rate, imu-shift, imu-align
