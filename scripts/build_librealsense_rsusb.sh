@@ -11,7 +11,11 @@ OUTPUT="$DEPS/librealsense-rsusb-$VERSION/python"
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
 PYTHON_EXT_SUFFIX="$($PYTHON_BIN -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')"
 LIBUSB_LIB="$(pkg-config --variable=libdir libusb-1.0)/libusb-1.0.so"
-LIBUSB_INC="$(pkg-config --variable=includedir libusb-1.0)"
+LIBUSB_INC="$(pkg-config --cflags-only-I libusb-1.0 | sed -E 's/^-I([^[:space:]]+).*/\1/')"
+if [[ ! -f "$LIBUSB_INC/libusb.h" ]]; then
+    echo "[RSUSB] libusb头文件目录无效: $LIBUSB_INC" >&2
+    exit 4
+fi
 
 mkdir -p "$DEPS"
 if [[ ! -d "$SOURCE/.git" ]]; then

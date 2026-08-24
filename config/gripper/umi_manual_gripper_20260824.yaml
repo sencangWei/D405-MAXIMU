@@ -11,10 +11,12 @@ distance_semantics:
   dual_closing_distance_mm: fully_open_gap_mm minus estimated_no_load_gap_mm.
   single_jaw_travel_mm: One half of dual_closing_distance_mm for the symmetric jaws.
   closure_ratio: dual_closing_distance_mm divided by fully_open_gap_mm.
-  warning: Raw angle and closure ratio are valid under load; gap is not loaded object size.
+  warning: Raw angle and closure ratio are valid manual-state signals; gap is not loaded object size.
 source:
   date: 2026-08-24
+  device_protocol: stm32_combined_v1
   firmware_sha256: 1030e78c9fe4f7b949350b100d6389f219a8b650c649c834693619006953cd8a
+  evidence: product_calibration/evidence/umi_manual_gripper_20260824.yaml
   method: Hand-operated caliper points; direction-specific piecewise-linear interpolation.
 curves:
   closing:
@@ -33,3 +35,20 @@ curves:
     - {angle_deg: 48.857102, gap_mm: 33.450}
     - {angle_deg: 69.158545, gap_mm: 50.174}
     - {angle_deg: 91.135558, gap_mm: 66.900}
+quality:
+  transport: PASS
+  manual_state_calibration: PASS_FOR_MANUAL_STATE_AND_NO_LOAD_GAP_ESTIMATE
+  loaded_object_size: NOT_SUPPORTED_WITHOUT_FORCE_COMPRESSION_MODEL
+  blind_holdout:
+    result: PASS
+    count: 3
+    maximum_absolute_error_mm: 1.195
+    mean_absolute_error_mm: 0.829
+    frozen_acceptance:
+      maximum_absolute_error_mm: 1.500
+      mean_absolute_error_mm: 1.000
+    evidence: product_calibration/evidence/umi_manual_gripper_20260824.yaml
+  notes:
+    - Fixed-radius conversion was rejected by intermediate caliper points.
+    - Opening 8 mm used the midpoint of two held observations affected by hand-force drift.
+    - Values below contact clamp to zero gap while raw encoder angle remains available.

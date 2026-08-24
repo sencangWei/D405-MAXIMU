@@ -15,15 +15,16 @@
 ## 时间戳定义
 
 STM32 在同一个 63 字节联合包中提供 `imu_first_byte_rx_us` 和
-`encoder_read_us`，两者来自同一个 MCU 定时器。采集器仅用一次冻结的
-MCU→主机单调时钟映射，同时得到：
+`encoder_read_us`，两者来自同一个 MCU 定时器。采集器用连续 IMU 计数器的名义
+400 Hz 节拍和主机接收单调时钟在线驯服 MCU 晶振频差，同时保留包内实测相对时间：
 
 ```text
-imu_ts_mono     = imu_device_time     + mcu_to_host_offset
-encoder_ts_mono = encoder_device_time + mcu_to_host_offset
+imu_ts_mono     = disciplined(counter, host_rx_mono)
+encoder_ts_mono = imu_ts_mono + (encoder_read_us - imu_first_byte_rx_us)
 ```
 
-不允许用每个 USB 包的到达时刻代替采样时刻。编码器在 IMU 帧确认后读取，所以是
+不允许把每个 USB 包的到达时刻直接当作逐帧采样时刻，也不允许只在第一帧冻结一个
+永不更新的 MCU→主机偏移。编码器在 IMU 帧确认后读取，所以是
 硬件绑定的“最近邻采样”，不是同一触发沿；当前实机差值为 65–67 µs。
 
 相机使用 D405 `global_time` 映射到同一主机单调时钟域。由于编码器与 IMU 共用

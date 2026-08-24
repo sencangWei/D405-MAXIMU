@@ -49,7 +49,8 @@ done
 VINS_EXECUTABLE="$VINS_WS/build/vins_fusion_ros2/vins_fusion_ros2_node"
 VINS_LIBRARY="$VINS_WS/build/vins_fusion_ros2/vins/libvins_lib.so"
 LOOP_EXECUTABLE="$LOOP_WS/build/vins_fusion_ros2/loop_fusion/loop_fusion_node"
-for artifact in "$VINS_EXECUTABLE" "$VINS_LIBRARY" "$LOOP_EXECUTABLE"; do
+REPLAY_EXECUTABLE="$VINS_WS/build/vins_fusion_ros2/db3_replay_cpp"
+for artifact in "$VINS_EXECUTABLE" "$VINS_LIBRARY" "$LOOP_EXECUTABLE" "$REPLAY_EXECUTABLE"; do
   if [[ ! -x "$artifact" ]]; then
     echo "错误：构建产物缺失或不可执行：$artifact" >&2
     exit 4
@@ -61,6 +62,7 @@ HASH_MANIFEST="$BUILD_ROOT/product_live_hashes.env"
   printf 'PRODUCT_LIVE_VINS_SHA256=%s\n' "$(sha256sum "$VINS_EXECUTABLE" | awk '{print $1}')"
   printf 'PRODUCT_LIVE_VINS_LIBRARY_SHA256=%s\n' "$(sha256sum "$VINS_LIBRARY" | awk '{print $1}')"
   printf 'PRODUCT_LIVE_LOOP_SHA256=%s\n' "$(sha256sum "$LOOP_EXECUTABLE" | awk '{print $1}')"
+  printf 'PRODUCT_LIVE_REPLAY_SHA256=%s\n' "$(sha256sum "$REPLAY_EXECUTABLE" | awk '{print $1}')"
 } > "$HASH_MANIFEST"
 
 echo "PASS：product-live 两套源码构建完成。"

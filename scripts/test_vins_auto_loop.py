@@ -38,21 +38,19 @@ from slam_runtime_watchdog import SlamRuntimeWatchdog
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = Path(
-    "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/"
-    "d405_stereo_imu_config.yaml"
+PRODUCT_BUILD = ROOT / ".product_live_build"
+DEFAULT_CONFIG = ROOT / "config" / "product_live_stm32" / "vins_config.yaml"
+VINS_EXECUTABLE = (
+    PRODUCT_BUILD / "vins_ws" / "build" / "vins_fusion_ros2"
+    / "vins_fusion_ros2_node"
 )
-VINS_EXECUTABLE = Path(
-    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
-    "vins_fusion_ros2/vins_fusion_ros2_node"
+LOOP_EXECUTABLE = (
+    PRODUCT_BUILD / "loop_ws" / "build" / "vins_fusion_ros2"
+    / "loop_fusion" / "loop_fusion_node"
 )
-LOOP_EXECUTABLE = Path(
-    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
-    "vins_fusion_ros2/loop_fusion_node"
-)
-REPLAY_EXECUTABLE = Path(
-    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
-    "vins_fusion_ros2/db3_replay_cpp"
+REPLAY_EXECUTABLE = (
+    PRODUCT_BUILD / "vins_ws" / "build" / "vins_fusion_ros2"
+    / "db3_replay_cpp"
 )
 
 
@@ -219,9 +217,7 @@ def run_provenance(
         },
         "git_revisions": {
             "ego_vio_humble": git_revision(ROOT),
-            "vins_fusion_ros2": git_revision(
-                Path("/home/robot/ros2_ws/src/vins_fusion_ros2")
-            ),
+            "vins_fusion_ros2": git_revision(ROOT / "components" / "vins_fusion_ros2"),
         },
         "source_db3_hashed": False,
         "source_db3_identity": "capture acceptance hash plus immutable manifest",

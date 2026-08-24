@@ -1,57 +1,56 @@
-# CURRENT_ACTIVE
+# CURRENT_ACTIVE — 正式客户产品链
 
-当前唯一推荐链路：
+本分支只允许一条运行链：Ubuntu 22.04 + ROS 2 Humble、D405 双 IR、STM32
+63 字节 IMU/编码器协议、当前 VINS、当前自适应回环和 Rerun。
 
-- 采集：`./capture_d405_720p_rgb_stereo_ir_rsusb.sh --duration 60`
-- 实时：`./run_vins_realtime.sh stable`
-- 新STM32产品实时候选（正在HIL验收）：`./run_vins_realtime.sh product-live`
-- 历史 `<1 cm` 冻结链复现：`./run_vins_realtime.sh frozen`
-- 同采集实时准确＋可复放冻结后端：`./run_vins_realtime.sh frozen-record --duration 60`
-- 相机：D405 双IR 1280×720@30（彩色只记录，不与IR组成伪双目）
-- IMU：KT-EX9-2 400Hz
-- VINS：`/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml`
-- 时间：`estimate_td=0, td=-0.0117`，VINS回放shift=0
-- IMU运行时标定：默认关闭，发布未修改 raw IMU；旧
-  `config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml` 已标为 `FAIL` 且禁止默认加载。
-  2026-08-23 的 30 姿态候选也已被同回放盲 A/B 否决：Z 改善不能跨数据稳定，且水平
-  短边缩小约 13.2%。该工具只作研发诊断，不进入产品运行时；原始 DB3/imu.bin 始终不改写。
+## 唯一实时入口
 
-所有当前/证据/废弃分类见 `JAZZY_HANDOFF_20260816/CURRENT_RUNTIME_PROFILE.md`。旧RGB+IR伪双目、7.36ms、FAIL手工gyro和固定世界Z候选均不得加载。
+```bash
+cd /home/robot/ego_vio_humble
+./build_product_live.sh
+./run_vins_realtime.sh
+```
 
-`stable` 是当前工作区实时链；它不等于历史 `a3a38b8` direct-BRIEF 冻结回环链。
-需要复现历史四组 `<1 cm` 三维闭环报告时，必须显式使用 `frozen`，并检查启动日志中
-冻结回环 SHA256。
+无参数默认就是 `product-live`。显式传入 `stable`、`frozen`、Jazzy 或任何诊断候选均会
+直接失败，且不会搜索 `/home/robot/ros2_ws`、旧工作区或 `.planning` 中的二进制。
 
-`product-live` 不复用旧 `stable` 的 CH340 串口和 `td=-0.0117`。它固定使用当前
-CP2102N、63字节 `stm32_combined_v1`、新装配外参与 `td=-0.009312`，并加载已通过
-水平 `<1 cm`/真实升降安全 A/B 的自适应回环。Rerun 显示 `/odometry_rect`，同时
-保存 `/odometry`、`/odometry_rect` CSV 并发布 `/slam/health`。在本轮真实手持验收
-完成前它仍是候选，不替换 `stable` 或 `frozen`。
+## 唯一后处理入口
 
-`product-live` 还启用了产品失效保护：正常轨迹单步不超过 `0.05 m` 时原样发布；
-一旦原始 VINS 出现非有限位姿、时间戳倒退或单步超过 `0.05 m`，在坏位姿发布前
-锁存 `SLAM_FAILED`，冻结 Rerun 最后可信轨迹并停止发送回环关键帧。该状态不能在
-同一进程内自动解除；产品包装器检测到该锁存后会打印证据、关闭旧 Rerun 和传感器
-主链并以非零状态退出，避免界面静默“卡住”。必须先把相机重新对准有静态纹理的
-环境，再重新启动入口；重新初始化后的数据属于新轨迹段，禁止静默拼接坐标。
-这项保护用于避免人体/近景动态物体占据主要视野时输出转圈假轨迹，不代表经典 VINS
-已经能在静态背景完全不可见时继续精确定位。
+```bash
+cd /home/robot/ego_vio_humble
+./run_slam_postprocess.sh /绝对路径/录制会话 /绝对路径/输出目录
+```
 
-产品 VINS 日志同时记录四级跟踪证据：`left/temporal/new/stereo/mature30hz`
-以及后端 `tracked_from_previous/new_features/long_tracks`。出现
-`[TRACKING-DEGRADED]` 时可区分当前角点不足、时序光流断裂、双目匹配不足和成熟轨迹
-断层，禁止再只凭一个 `tracks` 数字盲目放宽门槛。关闭 Rerun 的自动验收仍固定使用
-同一份产品 VINS 二进制及 SHA-256，不允许回落到 ROS 环境中的其他节点。
+后处理使用与实时链相同的产品 VINS 源码、产品自适应回环、产品标定和隔离构建哈希，
+不会回落到系统 ROS 工作区中的旧节点。
 
-世界 Z 当前保持“已知限制”，不启用固定压平或 Depth 平面候选。开源路线和本机 Depth
-水平/升降盲 A/B 的拒绝证据见 `reports/WORLD_Z_OPEN_SOURCE_REVIEW_20260823_ZH.md`；
-若继续投入，优先试严格静止门控的 ZUPT，运动中的绝对高度则需要持续可见的同一平面
-或专用测距观测。
+## 正式配置身份
 
-GitHub 单仓库恢复时，配套标定工具和修改后的 VINS 源码快照位于 `components/`。
+- 设备配置：`config/devices_product_live_stm32.yaml`
+- VINS 配置：`config/product_live_stm32/vins_config.yaml`
+- 左／右 IR：D405 1280×720 出厂去畸变参数，`fx=fy=647.519775`、
+  `cx=638.534302`、`cy=369.76825`。本轮自由拟合相机内参已被真实轨迹 A/B 否决。
+- 相机—IMU：当前固定装配 2026-08-22 两轮 Kalibr 共识外参；
+  `estimate_td=0`、`td=-0.009312 s`。
+- IMU：STM32 `stm32_combined_v1`、400 Hz；VINS 默认接收未改写原始量，运行时
+  `imu.calibration` 为空。30 姿态加速度候选没有跨数据稳定通过，不进入产品配置。
+- 回环：`components/vins_fusion_ros2_product_loop` 自适应回环，输出
+  `/odometry_rect`；原始 VIO 同时保留 `/odometry`。
+- 世界坐标系：每次启动由 VINS 初始化重力和初始朝向建立，不做人为固定角度压平。
+- 静止保护：ZUPT 只在视觉和 IMU 共同支持静止时激活；运动证据立即释放。
+- 夹爪：`config/gripper/umi_manual_gripper_20260824.yaml`，只记录训练状态，不进入
+  VINS/SLAM 优化。
 
-训练采集已把 STM32 联合包内的磁编码器作为独立 400 Hz 状态流接入，但不送入
-VINS／SLAM。正式会话新增 `external_imu/gripper_encoder.csv` 和逐相机帧的
-`gripper_camera_alignment.csv`；编码器与 IMU 共用 MCU→主机单调时钟映射，相机
-关联复用 `td=-0.009312 s`。字段、加载物体时的距离语义和验收门见
+## 训练采集与时间同步
+
+正式 STM32 采集会保存原始图像、IMU、约 400 Hz 夹爪状态和逐相机帧的最近邻夹爪
+关联。IMU 首字节与编码器读取由同一个 MCU 定时器测量，实机间隔约 65–67 µs；
+PC 端以连续 400 Hz 计数器和主机接收时钟驯服 MCU 时钟漂移，并保留这段实测差值。
+相机关联继续使用 `td=-0.009312 s`。完整字段和验收门见
 `docs/TRAINING_GRIPPER_SYNC_ZH.md`。
+
+## 历史代码
+
+历史 `<1 cm` 冻结复现链、Jazzy 候选、旧 `stable`、被否决 Z 候选只保存在 GitHub
+不可变分支／标签中，不是本机产品运行时。版本映射见
+`RELEASES_OLD_NEW_20260823.md`。
