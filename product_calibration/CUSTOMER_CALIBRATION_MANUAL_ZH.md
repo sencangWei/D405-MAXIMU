@@ -32,7 +32,7 @@ cd /home/robot/ego_vio_calib_kit
 
 `calib_setup.sh` 只支持 Ubuntu 22.04，并安装永久 `dialout/docker` 权限和固定 Kalibr
 容器入口；禁止用 `chmod 666` 临时放开设备。预检只读，不会启动采集或改参数。
-交付介质必须预装 `/home/robot/ego_vio_humble`、`/home/robot/D405-MAXIMU` 和固定镜像
+交付介质必须预装 `/home/robot/ego_vio_humble` 和固定镜像
 `ego-vio-kalibr:1f602274-minimal`。目录不同可分别设置
 `EGO_VIO_CAPTURE_RUNTIME`、`EGO_VIO_RSUSB_RUNTIME`、`EGO_VIO_VINS_RUNTIME`。
 

@@ -1,14 +1,18 @@
-# 产品标定工具 v4（2026-08-24）
+# 产品标定工具 v4.1（2026-08-24）
 
 Git 引用：
 
 - 分支：`release/calibration-product-v4-20260824`
-- 标签：`calibration-product-v4-20260824`
+- 标签：`calibration-product-v4.1-20260824`
 - 远端：`sencangWei/D405-MAXIMU`
 
 本仓库是正式产品的独立标定和证据仓库，不是 VINS 运行工作区。正式运行配置仍由
 `/home/robot/ego_vio_humble/config/product_live_stm32/` 唯一提供；本仓库脚本产生的
 候选参数必须经过分阶段门禁和端到端 A/B，不能直接覆盖产品配置。
+
+v4.1 继承 v4 的全部标定合同，并清理了不参与正式工作流的历史
+Jazzy/OpenVINS 副本；采集、转 bag 和 RSUSB 依赖现在唯一来自正式 Humble
+产品运行时。
 
 v4 新增并冻结：
 

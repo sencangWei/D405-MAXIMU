@@ -27,7 +27,7 @@ DEFAULT_CAPTURE_RUNTIME = Path(
     os.environ.get("EGO_VIO_CAPTURE_RUNTIME", "/home/robot/ego_vio_humble")
 )
 DEFAULT_RSUSB_RUNTIME = Path(
-    os.environ.get("EGO_VIO_RSUSB_RUNTIME", "/home/robot/D405-MAXIMU")
+    os.environ.get("EGO_VIO_RSUSB_RUNTIME", "/home/robot/ego_vio_humble")
 )
 
 

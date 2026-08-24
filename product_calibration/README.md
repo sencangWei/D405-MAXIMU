@@ -33,7 +33,8 @@ factory rectified 双 IR 参数，再做九宫格极线验收；不重新拟合�
 
 ## 后端适配约束
 
-- Kalibr 数据采集和转换位于 `ego_vio_ubuntu_calib/ego_vio/scripts/`。
+- Kalibr 数据采集和转换唯一使用正式产品运行时
+  `/home/robot/ego_vio_humble/scripts/`；本仓库不再内嵌历史 Jazzy/OpenVINS 副本。
 - `manual_imu_calibration_capture.py` 的串口读取与静态采集可复用，但原六面提示和
   `solve_manual_imu_calibration.py` 的 ±X/±Y/±Z 假设不能用于倾斜整机；后续应接入
   任意姿态 CSV 输出。

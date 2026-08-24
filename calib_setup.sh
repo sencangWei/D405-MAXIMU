@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CAPTURE_RUNTIME="${EGO_VIO_CAPTURE_RUNTIME:-/home/robot/ego_vio_humble}"
-RSUSB_RUNTIME="${EGO_VIO_RSUSB_RUNTIME:-/home/robot/D405-MAXIMU}"
+RSUSB_RUNTIME="${EGO_VIO_RSUSB_RUNTIME:-/home/robot/ego_vio_humble}"
 KALIBR_IMAGE="${EGO_VIO_KALIBR_IMAGE:-ego-vio-kalibr:1f602274-minimal}"
 KALIBR_IMAGE_ID="sha256:4e1506d4ff12b1c6918441ca514bc0001f4c10bf17efe0283b5db1453640f863"
 CURRENT_USER="$(id -un)"
