@@ -1,0 +1,57 @@
+schema: umi_device_set_manifest_v1
+device_set_id: UMI_DEVICE_02_C48DF736
+device_set_number: 2
+alignment_group_id: UNASSIGNED_PENDING_MULTI_DEVICE_ALIGNMENT
+runtime_namespace: umi_device_02
+software:
+  release_id: UMI_DEVICE2_D405_PRODUCT_V1_20260829
+  formal_image: umi-ego-vio:device2-c48df736-d405-product-v1-20260829
+  base_image: umi-ego-vio:product-v1-20260824
+  base_image_id: sha256:59974df3c3906683739fc7af530c6e7a5e78a80b341506ccdb49d7be2fb5ef3a
+  d405_algorithm_policy: EXACT_CONTAINER1_BASE
+  d435i_runtime_policy: EXCLUDED
+hardware:
+  stm32_imu_encoder:
+    role: primary_motion_and_gripper_clock
+    protocol: stm32_combined_v1
+    baud: 921600
+    usb_by_id_basename: usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_c48df736b505f011adda8d1272aab386-if00-port0
+    firmware_sha256: 1030e78c9fe4f7b949350b100d6389f219a8b650c649c834693619006953cd8a
+  d405:
+    role: primary_rgb_stereo_ir
+    binding_status: BOUND_AND_ACCEPTED
+    expected_serial_after_binding: '260322279785'
+calibration:
+  target:
+    type: aprilgrid
+    tag_rows: 6
+    tag_cols: 6
+    tag_size_m: 0.0352
+    tag_spacing_ratio: 0.3
+    sha256: e0cb280349fa0ca8792462f7864e818f138094890965f6cf4d6dc4413c0eb4bc
+    detector:
+      package: aprilgrid
+      version: 0.5.0
+      wheel_sha256: 52e3aa4de23cb5c67edd1610897be095ac46d563f282a98cd2ad7f7bf75e9181
+  imu_noise:
+    qualification_id: KTEX9_2_STM32_400HZ_V1
+    status: FAMILY_PROFILE_BOUND_PER_UNIT_TRANSPORT_QA_PASS
+  gripper:
+    profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260826_V4
+    status: PASS
+    no_load_gap_uncertainty_mm: 1.500
+  camera_imu_runtime:
+    status: PASS_SIGNED_BUNDLED
+    release_id: UMI_DEVICE2_D405_PRODUCT_V1_20260829
+    camera_imu_td_s: -0.009109323459933042
+    world_z_model: IDENTITY_NO_CORRECTION_REQUIRED
+    active_manifest: /data/active_runtime_calibration/manifest.yaml
+release:
+  status: ACCEPTED
+  accepted_at: '2026-08-29'
+  acceptance_scope: SECOND_UMI_SINGLE_DEVICE_PRODUCT_V1
+  blockers: []
+  rollback_image_id: sha256:8aead3e15158e9ac42780f24dd45c846f28558fe4457cc3f846da4b6e41fb5fa
+multi_device_contract:
+  clock_domain: stm32_mcu_to_host_monotonic_per_device
+  alignment_status: NOT_CALIBRATED

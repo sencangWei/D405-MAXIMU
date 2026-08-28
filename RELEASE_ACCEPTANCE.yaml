@@ -1,0 +1,86 @@
+schema: umi_product_release_acceptance_v1
+release_id: UMI_DEVICE2_D405_PRODUCT_V1_20260829
+status: ACCEPTED
+accepted_at: '2026-08-29'
+scope: SECOND_UMI_SINGLE_DEVICE_PRODUCT_V1
+device:
+  device_set_id: UMI_DEVICE_02_C48DF736
+  d405_serial: '260322279785'
+  stm32_usb_identity_suffix: c48df736b505f011adda8d1272aab386
+  gripper_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260826_V4
+calibration:
+  camera_imu_td_s: -0.009109323459933042
+  world_z_model: IDENTITY_NO_CORRECTION_REQUIRED
+  signed_runtime_manifest: formal_runtime_calibration/manifest.yaml
+evidence:
+  world_z:
+    result: PASS
+    report_sha256: 8a525ea3deb41b7b0c402b2c60f8e0dcae2b064df992fae05506f3266e2ee3c2
+    planar_p5_p95_gate_m: 0.01
+    elevation_spans_m: [0.24824464103802119, 0.2490260562073554]
+  imu_encoder_soak:
+    result: PASS
+    duration_s: 10800.000602193002
+    samples: 4320709
+    rate_hz: 400.06565301436876
+    encoder_imu_p95_us: 66.0
+    transport_errors: 0
+    report_sha256: 04ff9183b26913307381b64cb39af036c18febd6384994ca8053b9fcb5aa32d7
+  same_source_capture:
+    session: d405_720p_rgb_stereo_ir_20260828_114351
+    result: PASS
+    acceptance_sha256: 4ce8f15a36624ad4818dd0001e357ac58172e12ff16bf73d807bb54fc9354ea2
+  offline_pipeline_ab:
+    purpose: same-input 30 Hz pipeline and stationary stability; not a moving loop-precision claim
+    baseline_result: PASS
+    baseline_result_sha256: 14d9b478da78f81d65fa443ba41b8e5f8671d4d5a28ba57d01e08e88e59ea16d
+    baseline_acceptance_sha256: 306440ff7b0696a6d8d961f0cb1cec398738549cfe6b988639a1eba2be6619a1
+    candidate_result: PASS
+    candidate_result_sha256: 8905ed8dc82fbbb7423a90745e6be65692cc41c96d474cf92e34a39786b86ede
+    candidate_acceptance_sha256: c503ca9fba281e1b7fa004505aab0089aa4cef0144a259afc510e123961369b1
+    pose_coverage: 0.9802
+    baseline_min_features: 102
+    candidate_min_features: 144
+  realtime_operator_acceptance:
+    result: PASS
+    rgb_and_pose: PASS
+    gripper_topic_publishers: 1
+    gripper_topic_subscribers: 1
+    observed_angle_deg: 329.4140625
+    observed_no_load_gap_mm: 58.93570928311797
+    operator_statement: '可以直接作为第二套正式的umi产品代码'
+  formal_image_hil:
+    result: PASS
+    image_tag: umi-ego-vio:device2-c48df736-d405-product-v1-20260829
+    camera_rate_hz: 30.0
+    imu_rate_hz: 400.0
+    camera_drops: 0
+    imu_drops: 0
+    queue_depth_final: 0
+    cam_ros_p95_ms_observed_range: [0.9, 3.4]
+    odometry_rect_rate_hz: approximately_15
+    slam_state: SLAM_HEALTHY
+    product_usable: true
+    max_raw_step_m: 0.0003042134407826079
+    max_corrected_step_m: 0.0004164825058297619
+    gripper_schema: umi_gripper_live_v1
+    observed_angle_deg: 333.52294921875
+    observed_no_load_gap_mm: 61.474676798452165
+    required_topics:
+      - /cam0/image_raw
+      - /cam1/image_raw
+      - /rgb_preview/image_raw
+      - /odometry
+      - /odometry_rect
+      - /gripper/state
+    operator_stop_cleanup: PASS
+limitations:
+  - Gripper gap is a no-load soft-pad spacing estimate, not loaded object size.
+  - Multi-device temporal/spatial alignment is outside this single-device release.
+rollback:
+  source_directory: /home/robot/umi_docker_device2_d405_formal_20260828
+  image_id: sha256:8aead3e15158e9ac42780f24dd45c846f28558fe4457cc3f846da4b6e41fb5fa
+formal_image:
+  tag: umi-ego-vio:device2-c48df736-d405-product-v1-20260829
+  image_id: sha256:9dda11f65aedf564bc244dae4cc2c2411627c590ca170445827f7fa27aabdcb9
+  size_bytes: 1000307250
