@@ -28,6 +28,7 @@
 #include <queue>
 #include <thread>
 #include <atomic>
+#include <condition_variable>
 #include <eigen3/Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
@@ -43,6 +44,7 @@ using namespace std;
 queue<vins_fusion_ros2::msg::LoopKeyFrame::ConstSharedPtr> keyframe_buf;
 queue<Eigen::Vector3d> odometry_buf;
 std::mutex m_buf;
+std::condition_variable m_keyframe_cv;
 std::mutex m_process;
 int frame_index  = 0;
 int sequence = 1;
@@ -108,7 +110,7 @@ void new_sequence()
 void keyframe_callback(
     const vins_fusion_ros2::msg::LoopKeyFrame::ConstSharedPtr msg)
 {
-    std::lock_guard<std::mutex> lock(m_buf);
+    std::unique_lock<std::mutex> lock(m_buf);
     static uint64_t expected_sequence = 0;
     static bool sequence_initialized = false;
     const uint64_t count = stereo_keyframes_received.fetch_add(1) + 1;
@@ -133,14 +135,15 @@ void keyframe_callback(
                keyframe_transport_drops.load());
     }
     expected_sequence = msg->sequence + 1;
-    constexpr size_t kMaxProcessingBacklog = 160;
-    if (keyframe_buf.size() >= kMaxProcessingBacklog)
-    {
-        keyframe_buf.pop();
-        ++keyframe_backlog_drops;
-        printf("[LOOP_INPUT_DROP] reason=processing_backlog total_backlog_drops=%lu\n",
-               keyframe_backlog_drops.load());
-    }
+    // Offline replay can publish faster than BRIEF/PnP processing.  Apply
+    // backpressure instead of dropping keyframes and silently corrupting the
+    // pose graph.  The reliable subscription then throttles the producer.
+    constexpr size_t kResumeProcessingBacklog = 80;
+    m_keyframe_cv.wait(lock, [] {
+        return !running || keyframe_buf.size() < kResumeProcessingBacklog;
+    });
+    if (!running)
+        return;
     keyframe_buf.push(msg);
     if (count % 50 == 0)
         printf("[LOOP_INPUT] atomic_keyframes=%lu transport_drops=%lu "
@@ -235,6 +238,7 @@ void process()
             {
                 keyframe_msg = keyframe_buf.front();
                 keyframe_buf.pop();
+                m_keyframe_cv.notify_one();
             }
         }
 
@@ -490,7 +494,7 @@ int main(int argc, char **argv)
     }
 
     auto sub_vio          = n->create_subscription<nav_msgs::msg::Odometry>("/odometry", rclcpp::QoS(rclcpp::KeepLast(2000)), vio_callback);
-    rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(32));
+    rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(256));
     loop_keyframe_qos.reliable();
     auto sub_keyframe     = n->create_subscription<vins_fusion_ros2::msg::LoopKeyFrame>("/loop_fusion/keyframe", loop_keyframe_qos, keyframe_callback);
     auto sub_margin_point = n->create_subscription<sensor_msgs::msg::PointCloud>("/margin_cloud", rclcpp::QoS(rclcpp::KeepLast(2000)), margin_point_callback);
@@ -508,6 +512,7 @@ int main(int argc, char **argv)
     rclcpp::spin(n);
 
     running = false;
+    m_keyframe_cv.notify_all();
     if (measurement_process.joinable())
         measurement_process.join();
     posegraph.stopOptimization();

@@ -508,8 +508,11 @@ def main() -> int:
     replay_log_path = args.out_dir / "replay.log"
     processes: list[subprocess.Popen[bytes]] = []
 
+    # Match the executable name only.  `pgrep -af loop_fusion_node` also
+    # matches this runner's own command line because it contains the explicit
+    # --loop-executable path, causing every deterministic run to self-fail.
     stale = subprocess.run(
-        ["pgrep", "-af", "loop_fusion_node"],
+        ["pgrep", "-x", "loop_fusion_node"],
         check=False,
         capture_output=True,
         text=True,

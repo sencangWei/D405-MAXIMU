@@ -123,7 +123,8 @@ void VinsEstimator::initializerPublishers() {
       this->create_publisher<sensor_msgs::msg::Image>("image_track", 1);
   // A stereo keyframe is large enough that a four-message DDS history can be
   // exhausted by short optimizer bursts during offline 30 fps replay.
-  rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(32));
+  // Keep a reliable backlog while the loop worker drains BRIEF/PnP work.
+  rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(256));
   loop_keyframe_qos.reliable();
   pub_loop_keyframe =
       this->create_publisher<vins_fusion_ros2::msg::LoopKeyFrame>(
