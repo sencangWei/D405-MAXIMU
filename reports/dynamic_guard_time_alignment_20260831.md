@@ -12,18 +12,20 @@
   meter/50-degree catastrophic jumps. It does not flatten Z or reject normal
   lifts/turns.
 
-## Full replay evidence
+## Full replay evidence (Docker2 formal configuration)
 
 Session: `d405_720p_rgb_stereo_ir_20260830_035548`
 
-Acceptance: `robot_eval/diagnostic/dynamic_guard_smoke_20260830_full/run_acceptance.json`
+Acceptance: `robot_eval/diagnostic/dynamic_guard_smoke_20260831_docker2/run_acceptance.json`
 
 - Result: `PASS`; health: `SLAM_HEALTHY`, `product_usable=true`
-- Raw/corrected odometry: `1742 / 1740`
-- Pose coverage: `0.992018`
-- Automatic loop accepts: `19`; post-geometry rejects: `6947`
+- Config SHA-256: `3f47e90f838aff2e4770eecccc5bebe29b29fd07833576ab8568cf6bd693db36`
+- Docker2 `td`: `-0.009109323 s`
+- Raw/corrected odometry: `1742 / 1742`
+- Pose coverage: `0.993158`
+- Automatic loop accepts: `21`; post-geometry rejects: `6445`
 - Loop input drops: `0`; estimator keyframe queue drops: `0`
-- Pose-graph unusable solutions: `0`
+- Pose-graph unusable solutions/inconsistent candidates: `0 / 6`
 - VINS failure-detector triggers: `0`
 
 Rebuilt binaries:
