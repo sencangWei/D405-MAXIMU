@@ -285,6 +285,18 @@ void VinsEstimator::publishKeyFrameData() {
     loop_keyframe.stereo = std::move(stereo);
     loop_keyframe.pose = odometry;
     loop_keyframe.cloud = cloud;
+    const auto &quality = keyframe.visual_quality;
+    loop_keyframe.left_sharpness = quality.left_sharpness;
+    loop_keyframe.right_sharpness = quality.right_sharpness;
+    loop_keyframe.left_contrast = quality.left_contrast;
+    loop_keyframe.right_contrast = quality.right_contrast;
+    loop_keyframe.flow_p90_px_s = quality.flow_p90_px_s;
+    loop_keyframe.stereo_ratio = quality.stereo_ratio;
+    loop_keyframe.tracked_features = quality.tracked_features;
+    loop_keyframe.stereo_features = quality.stereo_features;
+    loop_keyframe.quality_flags = quality.flags;
+    loop_keyframe.visual_quality_degraded = quality.degraded;
+    loop_keyframe.visual_quality_severe = quality.severe;
     pub_loop_keyframe->publish(loop_keyframe);
   }
 }

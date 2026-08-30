@@ -291,6 +291,25 @@ void process()
                        "skew_ms=%.6f\n", 1000.0 * (image_time - pose_time));
                 continue;
             }
+            // A frame with blur, weak tracking, or failed stereo association is
+            // still consumed by VIO, but is unsafe as a loop-graph anchor.
+            // Keep this gate after transport/shape/timestamp validation so the
+            // producer remains synchronized and the reason is auditable.
+            if (keyframe_msg->visual_quality_degraded)
+            {
+                printf("[AUTO_LOOP_KEYFRAME_REJECT] reason=visual_quality_degraded "
+                       "flags=%u tracked=%u stereo=%u stereo_ratio=%.3f "
+                       "flow_p90_px_s=%.1f sharpness_left=%.5f "
+                       "sharpness_right=%.5f\n",
+                       static_cast<unsigned int>(keyframe_msg->quality_flags),
+                       keyframe_msg->tracked_features,
+                       keyframe_msg->stereo_features,
+                       keyframe_msg->stereo_ratio,
+                       keyframe_msg->flow_p90_px_s,
+                       keyframe_msg->left_sharpness,
+                       keyframe_msg->right_sharpness);
+                continue;
+            }
             // build keyframe
             Vector3d T = Vector3d(pose_msg->pose.pose.position.x,
                                   pose_msg->pose.pose.position.y,
@@ -330,6 +349,17 @@ void process()
 
                 KeyFrame* keyframe = new KeyFrame(pose_msg->header.stamp.sec + pose_msg->header.stamp.nanosec * (1e-9), frame_index, T, R, image, right_image,
                                    point_3d, point_2d_uv, point_2d_normal, point_id, sequence);   
+                keyframe->left_sharpness = keyframe_msg->left_sharpness;
+                keyframe->right_sharpness = keyframe_msg->right_sharpness;
+                keyframe->left_contrast = keyframe_msg->left_contrast;
+                keyframe->right_contrast = keyframe_msg->right_contrast;
+                keyframe->flow_p90_px_s = keyframe_msg->flow_p90_px_s;
+                keyframe->stereo_ratio = keyframe_msg->stereo_ratio;
+                keyframe->tracked_features = keyframe_msg->tracked_features;
+                keyframe->stereo_features = keyframe_msg->stereo_features;
+                keyframe->quality_flags = keyframe_msg->quality_flags;
+                keyframe->visual_quality_degraded = keyframe_msg->visual_quality_degraded;
+                keyframe->visual_quality_severe = keyframe_msg->visual_quality_severe;
                 m_process.lock();
                 start_flag = 1;
                 posegraph.addKeyFrame(keyframe, 1);

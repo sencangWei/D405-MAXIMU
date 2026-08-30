@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <opencv2/opencv.hpp>
@@ -122,6 +123,19 @@ public:
 	vector<BRIEF::bitset> window_brief_descriptors;
 	bool has_fast_point;
 	int sequence;
+	// Front-end visual health copied from VINS.  Degraded frames remain valid
+	// VIO measurements but must not seed or validate a loop edge.
+	double left_sharpness = 0.0;
+	double right_sharpness = 0.0;
+	double left_contrast = 0.0;
+	double right_contrast = 0.0;
+	double flow_p90_px_s = 0.0;
+	double stereo_ratio = 0.0;
+	uint32_t tracked_features = 0;
+	uint32_t stereo_features = 0;
+	uint8_t quality_flags = 0;
+	bool visual_quality_degraded = false;
+	bool visual_quality_severe = false;
 
 	bool has_loop;
 	int loop_index;

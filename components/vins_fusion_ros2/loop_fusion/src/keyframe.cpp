@@ -416,6 +416,12 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 {
 	TicToc tmp_t;
 	//printf("find Connection\n");
+	if (visual_quality_degraded || old_kf->visual_quality_degraded)
+	{
+		printf("[AUTO_LOOP_REJECT] current=%d old=%d reason=visual_quality_degraded\n",
+		       index, old_kf->index);
+		return false;
+	}
 	vector<cv::Point2f> matched_2d_cur, matched_2d_old;
 	vector<cv::Point2f> matched_2d_cur_norm, matched_2d_old_norm;
 	vector<cv::Point3f> matched_3d;

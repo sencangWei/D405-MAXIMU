@@ -18,6 +18,10 @@ add_executable(loop_fusion_node
     src/ThirdParty/VocabularyBinary.cpp
 )
 add_dependencies(loop_fusion_node ${CMAKE_PROJECT_NAME}__cpp)
+set_target_properties(loop_fusion_node PROPERTIES
+  BUILD_RPATH "${CMAKE_BINARY_DIR}/vins"
+  INSTALL_RPATH "$ORIGIN/../vins"
+)
 
 target_include_directories(loop_fusion_node PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src

@@ -128,6 +128,7 @@ struct KeyFrameData : SensorDataBase {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PoseData pose;
   PointCloudData cloud;
+  VisualQuality visual_quality;
 };
 
 struct StateData : SensorDataBase {

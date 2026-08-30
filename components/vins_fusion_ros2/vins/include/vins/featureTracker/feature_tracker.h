@@ -29,6 +29,7 @@
 #include <vins/camera_models/CameraFactory.h>
 #include <vins/camera_models/CataCamera.h>
 #include <vins/camera_models/PinholeCamera.h>
+#include <vins/common/data_type.h>
 #include <vins/estimator/parameters.h>
 #include <vins/utility/tic_toc.h>
 
@@ -64,6 +65,8 @@ class FeatureTracker {
                  vector<cv::Point2f> &curRightPts,
                  map<int, cv::Point2f> &prevLeftPtsMap);
   void setPrediction(map<int, Eigen::Vector3d> &predictPts);
+  const VisualQuality &getVisualQuality() const { return visual_quality; }
+  void resetQuality();
   double distance(cv::Point2f &pt1, cv::Point2f &pt2);
   void removeOutliers(set<int> &removePtsIds);
   cv::Mat getTrackImage();
@@ -92,4 +95,10 @@ class FeatureTracker {
   int n_id;
   bool hasPrediction;
   std::shared_ptr<VINSOptions> options;
+
+ private:
+  VisualQuality visual_quality;
+  double sharpness_ema_left = 0.0;
+  double sharpness_ema_right = 0.0;
+  uint64_t quality_frame_count = 0;
 };

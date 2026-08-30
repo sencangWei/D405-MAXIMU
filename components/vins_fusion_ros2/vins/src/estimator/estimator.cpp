@@ -30,6 +30,20 @@ struct ZeroVelocityFactor {
 
   double inv_velocity_sigma;
 };
+
+double boundedVisualWeight(double weight) {
+  return std::max(0.35, std::min(weight, 1.0));
+}
+
+ceres::LossFunction *makeVisualLoss(double weight) {
+  return new ceres::ScaledLoss(new ceres::HuberLoss(1.0),
+                               boundedVisualWeight(weight),
+                               ceres::TAKE_OWNERSHIP);
+}
+
+std::shared_ptr<ceres::LossFunction> makeVisualLossShared(double weight) {
+  return std::shared_ptr<ceres::LossFunction>(makeVisualLoss(weight));
+}
 }  // namespace
 
 Estimator::Estimator() {}
@@ -94,6 +108,7 @@ void Estimator::resetState() {
   last_marginalization_parameter_blocks.clear();
 
   featureManager.clearState();
+  featureTracker.resetQuality();
   failure_occur = 0;
   VINS_INFO << "reset state successfully";
 }
@@ -124,6 +139,7 @@ void Estimator::resetInitializationState() {
   last_marginalization_info = nullptr;
   last_marginalization_parameter_blocks.clear();
   featureManager.clearState();
+  featureTracker.resetQuality();
   failure_occur = 0;
   stationaryFrameCount = 0;
   movingFrameCount = 0;
@@ -171,6 +187,7 @@ void Estimator::inputImage(const ImageData &image) {
     featureFrame =
         featureTracker.trackImage(image.timestamp, image.image0, image.image1);
   }
+  const VisualQuality visual_quality = featureTracker.getVisualQuality();
   if (options->shouldShowTrack()) {
     track_image.image0 = featureTracker.getTrackImage();
     track_image.timestamp = image.timestamp;
@@ -186,7 +203,11 @@ void Estimator::inputImage(const ImageData &image) {
              !isRunning.load();
     });
     if (!isRunning.load()) return;
-    featureBuffer.push(make_pair(image.timestamp, featureFrame));
+    TimestampedFeatureFrame queued;
+    queued.timestamp = image.timestamp;
+    queued.features = std::move(featureFrame);
+    queued.quality = visual_quality;
+    featureBuffer.push(std::move(queued));
     enqueuedImageCount.fetch_add(1);
     const auto waited_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::steady_clock::now() - wait_started)
@@ -237,7 +258,10 @@ void Estimator::inputFeature(double timestamp,
              !isRunning.load();
     });
     if (!isRunning.load()) return;
-    featureBuffer.push(make_pair(timestamp, featureFrame));
+    TimestampedFeatureFrame queued;
+    queued.timestamp = timestamp;
+    queued.features = featureFrame;
+    featureBuffer.push(std::move(queued));
   }
   featureCondition.notify_one();
 }
@@ -309,7 +333,7 @@ void Estimator::processMeasurements() {
       lock.unlock();
       featureSpaceCondition.notify_one();
     }
-    currentTimestamp = feature.first + options->time_delay;
+    currentTimestamp = feature.timestamp + options->time_delay;
     if (options->hasImu()) {
       std::unique_lock<std::mutex> lock(imu_mutex);
 
@@ -346,7 +370,7 @@ void Estimator::processMeasurements() {
         processIMU(imu_datas[i], dt);
       }
     }
-    for (const auto &feature_observations : feature.second) {
+    for (const auto &feature_observations : feature.features) {
       for (const auto &observation : feature_observations.second) {
         if (observation.first != 0) continue;
         const auto flow = observation.second.tail<2>();
@@ -467,11 +491,11 @@ void Estimator::processMeasurements() {
     {
       std::lock_guard<std::mutex> lock(processingMutex);
       TicToc image_time;
-      processImage(feature.second, feature.first);
+      processImage(feature.features, feature.timestamp, feature.quality);
       const double image_ms = image_time.toc();
       printStatistics(currentTimestamp);
       TicToc cloud_time;
-      collectPointCloudAll(feature.first);
+      collectPointCloudAll(feature.timestamp, feature.quality);
       const double cloud_ms = cloud_time.toc();
       previousTimestamp = currentTimestamp;
 
@@ -517,7 +541,19 @@ void Estimator::processMeasurements() {
                   << " visual_stationary=" << visual_stationary
                   << " zupt=" << zeroVelocityActive
                   << " stationary_frames=" << stationaryFrameCount
-                  << " moving_frames=" << movingFrameCount;
+                  << " moving_frames=" << movingFrameCount
+                  << " visual_flags="
+                  << static_cast<unsigned int>(feature.quality.flags)
+                  << " visual_degraded=" << feature.quality.degraded
+                  << " visual_severe=" << feature.quality.severe
+                  << " sharpness_left=" << feature.quality.left_sharpness
+                  << " sharpness_right=" << feature.quality.right_sharpness
+                  << " stereo_ratio=" << feature.quality.stereo_ratio
+                  << " tracked_features=" << feature.quality.tracked_features
+                  << " stereo_features=" << feature.quality.stereo_features
+                  << " flow_p90_px_s=" << feature.quality.flow_p90_px_s
+                  << " visual_weight="
+                  << feature.quality.measurement_weight;
         window_total_sum_ms = 0.0;
         window_total_max_ms = 0.0;
         window_solve_sum_ms = 0.0;
@@ -536,7 +572,8 @@ void Estimator::updateCameraPose(int index) {
   safe_camera_pose[index].set(pose);
 }
 
-void Estimator::collectPointCloudAll(Timestamp timestamp) {
+void Estimator::collectPointCloudAll(Timestamp timestamp,
+                                     const VisualQuality &quality) {
   PointCloudData main_cloud;
   PointCloudData point_cloud;
   PointCloudData margin_cloud;
@@ -607,6 +644,7 @@ void Estimator::collectPointCloudAll(Timestamp timestamp) {
       keyframe.timestamp = pose.timestamp;
       keyframe.pose = pose;
       keyframe.cloud = point_cloud;
+      keyframe.visual_quality = quality;
       {
         std::lock_guard<std::mutex> lock(keyframe_data_mutex);
         constexpr size_t kMaxQueuedKeyFrames = 256;
@@ -705,8 +743,9 @@ void Estimator::updateStateWithIMU(const IMUData &data, double deltaTime) {
 }
 
 void Estimator::processImage(const FeatureFrame &features,
-                             Timestamp timestamp) {
-  setMarginalizationFlag(features);
+                             Timestamp timestamp,
+                             const VisualQuality &quality) {
+  setMarginalizationFlag(features, quality);
   insertImageFrame(features, timestamp);
   handleExtrinsicInitialization();
   if (!isNonLinearSolver()) {
@@ -716,9 +755,10 @@ void Estimator::processImage(const FeatureFrame &features,
   }
 }
 
-void Estimator::setMarginalizationFlag(const FeatureFrame &features) {
+void Estimator::setMarginalizationFlag(const FeatureFrame &features,
+                                       const VisualQuality &quality) {
   if (featureManager.addFeatureCheckParallax(frameCount, features,
-                                             options->time_delay)) {
+                                             options->time_delay, quality)) {
     marginalization_flag = MarginalizationType::MARGIN_OLD;
   } else {
     marginalization_flag = MarginalizationType::MARGIN_SECOND_NEW;
@@ -1383,7 +1423,9 @@ void Estimator::AddFeatureFactors(ceres::Problem &problem) {
         auto *factor = new ProjectionTwoFrameOneCamFactor(
             pts_i, pts_j, it.feature_per_frame[0].velocity, f.velocity,
             it.feature_per_frame[0].cur_td, f.cur_td);
-        problem.AddResidualBlock(factor, new ceres::HuberLoss(1.0),
+        const double visual_weight = std::min(
+            it.feature_per_frame[0].quality_weight, f.quality_weight);
+        problem.AddResidualBlock(factor, makeVisualLoss(visual_weight),
                                  poseArray[imu_i], poseArray[imu_j],
                                  para_Ex_Pose[0], para_Feature[feature_index],
                                  para_Td[0]);
@@ -1395,7 +1437,9 @@ void Estimator::AddFeatureFactors(ceres::Problem &problem) {
           auto *factor = new ProjectionTwoFrameTwoCamFactor(
               pts_i, pts_j_right, it.feature_per_frame[0].velocity,
               f.velocityRight, it.feature_per_frame[0].cur_td, f.cur_td);
-          problem.AddResidualBlock(factor, new ceres::HuberLoss(1.0),
+          const double visual_weight = std::min(
+              it.feature_per_frame[0].quality_weight, f.quality_weight);
+          problem.AddResidualBlock(factor, makeVisualLoss(visual_weight),
                                    poseArray[imu_i], poseArray[imu_j],
                                    para_Ex_Pose[0], para_Ex_Pose[1],
                                    para_Feature[feature_index], para_Td[0]);
@@ -1403,7 +1447,9 @@ void Estimator::AddFeatureFactors(ceres::Problem &problem) {
           auto *factor = new ProjectionOneFrameTwoCamFactor(
               pts_i, pts_j_right, it.feature_per_frame[0].velocity,
               f.velocityRight, it.feature_per_frame[0].cur_td, f.cur_td);
-          problem.AddResidualBlock(factor, new ceres::HuberLoss(1.0),
+          const double visual_weight = std::min(
+              it.feature_per_frame[0].quality_weight, f.quality_weight);
+          problem.AddResidualBlock(factor, makeVisualLoss(visual_weight),
                                    para_Ex_Pose[0], para_Ex_Pose[1],
                                    para_Feature[feature_index], para_Td[0]);
         }
@@ -1544,7 +1590,10 @@ void Estimator::addFeatureResidualBlocks(
             pts_i, pts_j, it_per_id.feature_per_frame[0].velocity,
             it_per_frame.velocity, it_per_id.feature_per_frame[0].cur_td,
             it_per_frame.cur_td);
-        auto loss = std::make_shared<ceres::HuberLoss>(1.0);
+        const double visual_weight = std::min(
+            it_per_id.feature_per_frame[0].quality_weight,
+            it_per_frame.quality_weight);
+        auto loss = makeVisualLossShared(visual_weight);
         marg_info->addResidualBlockInfo(std::make_shared<ResidualBlockInfo>(
             f_td, loss,
             vector<double *>{poseArray[imu_i], poseArray[imu_j],
@@ -1555,7 +1604,10 @@ void Estimator::addFeatureResidualBlocks(
 
       if (options->isUsingStereo() && it_per_frame.is_stereo) {
         const Vector3d &pts_j_right = it_per_frame.pointRight;
-        auto loss = std::make_shared<ceres::HuberLoss>(1.0);
+        const double visual_weight = std::min(
+            it_per_id.feature_per_frame[0].quality_weight,
+            it_per_frame.quality_weight);
+        auto loss = makeVisualLossShared(visual_weight);
 
         if (imu_i != imu_j) {
           auto f = std::make_shared<ProjectionTwoFrameTwoCamFactor>(

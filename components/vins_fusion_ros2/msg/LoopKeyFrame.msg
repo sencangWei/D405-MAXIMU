@@ -2,3 +2,14 @@ uint64 sequence
 sensor_msgs/Image stereo
 nav_msgs/Odometry pose
 sensor_msgs/PointCloud cloud
+float64 left_sharpness
+float64 right_sharpness
+float64 left_contrast
+float64 right_contrast
+float64 flow_p90_px_s
+float64 stereo_ratio
+uint32 tracked_features
+uint32 stereo_features
+uint8 quality_flags
+bool visual_quality_degraded
+bool visual_quality_severe

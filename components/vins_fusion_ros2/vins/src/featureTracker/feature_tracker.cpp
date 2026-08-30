@@ -12,8 +12,65 @@
 #include <vins/featureTracker/feature_tracker.h>
 #include <vins/logger/logger.h>
 
+#include <algorithm>
+#include <cmath>
+
+namespace {
+
+double normalizedLaplacianVariance(const cv::Mat &image, double &contrast) {
+  contrast = 0.0;
+  if (image.empty()) return 0.0;
+
+  cv::Mat gray;
+  if (image.channels() == 1) {
+    gray = image;
+  } else if (image.channels() == 3) {
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+  } else if (image.channels() == 4) {
+    cv::cvtColor(image, gray, cv::COLOR_BGRA2GRAY);
+  } else {
+    return 0.0;
+  }
+
+  // Quality telemetry must not compete with the 30 fps tracker.  A 640 px
+  // wide copy preserves blur/contrast trends while bounding the work.
+  if (gray.cols > 640) {
+    cv::Mat resized;
+    const int height = std::max(1, static_cast<int>(
+                                     std::lround(gray.rows * 640.0 / gray.cols)));
+    cv::resize(gray, resized, cv::Size(640, height), 0.0, 0.0,
+               cv::INTER_AREA);
+    gray = std::move(resized);
+  }
+
+  cv::Scalar mean;
+  cv::Scalar stddev;
+  cv::meanStdDev(gray, mean, stddev);
+  contrast = stddev[0];
+  if (!std::isfinite(contrast) || contrast < 1e-6) return 0.0;
+
+  cv::Mat laplacian;
+  cv::Laplacian(gray, laplacian, CV_64F, 3);
+  cv::Scalar lap_mean;
+  cv::Scalar lap_stddev;
+  cv::meanStdDev(laplacian, lap_mean, lap_stddev);
+  const double variance = lap_stddev[0] * lap_stddev[0];
+  const double normalized = variance / std::max(contrast * contrast, 25.0);
+  return std::isfinite(normalized) ? normalized : 0.0;
+}
+
+double percentile90(std::vector<double> values) {
+  if (values.empty()) return 0.0;
+  const size_t index = static_cast<size_t>(0.9 * (values.size() - 1));
+  std::nth_element(values.begin(), values.begin() + index, values.end());
+  return values[index];
+}
+
+}  // namespace
+
 bool FeatureTracker::inBorder(const cv::Point2f &pt) {
   const int BORDER_SIZE = 1;
+  if (!std::isfinite(pt.x) || !std::isfinite(pt.y)) return false;
   int img_x = cvRound(pt.x);
   int img_y = cvRound(pt.y);
   return BORDER_SIZE <= img_x && img_x < col - BORDER_SIZE &&
@@ -28,14 +85,16 @@ double distance(cv::Point2f pt1, cv::Point2f pt2) {
 
 void reduceVector(vector<cv::Point2f> &v, vector<uchar> status) {
   int j = 0;
-  for (int i = 0; i < int(v.size()); i++)
+  const int count = std::min(v.size(), status.size());
+  for (int i = 0; i < count; i++)
     if (status[i]) v[j++] = v[i];
   v.resize(j);
 }
 
 void reduceVector(vector<int> &v, vector<uchar> status) {
   int j = 0;
-  for (int i = 0; i < int(v.size()); i++)
+  const int count = std::min(v.size(), status.size());
+  for (int i = 0; i < count; i++)
     if (status[i]) v[j++] = v[i];
   v.resize(j);
 }
@@ -44,10 +103,18 @@ FeatureTracker::FeatureTracker() {
   stereo_cam = 0;
   n_id = 0;
   hasPrediction = false;
+  prev_time = 0.0;
 }
 
 void FeatureTracker::setOptions(std::shared_ptr<VINSOptions> options_) {
   options = options_;
+}
+
+void FeatureTracker::resetQuality() {
+  visual_quality = VisualQuality{};
+  sharpness_ema_left = 0.0;
+  sharpness_ema_right = 0.0;
+  quality_frame_count = 0;
 }
 
 void FeatureTracker::setMask() {
@@ -56,7 +123,8 @@ void FeatureTracker::setMask() {
   // prefer to keep features that are tracked for long time
   vector<pair<int, pair<cv::Point2f, int>>> cnt_pts_id;
 
-  for (unsigned int i = 0; i < cur_pts.size(); i++)
+  const size_t count = std::min({cur_pts.size(), track_cnt.size(), ids.size()});
+  for (size_t i = 0; i < count; i++)
     cnt_pts_id.push_back(
         make_pair(track_cnt[i], make_pair(cur_pts[i], ids[i])));
 
@@ -70,13 +138,35 @@ void FeatureTracker::setMask() {
   ids.clear();
   track_cnt.clear();
 
+  // Do the occupancy test against the already selected points instead of
+  // indexing ``mask`` with a floating-point coordinate.  The original code
+  // used ``mask.at<uchar>(Point2f)``; a NaN/edge coordinate produced by a
+  // failed LK solve could turn into an out-of-bounds byte access exactly
+  // during fast motion.  The selected set is at most MAX_CNT, so the
+  // quadratic check is small (and runs only once per frame).
+  vector<cv::Point2f> selected_points;
+  selected_points.reserve(cnt_pts_id.size());
+  const double min_distance =
+      std::max(0.0, static_cast<double>(options->min_feature_distance));
+  const double min_distance_sq = min_distance * min_distance;
   for (auto &it : cnt_pts_id) {
-    if (mask.at<uchar>(it.second.first) == 255) {
-      cur_pts.push_back(it.second.first);
-      ids.push_back(it.second.second);
-      track_cnt.push_back(it.first);
-      cv::circle(mask, it.second.first, options->min_feature_distance, 0, -1);
+    const cv::Point2f &point = it.second.first;
+    if (!inBorder(point)) continue;
+    bool separated = true;
+    for (const auto &selected : selected_points) {
+      const double dx = point.x - selected.x;
+      const double dy = point.y - selected.y;
+      if (dx * dx + dy * dy < min_distance_sq) {
+        separated = false;
+        break;
+      }
     }
+    if (!separated) continue;
+    selected_points.push_back(point);
+    cur_pts.push_back(point);
+    ids.push_back(it.second.second);
+    track_cnt.push_back(it.first);
+    cv::circle(mask, point, min_distance, 0, -1);
   }
 }
 
@@ -104,6 +194,9 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
   col = cur_img.cols;
   cv::Mat rightImg = _img1;
   cur_pts.clear();
+  visual_quality = VisualQuality{};
+  std::vector<double> flow_speeds_px_s;
+  const double frame_dt = prev_time > 0.0 ? cur_time - prev_time : 0.0;
 
   if (prev_pts.size() > 0) {
     vector<uchar> status;
@@ -142,8 +235,10 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
             cv::OPTFLOW_USE_INITIAL_FLOW);
         // cv::calcOpticalFlowPyrLK(cur_img, prev_img, cur_pts, reverse_pts,
         // reverse_status, err, cv::Size(31, 31), 5);
+        const size_t count = std::min({status.size(), reverse_status.size(),
+                                       prev_pts.size(), cur_pts.size()});
         for (size_t i = 0; i < status.size(); i++) {
-          if (status[i] && reverse_status[i] &&
+          if (i < count && status[i] && reverse_status[i] &&
               distance(prev_pts[i], reverse_pts[i]) <= 0.5) {
             status[i] = 1;
           } else
@@ -225,8 +320,10 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
         vector<uchar> reverse_status(reverse_gpu_status.cols);
         reverse_gpu_status.download(reverse_status);
 
+        const size_t count = std::min({status.size(), reverse_status.size(),
+                                       prev_pts.size(), cur_pts.size()});
         for (size_t i = 0; i < status.size(); i++) {
-          if (status[i] && reverse_status[i] &&
+          if (i < count && status[i] && reverse_status[i] &&
               distance(prev_pts[i], reverse_pts[i]) <= 0.5) {
             status[i] = 1;
           } else
@@ -237,12 +334,56 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
     }
 #endif
 
-    for (int i = 0; i < int(cur_pts.size()); i++)
-      if (status[i] && !inBorder(cur_pts[i])) status[i] = 0;
-    reduceVector(prev_pts, status);
-    reduceVector(cur_pts, status);
-    reduceVector(ids, status);
-    reduceVector(track_cnt, status);
+      for (size_t i = 0; i < cur_pts.size() && i < status.size(); i++)
+        if (status[i] && !inBorder(cur_pts[i])) status[i] = 0;
+    const bool track_shape_ok =
+        status.size() == prev_pts.size() && cur_pts.size() == prev_pts.size() &&
+        ids.size() == prev_pts.size() && track_cnt.size() == prev_pts.size();
+    bool track_points_finite = track_shape_ok;
+    if (track_points_finite) {
+      for (size_t i = 0; i < cur_pts.size(); ++i) {
+        if (!std::isfinite(cur_pts[i].x) || !std::isfinite(cur_pts[i].y) ||
+            !std::isfinite(prev_pts[i].x) || !std::isfinite(prev_pts[i].y)) {
+          track_points_finite = false;
+          break;
+        }
+      }
+    }
+    if (frame_dt > 1e-6 && track_shape_ok) {
+      flow_speeds_px_s.reserve(status.size());
+      for (size_t i = 0; i < status.size(); ++i) {
+        if (!status[i]) continue;
+        const double speed = distance(prev_pts[i], cur_pts[i]) / frame_dt;
+        if (std::isfinite(speed)) flow_speeds_px_s.push_back(speed);
+      }
+    }
+    // During rapid motion, a small number of LK outliers can dominate the
+    // next VIO update.  Apply the existing fundamental-matrix RANSAC only in
+    // this regime; ordinary frames keep the validated baseline path exactly.
+    const double flow_p90_px_s = percentile90(flow_speeds_px_s);
+    const bool high_motion_flow = flow_p90_px_s > 220.0;
+    if (high_motion_flow && track_shape_ok && track_points_finite &&
+        cur_pts.size() >= 20) {
+      rejectWithF();
+    } else if (track_shape_ok) {
+      reduceVector(prev_pts, status);
+      reduceVector(cur_pts, status);
+      reduceVector(ids, status);
+      reduceVector(track_cnt, status);
+    } else {
+      // A backend/GPU optical-flow implementation may return a short status
+      // vector.  Drop the inconsistent track set and redetect points below;
+      // never let a malformed status vector reach setMask().
+      cur_pts.clear();
+      ids.clear();
+      track_cnt.clear();
+    }
+
+    if (cur_pts.size() != ids.size() || cur_pts.size() != track_cnt.size()) {
+      cur_pts.clear();
+      ids.clear();
+      track_cnt.clear();
+    }
   }
 
   for (auto &n : track_cnt) n++;
@@ -323,8 +464,12 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
           cv::calcOpticalFlowPyrLK(rightImg, cur_img, cur_right_pts,
                                    reverseLeftPts, statusRightLeft, err,
                                    cv::Size(21, 21), 3);
+          const size_t count = std::min({status.size(), statusRightLeft.size(),
+                                         cur_pts.size(), cur_right_pts.size(),
+                                         reverseLeftPts.size()});
           for (size_t i = 0; i < status.size(); i++) {
-            if (status[i] && statusRightLeft[i] && inBorder(cur_right_pts[i]) &&
+            if (i < count && status[i] && statusRightLeft[i] &&
+                inBorder(cur_right_pts[i]) &&
                 distance(cur_pts[i], reverseLeftPts[i]) <= 0.5)
               status[i] = 1;
             else
@@ -370,8 +515,12 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
           vector<uchar> tmp1_status(status_gpu_RightLeft.cols);
           status_gpu_RightLeft.download(tmp1_status);
           statusRightLeft = tmp1_status;
+          const size_t count = std::min({status.size(), statusRightLeft.size(),
+                                         cur_pts.size(), cur_right_pts.size(),
+                                         reverseLeftPts.size()});
           for (size_t i = 0; i < status.size(); i++) {
-            if (status[i] && statusRightLeft[i] && inBorder(cur_right_pts[i]) &&
+            if (i < count && status[i] && statusRightLeft[i] &&
+                inBorder(cur_right_pts[i]) &&
                 distance(cur_pts[i], reverseLeftPts[i]) <= 0.5)
               status[i] = 1;
             else
@@ -395,6 +544,67 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
   if (options->shouldShowTrack()) {
     drawTrack(cur_img, rightImg, ids, cur_pts, cur_right_pts, prevLeftPtsMap);
   }
+
+  double right_contrast = 0.0;
+  visual_quality.left_sharpness =
+      normalizedLaplacianVariance(cur_img, visual_quality.left_contrast);
+  if (!_img1.empty() && stereo_cam) {
+    visual_quality.right_sharpness =
+        normalizedLaplacianVariance(rightImg, right_contrast);
+    visual_quality.right_contrast = right_contrast;
+  }
+  visual_quality.flow_p90_px_s = percentile90(std::move(flow_speeds_px_s));
+  visual_quality.tracked_features = static_cast<uint32_t>(ids.size());
+  visual_quality.stereo_features = static_cast<uint32_t>(ids_right.size());
+  if (!_img1.empty() && stereo_cam && !ids.empty()) {
+    visual_quality.stereo_ratio =
+        static_cast<double>(ids_right.size()) / ids.size();
+  }
+
+  ++quality_frame_count;
+  constexpr double kEmaAlpha = 0.05;
+  if (visual_quality.left_sharpness > 0.0) {
+    if (sharpness_ema_left <= 0.0)
+      sharpness_ema_left = visual_quality.left_sharpness;
+    else
+      sharpness_ema_left = (1.0 - kEmaAlpha) * sharpness_ema_left +
+                           kEmaAlpha * visual_quality.left_sharpness;
+  }
+  if (visual_quality.right_sharpness > 0.0) {
+    if (sharpness_ema_right <= 0.0)
+      sharpness_ema_right = visual_quality.right_sharpness;
+    else
+      sharpness_ema_right = (1.0 - kEmaAlpha) * sharpness_ema_right +
+                            kEmaAlpha * visual_quality.right_sharpness;
+  }
+
+  const bool baseline_ready = quality_frame_count > 15;
+  const bool left_blur =
+      visual_quality.left_sharpness < 0.003 ||
+      (baseline_ready && sharpness_ema_left > 0.0 &&
+       visual_quality.left_sharpness < 0.45 * sharpness_ema_left);
+  const bool right_blur =
+      stereo_cam &&
+      (visual_quality.right_sharpness < 0.003 ||
+       (baseline_ready && sharpness_ema_right > 0.0 &&
+        visual_quality.right_sharpness < 0.45 * sharpness_ema_right));
+  const bool features_weak = visual_quality.tracked_features < 80;
+  const bool stereo_weak =
+      stereo_cam && visual_quality.tracked_features >= 80 &&
+      visual_quality.stereo_ratio < 0.20;
+  const bool high_motion = visual_quality.flow_p90_px_s > 220.0;
+  if (left_blur) visual_quality.flags |= VISUAL_LEFT_BLUR;
+  if (right_blur) visual_quality.flags |= VISUAL_RIGHT_BLUR;
+  if (features_weak) visual_quality.flags |= VISUAL_FEATURES_WEAK;
+  if (stereo_weak) visual_quality.flags |= VISUAL_STEREO_WEAK;
+  if (high_motion) visual_quality.flags |= VISUAL_HIGH_MOTION;
+  visual_quality.degraded = left_blur || right_blur || features_weak || stereo_weak;
+  visual_quality.severe =
+      (left_blur || right_blur) && high_motion ||
+      visual_quality.tracked_features < 40 ||
+      (stereo_cam && visual_quality.stereo_ratio < 0.10);
+  visual_quality.measurement_weight =
+      visualMeasurementWeight(visual_quality);
 
   prev_img = cur_img;
   prev_pts = cur_pts;
@@ -452,7 +662,7 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &_img,
 }
 
 void FeatureTracker::rejectWithF() {
-  if (cur_pts.size() >= 8) {
+  if (cur_pts.size() >= 8 && cur_pts.size() == prev_pts.size()) {
     TicToc t_f;
     vector<cv::Point2f> un_cur_pts(cur_pts.size()),
         un_prev_pts(prev_pts.size());
@@ -474,7 +684,7 @@ void FeatureTracker::rejectWithF() {
     vector<uchar> status;
     cv::findFundamentalMat(un_cur_pts, un_prev_pts, cv::FM_RANSAC,
                            options->ransac_reproj_threshold, 0.99, status);
-    int size_a = cur_pts.size();
+    if (status.size() != cur_pts.size()) return;
     reduceVector(prev_pts, status);
     reduceVector(cur_pts, status);
     reduceVector(cur_un_pts, status);

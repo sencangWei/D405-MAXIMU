@@ -38,6 +38,13 @@ add_subdirectory(vins)
 add_subdirectory(loop_fusion)
 add_executable(vins_fusion_ros2_node src/vins_estimator.cpp src/vins_estimator_node.cpp src/visualization.cpp)
 add_dependencies(vins_fusion_ros2_node ${PROJECT_NAME}__cpp)
+# ``vins_lib`` is installed in ``lib/vins`` rather than beside the node.  Keep
+# the installed node self-contained so ``ros2 run`` works after a plain
+# workspace setup (without a hand-maintained LD_LIBRARY_PATH).
+set_target_properties(vins_fusion_ros2_node PROPERTIES
+  BUILD_RPATH "${CMAKE_BINARY_DIR}/vins"
+  INSTALL_RPATH "$ORIGIN/../vins"
+)
 ament_target_dependencies(vins_fusion_ros2_node rclcpp rcpputils message_filters std_msgs visualization_msgs geometry_msgs nav_msgs tf2 tf2_ros cv_bridge image_transport)
 target_link_libraries(vins_fusion_ros2_node vins_lib) 
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")

@@ -38,7 +38,7 @@ int FeatureManager::getFeatureCount() {
 bool FeatureManager::addFeatureCheckParallax(
     int frame_count,
     const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image,
-    double td) {
+    double td, const VisualQuality &quality) {
   double parallax_sum = 0;
   int parallax_num = 0;
   last_track_num = 0;
@@ -46,7 +46,8 @@ bool FeatureManager::addFeatureCheckParallax(
   new_feature_num = 0;
   long_track_num = 0;
   for (auto &id_pts : image) {
-    FeaturePerFrame f_per_fra(id_pts.second[0].second, td);
+    FeaturePerFrame f_per_fra(id_pts.second[0].second, td,
+                              visualMeasurementWeight(quality));
     assert(id_pts.second[0].first == 0);
     if (id_pts.second.size() == 2) {
       f_per_fra.rightObservation(id_pts.second[1].second);

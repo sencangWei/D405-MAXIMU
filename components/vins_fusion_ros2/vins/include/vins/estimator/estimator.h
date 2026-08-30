@@ -78,13 +78,15 @@ class Estimator {
   void resetInitializationState();
   void processIMU(const IMUData &data, double deltaTime);
   void updateStateWithIMU(const IMUData &data, double deltaTime);
-  void processImage(const FeatureFrame &features, Timestamp timestamp);
+  void processImage(const FeatureFrame &features, Timestamp timestamp,
+                    const VisualQuality &quality);
   void fastPredictIMU(const IMUData &data);
   void fastPredictIMUWithoutLock(const IMUData &data);
 
   bool isNonLinearSolver() const;
   bool isNewMarginalization() const;
-  void setMarginalizationFlag(const FeatureFrame &features);
+  void setMarginalizationFlag(const FeatureFrame &features,
+                              const VisualQuality &quality);
   void insertImageFrame(const FeatureFrame &features, Timestamp timestamp);
   void handleExtrinsicInitialization();
   void processInitialization(Timestamp timestamp);
@@ -139,7 +141,8 @@ class Estimator {
   std::unordered_map<long, double *> createAddrShift(bool is_old);
 
   void updateCameraPose(int index);
-  void collectPointCloudAll(Timestamp timestamp);
+  void collectPointCloudAll(Timestamp timestamp,
+                            const VisualQuality &quality = VisualQuality{});
   void printStatistics(Timestamp timestamp);
   template <typename Container>
   void clearBuffer(Container &container) {

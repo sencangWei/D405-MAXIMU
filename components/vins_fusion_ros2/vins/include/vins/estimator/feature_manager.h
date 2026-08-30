@@ -26,7 +26,8 @@ using namespace Eigen;
 
 class FeaturePerFrame {
  public:
-  FeaturePerFrame(const Eigen::Matrix<double, 7, 1> &_point, double td) {
+  FeaturePerFrame(const Eigen::Matrix<double, 7, 1> &_point, double td,
+                  double quality_weight = 1.0) {
     point.x() = _point(0);
     point.y() = _point(1);
     point.z() = _point(2);
@@ -35,6 +36,7 @@ class FeaturePerFrame {
     velocity.x() = _point(5);
     velocity.y() = _point(6);
     cur_td = td;
+    this->quality_weight = quality_weight;
     is_stereo = false;
   }
   void rightObservation(const Eigen::Matrix<double, 7, 1> &_point) {
@@ -52,6 +54,7 @@ class FeaturePerFrame {
   Vector2d uv, uvRight;
   Vector2d velocity, velocityRight;
   bool is_stereo;
+  double quality_weight = 1.0;
 };
 
 class FeaturePerId {
@@ -83,7 +86,7 @@ class FeatureManager {
   bool addFeatureCheckParallax(
       int frame_count,
       const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image,
-      double td);
+      double td, const VisualQuality &quality = VisualQuality{});
   vector<pair<Vector3d, Vector3d>> getCorresponding(int frame_count_l,
                                                     int frame_count_r);
   void setDepth(const VectorXd &x);
