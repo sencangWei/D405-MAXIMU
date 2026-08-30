@@ -155,6 +155,10 @@ class Estimator {
   std::mutex processingMutex;
   std::mutex featureBufferMutex;
   std::condition_variable featureCondition;
+  // Keep the frontend from outrunning the backend indefinitely.  A bounded
+  // queue preserves frame order while making replay slow down instead of
+  // producing arbitrarily stale poses and exhausting memory.
+  std::condition_variable featureSpaceCondition;
   std::mutex propagateMutex;
   std::mutex imu_mutex;
   std::condition_variable imuCondition;
@@ -185,6 +189,7 @@ class Estimator {
   int inputImageCount = 0;
   std::atomic<uint64_t> enqueuedImageCount{0};
   std::atomic<uint64_t> processedImageCount{0};
+  std::atomic<uint64_t> featureBackpressureWaits{0};
   int frameCount = 0;
   int backCount = 0;
   int frontCount = 0;

@@ -11,7 +11,11 @@
 #include <vins/estimator/estimator.h>
 #include <vins/estimator/stationary_motion_gate.h>
 
+#include <chrono>
+
 namespace {
+constexpr size_t kMaxFeatureBufferDepth = 60;
+
 struct ZeroVelocityFactor {
   explicit ZeroVelocityFactor(double velocity_sigma)
       : inv_velocity_sigma(1.0 / velocity_sigma) {}
@@ -35,6 +39,7 @@ Estimator::~Estimator() {
     isRunning.store(false);
     imuCondition.notify_all();
     featureCondition.notify_all();
+    featureSpaceCondition.notify_all();
     if (processThread.joinable()) {
       processThread.join();
     }
@@ -50,6 +55,7 @@ void Estimator::resetState() {
     std::lock_guard<std::mutex> feature_lock(featureBufferMutex);
     clearBuffer(featureBuffer);
   }
+  featureSpaceCondition.notify_all();
 
   std::lock_guard<std::mutex> lock(processingMutex);
   previousTimestamp = -1;
@@ -58,6 +64,7 @@ void Estimator::resetState() {
   inputImageCount = 0;
   enqueuedImageCount.store(0);
   processedImageCount.store(0);
+  featureBackpressureWaits.store(0);
   isFirstPoseInitialized = false;
   stationaryFrameCount = 0;
   movingFrameCount = 0;
@@ -172,9 +179,27 @@ void Estimator::inputImage(const ImageData &image) {
   const double tracker_ms = featureTrackerTime.toc();
 
   {
-    std::lock_guard<std::mutex> lock(featureBufferMutex);
+    std::unique_lock<std::mutex> lock(featureBufferMutex);
+    const auto wait_started = std::chrono::steady_clock::now();
+    featureSpaceCondition.wait(lock, [this] {
+      return featureBuffer.size() < kMaxFeatureBufferDepth ||
+             !isRunning.load();
+    });
+    if (!isRunning.load()) return;
     featureBuffer.push(make_pair(image.timestamp, featureFrame));
     enqueuedImageCount.fetch_add(1);
+    const auto waited_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::steady_clock::now() - wait_started)
+                               .count();
+    if (waited_ms > 0) {
+      featureBackpressureWaits.fetch_add(1);
+      if (featureBackpressureWaits.load() % 30 == 0) {
+        VINS_WARN << "[PERF-BACKPRESSURE] frontend waited " << waited_ms
+                  << " ms for backend; waits="
+                  << featureBackpressureWaits.load()
+                  << " queue=" << featureBuffer.size();
+      }
+    }
   }
   featureCondition.notify_one();
 
@@ -206,7 +231,12 @@ void Estimator::inputIMU(const IMUData &imu) {
 void Estimator::inputFeature(double timestamp,
                              const FeatureFrame &featureFrame) {
   {
-    std::lock_guard<std::mutex> lock(featureBufferMutex);
+    std::unique_lock<std::mutex> lock(featureBufferMutex);
+    featureSpaceCondition.wait(lock, [this] {
+      return featureBuffer.size() < kMaxFeatureBufferDepth ||
+             !isRunning.load();
+    });
+    if (!isRunning.load()) return;
     featureBuffer.push(make_pair(timestamp, featureFrame));
   }
   featureCondition.notify_one();
@@ -277,6 +307,7 @@ void Estimator::processMeasurements() {
       featureBuffer.pop();
       queue_depth = featureBuffer.size();
       lock.unlock();
+      featureSpaceCondition.notify_one();
     }
     currentTimestamp = feature.first + options->time_delay;
     if (options->hasImu()) {

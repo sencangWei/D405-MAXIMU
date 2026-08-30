@@ -62,6 +62,7 @@ class VinsEstimator : public rclcpp::Node {
   };
   std::mutex stereo_frame_buffer_mutex_;
   std::deque<StereoFramePair> stereo_frame_buffer_;
+  std::atomic<uint64_t> stereo_frame_buffer_pruned_{0};
   rclcpp::CallbackGroup::SharedPtr imu_callback_group_;
   rclcpp::CallbackGroup::SharedPtr image_callback_group_;
   rclcpp::CallbackGroup::SharedPtr feature_callback_group_;

@@ -1,6 +1,11 @@
 #include <cv_bridge/cv_bridge.h>
 #include <vins_fusion_ros2/vins_estimator.h>
 
+namespace {
+constexpr size_t kStereoFrameBufferCapacity = 240;  // 8 s at 30 fps
+constexpr double kStereoFrameRetentionS = 8.0;
+}  // namespace
+
 VinsEstimator::VinsEstimator() : rclcpp::Node("vins_estimator") {
   options = std::make_shared<VINSOptions>();
   estimator_ = std::make_shared<Estimator>();
@@ -156,8 +161,12 @@ void VinsEstimator::stereoCallback(
   {
     std::lock_guard<std::mutex> frame_lock(stereo_frame_buffer_mutex_);
     stereo_frame_buffer_.push_back({image.timestamp, img0, img1});
-    while (stereo_frame_buffer_.size() > 120) {
+    while (stereo_frame_buffer_.size() > kStereoFrameBufferCapacity ||
+           (!stereo_frame_buffer_.empty() &&
+            image.timestamp - stereo_frame_buffer_.front().timestamp >
+                kStereoFrameRetentionS)) {
       stereo_frame_buffer_.pop_front();
+      stereo_frame_buffer_pruned_.fetch_add(1);
     }
   }
   estimator_->inputImage(image);
@@ -306,10 +315,16 @@ bool VinsEstimator::buildLoopStereoKeyFrame(
   }
 
   if (!found) {
+    size_t buffer_depth = 0;
+    uint64_t pruned = stereo_frame_buffer_pruned_.load();
+    {
+      std::lock_guard<std::mutex> lock(stereo_frame_buffer_mutex_);
+      buffer_depth = stereo_frame_buffer_.size();
+    }
     RCLCPP_WARN(this->get_logger(),
                 "[LOOP_STEREO_KEYFRAME_DROP] reason=no_timestamp_match "
-                "timestamp=%.9f",
-                timestamp);
+                "timestamp=%.9f buffer=%zu pruned=%lu",
+                timestamp, buffer_depth, pruned);
     return false;
   }
 
