@@ -15,6 +15,7 @@
 
 namespace {
 constexpr size_t kMaxFeatureBufferDepth = 60;
+constexpr double kPi = 3.14159265358979323846;
 
 struct ZeroVelocityFactor {
   explicit ZeroVelocityFactor(double velocity_sigma)
@@ -1318,29 +1319,50 @@ void Estimator::updateEstimates() {
 }
 
 bool Estimator::failureDetection() {
-  return false;
-  if (featureManager.last_track_num < 2) {
-  }
-  if (estimator_state[WINDOW_SIZE].accel_bias.norm() > 2.5) {
+  const StateData &current = estimator_state[WINDOW_SIZE];
+  const auto finite = [](const StateData &state) {
+    return state.position.allFinite() && state.velocity.allFinite() &&
+           state.rotation.allFinite() && state.accel_bias.allFinite() &&
+           state.gyro_bias.allFinite();
+  };
+
+  // A failed solve must never be allowed to poison the next marginalization
+  // window.  This is deliberately a finite-value guard, not a planar-motion
+  // prior: real 3D lifts and turns remain valid trajectories.
+  if (!finite(current)) {
+    VINS_ERROR << "[FAILURE-DETECTION] non-finite optimized state; resetting";
     return true;
   }
-  if (estimator_state[WINDOW_SIZE].gyro_bias.norm() > 1.0) {
+  if (current.accel_bias.norm() > 2.5 || current.gyro_bias.norm() > 1.0) {
+    VINS_ERROR << "[FAILURE-DETECTION] IMU bias exploded; resetting accel="
+               << current.accel_bias.norm()
+               << " gyro=" << current.gyro_bias.norm();
     return true;
   }
-  Vector3d tmp_P = estimator_state[WINDOW_SIZE].position;
-  if ((tmp_P - last_state.position).norm() > 5) {
-    // return true;
-  }
-  if (abs(tmp_P.z() - last_state.position.z()) > 1) {
-    // return true;
-  }
-  Matrix3d tmp_R = estimator_state[WINDOW_SIZE].rotation;
-  Matrix3d delta_R = tmp_R.transpose() * last_state.rotation;
-  Quaterniond delta_Q(delta_R);
-  double delta_angle;
-  delta_angle = acos(delta_Q.w()) * 2.0 / 3.14 * 180.0;
-  if (delta_angle > 50) {
-    // return true;
+
+  // Keep the historical catastrophic-jump guards, but only at scales that
+  // cannot be produced by the 30 fps hand-held motion envelope.  Ordinary
+  // fast rotation, vertical motion, and world-Z drift are not rejected.
+  // `last_state` is value-initialized to identity/zero before the first
+  // nonlinear update.  Comparing that sentinel against the first initialized
+  // pose can look like a huge rotation jump (especially when the rig starts
+  // with a non-zero yaw).  Only compare consecutive timestamped estimates.
+  if (last_state.timestamp > 0.0 && finite(last_state)) {
+    const Vector3d delta_p = current.position - last_state.position;
+    if (delta_p.norm() > 5.0 || std::abs(delta_p.z()) > 1.0) {
+      VINS_ERROR << "[FAILURE-DETECTION] catastrophic position jump: "
+                 << delta_p.norm() << " m; resetting";
+      return true;
+    }
+    const Matrix3d delta_R = current.rotation.transpose() * last_state.rotation;
+    Quaterniond delta_q(delta_R);
+    const double angle_rad =
+        2.0 * std::acos(std::min(1.0, std::abs(delta_q.normalized().w())));
+    if (angle_rad > 50.0 * kPi / 180.0) {
+      VINS_ERROR << "[FAILURE-DETECTION] catastrophic rotation jump: "
+                 << angle_rad * 180.0 / kPi << " deg; resetting";
+      return true;
+    }
   }
   return false;
 }

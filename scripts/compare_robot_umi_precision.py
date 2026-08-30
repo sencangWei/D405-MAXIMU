@@ -130,6 +130,57 @@ def load_transform(path: Path, key: str) -> np.ndarray:
     return _validate_transform(np.asarray(values, dtype=float).reshape(4, 4), path, key)
 
 
+def load_gripper_tcp_offset(path: Path) -> np.ndarray:
+    """Load a measured gripper-end -> physical TCP offset.
+
+    The explicit ``measured`` flag is required so the zero-valued example
+    cannot accidentally be used as a claimed left-jaw calibration.
+    """
+    path = path.resolve()
+    if path.suffix.lower() != ".json":
+        raise ValueError(f"左夹爪TCP偏移必须使用JSON文件: {path}")
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if value.get("schema") != "umi_gripper_tcp_offset_v1":
+        raise ValueError(f"{path}不是 umi_gripper_tcp_offset_v1 文件")
+    if value.get("measured") is not True:
+        raise ValueError(f"{path}尚未标记 measured: true；请先实测夹爪TCP偏移")
+    return load_transform(path, "T_gripper_tcp")
+
+
+def load_gripper_tcp_frame(path: Path) -> str:
+    """Return the physical TCP frame label stored alongside its transform."""
+    value = json.loads(path.resolve().read_text(encoding="utf-8"))
+    frame = value.get("frame_child")
+    if not isinstance(frame, str) or not frame.strip():
+        raise ValueError(f"{path}缺少有效的 frame_child")
+    return frame.strip()
+
+
+def load_robot_clock_offset_ms(path: Path) -> tuple[float, str]:
+    """Load a fixed robot-query clock offset from a validated JSON artifact.
+
+    The offset is an evaluator-level mapping ``robot(umi_t + offset)``.  It
+    must not be confused with the camera--IMU ``td`` baked into VINS.
+    """
+    path = path.resolve()
+    if path.suffix.lower() != ".json":
+        raise ValueError(f"设备时间偏移必须使用JSON文件: {path}")
+    value = json.loads(path.read_text(encoding="utf-8"))
+    schema = value.get("schema")
+    if schema not in {
+        "robot_umi_clock_offset_report_v1",
+        "robot_umi_clock_offset_calibration_v1",
+    }:
+        raise ValueError(f"{path}不是受支持的设备时间偏移文件")
+    try:
+        offset_ms = float(value["robot_query_offset_ms"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(f"{path}缺少有效的 robot_query_offset_ms") from exc
+    if not np.isfinite(offset_ms) or abs(offset_ms) > 5000.0:
+        raise ValueError(f"{path}的时间偏移超出合理范围: {offset_ms} ms")
+    return offset_ms, str(path)
+
+
 def _pose_matrices(positions: np.ndarray, rotations: Rotation) -> np.ndarray:
     positions = np.asarray(positions, dtype=float)
     matrices = np.tile(np.eye(4), (len(positions), 1, 1))
@@ -162,6 +213,27 @@ def transform_body_poses_to_tcp(
         Rotation.from_quat(np.asarray(quaternions_xyzw, dtype=float)),
     )
     return body @ body_to_camera @ np.linalg.inv(gripper_camera)
+
+
+def apply_gripper_tcp_offset(
+    world_gripper: np.ndarray,
+    gripper_tcp: np.ndarray,
+) -> np.ndarray:
+    """Apply a fixed TCP frame expressed from the FK ``gripper_end`` frame.
+
+    ``world_gripper`` maps coordinates in the robot FK frame (the URDF
+    ``gripper_end`` origin) into the world frame.  ``gripper_tcp`` maps the
+    desired physical TCP coordinates into that FK frame.  Keeping this as a
+    separate composition makes the measured left-jaw lever arm explicit and
+    prevents silently treating the hand-eye origin as the jaw TCP.
+    """
+    world_gripper = np.asarray(world_gripper, dtype=float)
+    if world_gripper.ndim != 3 or world_gripper.shape[1:] != (4, 4):
+        raise ValueError("world_gripper must have shape (N, 4, 4)")
+    gripper_tcp = _validate_transform(
+        gripper_tcp, Path("gripper_tcp"), "T_gripper_tcp"
+    )
+    return world_gripper @ gripper_tcp
 
 
 def load_robot(path: Path):
@@ -318,13 +390,18 @@ def _relative_metrics(
     all_robot_rotations: Rotation,
     max_gap_s: float,
     aligned_rotation: np.ndarray,
+    robot_time_offset_s: float = 0.0,
 ) -> dict:
     result: dict[str, object] = {}
     for horizon in DEFAULT_HORIZONS_S:
         endpoint_t = times + horizon
         u2, u2_valid = _interpolate_at(endpoint_t, all_umi_times, all_umi_positions, max_gap_s)
-        r2, r2_valid = _interpolate_at(endpoint_t, robot_times, all_robot_positions, max_gap_s)
-        q2, q2_valid = interpolate_rotation(endpoint_t, robot_times, all_robot_rotations, max_gap_s)
+        # ``times`` is expressed in the UMI clock.  The robot endpoint must
+        # use the same fixed query offset as the paired start pose; omitting
+        # it here silently biases every relative-motion metric.
+        robot_endpoint_t = endpoint_t + robot_time_offset_s
+        r2, r2_valid = _interpolate_at(robot_endpoint_t, robot_times, all_robot_positions, max_gap_s)
+        q2, q2_valid = interpolate_rotation(robot_endpoint_t, robot_times, all_robot_rotations, max_gap_s)
         q_u2, q_u2_valid = interpolate_rotation(endpoint_t, all_umi_times, all_umi_rotations, max_gap_s)
         valid = u2_valid & r2_valid & q2_valid & q_u2_valid
         if not np.any(valid):
@@ -484,16 +561,18 @@ def _plot_comparison(
     title: str,
     ape_rmse_mm: float,
     handeye_umi_positions: np.ndarray | None = None,
+    mapped_robot_positions: np.ndarray | None = None,
     handeye_ape_rmse_mm: float | None = None,
 ) -> str:
-    """Save the customer-facing 3D plus XY/XZ/YZ comparison figure."""
+    """Save one or two static 3D comparisons (no 2D projections)."""
     # The host carries pip Matplotlib 3.10 with NumPy 2 and an Ubuntu
     # Matplotlib 3.5 built against NumPy 1.x.  Plot in a clean system-python
     # subprocess so the report does not depend on whichever package wins
     # ``sys.path`` ordering in the caller.
     data_path = path.with_suffix(".plot.npz")
     payload = {"robot": robot_positions, "umi": umi_positions}
-    if handeye_umi_positions is not None:
+    if handeye_umi_positions is not None and mapped_robot_positions is not None:
+        payload["robot_mapped"] = mapped_robot_positions
         payload["umi_tcp"] = handeye_umi_positions
     np.savez(data_path, **payload)
     plot_code = r'''
@@ -502,37 +581,39 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"] = ["Noto Sans CJK SC", "AR PL UMing CN", "DejaVu Sans"]
+plt.rcParams["axes.unicode_minus"] = False
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
 data = np.load(sys.argv[1])
 robot = data["robot"]
 umi = data["umi"]
-umi_tcp = data["umi_tcp"] if "umi_tcp" in data.files else None
+robot_mapped = data["robot_mapped"] if "robot_mapped" in data.files else robot
+umi_tcp = data["umi_tcp"] if "umi_tcp" in data.files else umi
 output = sys.argv[2]
 title = sys.argv[3]
 rmse = float(sys.argv[4])
 tcp_rmse = None if sys.argv[5] == "none" else float(sys.argv[5])
-fig = plt.figure(figsize=(15, 10))
-ax = fig.add_subplot(221, projection="3d")
-ax.plot(robot[:, 0], robot[:, 1], robot[:, 2], "k-", linewidth=1.5, label="机械臂 TCP (FK)")
-ax.plot(umi[:, 0], umi[:, 1], umi[:, 2], color="#1479d1", linewidth=1.1, label="UMI（SE(3)对齐）")
-if umi_tcp is not None:
-    ax.plot(umi_tcp[:, 0], umi_tcp[:, 1], umi_tcp[:, 2], color="#e67e22", linewidth=1.1, label="UMI→TCP（手眼映射）")
-ax.scatter(*robot[0], c="green", s=35, label="起点")
-ax.scatter(*robot[-1], c="red", marker="x", s=45, label="终点")
-ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)"); ax.set_zlabel("Z (m)")
-ax.set_title("三维叠加"); ax.legend(fontsize=8)
-for index, (axis_i, axis_j, panel_title) in enumerate(((0, 1, "XY 俯视"), (0, 2, "XZ 侧视"), (1, 2, "YZ 正视")), start=2):
-    panel = fig.add_subplot(2, 2, index)
-    panel.plot(robot[:, axis_i], robot[:, axis_j], "k-", linewidth=1.2, label="机械臂 TCP")
-    panel.plot(umi[:, axis_i], umi[:, axis_j], color="#1479d1", linewidth=1.0, label="UMI")
-    if umi_tcp is not None:
-        panel.plot(umi_tcp[:, axis_i], umi_tcp[:, axis_j], color="#e67e22", linewidth=1.0, label="UMI→TCP（手眼）")
-    panel.scatter(robot[0, axis_i], robot[0, axis_j], c="green", s=22)
-    panel.scatter(robot[-1, axis_i], robot[-1, axis_j], c="red", marker="x", s=32)
-    panel.set_xlabel("XYZ"[axis_i] + " (m)"); panel.set_ylabel("XYZ"[axis_j] + " (m)")
-    panel.set_title(panel_title); panel.grid(True, alpha=0.3)
-    if index == 2: panel.legend(fontsize=8)
+has_mapped = "robot_mapped" in data.files and "umi_tcp" in data.files
+fig, axes = plt.subplots(
+    1, 2 if has_mapped else 1, subplot_kw={"projection": "3d"},
+    figsize=(16 if has_mapped else 8, 7), squeeze=False,
+)
+flat_axes = axes.ravel()
+panels = [
+    (flat_axes[0], robot, umi, "base_link中未映射：机械臂 gripper_end vs UMI（SE(3)形状对齐）", "UMI（形状对齐）", "#1479d1"),
+]
+if has_mapped:
+    panels.append(
+        (flat_axes[1], robot_mapped, umi_tcp, "已映射：机械臂 UMI右爪尖 TCP vs UMI→TCP", "UMI→TCP（手眼映射）", "#e67e22")
+    )
+for panel, robot_line, umi_line, panel_title, umi_label, umi_color in panels:
+    panel.plot(robot_line[:, 0], robot_line[:, 1], robot_line[:, 2], "k-", linewidth=1.5, label="机械臂 TCP (FK)")
+    panel.plot(umi_line[:, 0], umi_line[:, 1], umi_line[:, 2], color=umi_color, linewidth=1.1, label=umi_label)
+    panel.scatter(*robot_line[0], c="green", s=35, label="起点")
+    panel.scatter(*robot_line[-1], c="red", marker="x", s=45, label="终点")
+    panel.set_xlabel("X (m)"); panel.set_ylabel("Y (m)"); panel.set_zlabel("Z (m)")
+    panel.set_title(panel_title); panel.legend(fontsize=8)
 suffix = f" | 手眼TCP RMS {tcp_rmse:.3f} mm" if tcp_rmse is not None else ""
 fig.suptitle(f"{title}\n有效配对 {len(robot)} 点 | Kabsch APE RMS {rmse:.3f} mm{suffix}")
 fig.tight_layout(); fig.savefig(output, dpi=180); plt.close(fig)
@@ -557,6 +638,47 @@ fig.tight_layout(); fig.savefig(output, dpi=180); plt.close(fig)
     return "PASS"
 
 
+def _write_interactive_comparison(
+    path: Path,
+    robot_positions: np.ndarray,
+    umi_positions: np.ndarray,
+    title: str,
+    handeye_umi_positions: np.ndarray | None = None,
+    mapped_robot_positions: np.ndarray | None = None,
+) -> str:
+    """Write a dependency-free HTML viewer with mouse-rotatable 3D scenes."""
+    scenes = [
+        {
+            "title": "base_link中未映射：机械臂 gripper_end vs UMI（SE(3)形状对齐）",
+            "robot": np.asarray(robot_positions, dtype=float).tolist(),
+            "umi": np.asarray(umi_positions, dtype=float).tolist(),
+            "color": "#1479d1",
+        },
+    ]
+    if handeye_umi_positions is not None and mapped_robot_positions is not None:
+        scenes.append(
+            {
+                "title": "已映射：机械臂 UMI右爪尖 TCP vs UMI→TCP",
+                "robot": np.asarray(mapped_robot_positions, dtype=float).tolist(),
+                "umi": np.asarray(handeye_umi_positions, dtype=float).tolist(),
+                "color": "#e67e22",
+            }
+        )
+    html = r'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>__TITLE__</title>
+<style>body{margin:0;background:#17191d;color:#e8eaed;font:14px system-ui,sans-serif}header{padding:14px 20px 8px}h1{font-size:20px;margin:0 0 6px}p{margin:0;color:#b9c0c8}.toolbar{padding:8px 20px}.grid{display:grid;grid-template-columns:repeat(2,minmax(360px,1fr));gap:12px;padding:0 12px 16px}.panel{background:#202329;border:1px solid #3b424b;border-radius:6px;overflow:hidden}.panel h2{font-size:15px;font-weight:500;padding:10px 12px;margin:0}canvas{display:block;width:100%;height:620px;background:#101216;cursor:grab}canvas:active{cursor:grabbing}.legend{padding:8px 12px 10px;color:#c8cdd3}.dot{display:inline-block;width:22px;border-top:3px solid currentColor;vertical-align:middle;margin:0 5px 0 14px}@media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:520px}}</style></head>
+<body><header><h1>__TITLE__ · 三维轨迹对比</h1><p>拖动鼠标旋转，滚轮缩放；绿色圆点为起点，红色叉为终点。</p></header>
+<div class="toolbar"><button id="reset">重置视角</button></div><main class="grid">
+<section class="panel"><h2 id="h0"></h2><canvas id="c0"></canvas><div class="legend"><span style="color:#e8eaed"><i class="dot"></i>机械臂 TCP</span><span style="color:#1479d1"><i class="dot"></i>UMI（形状对齐）</span></div></section>
+<section class="panel" id="p1"><h2 id="h1"></h2><canvas id="c1"></canvas><div class="legend"><span style="color:#e8eaed"><i class="dot"></i>机械臂 UMI右爪尖 TCP</span><span style="color:#e67e22"><i class="dot"></i>UMI→TCP（手眼映射）</span></div></section></main>
+<script>const S=__SCENES__,V=[];function scene(canvas,d){const x=canvas.getContext('2d'),a=d.robot.concat(d.umi),lo=[0,1,2].map(k=>Math.min(...a.map(p=>p[k]))),hi=[0,1,2].map(k=>Math.max(...a.map(p=>p[k]))),c=lo.map((v,k)=>(v+hi[k])/2),r=Math.max(...hi.map((v,k)=>v-lo[k]),1e-6)*.55;let yaw=-.65,pitch=.42,zoom=1,drag=0,last=[0,0];function rot(p){let X=p[0]-c[0],Y=p[1]-c[1],Z=p[2]-c[2],cy=Math.cos(yaw),sy=Math.sin(yaw),x1=cy*X+sy*Z,z1=-sy*X+cy*Z,cp=Math.cos(pitch),sp=Math.sin(pitch);return[x1,cp*Y-sp*z1,sp*Y+cp*z1]}function proj(p,w,h){let q=rot(p),sc=Math.min(w,h)*.82*zoom/r,de=Math.max(.65,1+q[2]/r*.18);return[w/2+q[0]*sc/de,h/2-q[1]*sc/de]}function line(P,col,w,h){x.strokeStyle=col;x.lineWidth=1.8;x.beginPath();P.forEach((p,i)=>{let q=proj(p,w,h);i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1])});x.stroke()}function mark(p,col,cross,w,h){let q=proj(p,w,h);x.strokeStyle=x.fillStyle=col;x.lineWidth=3;if(cross){x.beginPath();x.moveTo(q[0]-7,q[1]-7);x.lineTo(q[0]+7,q[1]+7);x.moveTo(q[0]+7,q[1]-7);x.lineTo(q[0]-7,q[1]+7);x.stroke()}else{x.beginPath();x.arc(q[0],q[1],7,0,7);x.fill()}}function draw(){let w=canvas.clientWidth,h=canvas.clientHeight;x.clearRect(0,0,w,h);x.strokeStyle='#343a43';x.lineWidth=1;for(let i=-4;i<=4;i++){let p=proj([c[0]+r*i/4,c[1]-r,c[2]],w,h),q=proj([c[0]+r*i/4,c[1]+r,c[2]],w,h);x.beginPath();x.moveTo(p[0],p[1]);x.lineTo(q[0],q[1]);x.stroke()}line(d.robot,'#e8eaed',w,h);line(d.umi,d.color,w,h);mark(d.robot[0],'#16a34a',0,w,h);mark(d.robot[d.robot.length-1],'#ef4444',1,w,h)}function resize(){let z=devicePixelRatio||1;canvas.width=canvas.clientWidth*z;canvas.height=canvas.clientHeight*z;x.setTransform(z,0,0,z,0,0);draw()}canvas.onpointerdown=e=>{drag=1;last=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId)};canvas.onpointermove=e=>{if(!drag)return;let dx=e.clientX-last[0],dy=e.clientY-last[1];last=[e.clientX,e.clientY];yaw+=dx*.01;pitch=Math.max(-1.45,Math.min(1.45,pitch+dy*.01));draw()};canvas.onpointerup=e=>{drag=0;canvas.releasePointerCapture(e.pointerId)};canvas.onwheel=e=>{e.preventDefault();zoom=Math.max(.25,Math.min(5,zoom*Math.exp(-e.deltaY*.001)));draw()};addEventListener('resize',resize);resize();return()=>{yaw=-.65;pitch=.42;zoom=1;draw()}}document.getElementById('p1').style.display=S.length>1?'block':'none';S.forEach((d,i)=>{document.getElementById('h'+i).textContent=d.title;V.push(scene(document.getElementById('c'+i),d))});document.getElementById('reset').onclick=()=>V.forEach(f=>f());</script></body></html>'''.replace('__TITLE__', title).replace('__SCENES__', json.dumps(scenes, ensure_ascii=False, separators=(',', ':')))
+    try:
+        path.write_text(html, encoding="utf-8")
+    except OSError as exc:
+        return f"UNAVAILABLE: {exc}"
+    return "PASS"
+
+
 def resolve_umi_path(slam_dir: Path, umi_path: Path | None) -> tuple[Path, str]:
     if umi_path is not None:
         return umi_path.resolve(), "explicit"
@@ -575,29 +697,75 @@ def process(
     output_dir: Path,
     umi_path: Path | None = None,
     clock_offset_ms: float = 0.0,
+    clock_offset_file: Path | None = None,
     max_pair_error_ms: float = DEFAULT_MAX_PAIR_ERROR_MS,
     max_bracket_gap_ms: float = DEFAULT_MAX_BRACKET_GAP_MS,
     handeye_path: Path | None = None,
     body_to_camera_path: Path | None = None,
+    gripper_tcp_offset_path: Path | None = None,
 ) -> dict:
     if output_dir.exists() and any(output_dir.iterdir()):
         raise FileExistsError(f"output directory is not empty: {output_dir}")
     if max_pair_error_ms <= 0.0 or max_bracket_gap_ms <= 0.0:
         raise ValueError("time gates must be positive")
+    if clock_offset_file is not None:
+        if abs(clock_offset_ms) > 1.0e-12:
+            raise ValueError("--clock-offset-ms 与 --clock-offset-file 不能同时提供")
+        clock_offset_ms, clock_offset_source = load_robot_clock_offset_ms(
+            clock_offset_file
+        )
+    else:
+        clock_offset_source = "cli"
     source_umi, source_kind = resolve_umi_path(slam_dir.resolve(), umi_path)
     umi_t, umi_p, umi_q = load_umi(source_umi)
+
+    # Resolve all fixed frame transforms before building the robot reference.
+    # When a physical TCP offset is requested, both trajectories must describe
+    # the same point.  Applying it only to the UMI side changes the apparent
+    # turn radius and makes rotation-heavy runs look much worse.
+    handeye_path = handeye_path.resolve() if handeye_path is not None else None
+    body_path = (body_to_camera_path or DEFAULT_BODY_TO_CAMERA_PATH).resolve()
+    gripper_camera = None
+    body_to_camera = None
+    tcp_offset = None
+    tcp_frame = "gripper_end"
+    if handeye_path is not None:
+        if not handeye_path.is_file():
+            raise FileNotFoundError(f"手眼矩阵不存在: {handeye_path}")
+        if not body_path.is_file():
+            raise FileNotFoundError(f"VINS body_T_cam0配置不存在: {body_path}")
+        gripper_camera = load_transform(handeye_path, "T_gripper_camera")
+        body_to_camera = load_transform(body_path, "body_T_cam0")
+        if gripper_tcp_offset_path is not None:
+            gripper_tcp_offset_path = gripper_tcp_offset_path.resolve()
+            tcp_offset = load_gripper_tcp_offset(gripper_tcp_offset_path)
+            tcp_frame = load_gripper_tcp_frame(gripper_tcp_offset_path)
+    elif gripper_tcp_offset_path is not None:
+        raise ValueError("--gripper-tcp-offset 必须与 --handeye 一起提供")
+
     robot_t, robot_T, robot_joints = load_robot(robot_path.resolve())
+    raw_actual_T = robot_T["actual"]
     offset_s = clock_offset_ms / 1000.0
     query_t = umi_t + offset_s
     bracket_gap_s = max_bracket_gap_ms / 1000.0
-    actual_p = robot_T["actual"][:, :3, 3]
-    actual_q = Rotation.from_matrix(robot_T["actual"][:, :3, :3])
+    # Shape and relative-motion diagnostics stay on the URDF gripper_end
+    # origin.  A raw VINS body trajectory cannot be compared directly to a
+    # physical jaw TCP without first applying the hand-eye chain.
+    actual_p = raw_actual_T[:, :3, 3]
+    actual_q = Rotation.from_matrix(raw_actual_T[:, :3, :3])
     actual_interp, nearest_delta, valid = interpolate_vector(query_t, robot_t, actual_p, bracket_gap_s)
     _, actual_q_valid = interpolate_rotation(query_t, robot_t, actual_q, bracket_gap_s)
-    valid &= actual_q_valid & (nearest_delta <= max_pair_error_ms / 1000.0)
+    # The robot stream is sampled independently from the camera (both are
+    # nominally 30 Hz but their phases and rates are not identical).  Once the
+    # robot pose is linearly interpolated at the UMI timestamp, the distance to
+    # the nearest raw robot sample is sampling quantisation, not clock error.
+    # Gating on it drops roughly half of an otherwise valid 30 Hz overlap when
+    # a small rate mismatch accumulates. Keep it as a diagnostic only; the
+    # interpolation bracket and quaternion domain remain the validity gates.
+    valid &= actual_q_valid
     if valid.sum() < 20:
         raise ValueError(
-            f"时间配对有效样本不足: {valid.sum()} (gate={max_pair_error_ms:.3f}ms)"
+            f"时间配对有效样本不足: {valid.sum()} (interpolation bracket={max_bracket_gap_ms:.3f}ms)"
         )
     paired_t = umi_t[valid]
     paired_umi_p = umi_p[valid]
@@ -624,11 +792,15 @@ def process(
         actual_q,
         bracket_gap_s,
         align_R,
+        offset_s,
     )
+    # Keep actuator tracking in the URDF gripper_end frame.  It diagnoses
+    # follower control independently and must not be mixed with TCP mapping.
     tracking = _tracking_report(robot_t, robot_T, robot_joints)
 
     handeye_metric: dict[str, object]
     mapped_paired_umi_p: np.ndarray | None = None
+    paired_tcp_p: np.ndarray | None = None
     handeye_evo: dict[str, object] | None = None
     if handeye_path is None:
         handeye_metric = {
@@ -636,19 +808,39 @@ def process(
             "reason": "仅做Kabsch形状诊断；显式提供--handeye后才计算UMI传感器点到TCP的映射。",
         }
     else:
-        handeye_path = handeye_path.resolve()
-        body_path = (body_to_camera_path or DEFAULT_BODY_TO_CAMERA_PATH).resolve()
-        if not handeye_path.is_file():
-            raise FileNotFoundError(f"手眼矩阵不存在: {handeye_path}")
-        if not body_path.is_file():
-            raise FileNotFoundError(f"VINS body_T_cam0配置不存在: {body_path}")
-        gripper_camera = load_transform(handeye_path, "T_gripper_camera")
-        body_to_camera = load_transform(body_path, "body_T_cam0")
-        mapped_all = transform_body_poses_to_tcp(
+        assert gripper_camera is not None
+        assert body_to_camera is not None
+        mapped_gripper_all = transform_body_poses_to_tcp(
             umi_p, umi_q, body_to_camera, gripper_camera
         )
-        mapped_paired = mapped_all[valid]
-        paired_robot_T = _pose_matrices(paired_robot_p, paired_robot_q)
+        tcp_reference_T = (
+            apply_gripper_tcp_offset(raw_actual_T, tcp_offset)
+            if tcp_offset is not None
+            else raw_actual_T
+        )
+        tcp_reference_p = tcp_reference_T[:, :3, 3]
+        tcp_reference_q = Rotation.from_matrix(tcp_reference_T[:, :3, :3])
+        tcp_reference_interp, _, tcp_reference_valid = interpolate_vector(
+            query_t, robot_t, tcp_reference_p, bracket_gap_s
+        )
+        _, tcp_reference_q_valid = interpolate_rotation(
+            query_t, robot_t, tcp_reference_q, bracket_gap_s
+        )
+        handeye_valid = valid & tcp_reference_valid & tcp_reference_q_valid
+        if handeye_valid.sum() < 20:
+            raise ValueError(
+                f"TCP时间配对有效样本不足: {handeye_valid.sum()}"
+            )
+        if tcp_offset is not None:
+            mapped_all = apply_gripper_tcp_offset(mapped_gripper_all, tcp_offset)
+        else:
+            mapped_all = mapped_gripper_all
+        mapped_paired = mapped_all[handeye_valid]
+        paired_tcp_p = tcp_reference_interp[handeye_valid]
+        paired_tcp_q = Rotation.from_quat(
+            interpolate_rotation(query_t[handeye_valid], robot_t, tcp_reference_q, bracket_gap_s)[0]
+        )
+        paired_robot_T = _pose_matrices(paired_tcp_p, paired_tcp_q)
         # VINS world and robot base are independent gauges.  Use exactly one
         # first-valid-pose anchor; never fit Kabsch over the trajectory and
         # never use the operator-provided endpoint as a constraint.
@@ -657,21 +849,37 @@ def process(
         mapped_paired_umi_p = mapped_anchored[:, :3, 3]
         mapped_umi_q = Rotation.from_matrix(mapped_anchored[:, :3, :3])
         tcp_position_error = np.linalg.norm(
-            mapped_paired_umi_p - paired_robot_p, axis=1
+            mapped_paired_umi_p - paired_tcp_p, axis=1
         )
         tcp_rotation_error = np.degrees(
             (
-                paired_robot_q.inv() * mapped_umi_q
+                paired_tcp_q.inv() * mapped_umi_q
             ).magnitude()
         )
         handeye_metric = {
             "status": "COMPUTED_DIAGNOSTIC",
-            "mapping": "T_world_tcp = T_world_body @ body_T_cam0 @ inv(T_gripper_camera)",
+            "mapping": (
+                "T_world_tcp = T_world_body @ body_T_cam0 @ "
+                "inv(T_gripper_camera) @ T_gripper_tcp"
+                if tcp_offset is not None
+                else "T_world_gripper_end = T_world_body @ body_T_cam0 @ inv(T_gripper_camera)"
+            ),
             "handeye_source": str(handeye_path),
             "body_to_camera_source": str(body_path),
+            "tcp_frame": tcp_frame,
+            "tcp_offset_source": str(gripper_tcp_offset_path.resolve())
+            if gripper_tcp_offset_path is not None
+            else None,
+            "tcp_offset_T_gripper_tcp": tcp_offset.tolist() if tcp_offset is not None else None,
             "anchor_policy": "single_first_valid_pose; no_endpoint_constraint; no_trajectory_Kabsch",
             "anchor_base_from_world": base_from_world.tolist(),
             "lever_arm_camera_to_gripper_m": np.linalg.inv(gripper_camera)[:3, 3].tolist(),
+            "robot_reference_transform": (
+                "T_world_tcp = T_world_gripper_end @ T_gripper_tcp"
+                if tcp_offset is not None
+                else "T_world_gripper_end"
+            ),
+            "robot_reference_frame": tcp_frame,
             "translation_error_mm": _summary(tcp_position_error, 1000.0),
             "rotation_error_deg": _summary(tcp_rotation_error),
             "handeye_solver_residual_note": "该指标仍包含手眼矩阵自身残差；当前矩阵的求解残差需在手眼JSON中单独查看。",
@@ -691,18 +899,25 @@ def process(
         "umi_source": str(source_umi),
         "umi_source_kind": source_kind,
         "robot_source": str(robot_path.resolve()),
+        "robot_fk_coordinate_frame": "base_link",
+        "robot_reference_frame": "gripper_end",
+        "robot_reference_transform": "T_base_link_gripper_end",
+        "absolute_tcp_reference_frame": tcp_frame if handeye_path is not None else None,
         "clock": {
             "robot_query_offset_ms": float(clock_offset_ms),
-            "offset_policy": "fixed_device_level_cli_value; no per-run optimization",
+            "offset_policy": "fixed_device_level_file_or_cli_value; no per-run optimization",
+            "offset_source": clock_offset_source,
             "max_association_error_ms": float(max_pair_error_ms),
             "max_interpolation_bracket_gap_ms": float(max_bracket_gap_ms),
-            "paired_time_definition": "robot timestamp queried at umi_t + robot_query_offset_ms",
+            "paired_time_definition": "robot pose linearly interpolated at umi_t + robot_query_offset_ms",
+            "sample_delta_gate_policy": "diagnostic_only_with_linear_interpolation; not a validity gate",
         },
         "sample_counts": {
             "umi_full_corrected": int(len(umi_t)),
             "robot": int(len(robot_t)),
             "paired_after_gate": int(valid.sum()),
             "association_coverage": float(valid.mean()),
+            "nearest_sample_over_gate": int(np.count_nonzero(valid & (nearest_delta > max_pair_error_ms / 1000.0))),
         },
         "time_overlap_s": float(overlap),
         "association_delta_ms": _summary(nearest_delta[valid], 1000.0),
@@ -753,15 +968,36 @@ def process(
         output_dir.name,
         report["shape_se3_kabsch"]["ape_translation_mm"]["rmse"],
         mapped_paired_umi_p,
+        paired_tcp_p,
         None
         if mapped_paired_umi_p is None
         else report["absolute_tcp_metric"]["translation_error_mm"]["rmse"],
+    )
+    interactive_plot_path = output_dir / "robot_vs_umi_two_3d.html"
+    interactive_plot_status = _write_interactive_comparison(
+        interactive_plot_path,
+        paired_robot_p,
+        aligned_umi_p,
+        output_dir.name,
+        mapped_paired_umi_p,
+        paired_tcp_p,
     )
     report["artifacts"] = {
         "reference_tum": str(reference_tum),
         "estimate_tum": str(estimate_tum),
         "evo": evo_status,
-        "trajectory_plot": {"path": str(plot_path), "status": plot_status},
+        "trajectory_plot": {
+            "path": str(plot_path),
+            "status": plot_status,
+            "views": 2 if mapped_paired_umi_p is not None else 1,
+            "description": "静态三维视图，无二维投影",
+        },
+        "trajectory_plot_interactive": {
+            "path": str(interactive_plot_path),
+            "status": interactive_plot_status,
+            "views": 2 if mapped_paired_umi_p is not None else 1,
+            "description": "浏览器鼠标旋转/滚轮缩放；无外部依赖",
+        },
     }
     if mapped_paired_umi_p is not None:
         report["artifacts"]["tcp_handeye"] = {
@@ -769,10 +1005,13 @@ def process(
             "trajectory_csv": str(output_dir / "matched_tcp_handeye.csv"),
         }
     shutil.copy2(source_umi, output_dir / "umi_full_corrected.csv")
-    with (output_dir / "robot_tcp_actual.csv").open("w", newline="", encoding="utf-8") as stream:
+    with (output_dir / "robot_reference_actual.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(["t_sec", "x", "y", "z"])
         writer.writerows([[f"{t:.9f}", *[f"{x:.9f}" for x in p]] for t, p in zip(robot_t, actual_p)])
+    # Keep the historical artifact name for downstream tools.  The report and
+    # the canonical file above identify whether this is gripper_end or TCP.
+    shutil.copy2(output_dir / "robot_reference_actual.csv", output_dir / "robot_tcp_actual.csv")
     with (output_dir / "matched_relative.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(
@@ -839,16 +1078,17 @@ def _markdown_report(report: dict) -> str:
         "# UMI 全速率轨迹 / 从臂 TCP 评估",
         "",
         f"- UMI 输入：`{report['umi_source']}`（{report['umi_source_kind']}）",
-        f"- 机械臂参考：从臂 `actual_deg` 经 B601-RS URDF FK 得到 TCP",
+        f"- 机械臂参考：从臂 `actual_deg` 经 B601-RS URDF FK 得到 `{report['robot_reference_frame']}`，位于 `{report['robot_fk_coordinate_frame']}` 坐标系",
+        f"- 参考点变换：`{report['robot_reference_transform']}`；绝对 TCP 小节另行使用同一杆臂变换",
         f"- 固定时间偏移：{report['clock']['robot_query_offset_ms']:.3f} ms；没有按本次数据自动优化",
-        f"- 配对门限：最近样本时间差 ≤ {report['clock']['max_association_error_ms']:.3f} ms；插值括区 ≤ {report['clock']['max_interpolation_bracket_gap_ms']:.3f} ms",
+        f"- 时间配对：在固定偏移后对从臂 TCP 做线性插值；插值括区 ≤ {report['clock']['max_interpolation_bracket_gap_ms']:.3f} ms",
         f"- 配对：{report['sample_counts']['paired_after_gate']}/{report['sample_counts']['umi_full_corrected']}（覆盖率 {report['sample_counts']['association_coverage'] * 100.0:.2f}%）",
         f"- 共同有效区间：{report['time_overlap_s']:.3f} s；UMI/机械臂累计距离：{report['relative_motion']['path_length_umi_m']:.4f}/{report['relative_motion']['path_length_robot_actual_m']:.4f} m（差 {report['relative_motion']['path_length_difference_m']:.4f} m）",
         "",
         "## 时间配对",
         "",
-        f"P50/P95/最大：{assoc['median']:.3f}/{assoc['p95']:.3f}/{assoc['max']:.3f} ms。",
-        "超过门限的样本已剔除，没有用最近点硬配替代插值。",
+        f"最近原始机械臂样本距离（仅诊断）P50/P95/最大：{assoc['median']:.3f}/{assoc['p95']:.3f}/{assoc['max']:.3f} ms。",
+        f"其中 {report['sample_counts']['nearest_sample_over_gate']} 个样本超过 {report['clock']['max_association_error_ms']:.3f} ms；这些样本仍使用线性插值，不作为时钟误差剔除。",
         "",
         "## B：一次刚体对齐的形状诊断",
         "",
@@ -884,7 +1124,7 @@ def _markdown_report(report: dict) -> str:
             "",
             "累计距离只统计 UMI 与机械臂的共同有效时间区间；不把录制前后的机械臂运动计入 SLAM 误差。",
             "",
-            "EVO 原始输出见 `evo/evo_ape.txt` 与 `evo/evo_rpe_1s.txt`；三维/三视图对比见 `robot_tcp_vs_umi_3d.png`。",
+            "EVO 原始输出见 `evo/evo_ape.txt` 与 `evo/evo_rpe_1s.txt`；两组三维对比见 `robot_tcp_vs_umi_3d.png`，可旋转 HTML 见 `robot_vs_umi_two_3d.html`。",
         ]
     )
     tcp = report["absolute_tcp_metric"]
@@ -902,6 +1142,12 @@ def _markdown_report(report: dict) -> str:
                 f"姿态误差 RMS/P95/最大：{tcp_rot['rmse']:.3f}/{tcp_rot['p95']:.3f}/{tcp_rot['max']:.3f}°。",
                 "世界坐标只用第一个有效配对姿态做一次固定锚定；没有使用终点答案，也没有再次对整段轨迹做Kabsch。",
                 f"手眼矩阵：`{tcp['handeye_source']}`；VINS外参：`{tcp['body_to_camera_source']}`。",
+                f"评估坐标点：`{tcp['tcp_frame']}`。",
+                (
+                    f"TCP固定偏移（`{tcp['tcp_frame']}`）：`{tcp['tcp_offset_source']}`。"
+                    if tcp.get("tcp_offset_source")
+                    else "未提供夹爪TCP偏移，因此本节的点是 URDF `gripper_end` 原点。"
+                ),
                 "该结果是带手眼残差的 TCP 映射诊断；对应无对齐 EVO 结果和 CSV 位于 `tcp_handeye/` 与 `matched_tcp_handeye.csv`。",
             ]
         )
@@ -924,6 +1170,14 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--umi", type=Path, help="可选；默认使用 --slam-dir/vio_corrected_stream.csv")
     parser.add_argument("--clock-offset-ms", type=float, default=0.0)
+    parser.add_argument(
+        "--clock-offset-file",
+        type=Path,
+        help=(
+            "可选；读取设备级 robot_query_offset_ms JSON。与 --clock-offset-ms 互斥；"
+            "不改变 VINS 的相机-IMU td"
+        ),
+    )
     parser.add_argument("--max-pair-error-ms", type=float, default=DEFAULT_MAX_PAIR_ERROR_MS)
     parser.add_argument("--max-bracket-gap-ms", type=float, default=DEFAULT_MAX_BRACKET_GAP_MS)
     parser.add_argument(
@@ -937,6 +1191,14 @@ def main() -> int:
         default=DEFAULT_BODY_TO_CAMERA_PATH,
         help="可选；包含 body_T_cam0 的 VINS OpenCV YAML",
     )
+    parser.add_argument(
+        "--gripper-tcp-offset",
+        type=Path,
+        help=(
+            "可选；包含 T_gripper_tcp 的4x4 JSON。该变换必须由 gripper_end "
+            "坐标系指向实测的 UMI 夹爪 TCP；不提供时只评估 gripper_end 原点"
+        ),
+    )
     args = parser.parse_args()
     report = process(
         slam_dir=args.slam_dir,
@@ -944,10 +1206,12 @@ def main() -> int:
         robot_path=args.robot,
         output_dir=args.out,
         clock_offset_ms=args.clock_offset_ms,
+        clock_offset_file=args.clock_offset_file,
         max_pair_error_ms=args.max_pair_error_ms,
         max_bracket_gap_ms=args.max_bracket_gap_ms,
         handeye_path=args.handeye,
         body_to_camera_path=args.body_to_camera,
+        gripper_tcp_offset_path=args.gripper_tcp_offset,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0

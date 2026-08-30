@@ -42,15 +42,15 @@ DEFAULT_CONFIG = Path(
     "d405_stereo_imu_config.yaml"
 )
 VINS_EXECUTABLE = Path(
-    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
+    "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/"
     "vins_fusion_ros2/vins_fusion_ros2_node"
 )
 LOOP_EXECUTABLE = Path(
-    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
+    "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/"
     "vins_fusion_ros2/loop_fusion_node"
 )
 REPLAY_EXECUTABLE = Path(
-    "/home/robot/ros2_ws/install/vins_fusion_ros2/lib/"
+    "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/"
     "vins_fusion_ros2/db3_replay_cpp"
 )
 
@@ -111,6 +111,7 @@ def run_provenance(
     left_calibration: Path,
     right_calibration: Path,
     replay_backend: str,
+    vins_executable: Path = VINS_EXECUTABLE,
     loop_executable: Path = LOOP_EXECUTABLE,
     replay_executable: Path | None = None,
     imu_accel_calibration: Path | None = None,
@@ -120,7 +121,7 @@ def run_provenance(
         "run_config": run_config.resolve(),
         "left_calibration": left_calibration.resolve(),
         "right_calibration": right_calibration.resolve(),
-        "vins_executable": VINS_EXECUTABLE.resolve(),
+        "vins_executable": vins_executable.resolve(),
         "loop_executable": loop_executable.resolve(),
     }
     if replay_backend == "cpp":
@@ -348,8 +349,19 @@ def expected_pose_samples(
     camera_frames: int,
     skip_s: float,
     camera_rate_hz: float = 30.0,
+    duration_s: float = 0.0,
 ) -> int:
-    return max(1, camera_frames - int(round(skip_s * camera_rate_hz)))
+    # A bounded Python replay only publishes the requested prefix of a DB3.
+    # Compare coverage against that prefix, not against the full recording.
+    replay_frames = camera_frames
+    if duration_s > 0.0:
+        replay_frames = min(
+            camera_frames, int(round(duration_s * camera_rate_hz))
+        )
+        # `--skip-s` is applied before the bounded replay window, so the
+        # requested duration still represents the number of frames published.
+        return max(1, replay_frames)
+    return max(1, replay_frames - int(round(skip_s * camera_rate_hz)))
 
 
 def drain_is_complete(
@@ -388,6 +400,12 @@ def main() -> int:
         type=Path,
         default=REPLAY_EXECUTABLE,
         help="显式指定C++回放二进制，支持不覆盖稳定安装的隔离A/B验证",
+    )
+    parser.add_argument(
+        "--vins-executable",
+        type=Path,
+        default=VINS_EXECUTABLE,
+        help="显式指定VINS节点二进制；默认使用当前工作区构建产物",
     )
     parser.add_argument(
         "--imu-accel-calibration",
@@ -494,6 +512,7 @@ def main() -> int:
         calibration_paths["left.yaml"],
         calibration_paths["right.yaml"],
         args.replay_backend,
+        vins_executable=args.vins_executable,
         loop_executable=args.loop_executable,
         replay_executable=args.replay_executable,
         imu_accel_calibration=args.imu_accel_calibration,
@@ -501,7 +520,9 @@ def main() -> int:
     camera_frames, camera_frame_count_source = camera_frame_count(
         args.session, args.image_db3
     )
-    expected_poses = expected_pose_samples(camera_frames, args.skip_s)
+    expected_poses = expected_pose_samples(
+        camera_frames, args.skip_s, duration_s=args.duration_s
+    )
 
     vins_log_path = args.out_dir / "vins.log"
     loop_log_path = args.out_dir / "auto_loop.log"
@@ -569,7 +590,7 @@ def main() -> int:
         with vins_log_path.open("wb") as vins_log, loop_log_path.open("wb") as loop_log:
             vins = subprocess.Popen(
                 [
-                    "ros2", "run", "vins_fusion_ros2", "vins_fusion_ros2_node",
+                    str(args.vins_executable.resolve()),
                     "--ros-args", "-p", "use_sim_time:=false",
                     "-p", f"config_file:={run_config}",
                 ],

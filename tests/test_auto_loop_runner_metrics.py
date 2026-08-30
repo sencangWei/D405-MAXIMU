@@ -98,6 +98,12 @@ def test_drain_requires_target_pose_coverage_before_quiet_exit():
     )
 
 
+def test_expected_pose_samples_scales_to_bounded_replay_duration():
+    assert expected_pose_samples(
+        camera_frames=1799, skip_s=1.5, duration_s=10.0
+    ) == 300
+
+
 def test_drain_keeps_legacy_quiet_exit_when_frame_count_is_unavailable():
     assert drain_is_complete(
         raw_poses=10,
