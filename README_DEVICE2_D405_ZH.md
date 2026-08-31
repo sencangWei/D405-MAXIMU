@@ -1,17 +1,17 @@
-# 第二套正式 UMI D405 产品 V1
+# 第二套正式 UMI D405 产品 V1.0.1
 
-正式版本：`UMI_DEVICE2_D405_PRODUCT_V1_20260829`  
-正式镜像：`umi-ego-vio:device2-c48df736-d405-product-v1-20260829`
+正式版本：`UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901`
+正式镜像：`umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901`
 
 本目录是第二套设备的版本化正式源码。相机 `260322279785`、STM32/IMU/编码器
-`c48df736...`、V4夹爪曲线和本次装配的相机—IMU标定已经绑定。
+`c48df736...`、2026-09-01 新壳体夹爪曲线和本次装配的相机—IMU标定已经绑定。
 
 该工程使用容器一 `umi-ego-vio:product-v1-20260824` 作为不可变父层，保留其
 D405 VINS、回环、实时可视化和30 Hz后处理行为，只叠加：
 
 - 设备集合 `UMI_DEVICE_02_C48DF736`；
 - STM32/编码器串口 `c48df736...`；
-- 夹爪标定 `UMI_MANUAL_GRIPPER_C48DF736_20260826_V4`；
+- 夹爪标定 `UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1`；
 - 当前 D405 的持久绑定；
 - 当前装配重新签发的相机—IMU外参和时间偏移。
 
@@ -23,7 +23,7 @@ rectified 参数并完成独立验收。正式时间偏移为
 ## 命令
 
 ```bash
-cd /home/robot/releases/umi_device2_d405_product_1.0.0-20260829
+cd /home/robot/releases/umi_device2_d405_product_1.0.1-20260901
 ./umi-device2-d405.sh build
 ./umi-device2-d405.sh software-check
 ./umi-device2-d405.sh hardware-check

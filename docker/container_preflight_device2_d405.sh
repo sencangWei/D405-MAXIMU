@@ -52,7 +52,7 @@ root = Path("/opt/umi/formal_runtime_calibration")
 manifest = yaml.safe_load((root / "manifest.yaml").read_text(encoding="utf-8"))
 assert manifest["schema"] == "umi_device_runtime_calibration_v1"
 assert manifest["result"] == "PASS"
-assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_20260829"
+assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901"
 assert manifest["device_set_id"] == "UMI_DEVICE_02_C48DF736"
 assert manifest["d405_serial"] == "260322279785"
 for name, expected in manifest["files"].items():
@@ -64,6 +64,10 @@ then
 else
   fail "第二套正式签发运行标定"
 fi
+
+check_hash 39f0ee65940fb5115abd035bd35c15cb267467501ef8bbeeeeaa0bdc05c13322 \
+  /opt/umi/gripper_evidence/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml \
+  "第二套新壳体夹爪双向盲测证据"
 
 check_hash 6400b4adf5e004b3f62086cafd23da8481c48bbe7dc596ca9ded37b7157440cb \
   /usr/local/bin/umi-run-slam-postprocess-configurable \
@@ -182,13 +186,13 @@ assert manifest['device_set_id'] == 'UMI_DEVICE_02_C48DF736'
 assert manifest['software']['base_image_id'] == 'sha256:59974df3c3906683739fc7af530c6e7a5e78a80b341506ccdb49d7be2fb5ef3a'
 assert manifest['software']['d435i_runtime_policy'] == 'EXCLUDED'
 profile = ManualGripperCalibration.load()
-assert profile.profile_id == 'UMI_MANUAL_GRIPPER_C48DF736_20260826_V4'
+assert profile.profile_id == 'UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1'
 print(profile.profile_id)
 PY
 then
-  pass "第二套身份与V4夹爪默认配置"
+  pass "第二套身份与SHELL2 V1夹爪默认配置"
 else
-  fail "第二套身份与V4夹爪默认配置"
+  fail "第二套身份与SHELL2 V1夹爪默认配置"
 fi
 
 if /usr/local/bin/umi-device2-d405-control --help | grep -qi 'd435i'; then

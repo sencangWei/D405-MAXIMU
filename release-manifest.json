@@ -1,28 +1,34 @@
 {
   "schema": "umi_ubuntu_robot_release_manifest_v1",
-  "version": "1.0.0-20260829",
-  "release_id": "UMI_DEVICE2_D405_PRODUCT_V1_20260829",
+  "version": "1.0.1-20260901",
+  "release_id": "UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901",
   "image": {
-    "tag": "umi-ego-vio:device2-c48df736-d405-product-v1-20260829",
+    "tag": "umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901",
+    "stable_tag": "umi-ego-vio:docker-2",
+    "id": "sha256:950296801053c07775d2b3cfc2cb7d4676b592c254128e2ca978b70153f66e40"
+  },
+  "rollback": {
+    "tag": "umi-ego-vio:docker-2-gripper-v4-20260829",
     "id": "sha256:9dda11f65aedf564bc244dae4cc2c2411627c590ca170445827f7fa27aabdcb9"
   },
   "files": [
-    {"path": "Dockerfile", "sha256": "0679409696a34c5bc8c907887924a64b60d8af39dcea9542dcb44639d669cc8b"},
-    {"path": "umi-device2-d405.sh", "sha256": "2bdfabf99526ae1c77d10db115b8721ede08c49228728c5c9ac69585029db081"},
-    {"path": "device_manifest.yaml", "sha256": "d3edd45f1bd30bf4761d2555a656b0d65d324c3b2bfffaba6e26efb2d8af60e2"},
-    {"path": "README_DEVICE2_D405_ZH.md", "sha256": "2cc3c6b5974093a34152b5853ca0326707c84ee960bcb9d3f64128c99326399f"},
-    {"path": "RELEASE_ACCEPTANCE.yaml", "sha256": "46b74d51997caf80866d3a6879a9082fd9fd3fe091a1ff082bde170ab9ca92af"},
-    {"path": "ROLLBACK_ZH.md", "sha256": "954a86abe4eca18a051960c9e5569174a0858182b8025e59dff6a4256166dfe1"},
-    {"path": "formal_runtime_calibration/manifest.yaml", "sha256": "56586f0a98e83171f86ff48c756bef87f3739e80dc8c4dca8692bf8413f333bd"},
+    {"path": "Dockerfile", "sha256": "082e87fce13aba68ef94df8a887af5677c4a42cf2e159c8e5aedef306dc7c628"},
+    {"path": "umi-device2-d405.sh", "sha256": "11db153892deb93fdd05d87c5470aa80f4d5daac267b2855e17945ec8fe7ee5c"},
+    {"path": "device_manifest.yaml", "sha256": "f33ea33f6edd640f4915cf7c4c79ff2f9af44935e5c76d390a33f64b68641d37"},
+    {"path": "README_DEVICE2_D405_ZH.md", "sha256": "48b80c464ed2eb127e5ce3cdbd1941fd9208ff9baa606a17e7fc72c9b1c43994"},
+    {"path": "RELEASE_ACCEPTANCE.yaml", "sha256": "1848bc3c5243e2e545c1dfda2a8436ec6e52856ba22752e4fda84027f7647c94"},
+    {"path": "ROLLBACK_ZH.md", "sha256": "e0730b90237487fd869964353dbd4780c7f2d7fe9ce733784abae2092b574993"},
+    {"path": "formal_runtime_calibration/manifest.yaml", "sha256": "7738ec69bcb2ca6f22221cafcd909d3d283b164fa12db6ebcd89c0c138907e42"},
     {"path": "formal_runtime_calibration/vins_config.yaml", "sha256": "3f47e90f838aff2e4770eecccc5bebe29b29fd07833576ab8568cf6bd693db36"},
     {"path": "formal_runtime_calibration/left.yaml", "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"},
     {"path": "formal_runtime_calibration/right.yaml", "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"},
     {"path": "formal_runtime_calibration/device_config.yaml", "sha256": "2bd4311e229df57722cd956853551131415a3fdd4ae920a14853136d71146973"},
-    {"path": "docker/device2_d405_control.py", "sha256": "25e12ac509a6f62f05e3ca7b1be9483d0389ec313da2094dab2b0d55991de91b"},
-    {"path": "docker/test_device2_d405_control.py", "sha256": "70f02fbbde3d1928880a9c2a5a9fabc0af6613c1e9c00a49df40e9829faaf4e1"},
-    {"path": "docker/container_preflight_device2_d405.sh", "sha256": "c78f48c3d51ebd83b2ff43bffe20268c8adf57a6d0760dc49c2dbca9bc39e887"},
+    {"path": "docker/device2_d405_control.py", "sha256": "95c1effd28dce5280bb1fc453da5e15f7e95233304216acd6cb7dd5bb806e80c"},
+    {"path": "docker/test_device2_d405_control.py", "sha256": "df40d3705ddd26dadc3fc49615684024c387a5b06e039171ecb01835c5a2cb65"},
+    {"path": "docker/container_preflight_device2_d405.sh", "sha256": "645183a7eec0cb84e7981e944a7737b46b61a589c0f9daddfb97e8307118cf8d"},
     {"path": "docker/patch_candidate_live_io.py", "sha256": "8cbccddb1f3294f0096b99b1bce34498a3627d229c645752fad470a48d6304e2"},
-    {"path": "gripper/umi_manual_gripper_c48df736_20260826_v4.yaml", "sha256": "fa72e81082c8c47e1f042d43f559d043ae7ee98fcf510e0292673770c3626e7a"},
+    {"path": "gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml", "sha256": "3e1ee3f5a7cc6c0861bb18fde26cc711e0e50d9821877fa556e3cc1f7d3a0862"},
+    {"path": "gripper/umi_manual_gripper_c48df736_20260901_shell2_v1_evidence.yaml", "sha256": "39f0ee65940fb5115abd035bd35c15cb267467501ef8bbeeeeaa0bdc05c13322"},
     {"path": "calibration_assets/aprilgrid_6x6_35mm.yaml", "sha256": "e0cb280349fa0ca8792462f7864e818f138094890965f6cf4d6dc4413c0eb4bc"}
   ]
 }

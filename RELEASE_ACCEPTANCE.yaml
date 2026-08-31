@@ -1,18 +1,34 @@
 schema: umi_product_release_acceptance_v1
-release_id: UMI_DEVICE2_D405_PRODUCT_V1_20260829
+release_id: UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901
 status: ACCEPTED
-accepted_at: '2026-08-29'
-scope: SECOND_UMI_SINGLE_DEVICE_PRODUCT_V1
+accepted_at: '2026-09-01'
+scope: SECOND_UMI_SINGLE_DEVICE_PRODUCT_V1_0_1_GRIPPER_SHELL2
+change_scope: GRIPPER_MECHANICAL_HOUSING_AND_PROFILE_ONLY
 device:
   device_set_id: UMI_DEVICE_02_C48DF736
   d405_serial: '260322279785'
   stm32_usb_identity_suffix: c48df736b505f011adda8d1272aab386
-  gripper_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260826_V4
+  gripper_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1
 calibration:
   camera_imu_td_s: -0.009109323459933042
   world_z_model: IDENTITY_NO_CORRECTION_REQUIRED
   signed_runtime_manifest: formal_runtime_calibration/manifest.yaml
 evidence:
+  gripper_rehousing:
+    result: PASS
+    mechanical_revision: SHELL2_20260901
+    combined_blind_holdout_points: 11
+    directions: [closing, opening]
+    maximum_absolute_error_mm: 1.1593533244938428
+    mean_absolute_error_mm: 0.2891959004951749
+    maximum_gate_mm: 1.5
+    mean_gate_mm: 1.0
+    transport_frames: 100626
+    transport_errors: 0
+    profile_sha256: 3e1ee3f5a7cc6c0861bb18fde26cc711e0e50d9821877fa556e3cc1f7d3a0862
+    evidence_sha256: 39f0ee65940fb5115abd035bd35c15cb267467501ef8bbeeeeaa0bdc05c13322
+    closing_holdout_sha256: 1615287806be41066b81ba1ee3d56ef91ca8751092441d9b72dccfd9cc066024
+    opening_holdout_sha256: e052aab552e6337a1899d6cf4cb3c8b9182782268025bb28b5322a088a572c13
   world_z:
     result: PASS
     report_sha256: 8a525ea3deb41b7b0c402b2c60f8e0dcae2b064df992fae05506f3266e2ee3c2
@@ -49,8 +65,9 @@ evidence:
     observed_angle_deg: 329.4140625
     observed_no_load_gap_mm: 58.93570928311797
     operator_statement: '可以直接作为第二套正式的umi产品代码'
-  formal_image_hil:
+  inherited_v1_runtime_hil:
     result: PASS
+    inheritance_reason: VINS, camera, IMU, time offset, world-Z, capture and postprocess code are byte-identical; V1.0.1 changes only the gripper YAML and identity manifests.
     image_tag: umi-ego-vio:device2-c48df736-d405-product-v1-20260829
     camera_rate_hz: 30.0
     imu_rate_hz: 400.0
@@ -74,13 +91,32 @@ evidence:
       - /odometry_rect
       - /gripper/state
     operator_stop_cleanup: PASS
+  v1_0_1_patch_image_hil:
+    result: PASS
+    image_tag: umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901
+    image_id: sha256:950296801053c07775d2b3cfc2cb7d4676b592c254128e2ca978b70153f66e40
+    software_preflight: PASS
+    d405_identity: '260322279785'
+    d405_identity_result: PASS
+    imu_encoder_duration_s: 5.0
+    imu_encoder_samples: 2004
+    imu_rate_hz: 400.3637817875955
+    encoder_valid_samples: 2004
+    encoder_imu_p95_us: 66.0
+    transport_errors: 0
+    gripper_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1
+    report_sha256: 7981af3b662e449a7bbc38695a5648c284af665272c789a5bf3effdaa0b4dfff
+    active_runtime_manifest_sha256: 7738ec69bcb2ca6f22221cafcd909d3d283b164fa12db6ebcd89c0c138907e42
 limitations:
   - Gripper gap is a no-load soft-pad spacing estimate, not loaded object size.
   - Multi-device temporal/spatial alignment is outside this single-device release.
 rollback:
-  source_directory: /home/robot/umi_docker_device2_d405_formal_20260828
-  image_id: sha256:8aead3e15158e9ac42780f24dd45c846f28558fe4457cc3f846da4b6e41fb5fa
-formal_image:
-  tag: umi-ego-vio:device2-c48df736-d405-product-v1-20260829
+  source_directory: /home/robot/releases/umi_device2_d405_product_1.0.0-20260829
+  image_tag: umi-ego-vio:docker-2-gripper-v4-20260829
   image_id: sha256:9dda11f65aedf564bc244dae4cc2c2411627c590ca170445827f7fa27aabdcb9
-  size_bytes: 1000307250
+  active_runtime_backup: /home/robot/umi_ego_vio_data_device2_c48df736/active_runtime_calibration_backup_v1_20260829_20260901
+formal_image:
+  tag: umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901
+  stable_tag: umi-ego-vio:docker-2
+  image_id: sha256:950296801053c07775d2b3cfc2cb7d4676b592c254128e2ca978b70153f66e40
+  size_bytes: 1000322587

@@ -31,7 +31,7 @@ BINDING_PATH = DATA / "device_binding.yaml"
 ACTIVE_ROOT = DATA / "active_runtime_calibration"
 ACTIVE_MANIFEST = ACTIVE_ROOT / "manifest.yaml"
 GRIPPER_PROFILE = (
-    ROOT / "config/gripper/umi_manual_gripper_c48df736_20260826_v4.yaml"
+    ROOT / "config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml"
 )
 REQUIRED_RUNTIME_FILES = (
     "vins_config.yaml",

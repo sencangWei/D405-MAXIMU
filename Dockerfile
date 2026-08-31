@@ -18,10 +18,12 @@ RUN cp /usr/local/bin/umi-container-preflight \
 
 # The product-1 code already supports the 63-byte STM32 packet and gripper
 # recording. Device 2 changes only the calibrated angle-to-gap profile.
-COPY gripper/umi_manual_gripper_c48df736_20260826_v4.yaml \
-  /home/robot/ego_vio_humble/config/gripper/umi_manual_gripper_c48df736_20260826_v4.yaml
-COPY gripper/umi_manual_gripper_c48df736_20260826_v4.yaml \
+COPY gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml \
+  /home/robot/ego_vio_humble/config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml
+COPY gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml \
   /home/robot/ego_vio_humble/config/gripper/umi_manual_gripper_20260824.yaml
+COPY gripper/umi_manual_gripper_c48df736_20260901_shell2_v1_evidence.yaml \
+  /opt/umi/gripper_evidence/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml
 COPY calibration_assets/aprilgrid_6x6_35mm.yaml \
   /home/robot/ego_vio_humble/config/aprilgrid_6x6_35mm.yaml
 COPY formal_runtime_calibration /opt/umi/formal_runtime_calibration
@@ -81,12 +83,12 @@ LABEL org.umi.base-image="umi-ego-vio:product-v1-20260824" \
       org.umi.device-set-id="UMI_DEVICE_02_C48DF736" \
       org.umi.camera-model="D405" \
       org.umi.d435i-runtime="excluded" \
-      org.umi.release-id="UMI_DEVICE2_D405_PRODUCT_V1_20260829" \
+      org.umi.release-id="UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901" \
       org.umi.release-status="accepted"
 
 ENV EGO_VIO_DEVICE_SET_ID=UMI_DEVICE_02_C48DF736 \
-    EGO_VIO_RELEASE_ID=UMI_DEVICE2_D405_PRODUCT_V1_20260829 \
-    EGO_VIO_GRIPPER_CALIBRATION=/home/robot/ego_vio_humble/config/gripper/umi_manual_gripper_c48df736_20260826_v4.yaml \
+    EGO_VIO_RELEASE_ID=UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901 \
+    EGO_VIO_GRIPPER_CALIBRATION=/home/robot/ego_vio_humble/config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml \
     EGO_VIO_CAPTURE_RUNTIME=/home/robot/ego_vio_humble \
     EGO_VIO_RSUSB_RUNTIME=/home/robot/ego_vio_humble \
     PYTHONUNBUFFERED=1

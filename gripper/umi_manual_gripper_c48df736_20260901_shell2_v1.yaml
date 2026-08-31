@@ -1,0 +1,70 @@
+format_version: 1
+profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1
+product_mode: manual_hand_operated
+fully_open_gap_mm: 65.520
+nominal_radius_mm: 25.150
+direction_deadband_deg: 1.000
+no_load_uncertainty_mm: 2.000
+loaded_object_size_valid: false
+distance_semantics:
+  estimated_no_load_gap_mm: Estimated soft-pad face gap without an object load.
+  dual_closing_distance_mm: fully_open_gap_mm minus estimated_no_load_gap_mm.
+  single_jaw_travel_mm: One half of dual_closing_distance_mm for the symmetric jaws.
+  closure_ratio: dual_closing_distance_mm divided by fully_open_gap_mm.
+  warning: Raw angle and closure ratio are valid manual-state signals; gap is not loaded object size.
+source:
+  date: 2026-09-01
+  serial_port_id: c48df736b505f011adda8d1272aab386
+  device_protocol: stm32_combined_v1
+  firmware_sha256: 1030e78c9fe4f7b949350b100d6389f219a8b650c649c834693619006953cd8a
+  accepted_candidate_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2_CANDIDATE
+  evidence: product_calibration/evidence/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml
+  method: Direction-specific piecewise-linear interpolation with near-duplicate manual measurements robustly merged.
+curves:
+  closing:
+    - {angle_deg: 252.817383, gap_mm: 0.000}
+    - {angle_deg: 265.155029, gap_mm: 10.595}
+    - {angle_deg: 277.822266, gap_mm: 21.310}
+    - {angle_deg: 278.041992, gap_mm: 21.660}
+    - {angle_deg: 287.248535, gap_mm: 28.980}
+    - {angle_deg: 294.477539, gap_mm: 35.170}
+    - {angle_deg: 297.641602, gap_mm: 37.610}
+    - {angle_deg: 308.056641, gap_mm: 45.010}
+    - {angle_deg: 315.285645, gap_mm: 50.950}
+    - {angle_deg: 323.107910, gap_mm: 57.760}
+    - {angle_deg: 340.927734, gap_mm: 65.520}
+  opening:
+    - {angle_deg: 252.817383, gap_mm: 0.000}
+    - {angle_deg: 257.783203, gap_mm: 5.540}
+    - {angle_deg: 259.079590, gap_mm: 7.510}
+    - {angle_deg: 266.242676, gap_mm: 11.030}
+    - {angle_deg: 270.593262, gap_mm: 15.430}
+    - {angle_deg: 272.175293, gap_mm: 16.430}
+    - {angle_deg: 272.636719, gap_mm: 17.010}
+    - {angle_deg: 279.041748, gap_mm: 21.930}
+    - {angle_deg: 284.985352, gap_mm: 25.870}
+    - {angle_deg: 292.170410, gap_mm: 32.290}
+    - {angle_deg: 293.181152, gap_mm: 33.340}
+    - {angle_deg: 296.455078, gap_mm: 34.880}
+    - {angle_deg: 305.529785, gap_mm: 43.010}
+    - {angle_deg: 307.749023, gap_mm: 44.850}
+    - {angle_deg: 316.625977, gap_mm: 52.360}
+    - {angle_deg: 318.471680, gap_mm: 53.850}
+    - {angle_deg: 329.721680, gap_mm: 62.400}
+    - {angle_deg: 340.927734, gap_mm: 65.520}
+quality:
+  transport: PASS
+  mechanical_revision: SHELL2_20260901
+  manual_state_calibration: PASS
+  blind_holdout:
+    points: 11
+    directions: [closing, opening]
+    maximum_absolute_error_mm: 1.1593533244938428
+    mean_absolute_error_mm: 0.2891959004951749
+    maximum_gate_mm: 1.5
+    mean_gate_mm: 1.0
+  loaded_object_size: NOT_SUPPORTED_WITHOUT_FORCE_COMPRESSION_MODEL
+  notes:
+    - The two holdout files are complementary independent sweeps; their individual FAIL labels only reflect single-direction coverage.
+    - The combined closing and opening evidence passes all numerical, direction-coverage, and transport gates.
+    - Estimated gap is the unloaded soft-pad spacing and must not be interpreted as loaded object size.

@@ -275,13 +275,13 @@ def test_formal_runtime_bundle_is_hash_bound_and_launcher_is_pinned():
         (runtime / "manifest.yaml").read_text(encoding="utf-8")
     )
     assert manifest["result"] == "PASS"
-    assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_20260829"
+    assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901"
     assert manifest["device_set_id"] == MODULE.DEVICE_SET_ID
     assert manifest["d405_serial"] == "260322279785"
     for name, expected in manifest["files"].items():
         assert sha(runtime / name) == expected
     launcher = (project / "umi-device2-d405.sh").read_text(encoding="utf-8")
-    assert "device2-c48df736-d405-product-v1-20260829" in launcher
+    assert "device2-c48df736-d405-product-v1.0.1-20260901" in launcher
     assert "install-bundled-runtime-calibration" in launcher
 
 
