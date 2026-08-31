@@ -36,6 +36,18 @@ extern std::string VINS_RESULT_PATH;
 extern int DEBUG_IMAGE;
 extern double MIN_LOOP_SPATIAL_SUPPORT;
 extern int MAX_LOOP_CANDIDATES;
+// Large loop corrections are accepted only after stronger multi-frame,
+// dual-IR geometric confirmation.  These are loop-graph gates only; VIO
+// frames with weak visual quality remain in the estimator with lower weight.
+extern int LOOP_CONFIRMATIONS;
+extern double LARGE_LOOP_CORRECTION_THRESHOLD_M;
+extern int LARGE_LOOP_CONFIRMATIONS;
+extern int LARGE_LOOP_MIN_PNP_INLIERS;
+extern double LARGE_LOOP_MIN_PNP_INLIER_RATIO;
+extern int LARGE_LOOP_MIN_RIGHT_INLIERS;
+extern double LARGE_LOOP_MIN_RIGHT_INLIER_RATIO;
+extern double LARGE_LOOP_MAX_PNP_RMSE_PX;
+extern double LARGE_LOOP_MAX_PNP_P95_PX;
 extern std::string WORLD_FRAME_ID;
 extern std::string BODY_FRAME_ID;
 extern std::string CAMERA_FRAME_ID;

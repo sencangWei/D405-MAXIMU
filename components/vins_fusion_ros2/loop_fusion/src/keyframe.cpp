@@ -164,8 +164,10 @@ void KeyFrame::computeRightORBPoint()
 	                      right_orb_descriptors);
 }
 
-bool KeyFrame::verifyRightImageLoop(const KeyFrame *old_kf) const
+bool KeyFrame::verifyRightImageLoop(const KeyFrame *old_kf)
 {
+	last_loop_right_inliers = 0;
+	last_loop_right_inlier_ratio = 0.0;
 	if (right_orb_descriptors.empty() || old_kf->right_orb_descriptors.empty())
 	{
 		printf("[AUTO_LOOP_REJECT] current=%d matched=%d reason=no_right_orb_descriptors\n",
@@ -212,6 +214,8 @@ bool KeyFrame::verifyRightImageLoop(const KeyFrame *old_kf) const
 	const size_t inliers = static_cast<size_t>(
 		std::count(inlier_mask.begin(), inlier_mask.end(), static_cast<uchar>(1)));
 	const double ratio = static_cast<double>(inliers) / current_points.size();
+	last_loop_right_inliers = static_cast<uint32_t>(inliers);
+	last_loop_right_inlier_ratio = ratio;
 	if (inliers < MIN_RIGHT_LOOP_NUM || ratio < MIN_RIGHT_LOOP_INLIER_RATIO)
 	{
 		printf("[AUTO_LOOP_REJECT] current=%d matched=%d reason=right_geometry "
@@ -415,6 +419,12 @@ void KeyFrame::PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
 bool KeyFrame::findConnection(KeyFrame* old_kf)
 {
 	TicToc tmp_t;
+	last_loop_pnp_inliers = 0;
+	last_loop_pnp_inlier_ratio = 0.0;
+	last_loop_pnp_rmse_px = std::numeric_limits<double>::infinity();
+	last_loop_pnp_p95_px = std::numeric_limits<double>::infinity();
+	last_loop_right_inliers = 0;
+	last_loop_right_inlier_ratio = 0.0;
 	//printf("find Connection\n");
 	if (visual_quality_degraded || old_kf->visual_quality_degraded)
 	{
@@ -670,6 +680,10 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 	const double pnp_inlier_ratio = descriptor_match_count > 0
 		? static_cast<double>(matched_2d_cur.size()) / descriptor_match_count
 		: 0.0;
+	last_loop_pnp_inliers = static_cast<uint32_t>(matched_2d_cur.size());
+	last_loop_pnp_inlier_ratio = pnp_inlier_ratio;
+	last_loop_pnp_rmse_px = pnp_reprojection_rmse_px;
+	last_loop_pnp_p95_px = pnp_reprojection_p95_px;
 	const double current_hull_fraction = imageHullFraction(matched_2d_cur);
 	const double old_hull_fraction = imageHullFraction(matched_2d_old);
 	const double spatial_support =

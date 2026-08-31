@@ -189,7 +189,6 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 
 		if (old_kf != nullptr)
         {
-			constexpr int kRequiredLoopConfirmations = 4;
 			constexpr int kAcceptedLoopCooldownKeyframes = 10;
 			constexpr double kMaxAcceptedCorrectionM = 0.03;
 			auto reset_pending_loop = [this]() {
@@ -219,6 +218,30 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 				Utility::ypr2R(Vector3d(candidate_correction_yaw, 0, 0));
 			const Vector3d candidate_correction_t =
 				candidate_loop_position - candidate_correction_rotation * candidate_vio_position;
+			const double candidate_correction_norm = candidate_correction_t.norm();
+			const bool large_loop_candidate =
+				candidate_correction_norm >= LARGE_LOOP_CORRECTION_THRESHOLD_M;
+			const bool large_loop_quality_ok =
+				cur_kf->last_loop_pnp_inliers >= static_cast<uint32_t>(LARGE_LOOP_MIN_PNP_INLIERS) &&
+				cur_kf->last_loop_pnp_inlier_ratio >= LARGE_LOOP_MIN_PNP_INLIER_RATIO &&
+				cur_kf->last_loop_right_inliers >= static_cast<uint32_t>(LARGE_LOOP_MIN_RIGHT_INLIERS) &&
+				cur_kf->last_loop_right_inlier_ratio >= LARGE_LOOP_MIN_RIGHT_INLIER_RATIO &&
+				cur_kf->last_loop_pnp_rmse_px <= LARGE_LOOP_MAX_PNP_RMSE_PX &&
+				cur_kf->last_loop_pnp_p95_px <= LARGE_LOOP_MAX_PNP_P95_PX;
+			if (large_loop_candidate && !large_loop_quality_ok)
+			{
+				printf("[AUTO_LOOP_LARGE_REJECT] current=%d matched=%d correction_t_m=%.4f "
+				       "pnp_inliers=%u ratio=%.3f rmse_px=%.3f p95_px=%.3f "
+				       "right_inliers=%u ratio=%.3f\n",
+				       cur_kf->index, loop_index, candidate_correction_norm,
+				       cur_kf->last_loop_pnp_inliers, cur_kf->last_loop_pnp_inlier_ratio,
+				       cur_kf->last_loop_pnp_rmse_px, cur_kf->last_loop_pnp_p95_px,
+				       cur_kf->last_loop_right_inliers, cur_kf->last_loop_right_inlier_ratio);
+				cur_kf->clearLoop();
+				reset_pending_loop();
+			}
+			else
+			{
 			const bool same_historical_keyframe =
 				pending_loop_index_ >= 0 && loop_index == pending_loop_index_;
 			const bool temporally_adjacent =
@@ -259,21 +282,27 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 			pending_loop_correction_yaw_ = candidate_correction_yaw;
 			pending_loop_correction_translations_.push_back(candidate_correction_t);
 			pending_loop_correction_yaws_.push_back(candidate_correction_yaw);
+			const double pending_correction_norm =
+				medianTranslation(pending_loop_correction_translations_).norm();
+			const bool pending_large_loop =
+				pending_correction_norm >= LARGE_LOOP_CORRECTION_THRESHOLD_M;
+			const int required_loop_confirmations =
+				pending_large_loop ? LARGE_LOOP_CONFIRMATIONS : LOOP_CONFIRMATIONS;
 
-			if (pending_loop_count_ < kRequiredLoopConfirmations)
+			if (pending_loop_count_ < required_loop_confirmations)
 			{
 				printf("[AUTO_LOOP_PENDING] current=%d matched=%d confirmations=%d/%d "
 				       "rel_t_m=%.4f yaw_deg=%.2f correction_t_m=%.4f "
 				       "correction_xyz_m=(%.4f,%.4f,%.4f) correction_yaw_deg=%.2f\n",
 				       cur_kf->index, loop_index, pending_loop_count_,
-				       kRequiredLoopConfirmations,
+				       required_loop_confirmations,
 				       candidate_relative_t.norm(), candidate_relative_yaw,
 				       candidate_correction_t.norm(), candidate_correction_t.x(),
 				       candidate_correction_t.y(), candidate_correction_t.z(),
 				       candidate_correction_yaw);
 				cur_kf->clearLoop();
 			}
-			else if (medianTranslation(pending_loop_correction_translations_).norm() >
+			else if (pending_correction_norm >
 			         kMaxAcceptedCorrectionM)
 			{
 				const Vector3d rejected_correction =
@@ -372,9 +401,10 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
                 }
                 sequence_loop[cur_kf->sequence] = 1;
             }
-            m_optimize_buf.lock();
+	            m_optimize_buf.lock();
             optimize_buf.push(cur_kf->index);
             m_optimize_buf.unlock();
+			}
 			}
         }
 	}

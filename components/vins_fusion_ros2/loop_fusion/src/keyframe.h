@@ -12,6 +12,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <opencv2/opencv.hpp>
@@ -59,7 +60,7 @@ public:
 	void computeBRIEFPoint();
 	void computeORBPoint();
 	void computeRightORBPoint();
-	bool verifyRightImageLoop(const KeyFrame *old_kf) const;
+	bool verifyRightImageLoop(const KeyFrame *old_kf);
 	//void extractBrief();
 	int HammingDis(const BRIEF::bitset &a, const BRIEF::bitset &b);
 	bool searchInAera(const BRIEF::bitset window_descriptor,
@@ -136,6 +137,14 @@ public:
 	uint8_t quality_flags = 0;
 	bool visual_quality_degraded = false;
 	bool visual_quality_severe = false;
+	// Quality of the most recent candidate verification.  These fields are
+	// populated only by findConnection and are consumed by the pose-graph gate.
+	uint32_t last_loop_pnp_inliers = 0;
+	double last_loop_pnp_inlier_ratio = 0.0;
+	double last_loop_pnp_rmse_px = std::numeric_limits<double>::infinity();
+	double last_loop_pnp_p95_px = std::numeric_limits<double>::infinity();
+	uint32_t last_loop_right_inliers = 0;
+	double last_loop_right_inlier_ratio = 0.0;
 
 	bool has_loop;
 	int loop_index;

@@ -73,3 +73,17 @@ min_loop_spatial_support: 0.0
 # DBoW只负责召回，候选仍必须通过左右IR、PnP、连续一致性和修正安全门。
 # 小范围回到原位时外观近邻容易挤掉真实历史帧，扩大召回而不放宽验真。
 max_loop_candidates: 24
+
+# A correction above 10 mm is treated as a high-risk loop.  It must be
+# supported by eight temporally adjacent confirmations and stronger PnP and
+# right-IR geometry.  These gates affect loop edges only; low-quality VIO
+# frames are retained with their normal quality weighting.
+loop_confirmations: 4
+large_loop_correction_threshold_m: 0.010
+large_loop_confirmations: 8
+large_loop_min_pnp_inliers: 25
+large_loop_min_pnp_inlier_ratio: 0.50
+large_loop_min_right_inliers: 30
+large_loop_min_right_inlier_ratio: 0.45
+large_loop_max_pnp_rmse_px: 2.5
+large_loop_max_pnp_p95_px: 5.0

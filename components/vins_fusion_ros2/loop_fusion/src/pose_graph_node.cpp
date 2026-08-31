@@ -67,6 +67,15 @@ int COL;
 int DEBUG_IMAGE;
 double MIN_LOOP_SPATIAL_SUPPORT = 0.0;
 int MAX_LOOP_CANDIDATES = 4;
+int LOOP_CONFIRMATIONS = 4;
+double LARGE_LOOP_CORRECTION_THRESHOLD_M = 0.010;
+int LARGE_LOOP_CONFIRMATIONS = 8;
+int LARGE_LOOP_MIN_PNP_INLIERS = 25;
+double LARGE_LOOP_MIN_PNP_INLIER_RATIO = 0.50;
+int LARGE_LOOP_MIN_RIGHT_INLIERS = 30;
+double LARGE_LOOP_MIN_RIGHT_INLIER_RATIO = 0.45;
+double LARGE_LOOP_MAX_PNP_RMSE_PX = 2.5;
+double LARGE_LOOP_MAX_PNP_P95_PX = 5.0;
 
 std::string WORLD_FRAME_ID = "world";
 std::string BODY_FRAME_ID = "body";
@@ -437,6 +446,43 @@ int main(int argc, char **argv)
         return 1;
     }
     printf("max_loop_candidates: %d\n", MAX_LOOP_CANDIDATES);
+
+    const auto read_int = [&fsSettings](const char *name, int &value) {
+        const cv::FileNode node = fsSettings[name];
+        if (!node.empty())
+            value = static_cast<int>(node);
+    };
+    const auto read_double = [&fsSettings](const char *name, double &value) {
+        const cv::FileNode node = fsSettings[name];
+        if (!node.empty())
+            value = static_cast<double>(node);
+    };
+    read_int("loop_confirmations", LOOP_CONFIRMATIONS);
+    read_double("large_loop_correction_threshold_m", LARGE_LOOP_CORRECTION_THRESHOLD_M);
+    read_int("large_loop_confirmations", LARGE_LOOP_CONFIRMATIONS);
+    read_int("large_loop_min_pnp_inliers", LARGE_LOOP_MIN_PNP_INLIERS);
+    read_double("large_loop_min_pnp_inlier_ratio", LARGE_LOOP_MIN_PNP_INLIER_RATIO);
+    read_int("large_loop_min_right_inliers", LARGE_LOOP_MIN_RIGHT_INLIERS);
+    read_double("large_loop_min_right_inlier_ratio", LARGE_LOOP_MIN_RIGHT_INLIER_RATIO);
+    read_double("large_loop_max_pnp_rmse_px", LARGE_LOOP_MAX_PNP_RMSE_PX);
+    read_double("large_loop_max_pnp_p95_px", LARGE_LOOP_MAX_PNP_P95_PX);
+    if (LOOP_CONFIRMATIONS < 1 || LARGE_LOOP_CONFIRMATIONS < LOOP_CONFIRMATIONS ||
+        LARGE_LOOP_CORRECTION_THRESHOLD_M <= 0.0 || LARGE_LOOP_MIN_PNP_INLIERS < 4 ||
+        LARGE_LOOP_MIN_RIGHT_INLIERS < 8 || LARGE_LOOP_MIN_PNP_INLIER_RATIO <= 0.0 ||
+        LARGE_LOOP_MIN_PNP_INLIER_RATIO > 1.0 || LARGE_LOOP_MIN_RIGHT_INLIER_RATIO <= 0.0 ||
+        LARGE_LOOP_MIN_RIGHT_INLIER_RATIO > 1.0 || LARGE_LOOP_MAX_PNP_RMSE_PX <= 0.0 ||
+        LARGE_LOOP_MAX_PNP_P95_PX <= 0.0)
+    {
+        std::cerr << "ERROR: invalid large-loop confirmation gate parameters" << std::endl;
+        return 1;
+    }
+    printf("loop_confirmations: %d\n", LOOP_CONFIRMATIONS);
+    printf("large_loop_gate: threshold=%.4f m confirmations=%d pnp_inliers=%d ratio=%.2f "
+           "right_inliers=%d ratio=%.2f rmse=%.2f p95=%.2f px\n",
+           LARGE_LOOP_CORRECTION_THRESHOLD_M, LARGE_LOOP_CONFIRMATIONS,
+           LARGE_LOOP_MIN_PNP_INLIERS, LARGE_LOOP_MIN_PNP_INLIER_RATIO,
+           LARGE_LOOP_MIN_RIGHT_INLIERS, LARGE_LOOP_MIN_RIGHT_INLIER_RATIO,
+           LARGE_LOOP_MAX_PNP_RMSE_PX, LARGE_LOOP_MAX_PNP_P95_PX);
 
     rclcpp::init(argc, argv);
     auto n = rclcpp::Node::make_shared("loop_fusion");
