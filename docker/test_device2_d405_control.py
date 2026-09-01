@@ -275,14 +275,62 @@ def test_formal_runtime_bundle_is_hash_bound_and_launcher_is_pinned():
         (runtime / "manifest.yaml").read_text(encoding="utf-8")
     )
     assert manifest["result"] == "PASS"
-    assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901"
+    assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901"
     assert manifest["device_set_id"] == MODULE.DEVICE_SET_ID
     assert manifest["d405_serial"] == "260322279785"
     for name, expected in manifest["files"].items():
         assert sha(runtime / name) == expected
     launcher = (project / "umi-device2-d405.sh").read_text(encoding="utf-8")
-    assert "device2-c48df736-d405-product-v1.0.1-20260901" in launcher
+    assert "device2-c48df736-d405-product-v1.0.2-20260901" in launcher
     assert "install-bundled-runtime-calibration" in launcher
+
+
+def test_formal_gripper_profile_is_direction_independent_and_hash_bound():
+    project = Path(__file__).resolve().parents[1]
+    profile_path = (
+        project / "gripper/umi_manual_gripper_c48df736_20260901_shell2_v2.yaml"
+    )
+    evidence_path = (
+        project
+        / "gripper/umi_manual_gripper_c48df736_20260901_shell2_v2_evidence.yaml"
+    )
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    evidence = yaml.safe_load(evidence_path.read_text(encoding="utf-8"))
+    dockerfile = (project / "Dockerfile").read_text(encoding="utf-8")
+    preflight = (
+        project / "docker/container_preflight_device2_d405.sh"
+    ).read_text(encoding="utf-8")
+
+    assert profile["profile_id"] == "UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2"
+    assert profile["gap_direction_mode"] == "independent"
+    assert set(profile["curves"]) == {"independent"}
+    assert evidence["combined_acceptance"]["result"] == "PASS"
+    assert evidence["combined_acceptance"]["maximum_absolute_error_mm"] <= 1.5
+    assert evidence["combined_acceptance"]["mean_absolute_error_mm"] <= 1.0
+    assert sha(profile_path) in preflight
+    assert sha(evidence_path) in preflight
+    assert "docker/manual_gripper.py" in dockerfile
+    assert "raw_holdout" in dockerfile
+    control = (project / "docker/device2_d405_control.py").read_text(
+        encoding="utf-8"
+    )
+    assert 'tracker.calibration.gap_direction_mode == "independent"' in control
+    assert '"estimated_no_load_gap_mm"' in control
+
+
+def test_rollback_bundle_is_self_contained_and_hash_checked():
+    project = Path(__file__).resolve().parents[1]
+    rollback = project / "rollback/active_runtime_calibration_v1_20260829"
+    manifest = yaml.safe_load((rollback / "manifest.yaml").read_text(encoding="utf-8"))
+    guide = (project / "ROLLBACK_ZH.md").read_text(encoding="utf-8")
+
+    assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_20260829"
+    for name, expected in manifest["files"].items():
+        assert sha(rollback / name) == expected
+        assert expected in guide
+    assert sha(rollback / "manifest.yaml") in guide
+    assert "UMI_DEVICE2_D405_IMAGE=\"$OLD_IMAGE\"" in guide
+    assert "active_runtime_calibration_rolled_back_from_v1_0_2" in guide
 
 
 def test_candidate_live_runner_keeps_product_entry_immutable_and_single_owner():

@@ -4,8 +4,8 @@ device_set_number: 2
 alignment_group_id: UNASSIGNED_PENDING_MULTI_DEVICE_ALIGNMENT
 runtime_namespace: umi_device_02
 software:
-  release_id: UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901
-  formal_image: umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901
+  release_id: UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901
+  formal_image: umi-ego-vio:device2-c48df736-d405-product-v1.0.2-20260901
   base_image: umi-ego-vio:product-v1-20260824
   base_image_id: sha256:59974df3c3906683739fc7af530c6e7a5e78a80b341506ccdb49d7be2fb5ef3a
   d405_algorithm_policy: EXACT_CONTAINER1_BASE
@@ -37,16 +37,17 @@ calibration:
     qualification_id: KTEX9_2_STM32_400HZ_V1
     status: FAMILY_PROFILE_BOUND_PER_UNIT_TRANSPORT_QA_PASS
   gripper:
-    profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1
+    profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2
     status: PASS
     mechanical_revision: SHELL2_20260901
     no_load_gap_uncertainty_mm: 2.000
-    blind_holdout_max_error_mm: 1.1593533244938428
-    blind_holdout_mean_error_mm: 0.2891959004951749
-    evidence_sha256: 39f0ee65940fb5115abd035bd35c15cb267467501ef8bbeeeeaa0bdc05c13322
+    gap_direction_mode: independent
+    blind_holdout_max_error_mm: 0.894766596433
+    blind_holdout_mean_error_mm: 0.370350449803
+    evidence_sha256: 7cab68c5b6a3579ad0fd3705159d0e3f3101b987c430785a1f4ee4d8dc6dea2c
   camera_imu_runtime:
     status: PASS_SIGNED_BUNDLED
-    release_id: UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901
+    release_id: UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901
     camera_imu_td_s: -0.009109323459933042
     world_z_model: IDENTITY_NO_CORRECTION_REQUIRED
     active_manifest: /data/active_runtime_calibration/manifest.yaml

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE="${UMI_DEVICE2_D405_IMAGE:-umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901}"
+IMAGE="${UMI_DEVICE2_D405_IMAGE:-umi-ego-vio:device2-c48df736-d405-product-v1.0.2-20260901}"
 DATA_ROOT="${UMI_DEVICE2_D405_DATA_ROOT:-$HOME/umi_ego_vio_data_device2_c48df736}"
 CALIB_KIT="${UMI_DEVICE2_D405_CALIB_KIT:-/home/robot/ego_vio_calib_kit}"
 CONTAINER_PREFIX=umi-device2-d405
@@ -40,7 +40,7 @@ usage() {
   ./umi-device2-d405.sh postprocess <录制会话目录名>
 
 说明:
-  正式版本: UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901。
+  正式版本: UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901。
   VINS、回环、实时runtime与D405采集主链继承容器一。
   未绑定D405或未安装本次相机—IMU签发标定时，正式运行命令会BLOCKED。
   本启动器没有D435i临时命令。
@@ -58,7 +58,7 @@ base_args=(
   --user "$(id -u):$(id -g)"
   --env HOME=/home/robot
   --env EGO_VIO_DEVICE_SET_ID=UMI_DEVICE_02_C48DF736
-  --env EGO_VIO_RELEASE_ID=UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901
+  --env EGO_VIO_RELEASE_ID=UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901
   --env "EGO_VIO_D405_SERIAL=$D405_SERIAL"
   --env "EGO_VIO_IMU_BY_ID=$IMU_BY_ID"
   --mount "type=bind,src=$DATA_ROOT,dst=/data"

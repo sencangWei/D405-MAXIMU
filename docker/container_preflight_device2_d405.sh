@@ -52,7 +52,7 @@ root = Path("/opt/umi/formal_runtime_calibration")
 manifest = yaml.safe_load((root / "manifest.yaml").read_text(encoding="utf-8"))
 assert manifest["schema"] == "umi_device_runtime_calibration_v1"
 assert manifest["result"] == "PASS"
-assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901"
+assert manifest["release_id"] == "UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901"
 assert manifest["device_set_id"] == "UMI_DEVICE_02_C48DF736"
 assert manifest["d405_serial"] == "260322279785"
 for name, expected in manifest["files"].items():
@@ -65,9 +65,70 @@ else
   fail "第二套正式签发运行标定"
 fi
 
-check_hash 39f0ee65940fb5115abd035bd35c15cb267467501ef8bbeeeeaa0bdc05c13322 \
-  /opt/umi/gripper_evidence/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml \
-  "第二套新壳体夹爪双向盲测证据"
+check_hash 9b49a5a2fc89bc374a4053a7366d7c5c889da540e3e75f3dfa602d0389cc126d \
+  "$ROOT/ego_vio/gripper/manual_gripper.py" \
+  "手动夹爪单一角度映射运行代码"
+check_hash 55effc02f363ce05b747154200ff70a8cae474cce1f041cdecb05dfa408fed4d \
+  "$ROOT/config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v2.yaml" \
+  "第二套新壳体夹爪正式配置"
+check_hash 55effc02f363ce05b747154200ff70a8cae474cce1f041cdecb05dfa408fed4d \
+  "$ROOT/config/gripper/umi_manual_gripper_20260824.yaml" \
+  "第二套夹爪默认配置与正式配置字节一致"
+check_hash 7cab68c5b6a3579ad0fd3705159d0e3f3101b987c430785a1f4ee4d8dc6dea2c \
+  /opt/umi/gripper_evidence/umi_manual_gripper_c48df736_20260901_shell2_v2.yaml \
+  "第二套新壳体夹爪角度盲测证据"
+check_hash 1615287806be41066b81ba1ee3d56ef91ca8751092441d9b72dccfd9cc066024 \
+  /opt/umi/gripper_evidence/raw_holdout/docker2_new_housing_v2_holdout_20260901.json \
+  "夹爪盲测原始证据A"
+check_hash e052aab552e6337a1899d6cf4cb3c8b9182782268025bb28b5322a088a572c13 \
+  /opt/umi/gripper_evidence/raw_holdout/docker2_new_housing_v2_opening_holdout_20260901.json \
+  "夹爪盲测原始证据B"
+
+if python3 - <<'PY'
+import hashlib
+import json
+import statistics
+from pathlib import Path
+
+import yaml
+from ego_vio.gripper import ManualGripperCalibration
+
+root = Path('/home/robot/ego_vio_humble')
+named = root / 'config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v2.yaml'
+canonical = root / 'config/gripper/umi_manual_gripper_20260824.yaml'
+evidence_path = Path('/opt/umi/gripper_evidence/umi_manual_gripper_c48df736_20260901_shell2_v2.yaml')
+raw_root = Path('/opt/umi/gripper_evidence/raw_holdout')
+profile = ManualGripperCalibration.load(named)
+evidence = yaml.safe_load(evidence_path.read_text(encoding='utf-8'))
+assert named.read_bytes() == canonical.read_bytes()
+assert profile.profile_id == 'UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2'
+assert profile.gap_direction_mode == 'independent'
+assert evidence['profile_id'] == profile.profile_id
+assert evidence['combined_acceptance']['result'] == 'PASS'
+errors = []
+for item in evidence['holdout_inputs']:
+    path = raw_root / Path(item['path']).name
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == item['sha256']
+    capture = json.loads(path.read_text(encoding='utf-8'))
+    for point in capture['points']:
+        prediction = profile.estimate_gap_mm(
+            float(point['angle_median_deg']), 'independent'
+        )
+        errors.append(abs(prediction - float(point['measured_gap_mm'])))
+acceptance = evidence['combined_acceptance']
+assert len(errors) == acceptance['points'] == 11
+assert abs(max(errors) - acceptance['maximum_absolute_error_mm']) < 1e-9
+assert abs(statistics.mean(errors) - acceptance['mean_absolute_error_mm']) < 1e-9
+assert max(errors) <= acceptance['maximum_gate_mm']
+assert statistics.mean(errors) <= acceptance['mean_gate_mm']
+for direction in ('unknown', 'opening', 'closing', 'independent'):
+    assert profile.estimate_gap_mm(296.0, direction) == profile.estimate_gap_mm(296.0, 'independent')
+PY
+then
+  pass "夹爪单一角度映射、原始盲测与门槛重算"
+else
+  fail "夹爪单一角度映射、原始盲测与门槛重算"
+fi
 
 check_hash 6400b4adf5e004b3f62086cafd23da8481c48bbe7dc596ca9ded37b7157440cb \
   /usr/local/bin/umi-run-slam-postprocess-configurable \
@@ -186,13 +247,14 @@ assert manifest['device_set_id'] == 'UMI_DEVICE_02_C48DF736'
 assert manifest['software']['base_image_id'] == 'sha256:59974df3c3906683739fc7af530c6e7a5e78a80b341506ccdb49d7be2fb5ef3a'
 assert manifest['software']['d435i_runtime_policy'] == 'EXCLUDED'
 profile = ManualGripperCalibration.load()
-assert profile.profile_id == 'UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1'
+assert profile.profile_id == 'UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2'
+assert profile.gap_direction_mode == 'independent'
 print(profile.profile_id)
 PY
 then
-  pass "第二套身份与SHELL2 V1夹爪默认配置"
+  pass "第二套身份与SHELL2 V2单一映射夹爪默认配置"
 else
-  fail "第二套身份与SHELL2 V1夹爪默认配置"
+  fail "第二套身份与SHELL2 V2单一映射夹爪默认配置"
 fi
 
 if /usr/local/bin/umi-device2-d405-control --help | grep -qi 'd435i'; then

@@ -31,7 +31,7 @@ BINDING_PATH = DATA / "device_binding.yaml"
 ACTIVE_ROOT = DATA / "active_runtime_calibration"
 ACTIVE_MANIFEST = ACTIVE_ROOT / "manifest.yaml"
 GRIPPER_PROFILE = (
-    ROOT / "config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v1.yaml"
+    ROOT / "config/gripper/umi_manual_gripper_c48df736_20260901_shell2_v2.yaml"
 )
 REQUIRED_RUNTIME_FILES = (
     "vins_config.yaml",
@@ -632,12 +632,15 @@ def cmd_imu_check(args: argparse.Namespace) -> int:
     samples = []
     valid = 0
     pair_gaps = []
+    last_gripper_state = None
 
     def on_sample(sample):
-        nonlocal valid
+        nonlocal valid, last_gripper_state
         is_valid = bool(sample.flags & 0x02) and not bool(sample.flags & 0x0C)
         raw_count = int(sample.encoder_response or 0) & 0x3FFF
-        tracker.update(raw_count * 360.0 / 16384.0, encoder_valid=is_valid)
+        last_gripper_state = tracker.update(
+            raw_count * 360.0 / 16384.0, encoder_valid=is_valid
+        )
         samples.append(sample)
         valid += int(is_valid)
         if sample.encoder_sensor_gap_us is not None:
@@ -683,6 +686,12 @@ def cmd_imu_check(args: argparse.Namespace) -> int:
         and valid == len(samples)
         and p95 is not None
         and 0.0 <= p95 <= 250.0
+        and tracker.calibration.gap_direction_mode == "independent"
+        and last_gripper_state is not None
+        and last_gripper_state.estimated_no_load_gap_mm is not None
+        and 0.0
+        <= float(last_gripper_state.estimated_no_load_gap_mm)
+        <= tracker.calibration.fully_open_gap_mm
         and all(int(stats.get(key, -1)) == 0 for key in zero_fields)
     )
     report = {
@@ -695,6 +704,31 @@ def cmd_imu_check(args: argparse.Namespace) -> int:
         "encoder_imu_delta_us_p95": p95,
         "transport": stats,
         "gripper_profile_id": tracker.calibration.profile_id,
+        "gripper": {
+            "gap_direction_mode": tracker.calibration.gap_direction_mode,
+            "angle_deg": (
+                float(last_gripper_state.angle_deg)
+                if last_gripper_state is not None
+                else None
+            ),
+            "estimated_no_load_gap_mm": (
+                float(last_gripper_state.estimated_no_load_gap_mm)
+                if last_gripper_state is not None
+                and last_gripper_state.estimated_no_load_gap_mm is not None
+                else None
+            ),
+            "closure_ratio": (
+                float(last_gripper_state.closure_ratio)
+                if last_gripper_state is not None
+                and last_gripper_state.closure_ratio is not None
+                else None
+            ),
+            "travel_direction_diagnostic": (
+                last_gripper_state.direction
+                if last_gripper_state is not None
+                else None
+            ),
+        },
     }
     evidence = DATA / "hil_evidence" / time.strftime(
         "%Y%m%d_%H%M%S_device2_d405_imu_encoder.json"

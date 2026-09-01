@@ -1,7 +1,7 @@
-# 第二套正式 UMI D405 产品 V1.0.1
+# 第二套正式 UMI D405 产品 V1.0.2
 
-正式版本：`UMI_DEVICE2_D405_PRODUCT_V1_0_1_20260901`
-正式镜像：`umi-ego-vio:device2-c48df736-d405-product-v1.0.1-20260901`
+正式版本：`UMI_DEVICE2_D405_PRODUCT_V1_0_2_20260901`
+正式镜像：`umi-ego-vio:device2-c48df736-d405-product-v1.0.2-20260901`
 
 本目录是第二套设备的版本化正式源码。相机 `260322279785`、STM32/IMU/编码器
 `c48df736...`、2026-09-01 新壳体夹爪曲线和本次装配的相机—IMU标定已经绑定。
@@ -11,7 +11,8 @@ D405 VINS、回环、实时可视化和30 Hz后处理行为，只叠加：
 
 - 设备集合 `UMI_DEVICE_02_C48DF736`；
 - STM32/编码器串口 `c48df736...`；
-- 夹爪标定 `UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1`；
+- 夹爪标定 `UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2`；
+- 手动夹爪只使用一条“编码器角度→无载软垫间距”曲线；开合方向仅作诊断，不影响距离；
 - 当前 D405 的持久绑定；
 - 当前装配重新签发的相机—IMU外参和时间偏移。
 
@@ -23,11 +24,10 @@ rectified 参数并完成独立验收。正式时间偏移为
 ## 命令
 
 ```bash
-cd /home/robot/releases/umi_device2_d405_product_1.0.1-20260901
+cd /home/robot/releases/umi_device2_d405_product_1.0.2-20260901
 ./umi-device2-d405.sh build
 ./umi-device2-d405.sh software-check
 ./umi-device2-d405.sh hardware-check
-./umi-device2-d405.sh install-bundled-runtime-calibration
 ./umi-device2-d405.sh status
 ```
 
@@ -107,13 +107,31 @@ world-Z正式报告、候选manifest、设备身份和配置哈希；两次后�
 DB3，结果写入 `candidate_ab/slam_results` 并生成各自的溯源manifest。若期间产生了
 新的world-Z attempt，后处理仍读取采集时绑定的原候选，不会静默切换。
 
-本正式版本首次部署：
+已有 Docker2 V1 正式运行标定的本机升级到 V1.0.2 时，**不要**再次执行
+`install-bundled-runtime-calibration`。本版的 `vins_config.yaml`、`left.yaml`、
+`right.yaml`、`device_config.yaml` 与 V1 字节一致；夹爪 V2 单曲线随镜像加载，不从旧
+runtime manifest 取值。升级前用以下命令确认四个冻结文件未被污染：
 
 ```bash
+ACTIVE=/home/robot/umi_ego_vio_data_device2_c48df736/active_runtime_calibration
+test "$(sha256sum "$ACTIVE/vins_config.yaml" | awk '{print $1}')" = 3f47e90f838aff2e4770eecccc5bebe29b29fd07833576ab8568cf6bd693db36
+test "$(sha256sum "$ACTIVE/left.yaml" | awk '{print $1}')" = 52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21
+test "$(sha256sum "$ACTIVE/right.yaml" | awk '{print $1}')" = 52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21
+test "$(sha256sum "$ACTIVE/device_config.yaml" | awk '{print $1}')" = 2bd4311e229df57722cd956853551131415a3fdd4ae920a14853136d71146973
+./umi-device2-d405.sh status
+```
+
+四条 `test` 均返回 0 才能沿用。任何一条失败都停止升级，禁止覆盖，按
+`ROLLBACK_ZH.md` 保留现场。
+
+只有全新电脑、且 `active_runtime_calibration` 尚不存在时，才执行首次安装：
+
+```bash
+test ! -e /home/robot/umi_ego_vio_data_device2_c48df736/active_runtime_calibration
 ./umi-device2-d405.sh install-bundled-runtime-calibration
 UMI_CAPTURE_PREVIEW=1 ./umi-device2-d405.sh capture 60
 ./umi-device2-d405.sh realtime
 ./umi-device2-d405.sh postprocess <会话目录名>
 ```
 
-激活槽已存在时安装命令会拒绝覆盖。回滚依据见 `ROLLBACK_ZH.md`。
+激活槽已存在时安装命令会按设计拒绝覆盖。回滚依据见 `ROLLBACK_ZH.md`。

@@ -1,38 +1,34 @@
-schema: umi_manual_gripper_release_evidence_v1
-profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V1
-accepted_candidate_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2_CANDIDATE
+schema: umi_manual_gripper_release_evidence_v2
+profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2
+accepted_candidate_profile_id: UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V3_CANDIDATE
+accepted_candidate_profile_sha256: 123c17d8b536d4fccb2810a80f9b21882ec1bccb07c0d7f9ac1ae6293ba3b606
 released_at: '2026-09-01'
 hardware:
   device_set_id: UMI_DEVICE_02_C48DF736
   serial_port_id: c48df736b505f011adda8d1272aab386
   mechanical_revision: SHELL2_20260901
   fully_open_gap_mm: 65.520
+model:
+  gap_direction_mode: independent
+  type: piecewise_linear_angle_to_no_load_gap
+  direction_semantics: diagnostic_only_not_used_for_gap
 holdout_inputs:
   - path: gripper_fast_results/docker2_new_housing_v2_holdout_20260901.json
     sha256: 1615287806be41066b81ba1ee3d56ef91ca8751092441d9b72dccfd9cc066024
-    direction: closing
     points: 7
-    frames: 46366
-    valid_frames: 46366
-    rate_hz: 400.21013755532306
-    maximum_absolute_error_mm: 0.5575946607113025
-    mean_absolute_error_mm: 0.24009298433005075
+    maximum_absolute_error_mm: 0.894766596433
+    mean_absolute_error_mm: 0.335869774652
   - path: gripper_fast_results/docker2_new_housing_v2_opening_holdout_20260901.json
     sha256: e052aab552e6337a1899d6cf4cb3c8b9182782268025bb28b5322a088a572c13
-    direction: opening
     points: 4
-    frames: 54260
-    valid_frames: 54260
-    rate_hz: 400.2126548052998
-    maximum_absolute_error_mm: 1.1593533244938428
-    mean_absolute_error_mm: 0.3751260037841422
+    maximum_absolute_error_mm: 0.853666649284
+    mean_absolute_error_mm: 0.430691631319
 combined_acceptance:
   result: PASS
   points: 11
-  directions_present: [closing, opening]
-  direction_coverage_pass: true
-  maximum_absolute_error_mm: 1.1593533244938428
-  mean_absolute_error_mm: 0.2891959004951749
+  direction_gate: NOT_APPLICABLE_MANUAL_ANGLE_ONLY
+  maximum_absolute_error_mm: 0.894766596433
+  mean_absolute_error_mm: 0.370350449803
   maximum_gate_mm: 1.5
   mean_gate_mm: 1.0
 transport_acceptance:

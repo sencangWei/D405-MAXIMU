@@ -1,0 +1,111 @@
+{
+  "schema": "umi_gripper_fast_capture_v1",
+  "mode": "holdout",
+  "profile": "/home/robot/ego_vio_calib_kit/product_calibration/umi_manual_gripper_c48df736_20260901_shell2_v2_candidate.yaml",
+  "port": "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_c48df736b505f011adda8d1272aab386-if00-port0",
+  "baud": 921600,
+  "started_at": "2026-09-01T01:24:02+0800",
+  "points": [
+    {
+      "window_s": 0.5,
+      "samples": 200,
+      "sequence_first": 1216671,
+      "sequence_last": 1216870,
+      "direction": "opening",
+      "angle_median_deg": 268.26416015625,
+      "angle_span_deg": 0.263671875,
+      "predicted_gap_mm": 13.074444193839634,
+      "static_span_max_deg": 0.3,
+      "static_pass": true,
+      "tracker_direction_diagnostic": "closing",
+      "measured_gap_mm": 13.25,
+      "absolute_error_mm": 0.17555580616036615,
+      "id": "P01"
+    },
+    {
+      "window_s": 0.5,
+      "samples": 201,
+      "sequence_first": 1242178,
+      "sequence_last": 1242378,
+      "direction": "opening",
+      "angle_median_deg": 284.69970703125,
+      "angle_span_deg": 0.263671875,
+      "predicted_gap_mm": 25.680646675506157,
+      "static_span_max_deg": 0.3,
+      "static_pass": true,
+      "tracker_direction_diagnostic": "closing",
+      "measured_gap_mm": 26.84,
+      "absolute_error_mm": 1.1593533244938428,
+      "id": "P02"
+    },
+    {
+      "window_s": 0.5,
+      "samples": 200,
+      "sequence_first": 1259967,
+      "sequence_last": 1260166,
+      "direction": "opening",
+      "angle_median_deg": 296.7626953125,
+      "angle_span_deg": 0.2197265625,
+      "predicted_gap_mm": 35.1555933332751,
+      "static_span_max_deg": 0.3,
+      "static_pass": true,
+      "tracker_direction_diagnostic": "closing",
+      "measured_gap_mm": 35.19,
+      "absolute_error_mm": 0.034406666724898116,
+      "id": "P03"
+    },
+    {
+      "window_s": 0.5,
+      "samples": 200,
+      "sequence_first": 1264850,
+      "sequence_last": 1265049,
+      "direction": "opening",
+      "angle_median_deg": 313.3740234375,
+      "angle_span_deg": 0.15380859375,
+      "predicted_gap_mm": 49.60881178224254,
+      "static_span_max_deg": 0.3,
+      "static_pass": true,
+      "tracker_direction_diagnostic": "closing",
+      "measured_gap_mm": 49.74,
+      "absolute_error_mm": 0.1311882177574617,
+      "id": "P04"
+    }
+  ],
+  "finished_at": "2026-09-01T01:26:17+0800",
+  "health": {
+    "schema": "umi_gripper_health_v1",
+    "state": "STOPPED",
+    "port": "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_c48df736b505f011adda8d1272aab386-if00-port0",
+    "baud": 921600,
+    "calibration_id": "UMI_MANUAL_GRIPPER_C48DF736_20260901_SHELL2_V2_CANDIDATE",
+    "frames": 54260,
+    "valid_frames": 54260,
+    "invalid_frames": 0,
+    "rate_hz": 400.2126548052998,
+    "sequence_gaps": 0,
+    "device_time_regressions": 0,
+    "crc_errors": 0,
+    "discarded_bytes": 0,
+    "device_queue_overflow_flags": 0,
+    "callback_queue_drops": 0,
+    "callback_errors": 0,
+    "serial_errors": 0,
+    "last_sample_age_ms": 50.471759,
+    "last_error_code": null
+  },
+  "evaluation": {
+    "maximum_absolute_error_mm": 1.1593533244938428,
+    "mean_absolute_error_mm": 0.3751260037841422,
+    "maximum_gate_mm": 1.5,
+    "mean_gate_mm": 1.0,
+    "directions_present": [
+      "opening"
+    ],
+    "required_directions": [
+      "closing",
+      "opening"
+    ],
+    "direction_coverage_pass": false,
+    "result": "FAIL"
+  }
+}
