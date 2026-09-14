@@ -13,6 +13,7 @@
 - 设备配置：`config/devices_product_live_stm32.yaml`
 - VINS 标定：`config/product_live_stm32/vins_config.yaml`
 - 夹爪配置：`config/gripper/umi_manual_gripper_20260824.yaml`
+- RK3576 采集端候选：`rk3576/collector/`（D405 + STM32，App 侧合同适配）
 
 当前 D405 使用出厂双 IR 内参；当前固定装配相机—IMU使用两轮 Kalibr 共识外参和
 `td=-0.009312 s`。夹爪状态与 IMU 共用 MCU 计时域，但不参与 VINS/SLAM 优化。
@@ -48,6 +49,10 @@ cd /home/robot/ego_vio_humble
 构建、实时和离线入口启动时都会清除终端继承的 ROS/colcon overlay，再只加载
 ROS 2 Humble 与本产品签名工作区，避免旧机工作区或 Jazzy 环境污染。
 原始录制不提交 Git，应由客户数据盘单独管理。
+
+RK3576 候选只负责板端预览、采集、落盘、Catalog 和转存适配，不替换本机正式
+DB3/FFV1 采集入口，也不修改 App。它的双 IR H.265 是紧凑有损格式，证据边界和
+新板验收要求见 `rk3576/collector/README.md`。
 
 ## 标定与 App 接口
 

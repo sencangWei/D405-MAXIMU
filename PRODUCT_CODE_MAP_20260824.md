@@ -10,6 +10,8 @@
 - 实时入口：`run_vins_realtime.sh`
 - 离线入口：`run_slam_postprocess.sh`
 - 环境隔离：`scripts/reset_ros_environment.sh`（正式入口加载 ROS 前必须 source）
+- RK3576 板端候选：`rk3576/collector/`（C++ D405/STM32 采集及既有 App 合同适配；
+  不属于本机 `product-live` 运行入口）
 
 ## 生效标定
 

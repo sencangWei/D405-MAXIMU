@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+UMI_RELEASE_ROOT=$(cd -- "$(dirname -- "$(readlink -f -- "$0")")/.." && pwd)
+export PYTHONPATH="$UMI_RELEASE_ROOT/adapter:$UMI_RELEASE_ROOT/vendor/ego-runtime:$UMI_RELEASE_ROOT/vendor/site-packages${PYTHONPATH:+:$PYTHONPATH}"
+exec /usr/bin/python3 "$UMI_RELEASE_ROOT/adapter/umi_preview_web.py" --host 127.0.0.1 --port 18080
