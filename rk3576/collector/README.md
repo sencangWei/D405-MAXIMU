@@ -42,6 +42,10 @@ must additionally provide:
 - locked Python 3.12 aarch64 dependencies;
 - generated ARM64 binaries, release manifest and `SHA256SUMS`.
 
+`check-host.sh` disables Python bytecode writes so verifying a package cannot
+mutate files covered by `SHA256SUMS`; `install.sh` rechecks every file before
+copying and again before atomically selecting the immutable version.
+
 The full package is intentionally not tracked here because generated binaries
 and `.so` files are ignored. The previously bench-tested `0.2.0` archive is not
 bound to this fail-closed `0.2.2-umi` source revision. Build a fresh aarch64

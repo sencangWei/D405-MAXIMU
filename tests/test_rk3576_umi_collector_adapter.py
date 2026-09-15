@@ -440,3 +440,9 @@ def test_admin_service_bootstraps_empty_completed_recording_root() -> None:
 
     assert '"$UMI_RECORDING_ROOT/recordings-v2/completed"' in launcher
     assert 'chmod 700 --' in launcher
+
+
+def test_host_check_does_not_mutate_hashed_release_with_bytecode() -> None:
+    host_check = (COLLECTOR / "check-host.sh").read_text(encoding="utf-8")
+
+    assert "export PYTHONDONTWRITEBYTECODE=1" in host_check
