@@ -38,4 +38,8 @@ g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -Werror \
 
 file "$NATIVE_ROOT/bin/umi-rsusb-probe"
 file "$NATIVE_ROOT/bin/umi-record-native"
-"$NATIVE_ROOT/bin/umi-rsusb-probe"
+if [[ "${UMI_SKIP_PROBE:-0}" = 1 ]]; then
+  printf 'BUILD_PASS_PROBE_SKIPPED (UMI_SKIP_PROBE=1)\n'
+else
+  "$NATIVE_ROOT/bin/umi-rsusb-probe"
+fi

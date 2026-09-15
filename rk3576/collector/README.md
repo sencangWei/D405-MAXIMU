@@ -90,3 +90,11 @@ maximum handoff gap, and MPP decoded all 600 frames from every H.265 stream.
 This is `BENCH_OBSERVED`, not a claim that every physical assembly is accepted.
 Each new RK3576 must repeat identity, preview, bounded collection, integrity,
 Catalog and transfer checks before use.
+
+## Operator documentation
+
+See [DEPLOYMENT_AND_USAGE.zh-CN.md](DEPLOYMENT_AND_USAGE.zh-CN.md) for the
+Chinese deployment, configuration, App integration, collection, transfer,
+acceptance, rollback and troubleshooting guide. It is written so a new host
+can install the immutable package without needing the original development
+conversation.
