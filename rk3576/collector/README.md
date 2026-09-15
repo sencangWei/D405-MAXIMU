@@ -44,7 +44,7 @@ must additionally provide:
 
 The full package is intentionally not tracked here because generated binaries
 and `.so` files are ignored. The previously bench-tested `0.2.0` archive is not
-bound to this fail-closed `0.2.1-umi` source revision. Build a fresh aarch64
+bound to this fail-closed `0.2.2-umi` source revision. Build a fresh aarch64
 artifact, verify its manifest and record its SHA-256 before installation.
 
 The source tree includes matching public librealsense headers and the upstream

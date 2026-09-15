@@ -10,8 +10,16 @@ UMI_RELEASE_ROOT=$(cd -- "$(dirname -- "$(readlink -f -- "$0")")/.." && pwd)
 : "${UMI_ADMIN_PUBLIC_KEY_DIR:?UMI_ADMIN_PUBLIC_KEY_DIR is required}"
 : "${UMI_ADMIN_TLS_CERT:?UMI_ADMIN_TLS_CERT is required}"
 : "${UMI_ADMIN_TLS_KEY:?UMI_ADMIN_TLS_KEY is required}"
-mkdir -p -- "$UMI_STATE_DIR" "$UMI_ADMIN_PUBLIC_KEY_DIR"
-chmod 700 -- "$UMI_STATE_DIR" "$UMI_ADMIN_PUBLIC_KEY_DIR"
+mkdir -p -- \
+  "$UMI_STATE_DIR" \
+  "$UMI_ADMIN_PUBLIC_KEY_DIR" \
+  "$UMI_RECORDING_ROOT/recordings-v2/completed"
+chmod 700 -- \
+  "$UMI_STATE_DIR" \
+  "$UMI_ADMIN_PUBLIC_KEY_DIR" \
+  "$UMI_RECORDING_ROOT" \
+  "$UMI_RECORDING_ROOT/recordings-v2" \
+  "$UMI_RECORDING_ROOT/recordings-v2/completed"
 touch -- "$UMI_STATE_DIR/transfer-operation.lock"
 chmod 600 -- "$UMI_STATE_DIR/transfer-operation.lock"
 export PYTHONPATH="$UMI_RELEASE_ROOT/adapter:$UMI_RELEASE_ROOT/vendor/ego-runtime:$UMI_RELEASE_ROOT/vendor/site-packages${PYTHONPATH:+:$PYTHONPATH}"

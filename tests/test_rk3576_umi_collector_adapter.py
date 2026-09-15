@@ -422,7 +422,7 @@ def test_release_provenance_describes_source_until_new_arm_artifact_is_built() -
 
     assert provenance["artifact"] is None
     assert provenance["collector"]["native_binary_sha256"] is None
-    assert provenance["collector"]["adapter_version"] == "0.2.1-umi"
+    assert provenance["collector"]["adapter_version"] == "0.2.2-umi"
     assert provenance["status"] == "SOURCE_VALIDATED"
 
 
@@ -433,3 +433,10 @@ def test_repository_does_not_track_generated_runtime_or_private_keys() -> None:
     assert not any(path.startswith("vendor/") for path in tracked_source)
     assert not any(path.startswith("native/bin/") for path in tracked_source)
     assert not any(path.endswith((".pem", ".key")) for path in tracked_source)
+
+
+def test_admin_service_bootstraps_empty_completed_recording_root() -> None:
+    launcher = (COLLECTOR / "bin" / "umi-admin-service").read_text(encoding="utf-8")
+
+    assert '"$UMI_RECORDING_ROOT/recordings-v2/completed"' in launcher
+    assert 'chmod 700 --' in launcher
