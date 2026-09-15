@@ -415,15 +415,16 @@ def test_legacy_published_ledger_does_not_block_upgrade(tmp_path: Path, umi_modu
     ) == []
 
 
-def test_release_provenance_describes_source_until_new_arm_artifact_is_built() -> None:
+def test_release_provenance_binds_the_arm_artifact() -> None:
     provenance = json.loads(
         (COLLECTOR / "RELEASE_PROVENANCE.json").read_text(encoding="utf-8")
     )
 
-    assert provenance["artifact"] is None
-    assert provenance["collector"]["native_binary_sha256"] is None
+    assert provenance["artifact"]["sha256"] == "f2ebbb71e87fd00a32e8acb6f16a83c5222711fc235f64ee9b37367c830104f1"
+    assert provenance["artifact"]["source_commit"] == "d0ba8ed61a5149c9c97742165f8f088b10adad49"
+    assert provenance["collector"]["native_binary_sha256"] == "7893f0aa988d68c254dd2827e7c4db5044ba3e265845b308ad60c7153161b2da"
     assert provenance["collector"]["adapter_version"] == "0.2.3-umi"
-    assert provenance["status"] == "SOURCE_VALIDATED"
+    assert provenance["status"] == "ARM_ARTIFACT_AND_IP161_INSTALL_VALIDATED"
 
 
 def test_repository_does_not_track_generated_runtime_or_private_keys() -> None:

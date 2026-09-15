@@ -27,7 +27,7 @@ gst-inspect-1.0 mpph265enc >/dev/null && echo MPP_OK
 sha256sum rk3576-umi-0.2.3.tar.gz
 ```
 
-正式包 SHA-256、大小和源码提交必须同时与仓库的 `RELEASE_PROVENANCE.json` 一致。源码分支是 `umi-rk3576-collector-adapter`，包内 manifest 也会固定实际构建所绑定的提交。
+0.2.3 正式包 SHA-256 是 `f2ebbb71e87fd00a32e8acb6f16a83c5222711fc235f64ee9b37367c830104f1`，大小 11164690 字节；必须同时与仓库的 `RELEASE_PROVENANCE.json` 一致。源码分支是 `umi-rk3576-collector-adapter`，该包 manifest 绑定源码提交 `d0ba8ed61a5149c9c97742165f8f088b10adad49`。
 
 ## 3. 查找并固定设备身份
 
