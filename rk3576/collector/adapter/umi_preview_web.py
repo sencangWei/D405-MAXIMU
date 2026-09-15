@@ -43,6 +43,11 @@ class State:
         self.expires_at = 0.0
         self.process: subprocess.Popen[bytes] | None = None
         self.source_starting = False
+        self.source_generation = 0
+        self.handed_off = False
+        self.state_path = Path(
+            os.environ.get("UMI_STATE_DIR", "/home/pi/.local/state/umi-recorder")
+        ) / "current.json"
         self.external_source_expected_until = 0.0
         self.frames = 0
         self.clients = 0
@@ -64,6 +69,8 @@ class State:
         if self.source_listens():
             self.wait_source_frame()
             return
+        if self.handed_off or self.capture_active():
+            raise RuntimeError("recording owns the camera; preview source is not ready")
         if self.process is not None and self.process.poll() is None:
             raise RuntimeError("preview source is starting but not reachable")
         self.output_root.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -96,6 +103,18 @@ class State:
         self.stop_owned_source()
         raise RuntimeError("preview source did not become ready")
 
+    def capture_active(self) -> bool:
+        try:
+            value = json.loads(self.state_path.read_text())
+            return value.get("state") in {
+                "starting", "recording", "stop_requested", "finalizing"
+            }
+        except FileNotFoundError:
+            return False
+        except (OSError, ValueError):
+            # Fail closed if camera ownership cannot be established.
+            return True
+
     def wait_source_frame(self) -> None:
         """Do not advertise a session until one complete JPEG is available."""
         deadline = time.monotonic() + 6.0
@@ -116,6 +135,7 @@ class State:
         raise RuntimeError("preview source produced no complete JPEG")
 
     def stop_owned_source(self) -> None:
+        self.source_generation += 1
         process = self.process
         self.process = None
         if process is None or process.poll() is not None:
@@ -133,10 +153,9 @@ class State:
 
     def prepare_recording_handoff(self, device_id: str) -> dict:
         with self.lock:
-            if self.session_id is None:
-                return {"released": True, "session_id": None}
-            if device_id != self.device_id:
+            if self.session_id is not None and device_id != self.device_id:
                 raise RuntimeError("preview session belongs to another device")
+            self.handed_off = True
             self.external_source_expected_until = time.monotonic() + HANDOFF_SECONDS
             session_id = self.session_id
             self.stop_owned_source()
@@ -144,19 +163,38 @@ class State:
 
     def request_owned_source_start(self) -> None:
         with self.lock:
+            capture_active = self.capture_active()
+            if (
+                self.handed_off
+                and not capture_active
+                and time.monotonic() >= self.external_source_expected_until
+            ):
+                self.handed_off = False
+            if self.session_id is None or self.handed_off or capture_active:
+                return
             if self.source_starting or self.source_listens():
                 return
             if self.process is not None and self.process.poll() is None:
                 return
             self.source_starting = True
+            generation = self.source_generation
+            session_id = self.session_id
 
         def start() -> None:
-            try:
-                self.ensure_source()
-            except Exception:
-                pass
-            finally:
-                with self.lock:
+            with self.lock:
+                try:
+                    if (
+                        generation != self.source_generation
+                        or session_id != self.session_id
+                        or self.handed_off
+                        or time.time() >= self.expires_at
+                        or self.capture_active()
+                    ):
+                        return
+                    self.ensure_source()
+                except Exception:
+                    self.stop_owned_source()
+                finally:
                     self.source_starting = False
 
         threading.Thread(target=start, name="umi-preview-source-start", daemon=True).start()
@@ -338,8 +376,10 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json(409, {"error": {"code": "PREVIEW_BUSY"}})
                     return
                 try:
+                    self.state.handed_off = self.state.capture_active()
                     self.state.ensure_source()
                 except Exception as error:
+                    self.state.stop_owned_source()
                     self.send_json(503, {"error": {"code": "PREVIEW_START_FAILED", "message": str(error)}})
                     return
                 self.state.session_id = uuid.uuid4().hex
@@ -363,8 +403,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.state.session_id = None
                 self.state.device_id = None
                 self.state.expires_at = 0.0
-                self.send_json(200, {"session_id": closed, "reason": body.get("reason", "CLIENT_CLOSED")})
                 self.state.stop_owned_source()
+                self.send_json(200, {"session_id": closed, "reason": body.get("reason", "CLIENT_CLOSED")})
 
     def session_payload(self) -> dict:
         session_id = self.state.session_id

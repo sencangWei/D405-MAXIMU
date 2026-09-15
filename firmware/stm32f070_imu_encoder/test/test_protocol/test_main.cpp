@@ -77,11 +77,48 @@ void test_imu_parser_rejects_bad_checksum_and_resynchronizes_after_noise() {
 
 void test_as5047p_commands_and_response_validation() {
     TEST_ASSERT_EQUAL_HEX16(0x7FFEU, as5047p::makeReadCommand(0x3FFEU));
+    TEST_ASSERT_EQUAL_HEX16(0x4001U, as5047p::makeReadCommand(0x0001U));
     TEST_ASSERT_EQUAL_HEX16(0x0000U, as5047p::makeNopCommand());
     TEST_ASSERT_TRUE(as5047p::isValidResponse(0x0000U));
     TEST_ASSERT_FALSE(as5047p::isValidResponse(0x0001U));
     TEST_ASSERT_FALSE(as5047p::isValidResponse(0x4000U));
     TEST_ASSERT_EQUAL_UINT16(0x1234U, as5047p::angleRaw(0x1234U));
+}
+
+void test_as5047p_angle_read_clears_latched_error_and_retries_once() {
+    constexpr std::array<uint16_t, 6U> responses{
+        0x0000U, 0xC000U, 0x0000U, 0x0004U, 0x0000U, 0x9234U};
+    std::array<uint16_t, 6U> commands{};
+    size_t index = 0U;
+
+    const uint16_t response = as5047p::readAngleWithRecovery(
+        [&](uint16_t command) {
+            commands[index] = command;
+            return responses[index++];
+        });
+
+    TEST_ASSERT_EQUAL_UINT32(6U, index);
+    TEST_ASSERT_EQUAL_HEX16(0x7FFEU, commands[0]);
+    TEST_ASSERT_EQUAL_HEX16(0x0000U, commands[1]);
+    TEST_ASSERT_EQUAL_HEX16(0x4001U, commands[2]);
+    TEST_ASSERT_EQUAL_HEX16(0x0000U, commands[3]);
+    TEST_ASSERT_EQUAL_HEX16(0x7FFEU, commands[4]);
+    TEST_ASSERT_EQUAL_HEX16(0x0000U, commands[5]);
+    TEST_ASSERT_EQUAL_HEX16(0x9234U, response);
+    TEST_ASSERT_TRUE(as5047p::isValidResponse(response));
+}
+
+void test_as5047p_angle_read_returns_persistent_error_after_one_retry() {
+    constexpr std::array<uint16_t, 6U> responses{
+        0x0000U, 0xC000U, 0x0000U, 0x0001U, 0x0000U, 0xC000U};
+    size_t index = 0U;
+
+    const uint16_t response = as5047p::readAngleWithRecovery(
+        [&](uint16_t) { return responses[index++]; });
+
+    TEST_ASSERT_EQUAL_UINT32(6U, index);
+    TEST_ASSERT_EQUAL_HEX16(0xC000U, response);
+    TEST_ASSERT_FALSE(as5047p::isValidResponse(response));
 }
 
 void test_crc_matches_ccitt_false_reference_vector() {
@@ -133,6 +170,8 @@ int main(int, char**) {
     RUN_TEST(test_imu_parser_keeps_first_byte_timestamp);
     RUN_TEST(test_imu_parser_rejects_bad_checksum_and_resynchronizes_after_noise);
     RUN_TEST(test_as5047p_commands_and_response_validation);
+    RUN_TEST(test_as5047p_angle_read_clears_latched_error_and_retries_once);
+    RUN_TEST(test_as5047p_angle_read_returns_persistent_error_after_one_retry);
     RUN_TEST(test_crc_matches_ccitt_false_reference_vector);
     RUN_TEST(test_combined_packet_has_exact_layout_and_crc);
     return UNITY_END();

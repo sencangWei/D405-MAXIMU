@@ -170,7 +170,8 @@ App 团队应把 UMI 识别为第三种设备类型，继续使用已有 EGO 控
 
 无传感器时只能完成安装验收：包校验、host check、服务、回环端口、身份输出，以及 start 在 preflight 阶段安全失败。接齐传感器后必须补做 HIL：
 
-1. 身份四项全部匹配且 preflight PASS。
+1. 身份四项全部匹配；未占用 STM32 做主动采样时，preflight 允许仅 IMU live probe 为
+   `IMU_LIVE_PROBE_UNAVAILABLE` 的 WARN，其余项必须 PASS。正式采集的 STM32 完整性必须 PASS。
 2. 720p RGB 预览达到目标 15 Hz，无长期断流。
 3. 至少 10 分钟 RGB/双 IR 约 30 Hz，STM32 约 400 Hz。
 4. 无序列缺口、时间戳回退、CRC/帧错误、无效标志和编码队列溢出。
@@ -208,3 +209,10 @@ systemctl --user restart umi-preview.service umi-admin.service
 - 断电/进程崩溃：控制器会按 boot ID、PID、启动 ticks 和 publication ledger 恢复；仍需检查该会话最终状态，不能手工把 `interrupted` 改成 `PASSED`。
 
 发布、升级或回滚后都要保存：版本、源码提交、包 SHA-256、原生二进制 SHA-256、板端身份、服务状态、preflight/HIL 结果和失败日志。只有这些证据齐全，才能把“已安装”升级为“该物理设备已验收”。
+
+## 10. 0.2.4 重复录制与编码器修复说明
+
+- 预览进程与采集进程使用同一把跨进程 D405 独占锁；录制交接后，旧预览后台线程通过 generation 和控制器状态双重校验，不得重新抢占相机。
+- D405 udev 规则固定 `power/control=on`，避免两次 Web 录制之间进入 runtime autosuspend。录制中出现 1 秒相机断流仍判失败，不允许用重试掩盖时间轴缺口。
+- STM32 preflight 只确认设备存在，不能在未采样时宣称 `ok`；正式采集边界要求连续、CRC 正确且 IMU/编码器有效的数据包。
+- AS5047P `flags=5` 表示 IMU 有效、编码器错误位锁存。持久修复位于 STM32 固件，需要通过 ST-Link/J4 烧录；CP2102N 串口不能升级该固件。

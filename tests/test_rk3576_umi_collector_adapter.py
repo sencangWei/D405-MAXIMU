@@ -24,6 +24,107 @@ def umi_modules(monkeypatch: pytest.MonkeyPatch):
     return recorderctl, publish
 
 
+@pytest.fixture()
+def umi_preview_module(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.syspath_prepend(str(ADAPTER))
+    monkeypatch.setenv("UMI_D405_SDK_SERIAL", "sdk-serial-161")
+    monkeypatch.setenv("UMI_D405_USB_SERIAL", "usb-serial-161")
+    monkeypatch.setenv("UMI_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("UMI_RECORDING_ROOT", str(tmp_path / "recordings"))
+    sys.modules.pop("umi_preview_web", None)
+    return importlib.import_module("umi_preview_web")
+
+
+def test_preview_never_starts_owned_camera_while_capture_is_active(
+    monkeypatch: pytest.MonkeyPatch,
+    umi_preview_module,
+) -> None:
+    state = umi_preview_module.State()
+    state.session_id = "preview-session"
+    monkeypatch.setattr(state, "capture_active", lambda: True)
+    monkeypatch.setattr(state, "source_listens", lambda: False)
+    started = []
+    monkeypatch.setattr(state, "ensure_source", lambda: started.append(True))
+
+    state.request_owned_source_start()
+
+    assert started == []
+    assert state.source_starting is False
+
+
+def test_recording_handoff_blocks_idle_preview_even_without_session(
+    monkeypatch: pytest.MonkeyPatch,
+    umi_preview_module,
+) -> None:
+    state = umi_preview_module.State()
+    stopped = []
+    monkeypatch.setattr(state, "stop_owned_source", lambda: stopped.append(True))
+
+    result = state.prepare_recording_handoff("umi-rk3576-161")
+
+    assert result == {"released": True, "session_id": None}
+    assert state.handed_off is True
+    assert stopped == [True]
+
+
+def test_preview_resumes_after_recording_handoff_finishes(
+    monkeypatch: pytest.MonkeyPatch,
+    umi_preview_module,
+) -> None:
+    state = umi_preview_module.State()
+    state.session_id = "preview-session"
+    state.expires_at = umi_preview_module.time.time() + 30
+    state.handed_off = True
+    state.external_source_expected_until = 0.0
+    monkeypatch.setattr(state, "capture_active", lambda: False)
+    monkeypatch.setattr(state, "source_listens", lambda: False)
+    started = []
+    monkeypatch.setattr(state, "ensure_source", lambda: started.append(True))
+
+    class InlineThread:
+        def __init__(self, *, target, **_kwargs):
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    monkeypatch.setattr(umi_preview_module.threading, "Thread", InlineThread)
+
+    state.request_owned_source_start()
+
+    assert state.handed_off is False
+    assert started == [True]
+    assert state.source_starting is False
+
+
+def test_preview_handoff_accepts_session_expiring_between_health_and_post(
+    monkeypatch: pytest.MonkeyPatch,
+    umi_modules,
+) -> None:
+    recorderctl, _ = umi_modules
+    monkeypatch.setattr(
+        recorderctl,
+        "preview_health",
+        lambda: {"session_id": "expired-preview-session"},
+    )
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args) -> None:
+            return None
+
+        def read(self) -> bytes:
+            return b'{"released":true,"session_id":null}'
+
+    monkeypatch.setattr(recorderctl, "urlopen", lambda *_args, **_kwargs: Response())
+
+    recorderctl.prepare_preview_handoff(
+        types.SimpleNamespace(device_id="umi-rk3576-161")
+    )
+
+
 def test_explicit_unit_identity_reaches_existing_app_contract(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -46,6 +147,7 @@ def test_explicit_unit_identity_reaches_existing_app_contract(
     assert config.stm32_port == str(stm32)
     assert identity["device_id"] == "umi-rk3576-161"
     assert identity["model"] == "UMI-D405-RK3576"
+    assert identity["controller_version"] == "0.2.4-umi"
     assert identity["capabilities"] == [
         "capture_timing_v1",
         "preview_v1",
@@ -453,3 +555,38 @@ def test_all_python_launchers_keep_immutable_release_free_of_bytecode() -> None:
     for relative in ("bin/recorderctl", "bin/umi-admin-service", "bin/umi-preview-service"):
         launcher = (COLLECTOR / relative).read_text(encoding="utf-8")
         assert "export PYTHONDONTWRITEBYTECODE=1" in launcher
+
+
+def test_d405_udev_rule_disables_runtime_autosuspend() -> None:
+    rules = (COLLECTOR / "99-umi-devices.rules").read_text(encoding="utf-8")
+
+    d405_rule = next(line for line in rules.splitlines() if 'ATTR{idVendor}=="8086"' in line)
+    assert 'ATTR{power/control}="on"' in d405_rule
+
+
+def test_preflight_reports_contract_complete_unsampled_stm32_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    umi_modules,
+) -> None:
+    recorderctl, _ = umi_modules
+    stm32 = tmp_path / "serial-by-id"
+    stm32.touch()
+    monkeypatch.setenv("UMI_DEVICE_ID", "umi-rk3576-161")
+    monkeypatch.setenv("UMI_D405_SDK_SERIAL", "sdk-serial-161")
+    monkeypatch.setenv("UMI_D405_USB_SERIAL", "usb-serial-161")
+    monkeypatch.setenv("UMI_STM32_PORT", str(stm32))
+    monkeypatch.setenv("UMI_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("UMI_RECORDING_ROOT", str(tmp_path / "recordings"))
+    monkeypatch.setattr(recorderctl, "recover_pending_publications", lambda **_kwargs: [])
+    cfg = recorderctl.Config()
+    cfg.prepare()
+
+    imu = recorderctl._preflight_locked(cfg)["imu"]
+
+    assert imu == {
+        "state": "unknown",
+        "sample_count": 0,
+        "error_code": "IMU_LIVE_PROBE_UNAVAILABLE",
+        "detail": "Sensor packets are checked during capture warmup",
+    }

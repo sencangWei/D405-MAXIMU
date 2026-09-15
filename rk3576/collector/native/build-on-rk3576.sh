@@ -8,6 +8,8 @@ PYRS_PATH="$RELEASE_ROOT/runtime/$PYRS_NAME"
 PYRS_SONAME="$PYRS_NAME.2.58"
 PYRS_SONAME_PATH="$RELEASE_ROOT/runtime/$PYRS_SONAME"
 PYTHON_DSO=/usr/lib/aarch64-linux-gnu/libpython3.12.so.1.0
+NATIVE_TEST_BIN=$(mktemp /tmp/umi-native-tests.XXXXXX)
+trap 'rm -f -- "$NATIVE_TEST_BIN"' EXIT
 
 test "$(uname -m)" = aarch64
 test -f "$PYRS_PATH"
@@ -35,6 +37,15 @@ g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -Werror \
   -L/usr/lib/aarch64-linux-gnu -l:libpython3.12.so.1.0 \
   -Wl,--as-needed -Wl,-rpath,'$ORIGIN/../../runtime' \
   -pthread -ldl -o "$NATIVE_ROOT/bin/umi-record-native"
+
+g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -Werror \
+  -isystem "$NATIVE_ROOT/vendor/librealsense/include" \
+  "$NATIVE_ROOT/src/native_tests.cpp" \
+  -L"$RELEASE_ROOT/runtime" -Wl,--no-as-needed -l:"$PYRS_NAME" \
+  -L/usr/lib/aarch64-linux-gnu -l:libpython3.12.so.1.0 \
+  -Wl,--as-needed -Wl,-rpath,"$RELEASE_ROOT/runtime" \
+  -pthread -ldl -o "$NATIVE_TEST_BIN"
+"$NATIVE_TEST_BIN"
 
 file "$NATIVE_ROOT/bin/umi-rsusb-probe"
 file "$NATIVE_ROOT/bin/umi-record-native"

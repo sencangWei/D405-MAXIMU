@@ -24,7 +24,7 @@ from umi_publish import publish_session, recover_pending_publications
 
 
 SCHEMA_VERSION = 1
-CONTROLLER_VERSION = "0.2.3-umi"
+CONTROLLER_VERSION = "0.2.4-umi"
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 ACTIVE = {"starting", "recording", "stop_requested", "finalizing"}
 FINAL = {"complete_local", "incomplete", "interrupted"}
@@ -330,10 +330,16 @@ def _preflight_locked(cfg: Config) -> dict:
         "d405_present": d405,
         "stm32_present": stm32,
         "imu": {
-            "state": "unknown" if active else ("ok" if stm32 else "fault"),
-            "sample_count": 0 if active else (2 if stm32 else 0),
-            "error_code": "" if stm32 else "STM32_NOT_FOUND",
-            "detail": "" if stm32 else "STM32 serial device is unavailable",
+            "state": "unknown" if stm32 else "fault",
+            "sample_count": 0,
+            "error_code": (
+                "IMU_LIVE_PROBE_UNAVAILABLE" if stm32 else "STM32_NOT_FOUND"
+            ),
+            "detail": (
+                "Sensor packets are checked during capture warmup"
+                if stm32
+                else "STM32 serial device is unavailable"
+            ),
         },
     }
 
@@ -569,7 +575,7 @@ def prepare_preview_handoff(cfg: Config) -> None:
     if (
         not isinstance(result, dict)
         or result.get("released") is not True
-        or result.get("session_id") != health.get("session_id")
+        or result.get("session_id") not in {None, health.get("session_id")}
     ):
         raise ControllerError(
             "PREVIEW_HANDOFF_FAILED",

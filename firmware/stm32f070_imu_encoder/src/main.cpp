@@ -225,9 +225,7 @@ uint16_t encoderTransaction(uint16_t command) {
 }
 
 uint16_t readEncoder() {
-    encoderTransaction(
-        as5047p::makeReadCommand(as5047p::kAngleUncompensatedAddress));
-    return encoderTransaction(as5047p::makeNopCommand());
+    return as5047p::readAngleWithRecovery(&encoderTransaction);
 }
 
 void serviceCapturePipeline() {

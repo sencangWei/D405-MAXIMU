@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
+#include <spawn.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/types.h>
@@ -39,6 +41,7 @@
 #include <vector>
 
 namespace fs = std::filesystem;
+extern char** environ;
 using Clock = std::chrono::steady_clock;
 
 namespace {
@@ -211,6 +214,36 @@ struct UsbSnapshot {
   std::string speed;
 };
 
+class CameraLease final {
+ public:
+  explicit CameraLease(const std::string& serial) {
+    if (serial.empty() ||
+        !std::all_of(serial.begin(), serial.end(), [](unsigned char ch) {
+          return std::isalnum(ch) != 0;
+        })) {
+      throw Error("invalid camera serial for ownership lock");
+    }
+    const std::string path = "/tmp/umi-camera-" + serial + ".lock";
+    descriptor_ = open(
+        path.c_str(), O_RDONLY | O_CREAT | O_CLOEXEC | O_NOFOLLOW, 0644);
+    if (descriptor_ < 0) throw Error("cannot open camera ownership lock");
+    if (flock(descriptor_, LOCK_EX | LOCK_NB) != 0) {
+      close(descriptor_);
+      descriptor_ = -1;
+      throw Error("camera busy: another preview or recording owns the D405");
+    }
+  }
+
+  CameraLease(const CameraLease&) = delete;
+  CameraLease& operator=(const CameraLease&) = delete;
+  ~CameraLease() {
+    if (descriptor_ >= 0) close(descriptor_);
+  }
+
+ private:
+  int descriptor_ = -1;
+};
+
 UsbSnapshot VerifyUsb(const std::string& serial) {
   std::vector<UsbSnapshot> matches;
   for (const fs::directory_entry& entry : fs::directory_iterator("/sys/bus/usb/devices")) {
@@ -274,28 +307,62 @@ class Encoder final {
     int input_pipe[2];
     if (pipe2(input_pipe, O_CLOEXEC) != 0) throw Error("cannot create encoder pipe");
     const int log = open(log_path_.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
-    if (log < 0) throw Error("cannot create " + log_path_.string());
-    child_ = fork();
-    if (child_ < 0) throw Error("cannot fork GStreamer");
-    if (child_ == 0) {
-      setsid();
-      dup2(input_pipe[0], STDIN_FILENO);
-      dup2(log, STDOUT_FILENO);
-      dup2(log, STDERR_FILENO);
+    if (log < 0) {
       close(input_pipe[0]);
       close(input_pipe[1]);
-      close(log);
-      std::vector<char*> arguments;
-      arguments.reserve(command_.size() + 1);
-      for (std::string& item : command_) arguments.push_back(item.data());
-      arguments.push_back(nullptr);
-      execvp(arguments.front(), arguments.data());
-      _exit(127);
+      throw Error("cannot create " + log_path_.string());
     }
+    std::vector<char*> arguments;
+    arguments.reserve(command_.size() + 1);
+    for (std::string& item : command_) arguments.push_back(item.data());
+    arguments.push_back(nullptr);
+    posix_spawn_file_actions_t actions;
+    posix_spawnattr_t attributes;
+    int result = posix_spawn_file_actions_init(&actions);
+    const bool actions_ready = result == 0;
+    if (result == 0) result = posix_spawnattr_init(&attributes);
+    const bool attributes_ready = result == 0;
+    if (result == 0) {
+      result = posix_spawn_file_actions_adddup2(
+          &actions, input_pipe[0], STDIN_FILENO);
+    }
+    if (result == 0) {
+      result = posix_spawn_file_actions_adddup2(&actions, log, STDOUT_FILENO);
+    }
+    if (result == 0) {
+      result = posix_spawn_file_actions_adddup2(&actions, log, STDERR_FILENO);
+    }
+    if (result == 0) {
+      result = posix_spawn_file_actions_addclose(&actions, input_pipe[0]);
+    }
+    if (result == 0) {
+      result = posix_spawn_file_actions_addclose(&actions, input_pipe[1]);
+    }
+    if (result == 0) result = posix_spawn_file_actions_addclose(&actions, log);
+    if (result == 0) {
+      result = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETPGROUP);
+    }
+    if (result == 0) result = posix_spawnattr_setpgroup(&attributes, 0);
+    if (result == 0) {
+      result = posix_spawnp(
+          &child_, arguments.front(), &actions, &attributes,
+          arguments.data(), environ);
+    }
+    if (attributes_ready) posix_spawnattr_destroy(&attributes);
+    if (actions_ready) posix_spawn_file_actions_destroy(&actions);
     close(input_pipe[0]);
     close(log);
+    if (result != 0) {
+      close(input_pipe[1]);
+      child_ = -1;
+      throw Error("cannot start encoder: " + std::string(std::strerror(result)));
+    }
     input_ = input_pipe[1];
     started_ = true;
+    if (fcntl(input_, F_SETFL, O_NONBLOCK) < 0) {
+      Cancel();
+      throw Error("cannot make encoder input nonblocking");
+    }
     worker_ = std::thread(&Encoder::WriteLoop, this);
   }
 
@@ -315,15 +382,17 @@ class Encoder final {
     available_.notify_one();
   }
 
-  void Finish() {
+  void Finish(std::chrono::milliseconds timeout = std::chrono::seconds(45)) {
     if (!started_) return;
+    const auto deadline = Clock::now() + timeout;
     {
       std::lock_guard<std::mutex> lock(mutex_);
       closing_ = true;
+      finish_deadline_ = deadline;
       available_.notify_all();
     }
     if (worker_.joinable()) worker_.join();
-    const int status = WaitForChild(std::chrono::seconds(45));
+    const int status = WaitForChild(deadline);
     started_ = false;
     if (!failure_.empty()) throw Error(failure_);
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
@@ -336,17 +405,21 @@ class Encoder final {
     {
       std::lock_guard<std::mutex> lock(mutex_);
       closing_ = true;
+      cancelled_.store(true);
       queue_.clear();
       available_.notify_all();
     }
     if (child_ > 0) kill(-child_, SIGKILL);
+    if (worker_.joinable()) worker_.join();
     if (input_ >= 0) {
       close(input_);
       input_ = -1;
     }
-    if (worker_.joinable()) worker_.join();
     int status = 0;
-    if (child_ > 0) waitpid(child_, &status, 0);
+    if (child_ > 0) {
+      while (waitpid(child_, &status, 0) < 0 && errno == EINTR) {
+      }
+    }
     child_ = -1;
     started_ = false;
   }
@@ -357,6 +430,36 @@ class Encoder final {
   std::size_t maximum_queue_depth() const { return maximum_queue_depth_; }
 
  private:
+  void WriteFrame(const std::vector<std::uint8_t>& frame) {
+    std::size_t offset = 0;
+    while (offset < frame.size()) {
+      if (cancelled_.load()) throw Error("encoder input cancelled");
+      {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (finish_deadline_ && Clock::now() >= *finish_deadline_) {
+          throw Error("encoder input drain timed out");
+        }
+      }
+      pollfd event{input_, POLLOUT, 0};
+      const int ready = poll(&event, 1, 50);
+      if (ready < 0 && errno == EINTR) continue;
+      if (ready < 0) throw Error("encoder input poll failed");
+      if (ready == 0) continue;
+      if ((event.revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+        throw Error("encoder input pipe closed");
+      }
+      const ssize_t written = write(
+          input_, frame.data() + offset, frame.size() - offset);
+      if (written > 0) {
+        offset += static_cast<std::size_t>(written);
+      } else if (written < 0 && (errno == EINTR || errno == EAGAIN)) {
+        continue;
+      } else {
+        throw Error("encoder input write failed");
+      }
+    }
+  }
+
   void WriteLoop() noexcept {
     try {
       while (true) {
@@ -371,7 +474,7 @@ class Encoder final {
           frame = std::move(queue_.front());
           queue_.pop_front();
         }
-        WriteAll(input_, frame.data(), frame.size());
+        WriteFrame(frame);
         ++frames_;
         bytes_ += frame.size();
       }
@@ -389,8 +492,7 @@ class Encoder final {
     }
   }
 
-  int WaitForChild(std::chrono::seconds timeout) {
-    const auto deadline = Clock::now() + timeout;
+  int WaitForChild(Clock::time_point deadline) {
     int status = 0;
     while (Clock::now() < deadline) {
       const pid_t result = waitpid(child_, &status, WNOHANG);
@@ -402,7 +504,8 @@ class Encoder final {
       std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
     kill(-child_, SIGKILL);
-    waitpid(child_, &status, 0);
+    while (waitpid(child_, &status, 0) < 0 && errno == EINTR) {
+    }
     child_ = -1;
     throw Error("GStreamer encoder shutdown timed out");
   }
@@ -419,6 +522,8 @@ class Encoder final {
   int input_ = -1;
   bool started_ = false;
   bool closing_ = false;
+  std::atomic<bool> cancelled_{false};
+  std::optional<Clock::time_point> finish_deadline_;
   std::string failure_;
   std::uint64_t frames_ = 0;
   std::uint64_t bytes_ = 0;
@@ -519,6 +624,8 @@ std::uint16_t Crc16(const std::uint8_t* data, std::size_t size) {
 struct SerialMetrics {
   std::uint64_t packets = 0;
   double rate = 0.0;
+  std::uint64_t first_rx_monotonic_ns = 0;
+  std::uint64_t last_rx_monotonic_ns = 0;
   std::uint64_t crc_errors = 0;
   std::uint64_t discarded_bytes = 0;
   std::uint64_t sequence_gaps = 0;
@@ -546,7 +653,23 @@ class SerialCollector final {
     if (!failure_.empty()) throw Error(failure_);
   }
 
-  void Begin() { recording_.store(true); }
+  std::uint64_t Begin() {
+    begin_requested_at_ns_.store(MonotonicNs());
+    begin_requested_.store(true);
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (!ready_cv_.wait_for(lock, std::chrono::seconds(3), [this] {
+          return recording_.load() || !failure_.empty();
+        })) {
+      throw Error("STM32 warmup failed: no valid packet at recording boundary");
+    }
+    if (!failure_.empty()) throw Error(failure_);
+    return formal_start_monotonic_ns_.load();
+  }
+
+  void End() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    recording_.store(false);
+  }
 
   void Stop() {
     stop_.store(true);
@@ -558,6 +681,11 @@ class SerialCollector final {
   SerialMetrics metrics() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return metrics_;
+  }
+
+  void ThrowIfFailed() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!failure_.empty()) throw Error(failure_);
   }
 
  private:
@@ -624,17 +752,40 @@ class SerialCollector final {
       std::optional<std::uint32_t> previous_sequence;
       std::optional<std::uint64_t> first_rx;
       std::optional<std::uint64_t> last_rx;
+      std::uint64_t healthy_warmup_packets = 0;
+      std::optional<std::uint64_t> warmup_last_rx;
+      bool begin_boundary_applied = false;
       while (!stop_.load()) {
         pollfd event{descriptor, POLLIN, 0};
         const int ready = poll(&event, 1, 50);
         if (ready < 0 && errno == EINTR) continue;
         if (ready < 0) throw Error("STM32 poll failed");
-        if (ready == 0 || (event.revents & POLLIN) == 0) continue;
+        if (ready > 0 &&
+            (event.revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+          throw Error("STM32 serial disconnected during capture");
+        }
+        if (ready == 0 || (event.revents & POLLIN) == 0) {
+          if (recording_.load() && last_rx &&
+              MonotonicNs() - *last_rx > 100'000'000ULL) {
+            throw Error("STM32 data stalled for more than 100 ms");
+          }
+          continue;
+        }
         const ssize_t count = read(descriptor, input.data(), input.size());
         if (count < 0 && (errno == EAGAIN || errno == EINTR)) continue;
         if (count < 0) throw Error("STM32 read failed");
         if (count == 0) continue;
         const std::uint64_t rx_ns = MonotonicNs();
+        if (begin_requested_.load() && !begin_boundary_applied &&
+            rx_ns >= begin_requested_at_ns_.load()) {
+          // A packet fragment already buffered when Begin() was requested
+          // straddles the formal boundary. Drop it once and require two fresh
+          // validated packets before recording.
+          buffer.clear();
+          healthy_warmup_packets = 0;
+          warmup_last_rx.reset();
+          begin_boundary_applied = true;
+        }
         buffer.insert(buffer.end(), input.begin(), input.begin() + count);
         while (true) {
           auto header = std::find(buffer.begin(), buffer.end(), 0xa5U);
@@ -645,7 +796,10 @@ class SerialCollector final {
           if (header == buffer.end()) {
             if (buffer.size() > 1) {
               std::lock_guard<std::mutex> lock(mutex_);
-              metrics_.discarded_bytes += buffer.size() - 1;
+              if (recording_.load()) {
+                metrics_.discarded_bytes += buffer.size() - 1;
+                throw Error("STM32 framing lost during capture");
+              }
               buffer.erase(buffer.begin(), buffer.end() - 1);
             }
             break;
@@ -653,7 +807,10 @@ class SerialCollector final {
           const std::size_t skipped = static_cast<std::size_t>(header - buffer.begin());
           if (skipped != 0) {
             std::lock_guard<std::mutex> lock(mutex_);
-            metrics_.discarded_bytes += skipped;
+            if (recording_.load()) {
+              metrics_.discarded_bytes += skipped;
+              throw Error("STM32 framing skipped bytes during capture");
+            }
             buffer.erase(buffer.begin(), header);
           }
           if (buffer.size() < kPacketBytes) break;
@@ -668,11 +825,49 @@ class SerialCollector final {
                              Load32(packet + 18) == Load32(packet + 56);
           if (!valid) {
             std::lock_guard<std::mutex> lock(mutex_);
-            ++metrics_.crc_errors;
             const std::size_t discarded = envelope ? kPacketBytes : 1;
-            metrics_.discarded_bytes += discarded;
+            if (recording_.load()) {
+              ++metrics_.crc_errors;
+              metrics_.discarded_bytes += discarded;
+              throw Error("STM32 packet integrity failed during capture");
+            } else {
+              healthy_warmup_packets = 0;
+            }
             buffer.erase(buffer.begin(), buffer.begin() + discarded);
             continue;
+          }
+          if (!recording_.load()) {
+            const std::uint16_t flags = Load16(packet + 4);
+            const bool healthy =
+                (flags & 0x03U) == 0x03U && (flags & 0x70U) == 0;
+            if (!healthy ||
+                (warmup_last_rx &&
+                 rx_ns - *warmup_last_rx > 100'000'000ULL)) {
+              healthy_warmup_packets = 0;
+            }
+            if (healthy) ++healthy_warmup_packets;
+            warmup_last_rx = rx_ns;
+            if (begin_requested_.load() &&
+                rx_ns >= begin_requested_at_ns_.load()) {
+              if (!healthy) {
+                throw Error(
+                    "STM32 warmup failed: IMU/encoder data not ready; flags=" +
+                    std::to_string(flags));
+              }
+              if (healthy_warmup_packets >= 2) {
+                // Only this reader thread establishes the boundary, at a
+                // complete validated packet. No warmup fragment enters formal
+                // metrics.
+                std::lock_guard<std::mutex> lock(mutex_);
+                metrics_ = SerialMetrics{};
+                previous_sequence.reset();
+                first_rx.reset();
+                last_rx.reset();
+                formal_start_monotonic_ns_.store(rx_ns);
+                recording_.store(true);
+                ready_cv_.notify_all();
+              }
+            }
           }
           if (recording_.load()) {
             const std::uint16_t flags = Load16(packet + 4);
@@ -683,20 +878,52 @@ class SerialCollector final {
             const std::uint16_t encoder_response = Load16(packet + 22);
             {
               std::lock_guard<std::mutex> lock(mutex_);
+              if (!recording_.load()) {
+                buffer.erase(buffer.begin(), buffer.begin() + kPacketBytes);
+                continue;
+              }
+              if (last_rx && rx_ns - *last_rx > 100'000'000ULL) {
+                throw Error("STM32 packet gap exceeded 100 ms");
+              }
               if (previous_sequence) {
                 const std::uint32_t delta = sequence - *previous_sequence;
-                if (delta == 0 || delta > 0x7fffffffU) ++metrics_.sequence_regressions;
-                else if (delta != 1) metrics_.sequence_gaps += delta - 1;
+                if (delta == 0 || delta > 0x7fffffffU) {
+                  ++metrics_.sequence_regressions;
+                  throw Error("STM32 sequence regressed during capture");
+                }
+                if (delta != 1) {
+                  metrics_.sequence_gaps += delta - 1;
+                  throw Error("STM32 sequence gap during capture");
+                }
               }
               previous_sequence = sequence;
-              if ((flags & 0x01U) == 0) ++metrics_.invalid_imu_flags;
-              if ((flags & 0x02U) == 0) ++metrics_.invalid_encoder_flags;
-              if ((flags & 0x10U) != 0) ++metrics_.imu_counter_gap_flags;
-              if ((flags & 0x20U) != 0) ++metrics_.imu_queue_overflow_flags;
-              if ((flags & 0x40U) != 0) ++metrics_.pc_tx_queue_overflow_flags;
+              if ((flags & 0x01U) == 0) {
+                ++metrics_.invalid_imu_flags;
+                throw Error("STM32 IMU became invalid during capture");
+              }
+              if ((flags & 0x02U) == 0) {
+                ++metrics_.invalid_encoder_flags;
+                throw Error("STM32 encoder became invalid during capture");
+              }
+              if ((flags & 0x10U) != 0) {
+                ++metrics_.imu_counter_gap_flags;
+                throw Error("STM32 IMU counter gap flag during capture");
+              }
+              if ((flags & 0x20U) != 0) {
+                ++metrics_.imu_queue_overflow_flags;
+                throw Error("STM32 IMU queue overflow during capture");
+              }
+              if ((flags & 0x40U) != 0) {
+                ++metrics_.pc_tx_queue_overflow_flags;
+                throw Error("STM32 TX queue overflow during capture");
+              }
               const std::uint64_t record_index = metrics_.packets++;
-              if (!first_rx) first_rx = rx_ns;
+              if (!first_rx) {
+                first_rx = rx_ns;
+                metrics_.first_rx_monotonic_ns = rx_ns;
+              }
               last_rx = rx_ns;
+              metrics_.last_rx_monotonic_ns = rx_ns;
               if (std::fwrite(packet, 1, kPacketBytes, payload) != kPacketBytes) {
                 throw Error("STM32 payload write failed");
               }
@@ -717,6 +944,10 @@ class SerialCollector final {
             }
           }
           buffer.erase(buffer.begin(), buffer.begin() + kPacketBytes);
+        }
+        if (recording_.load() && last_rx &&
+            MonotonicNs() - *last_rx > 100'000'000ULL) {
+          throw Error("STM32 valid data stalled for more than 100 ms");
         }
       }
       if (std::fflush(payload) != 0 || fsync(fileno(payload)) != 0 ||
@@ -748,6 +979,9 @@ class SerialCollector final {
   fs::path payload_;
   fs::path index_;
   std::atomic<bool> recording_{false};
+  std::atomic<bool> begin_requested_{false};
+  std::atomic<std::uint64_t> begin_requested_at_ns_{0};
+  std::atomic<std::uint64_t> formal_start_monotonic_ns_{0};
   std::atomic<bool> stop_{false};
   mutable std::mutex mutex_;
   std::condition_variable ready_cv_;
@@ -976,6 +1210,7 @@ std::string FileClaims(const fs::path& root) {
 }
 
 std::string Capture(const Options& options) {
+  const CameraLease camera_lease(options.usb_serial);
   const UsbSnapshot usb = VerifyUsb(options.usb_serial);
   const std::string stm32_path = DiscoverStm32(options.stm32_port);
   fs::create_directories(options.output_root);
@@ -1134,11 +1369,11 @@ std::string Capture(const Options& options) {
                                          ? "maximum_duration_complete"
                                          : "fixed_duration_complete";
     std::optional<std::uint64_t> stop_observed_ns;
-    serial.Begin();
-    const std::uint64_t formal_start_ns = MonotonicNs();
+    const std::uint64_t formal_start_ns = serial.Begin();
     const auto bounded_deadline = Clock::now() + std::chrono::seconds(options.duration + 15);
     auto next_storage_check = Clock::now() + std::chrono::seconds(1);
     while (true) {
+      serial.ThrowIfFailed();
       if (options.until_signal && !capture_target && g_stop_requested.load()) {
         stop_observed_ns = MonotonicNs();
         const std::uint64_t current = std::max(
@@ -1225,6 +1460,7 @@ std::string Capture(const Options& options) {
         if (pending.size() > 16) throw Error("stereo IR pairing window exceeded");
       }
     }
+    serial.End();
     const std::uint64_t formal_stop_ns = MonotonicNs();
     serial.Stop();
     sensor.stop(); sensor_started = false;
@@ -1246,7 +1482,16 @@ std::string Capture(const Options& options) {
       throw Error("encoder frame accounting mismatch");
     }
     const SerialMetrics serial_metrics = serial.metrics();
+    const double formal_span = (formal_stop_ns - formal_start_ns) / 1e9;
+    const double serial_coverage_rate =
+        serial_metrics.packets / std::max(formal_span, 1e-9);
+    const bool serial_tail_covered =
+        serial_metrics.last_rx_monotonic_ns != 0 &&
+        formal_stop_ns >= serial_metrics.last_rx_monotonic_ns &&
+        formal_stop_ns - serial_metrics.last_rx_monotonic_ns <= 100'000'000ULL;
     if (serial_metrics.rate < 395.0 || serial_metrics.rate > 405.0 ||
+        serial_coverage_rate < 395.0 || serial_coverage_rate > 405.0 ||
+        !serial_tail_covered ||
         serial_metrics.packets == 0 || serial_metrics.crc_errors != 0 ||
         serial_metrics.discarded_bytes != 0 || serial_metrics.sequence_gaps != 0 ||
         serial_metrics.sequence_regressions != 0 || serial_metrics.invalid_imu_flags != 0 ||
@@ -1254,7 +1499,26 @@ std::string Capture(const Options& options) {
         serial_metrics.imu_counter_gap_flags != 0 ||
         serial_metrics.imu_queue_overflow_flags != 0 ||
         serial_metrics.pc_tx_queue_overflow_flags != 0) {
-      throw Error("STM32 integrity or rate check failed");
+      std::ostringstream reason;
+      reason << "STM32 integrity or rate check failed: packets="
+             << serial_metrics.packets
+             << ", rate_hz=" << serial_metrics.rate
+             << ", coverage_rate_hz=" << serial_coverage_rate
+             << ", tail_covered=" << (serial_tail_covered ? "true" : "false")
+             << ", crc_errors=" << serial_metrics.crc_errors
+             << ", discarded_bytes=" << serial_metrics.discarded_bytes
+             << ", sequence_gaps=" << serial_metrics.sequence_gaps
+             << ", sequence_regressions="
+             << serial_metrics.sequence_regressions
+             << ", invalid_imu=" << serial_metrics.invalid_imu_flags
+             << ", invalid_encoder=" << serial_metrics.invalid_encoder_flags
+             << ", imu_counter_gap="
+             << serial_metrics.imu_counter_gap_flags
+             << ", imu_queue_overflow="
+             << serial_metrics.imu_queue_overflow_flags
+             << ", tx_queue_overflow="
+             << serial_metrics.pc_tx_queue_overflow_flags;
+      throw Error(reason.str());
     }
     fs::rename(left_partial, partial / "infrared-left-y8.h265");
     fs::rename(right_partial, partial / "infrared-right-y8.h265");
@@ -1275,7 +1539,6 @@ std::string Capture(const Options& options) {
     const std::uint64_t eye_input = ir_rows * kEyeBytes;
     const std::uint64_t compressed_total = left_size + right_size;
     const double compression_ratio = compressed_total / static_cast<double>(eye_input * 2);
-    const double formal_span = (formal_stop_ns - formal_start_ns) / 1e9;
     std::ostringstream metrics;
     metrics << std::setprecision(17)
             << "{\"rsusb_streams\":{\"color\":"
@@ -1316,6 +1579,13 @@ std::string Capture(const Options& options) {
             << fs::file_size(partial / "rgb.h265") << ",\"pts_regressions\":0},"
             << "\"stm32\":{\"packets\":" << serial_metrics.packets
             << ",\"observed_rate_hz\":" << serial_metrics.rate
+            << ",\"coverage_rate_hz\":" << serial_coverage_rate
+            << ",\"first_rx_monotonic_ns\":"
+            << serial_metrics.first_rx_monotonic_ns
+            << ",\"last_rx_monotonic_ns\":"
+            << serial_metrics.last_rx_monotonic_ns
+            << ",\"tail_covered\":"
+            << (serial_tail_covered ? "true" : "false")
             << ",\"crc_errors\":" << serial_metrics.crc_errors
             << ",\"discarded_bytes\":" << serial_metrics.discarded_bytes
             << ",\"sequence_gaps\":" << serial_metrics.sequence_gaps
@@ -1356,6 +1626,7 @@ std::string Capture(const Options& options) {
 }
 
 std::uint64_t PreviewOnly(const Options& options) {
+  const CameraLease camera_lease(options.usb_serial);
   static_cast<void>(VerifyUsb(options.usb_serial));
   fs::create_directories(options.output_root);
   rs2::context context;

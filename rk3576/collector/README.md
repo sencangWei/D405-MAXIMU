@@ -95,6 +95,12 @@ This is `BENCH_OBSERVED`, not a claim that every physical assembly is accepted.
 Each new RK3576 must repeat identity, preview, bounded collection, integrity,
 Catalog and transfer checks before use.
 
+Release 0.2.4 adds exclusive D405 ownership across preview/capture, generation-
+safe preview handoff, bounded encoder shutdown, packet-validated STM32 warmup,
+and a D405 udev power policy that prevents runtime autosuspend between repeated
+Web sessions. A one-second in-recording camera gap still fails closed; the
+collector never seals a discontinuous session as complete.
+
 ## Operator documentation
 
 See [DEPLOYMENT_AND_USAGE.zh-CN.md](DEPLOYMENT_AND_USAGE.zh-CN.md) for the
