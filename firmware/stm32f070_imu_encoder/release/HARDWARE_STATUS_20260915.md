@@ -3,8 +3,9 @@
 ## Scope
 
 This record covers the STM32F070F6P6 firmware that clears the AS5047P
-latched error register and reports its `ERRFL` cause bits without changing the
-63-byte `stm32_combined_v1` wire layout.
+latched error register, reports its `ERRFL` cause bits, and reports UART queue
+faults as one-shot events without changing the 63-byte `stm32_combined_v1`
+wire layout.
 
 ## Target and rollback identity
 
@@ -24,20 +25,46 @@ latched error register and reports its `ERRFL` cause bits without changing the
 - Native C++ protocol/pipeline tests: 21 passed, 0 failed.
 - Clean STM32 target build: passed; 2896 bytes flash and 1544 bytes RAM used.
 - Flashed `firmware.bin` SHA-256:
-  `f975784605f84d2334ea8399cc547b0ceb4b3d1c0ac8f8976fb862f603251dd4`
-- `st-flash --reset write` erased four pages, wrote, and verified successfully.
+  `7eb0008d3c9e0e6335ce3cfcfe859a09a6c4d0e6bb8a1aaf11026beff1b3fabb`
+- The first `st-flash` attempt erased four pages but its SRAM flash loader
+  failed before writing. OpenOCD then programmed and verified the same target
+  successfully; the failure was not hidden or treated as a successful flash.
 - A full 32 KiB post-flash readback matched the release binary byte-for-byte;
   all remaining flash bytes were `0xFF`.
 
 ## Live sensor result
 
-After a full power cycle, a one-second warm-up followed by a formal ten-second
-window produced 4001 valid packets at 400.010728 Hz. Flags were `0x0003` for
-all 4001 packets. Encoder error, parity error, sequence gap, and sequence
-regression counts were all zero. Encoder raw values ranged from 18 to 16381.
+Before the one-shot fix, the RK3576 observed 1199/1199 packets at 399.538 Hz
+with flags permanently equal to `0x0023`: IMU and encoder were valid, but one
+startup UART/queue event remained latched forever and blocked every later
+capture. The new deterministic tests reproduce that old behavior and require
+both bit 5 and bit 6 to clear after one successfully queued report.
+
+After flashing the fix, a local three-second window produced 1199 valid
+packets at 399.607 Hz. Flags were `0x0003` for all 1199 packets. Encoder error,
+parity error, sequence gap, and sequence regression counts were all zero.
 
 This is a PASS for normal-boot STM32 transport and angle acquisition. The
 AS5047P error/recovery path is covered by deterministic unit tests, but was not
 triggered on hardware during this boot; induced-error HIL recovery therefore
-remains pending. RK3576 capture/stop/restart validation also remains pending
-until this sensor set is reconnected to `192.168.113.161`.
+remains pending.
+
+## RK3576 repeated-capture result
+
+The flashed sensor set was reconnected to `192.168.113.161` and sampled before
+recording: 1198 valid packets at 399.305 Hz, all flags `0x0003`, zero CRC errors
+and zero sequence gaps. Five consecutive 10-second C++ capture/stop/seal cycles
+then completed successfully:
+
+| Cycle | Stereo pairs | STM32 samples | Flags | Sequence gaps | Manifest |
+| --- | ---: | ---: | --- | ---: | --- |
+| 1 | 300 | 3999 | all `0x0003` | 0 | `00114ce4...` |
+| 2 | 300 | 3999 | all `0x0003` | 0 | `70a8377d...` |
+| 3 | 300 | 4000 | all `0x0003` | 0 | `24c46f68...` |
+| 4 | 300 | 4000 | all `0x0003` | 0 | `a53ab757...` |
+| 5 | 300 | 3999 | all `0x0003` | 0 | `ce129b35...` |
+
+All five jobs reported `complete_local`, exit code 0, IMU runtime state `ok`,
+and IMU quality `PASSED`. Each session's 13 manifest file hashes were verified.
+After cycle 5, preview ownership recovered and delivered 20 JPEG frames at
+1280x720; closing the session returned client/session counts to zero.

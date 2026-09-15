@@ -1,7 +1,7 @@
 Product: STM32F070 KT-EX9 + AS5047P acquisition firmware
 Capture mode: Mode B (read encoder after confirmed EB 90 22 header)
 Target: STM32F070F6P6
-Source revision: 3987a301a954e2a04d0c614bacda4b698f595b60
+Source revision: 8030f943b2b094d68db824c4fbbff9bfcea8a13b
 Build date: 2026-09-15 Asia/Shanghai
 PlatformIO Core: 6.1.19
 Platform: ststm32@19.7.1
@@ -9,15 +9,16 @@ Framework: STM32Cube F0 1.11.5
 Toolchain: GCC Arm 7.2.1
 Native C++ tests: 21 passed, 0 failed
 Python interface tests: 24 passed, 0 failed
-Flash: 2896 / 32768 bytes (8.8%)
+Flash: 2948 / 32768 bytes (9.0%)
 RAM: 1544 / 6144 bytes (25.1%)
-firmware.bin bytes: 3100
-firmware.bin SHA-256: f975784605f84d2334ea8399cc547b0ceb4b3d1c0ac8f8976fb862f603251dd4
+firmware.bin bytes: 3152
+firmware.bin SHA-256: 7eb0008d3c9e0e6335ce3cfcfe859a09a6c4d0e6bb8a1aaf11026beff1b3fabb
 Hardware flash and readback: PASS (STM32F070F6P6; ST-LINK serial 000000000001)
-Local 400 Hz transport check: PASS (4001/4001 valid packets in 10 s, no gaps or errors)
+Local 400 Hz transport check: PASS (1199/1199 valid packets in 3 s, flags=3, no gaps or errors)
 AS5047P ERRFL clear/recovery unit tests: PASS
 AS5047P induced-error HIL recovery: PENDING (no encoder fault occurred in the verification boot)
-RK3576 repeated capture regression: PENDING (sensors must be reconnected to 192.168.113.161)
+RK3576 repeated capture regression: PASS (5/5 capture-stop-seal cycles; all STM32 flags=3)
 Encoder distance acceptance: PENDING (magnet/zero/radius/jaw-distance calibration)
-Rollback source commit: 6db410ff8280f33ce99f4ff59a25ceccf4141374
-Rollback firmware SHA-256: 1030e78c9fe4f7b949350b100d6389f219a8b650c649c834693619006953cd8a
+Rollback source commit: 3987a301a954e2a04d0c614bacda4b698f595b60
+Rollback firmware SHA-256: f975784605f84d2334ea8399cc547b0ceb4b3d1c0ac8f8976fb862f603251dd4
+Legacy firmware SHA-256: 1030e78c9fe4f7b949350b100d6389f219a8b650c649c834693619006953cd8a
