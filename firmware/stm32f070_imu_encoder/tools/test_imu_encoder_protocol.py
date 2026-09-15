@@ -100,6 +100,25 @@ class ProtocolTests(unittest.TestCase):
         self.assertFalse(sample.encoder_valid)
         self.assertEqual(1.0, sample.imu.gx)
 
+    def test_exposes_errfl_bits_only_for_diagnostic_frame(self) -> None:
+        [diagnostic] = PacketParser().feed(
+            make_packet(
+                flags=int(PacketFlag.IMU_VALID | PacketFlag.ENCODER_ERROR),
+                response=0x8005,
+            ),
+            pc_unix_ns=3,
+        )
+        [valid] = PacketParser().feed(
+            make_packet(
+                flags=int(PacketFlag.IMU_VALID | PacketFlag.ENCODER_VALID),
+                response=0x1235,
+            ),
+            pc_unix_ns=4,
+        )
+
+        self.assertEqual(0x5, diagnostic.encoder_error_flags)
+        self.assertEqual(0, valid.encoder_error_flags)
+
     def test_handles_split_and_concatenated_packets(self) -> None:
         first = make_packet(sequence=1)
         second = make_packet(sequence=2)

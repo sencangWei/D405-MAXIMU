@@ -16,7 +16,8 @@
 - 收完 37 字节并校验成功后，才把该编码器响应与 IMU 帧组成联合帧；坏校验帧对应的编码器响应会被丢弃，不会串到下一帧。
 - USART1 通过 CP2102N 以 921600 8N1 输出固定 63 字节联合帧。
 - 编码器未连接或响应无效时，IMU 帧仍继续输出；PC 端通过 `ENCODER_VALID` 和编码器错误位判断角度是否可用。
-- AS5047P 返回错误位时，固件读取 `ERRFL` 清除锁存错误并重读一次角度；重读仍失败时继续按无效编码器上报，不循环重试，也不把错误响应当成角度。
+- AS5047P 返回错误位时，固件读取 `ERRFL` 清除锁存错误，并在当前无效帧的
+  `encoder_response` 中保留诊断位；下一帧重新读取角度。错误响应绝不当成角度。
 
 这属于同一 MCU 时间基准下的硬件侧配对，不是 IMU 和编码器由同一触发脉冲同时采样。IMU 时间戳表示 STM32 收到首字节并置位 RXNE 的时刻，不是 IMU 内部采样时刻。Mode B 将编码器读取从“完整 IMU 帧之后”提前到“确认 3 字节帧头之后”，用于缩小两者时间差。
 
@@ -110,7 +111,7 @@ python tools/combined_capture.py --port COM5 --baud 921600 --csv capture.csv --r
 | 24 | 37 | KT-EX9原始帧 |
 | 61 | 2 | CRC-16/CCITT-FALSE |
 
-flags：bit0 IMU有效、bit1编码器有效、bit2编码器错误位、bit3编码器奇偶校验错误、bit4 IMU计数器缺口、bit5 IMU接收队列溢出或USART接收错误、bit6 PC发送队列溢出。
+flags：bit0 IMU有效、bit1编码器有效、bit2编码器错误/ERRFL诊断、bit3编码器奇偶校验错误、bit4 IMU计数器缺口、bit5 IMU接收队列溢出或USART接收错误、bit6 PC发送队列溢出。bit2置位时bit1必须为0，`encoder_response`低3位依次是AS5047P的FRERR、INVCOMM、PARERR。
 
 ## 上板验收顺序
 

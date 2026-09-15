@@ -5,6 +5,7 @@
 #include "stm32f0xx.h"
 
 #include "as5047p_protocol.h"
+#include "as5047p_recovery.h"
 #include "capture_pipeline.h"
 #include "combined_packet.h"
 
@@ -224,8 +225,9 @@ uint16_t encoderTransaction(uint16_t command) {
     return response;
 }
 
-uint16_t readEncoder() {
-    return as5047p::readAngleWithRecovery(&encoderTransaction);
+as5047p::ReadResult readEncoder() {
+    return as5047p::readAngleWithErrorRecovery(
+        [](uint16_t command) { return encoderTransaction(command); });
 }
 
 void serviceCapturePipeline() {
@@ -240,8 +242,9 @@ void serviceCapturePipeline() {
         const auto event = g_pipeline.onImuByte(input.value, input.rx_us);
         if (event == capture::PipelineEvent::EncoderReadRequested) {
             const uint32_t encoder_read_us = micros32();
-            const uint16_t response = readEncoder();
-            g_pipeline.storePendingEncoder(response, encoder_read_us);
+            const auto encoder = readEncoder();
+            g_pipeline.storePendingEncoder(
+                encoder.response, encoder_read_us, encoder.error_report);
         }
     }
 

@@ -11,6 +11,12 @@ constexpr uint16_t kReadMask = 0x4000U;
 constexpr uint16_t kErrorFlagsAddress = 0x0001U;
 constexpr uint16_t kAngleUncompensatedAddress = 0x3FFEU;
 
+enum ErrorFlag : uint8_t {
+    kFramingError = 1U << 0U,
+    kInvalidCommand = 1U << 1U,
+    kParityError = 1U << 2U,
+};
+
 inline bool hasEvenParity(uint16_t value) {
     bool odd = false;
     while (value != 0U) {
@@ -49,27 +55,8 @@ constexpr uint16_t angleRaw(uint16_t response) {
     return static_cast<uint16_t>(response & kDataMask);
 }
 
-template <typename Transaction>
-uint16_t readRegister(Transaction& transaction, uint16_t address) {
-    static_cast<void>(transaction(makeReadCommand(address)));
-    return transaction(makeNopCommand());
-}
-
-template <typename Transaction>
-uint16_t readAngleWithRecovery(Transaction transaction) {
-    uint16_t response = readRegister(
-        transaction, kAngleUncompensatedAddress);
-    if (isValidResponse(response)) {
-        return response;
-    }
-
-    // AS5047P keeps its error state latched until ERRFL is read. Without this
-    // clear, one transient SPI framing/parity fault makes every later angle
-    // response carry EF and the host can never recover without a power cycle.
-    if (hasError(response)) {
-        static_cast<void>(readRegister(transaction, kErrorFlagsAddress));
-    }
-    return readRegister(transaction, kAngleUncompensatedAddress);
+constexpr uint8_t errorFlags(uint16_t response) {
+    return static_cast<uint8_t>(response & 0x0007U);
 }
 
 }  // namespace as5047p

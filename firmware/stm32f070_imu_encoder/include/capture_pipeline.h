@@ -116,11 +116,13 @@ public:
         const auto result = parser_.feed(byte, rx_us, frame);
         if (result == kt_ex9::ParseResult::HeaderConfirmed) {
             pending_encoder_valid_ = false;
+            pending_encoder_error_report_ = false;
             awaiting_encoder_ = true;
             return PipelineEvent::EncoderReadRequested;
         }
         if (result == kt_ex9::ParseResult::BadChecksum) {
             pending_encoder_valid_ = false;
+            pending_encoder_error_report_ = false;
             awaiting_encoder_ = false;
             return PipelineEvent::BadImuFrame;
         }
@@ -132,12 +134,14 @@ public:
         return PipelineEvent::None;
     }
 
-    void storePendingEncoder(uint16_t response, uint32_t encoder_read_us) {
+    void storePendingEncoder(uint16_t response, uint32_t encoder_read_us,
+                             bool error_report = false) {
         if (!awaiting_encoder_) {
             return;
         }
         pending_encoder_response_ = response;
         pending_encoder_read_us_ = encoder_read_us;
+        pending_encoder_error_report_ = error_report;
         pending_encoder_valid_ = true;
     }
 
@@ -153,6 +157,7 @@ public:
         parser_.reset();
         awaiting_encoder_ = false;
         pending_encoder_valid_ = false;
+        pending_encoder_error_report_ = false;
     }
 
     bool popOutput(combined::Sample& sample) {
@@ -194,11 +199,13 @@ private:
                 sample.flags = static_cast<uint16_t>(
                     sample.flags | combined::kEncoderParityError);
             }
-            if (as5047p::hasError(pending_encoder_response_)) {
+            if (pending_encoder_error_report_ ||
+                as5047p::hasError(pending_encoder_response_)) {
                 sample.flags = static_cast<uint16_t>(
                     sample.flags | combined::kEncoderError);
             }
-            if (as5047p::isValidResponse(pending_encoder_response_)) {
+            if (!pending_encoder_error_report_ &&
+                as5047p::isValidResponse(pending_encoder_response_)) {
                 sample.flags = static_cast<uint16_t>(
                     sample.flags | combined::kEncoderValid);
             }
@@ -209,6 +216,7 @@ private:
         sample.imu_counter = frame.counter;
         sample.imu_frame = frame.raw;
         pending_encoder_valid_ = false;
+        pending_encoder_error_report_ = false;
 
         if (!output_queue_.push(sample)) {
             output_overflow_sticky_ = true;
@@ -227,6 +235,7 @@ private:
     bool have_previous_counter_ = false;
     bool awaiting_encoder_ = false;
     bool pending_encoder_valid_ = false;
+    bool pending_encoder_error_report_ = false;
     bool imu_overflow_sticky_ = false;
     bool output_overflow_sticky_ = false;
 };

@@ -138,6 +138,26 @@ void test_encoder_error_still_emits_imu_sample() {
     TEST_ASSERT_EQUAL_UINT32(1U, output.imu_counter);
 }
 
+void test_recovered_errfl_is_reported_and_not_treated_as_angle() {
+    capture::Pipeline pipeline;
+    const auto frame = makeImuFrame(2U);
+    for (size_t i = 0U; i < frame.size(); ++i) {
+        const auto event = pipeline.onImuByte(
+            frame[i], 2100U + static_cast<uint32_t>(i * 11U));
+        if (event == capture::PipelineEvent::EncoderReadRequested) {
+            pipeline.storePendingEncoder(0x8004U, 2144U, true);
+        }
+    }
+
+    const combined::Sample output = popOne(pipeline);
+    TEST_ASSERT_BITS_HIGH(combined::kImuValid | combined::kEncoderError,
+                          output.flags);
+    TEST_ASSERT_BITS_LOW(combined::kEncoderValid |
+                             combined::kEncoderParityError,
+                         output.flags);
+    TEST_ASSERT_EQUAL_HEX16(0x8004U, output.encoder_response);
+}
+
 void test_valid_frame_without_encoder_still_emits_imu() {
     capture::Pipeline pipeline;
     feedFrame(pipeline, makeImuFrame(3U), 3000U);
@@ -329,6 +349,7 @@ int main(int, char**) {
     RUN_TEST(test_valid_frame_uses_encoder_captured_at_header);
     RUN_TEST(test_bad_frame_discards_pending_encoder_sample);
     RUN_TEST(test_encoder_error_still_emits_imu_sample);
+    RUN_TEST(test_recovered_errfl_is_reported_and_not_treated_as_angle);
     RUN_TEST(test_valid_frame_without_encoder_still_emits_imu);
     RUN_TEST(test_counter_gap_is_reported_on_new_sample);
     RUN_TEST(test_rx_buffer_reports_overflow_and_preserves_fifo);

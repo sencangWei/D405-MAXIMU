@@ -126,6 +126,7 @@ ImuEncoderClient(
 | `imu.ax/ay/az` | `float`，g | KT-EX9 原始加速度 |
 | `imu.temperature_c` | `float`，℃ | KT-EX9 温度 |
 | `encoder_response` | `uint16` | AS5047P 完整 SPI 响应，含奇偶校验和错误位 |
+| `encoder_error_flags` | `uint8` | 仅错误诊断帧有效：bit0 FRERR、bit1 INVCOMM、bit2 PARERR |
 | `encoder_raw` | `0..16383` | AS5047P 14 位原始角度 |
 | `encoder_angle_deg` | `float`，° | `encoder_raw × 360 / 16384`，范围 `[0,360)` |
 | `imu_frame` | 37字节 | 原始 KT-EX9 帧 |
@@ -175,7 +176,9 @@ CRC 参数：多项式 `0x1021`、初值 `0xFFFF`、不反射、无最终异或�
 | 6 | `PC_TX_QUEUE_OVERFLOW` | STM32到CP2102N发送队列曾溢出 |
 
 编码器无效时，联合帧和 IMU 数据仍然返回。APP 必须先判断 `encoder_valid`，再显示
-或使用角度；不要把无效响应掩码后的数值当成真实角度。
+或使用角度；不要把无效响应掩码后的数值当成真实角度。角度读数置位 `EF` 时，固件
+会读取 AS5047P `ERRFL` 寄存器以清除锁存错误，并把诊断响应放入当前联合帧；此时
+`ENCODER_ERROR=1`、`ENCODER_VALID=0`，低3位分别表示 FRERR、INVCOMM、PARERR。
 
 ### 内嵌 KT-EX9 37 字节帧
 

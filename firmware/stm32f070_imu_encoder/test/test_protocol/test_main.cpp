@@ -5,6 +5,7 @@
 #include <unity.h>
 
 #include "as5047p_protocol.h"
+#include "as5047p_recovery.h"
 #include "combined_packet.h"
 #include "kt_ex9_protocol.h"
 
@@ -85,40 +86,42 @@ void test_as5047p_commands_and_response_validation() {
     TEST_ASSERT_EQUAL_UINT16(0x1234U, as5047p::angleRaw(0x1234U));
 }
 
-void test_as5047p_angle_read_clears_latched_error_and_retries_once() {
-    constexpr std::array<uint16_t, 6U> responses{
-        0x0000U, 0xC000U, 0x0000U, 0x0004U, 0x0000U, 0x9234U};
-    std::array<uint16_t, 6U> commands{};
+void test_as5047p_error_response_reads_and_clears_errfl() {
+    const std::array<uint16_t, 4U> responses{
+        0x0000U, 0x4000U, 0x0000U, 0x8004U,
+    };
+    std::array<uint16_t, 4U> commands{};
     size_t index = 0U;
+    auto transaction = [&](uint16_t command) {
+        commands[index] = command;
+        return responses[index++];
+    };
 
-    const uint16_t response = as5047p::readAngleWithRecovery(
-        [&](uint16_t command) {
-            commands[index] = command;
-            return responses[index++];
-        });
+    const auto result = as5047p::readAngleWithErrorRecovery(transaction);
 
-    TEST_ASSERT_EQUAL_UINT32(6U, index);
-    TEST_ASSERT_EQUAL_HEX16(0x7FFEU, commands[0]);
-    TEST_ASSERT_EQUAL_HEX16(0x0000U, commands[1]);
-    TEST_ASSERT_EQUAL_HEX16(0x4001U, commands[2]);
-    TEST_ASSERT_EQUAL_HEX16(0x0000U, commands[3]);
-    TEST_ASSERT_EQUAL_HEX16(0x7FFEU, commands[4]);
-    TEST_ASSERT_EQUAL_HEX16(0x0000U, commands[5]);
-    TEST_ASSERT_EQUAL_HEX16(0x9234U, response);
-    TEST_ASSERT_TRUE(as5047p::isValidResponse(response));
+    TEST_ASSERT_TRUE(result.error_report);
+    TEST_ASSERT_EQUAL_HEX16(0x8004U, result.response);
+    TEST_ASSERT_EQUAL_UINT8(as5047p::kParityError,
+                            as5047p::errorFlags(result.response));
+    TEST_ASSERT_EQUAL_HEX16(
+        as5047p::makeReadCommand(as5047p::kAngleUncompensatedAddress),
+        commands[0]);
+    TEST_ASSERT_EQUAL_HEX16(as5047p::makeNopCommand(), commands[1]);
+    TEST_ASSERT_EQUAL_HEX16(
+        as5047p::makeReadCommand(as5047p::kErrorFlagsAddress), commands[2]);
+    TEST_ASSERT_EQUAL_HEX16(as5047p::makeNopCommand(), commands[3]);
 }
 
-void test_as5047p_angle_read_returns_persistent_error_after_one_retry() {
-    constexpr std::array<uint16_t, 6U> responses{
-        0x0000U, 0xC000U, 0x0000U, 0x0001U, 0x0000U, 0xC000U};
+void test_as5047p_valid_angle_does_not_read_errfl() {
+    const std::array<uint16_t, 2U> responses{0x0000U, 0x9234U};
     size_t index = 0U;
+    auto transaction = [&](uint16_t) { return responses[index++]; };
 
-    const uint16_t response = as5047p::readAngleWithRecovery(
-        [&](uint16_t) { return responses[index++]; });
+    const auto result = as5047p::readAngleWithErrorRecovery(transaction);
 
-    TEST_ASSERT_EQUAL_UINT32(6U, index);
-    TEST_ASSERT_EQUAL_HEX16(0xC000U, response);
-    TEST_ASSERT_FALSE(as5047p::isValidResponse(response));
+    TEST_ASSERT_FALSE(result.error_report);
+    TEST_ASSERT_EQUAL_HEX16(0x9234U, result.response);
+    TEST_ASSERT_EQUAL_UINT32(2U, index);
 }
 
 void test_crc_matches_ccitt_false_reference_vector() {
@@ -170,8 +173,8 @@ int main(int, char**) {
     RUN_TEST(test_imu_parser_keeps_first_byte_timestamp);
     RUN_TEST(test_imu_parser_rejects_bad_checksum_and_resynchronizes_after_noise);
     RUN_TEST(test_as5047p_commands_and_response_validation);
-    RUN_TEST(test_as5047p_angle_read_clears_latched_error_and_retries_once);
-    RUN_TEST(test_as5047p_angle_read_returns_persistent_error_after_one_retry);
+    RUN_TEST(test_as5047p_error_response_reads_and_clears_errfl);
+    RUN_TEST(test_as5047p_valid_angle_does_not_read_errfl);
     RUN_TEST(test_crc_matches_ccitt_false_reference_vector);
     RUN_TEST(test_combined_packet_has_exact_layout_and_crc);
     return UNITY_END();

@@ -80,6 +80,13 @@ class CombinedSample:
         return self._has_flag(PacketFlag.ENCODER_PARITY_ERROR)
 
     @property
+    def encoder_error_flags(self) -> int:
+        """Return AS5047P ERRFL bits for an encoder diagnostic frame."""
+        if not self.encoder_error or self.encoder_valid:
+            return 0
+        return self.encoder_response & 0x0007
+
+    @property
     def imu_counter_gap(self) -> bool:
         return self._has_flag(PacketFlag.IMU_COUNTER_GAP)
 
