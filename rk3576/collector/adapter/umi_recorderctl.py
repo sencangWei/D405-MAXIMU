@@ -20,11 +20,11 @@ import time
 import uuid
 from urllib.request import Request, urlopen
 
-from umi_publish import publish_session
+from umi_publish import publish_session, recover_pending_publications
 
 
 SCHEMA_VERSION = 1
-CONTROLLER_VERSION = "0.2.0-umi"
+CONTROLLER_VERSION = "0.2.1-umi"
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 ACTIVE = {"starting", "recording", "stop_requested", "finalizing"}
 FINAL = {"complete_local", "incomplete", "interrupted"}
@@ -38,18 +38,24 @@ class ControllerError(RuntimeError):
         self.data = data or {}
 
 
+def required_env(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value or value.startswith("CHANGE_ME"):
+        raise ControllerError("CONFIG_MISSING", f"{name} must be explicitly configured")
+    return value
+
+
 class Config:
     def __init__(self) -> None:
         self.release_root = Path(__file__).resolve().parents[1]
         self.state_dir = Path(os.environ.get("UMI_STATE_DIR", "/home/pi/.local/state/umi-recorder"))
         self.recording_root = Path(os.environ.get("UMI_RECORDING_ROOT", "/home/pi/umi-recordings"))
-        self.device_id = os.environ.get("UMI_DEVICE_ID", "umi-rk3576-30")
-        self.sdk_serial = os.environ.get("UMI_D405_SDK_SERIAL", "260322273737")
-        self.usb_serial = os.environ.get("UMI_D405_USB_SERIAL", "260323071293")
-        self.stm32_port = os.environ.get(
-            "UMI_STM32_PORT",
-            "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_f6a5f836b505f011ae3b8c1272aab386-if00-port0",
-        )
+        self.device_id = required_env("UMI_DEVICE_ID")
+        self.sdk_serial = required_env("UMI_D405_SDK_SERIAL")
+        self.usb_serial = required_env("UMI_D405_USB_SERIAL")
+        self.stm32_port = required_env("UMI_STM32_PORT")
+        if SAFE_ID.fullmatch(self.device_id) is None:
+            raise ControllerError("CONFIG_INVALID", "UMI_DEVICE_ID is invalid")
         self.preview_source_port = int(os.environ.get("UMI_PREVIEW_SOURCE_PORT", "18081"))
         self.native = Path(os.environ.get("UMI_NATIVE_COLLECTOR", str(self.release_root / "native/bin/umi-record-native")))
         self.catalog_db = Path(os.environ.get("EGO_CATALOG_DB", str(self.state_dir / "catalog.sqlite3")))
@@ -119,6 +125,43 @@ def process_matches(state: dict) -> bool:
         return proc_ticks(pid) == ticks
     except (FileNotFoundError, ProcessLookupError, PermissionError, ValueError):
         return False
+
+
+def worker_matches(cfg: Config, state: dict) -> bool:
+    if state.get("boot_id") != cfg.boot_id:
+        return False
+    for pid_field, ticks_field in (
+        ("record_pid", "record_start_ticks"),
+        ("worker_pid", "worker_start_ticks"),
+    ):
+        pid = state.get(pid_field)
+        ticks = state.get(ticks_field)
+        if not isinstance(pid, int) or pid <= 0 or not isinstance(ticks, int):
+            continue
+        try:
+            if proc_ticks(pid) == ticks:
+                return True
+        except (FileNotFoundError, ProcessLookupError, PermissionError, ValueError):
+            continue
+    return False
+
+
+def reconcile_stale_state(cfg: Config, state: dict | None) -> dict | None:
+    if state is None or state.get("state") not in ACTIVE or worker_matches(cfg, state):
+        return state
+    recovered = dict(state)
+    recovered.update(
+        state="interrupted",
+        phase="recovered_stale_state",
+        error="active process identity disappeared or belongs to an earlier boot",
+        recovery_reason="STALE_PROCESS_IDENTITY",
+        last_heartbeat_at=now_iso(),
+    )
+    atomic_json(cfg.jobs / f"{recovered['job_id']}.json", recovered)
+    current = read_json(cfg.current)
+    if current is not None and current.get("job_id") == recovered.get("job_id"):
+        atomic_json(cfg.current, recovered)
+    return recovered
 
 
 def status_data(state: dict | None) -> dict:
@@ -204,9 +247,13 @@ def identity(cfg: Config) -> dict:
     }
 
 
-def preflight(cfg: Config) -> dict:
-    cfg.prepare()
-    state = read_json(cfg.current)
+def _preflight_locked(cfg: Config) -> dict:
+    state = reconcile_stale_state(cfg, read_json(cfg.current))
+    recover_pending_publications(
+        recording_root=cfg.recording_root,
+        catalog_db_path=cfg.catalog_db,
+        device_id=cfg.device_id,
+    )
     active = status_data(state) if state and state.get("state") in ACTIVE else None
     try:
         free = shutil.disk_usage(cfg.recording_root).free
@@ -237,6 +284,12 @@ def preflight(cfg: Config) -> dict:
     }
 
 
+def preflight(cfg: Config) -> dict:
+    cfg.prepare()
+    with locked(cfg):
+        return _preflight_locked(cfg)
+
+
 def start(cfg: Config, request_id: str, duration: int) -> dict:
     try:
         request_id = str(uuid.UUID(request_id))
@@ -250,10 +303,10 @@ def start(cfg: Config, request_id: str, duration: int) -> dict:
         if replay is not None:
             state = read_json(cfg.jobs / f"{replay['job_id']}.json") or replay
             return {"accepted": True, "idempotent": True, "job_id": replay["job_id"], "state": state["state"]}
-        current = read_json(cfg.current)
+        current = reconcile_stale_state(cfg, read_json(cfg.current))
+        check = _preflight_locked(cfg)
         if current and current.get("state") in ACTIVE:
             raise ControllerError("ALREADY_RECORDING", "a recording is already active", status_data(current))
-        check = preflight(cfg)
         if not check["recorder_exists"] or not check["d405_present"] or not check["stm32_present"]:
             raise ControllerError("PREFLIGHT_FAILED", "D405, STM32, or native collector is unavailable", check)
         if check["local_free_bytes"] < check["min_local_free_bytes"]:
@@ -274,7 +327,7 @@ def start(cfg: Config, request_id: str, duration: int) -> dict:
         atomic_json(cfg.current, created)
         atomic_json(cfg.jobs / f"{job_id}.json", created)
         atomic_json(cfg.requests / f"{request_id}.json", created)
-        subprocess.Popen(
+        worker = subprocess.Popen(
             [sys.executable, str(Path(__file__).resolve()), "_run", "--job-id", job_id],
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
@@ -282,14 +335,18 @@ def start(cfg: Config, request_id: str, duration: int) -> dict:
             start_new_session=True,
             close_fds=True,
         )
+        created.update(worker_pid=worker.pid, worker_start_ticks=proc_ticks(worker.pid))
+        _save_state(cfg, created)
+        atomic_json(cfg.requests / f"{request_id}.json", created)
     return {"accepted": True, "idempotent": False, "job_id": job_id, "state": "starting"}
 
 
 def status(cfg: Config, job_id: str | None) -> dict:
-    state = read_json(cfg.jobs / f"{job_id}.json") if job_id else read_json(cfg.current)
-    if job_id and state is None:
-        raise ControllerError("JOB_NOT_FOUND", "job_id was not found")
-    return status_data(state)
+    with locked(cfg):
+        state = read_json(cfg.jobs / f"{job_id}.json") if job_id else read_json(cfg.current)
+        if job_id and state is None:
+            raise ControllerError("JOB_NOT_FOUND", "job_id was not found")
+        return status_data(reconcile_stale_state(cfg, state))
 
 
 def stop(cfg: Config, job_id: str) -> dict:
@@ -299,6 +356,7 @@ def stop(cfg: Config, job_id: str) -> dict:
         state = read_json(cfg.jobs / f"{job_id}.json")
         if state is None:
             raise ControllerError("JOB_NOT_FOUND", "job_id was not found")
+        state = reconcile_stale_state(cfg, state)
         if state.get("state") in FINAL:
             raise ControllerError("JOB_NOT_ACTIVE", "job is already complete")
         if state.get("stop_sent_at"):
@@ -319,7 +377,13 @@ def _save_state(cfg: Config, state: dict) -> None:
 def run_worker(cfg: Config, job_id: str) -> int:
     with locked(cfg):
         state = read_json(cfg.jobs / f"{job_id}.json")
-        if state is None or state.get("state") != "starting":
+        if (
+            state is None
+            or state.get("state") != "starting"
+            or state.get("boot_id") != cfg.boot_id
+            or state.get("worker_pid") != os.getpid()
+            or state.get("worker_start_ticks") != proc_ticks(os.getpid())
+        ):
             return 2
     duration = int(state["duration"])
     try:

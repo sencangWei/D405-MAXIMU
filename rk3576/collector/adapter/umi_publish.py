@@ -6,7 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import tempfile
 from typing import Any
@@ -14,6 +14,17 @@ from typing import Any
 
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 HEX64 = re.compile(r"[0-9a-f]{64}\Z")
+STM32_ZERO_METRICS = (
+    "crc_errors",
+    "discarded_bytes",
+    "sequence_gaps",
+    "sequence_regressions",
+    "invalid_imu_flags",
+    "invalid_encoder_flags",
+    "imu_counter_gap_flags",
+    "imu_queue_overflow_flags",
+    "pc_tx_queue_overflow_flags",
+)
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -73,6 +84,78 @@ def ensure_recording_root(recording_root: Path, device_id: str) -> None:
         _atomic_json(marker, expected)
 
 
+def _safe_path(root: Path, relative: object) -> Path:
+    if not isinstance(relative, str):
+        raise ValueError("publication ledger path is invalid")
+    parsed = PurePosixPath(relative)
+    if parsed.is_absolute() or not parsed.parts or any(part in {"", ".", ".."} for part in parsed.parts):
+        raise ValueError("publication ledger path escapes the recording root")
+    return root.joinpath(*parsed.parts)
+
+
+def _publish_catalog(catalog_db_path: Path, payload: dict[str, Any]) -> None:
+    from catalog_db import CatalogDb
+
+    catalog = CatalogDb(catalog_db_path)
+    catalog.migrate()
+    catalog.publish_recording(**payload)
+
+
+def recover_pending_publications(
+    *, recording_root: Path, catalog_db_path: Path, device_id: str
+) -> list[str]:
+    """Recover durable publication ledgers left by process loss or power failure."""
+    ledger_dir = recording_root / "recordings-v2" / ".publication-ledger"
+    if not ledger_dir.is_dir():
+        return []
+    recovered: list[str] = []
+    for ledger_path in sorted(ledger_dir.glob("recording_*.json")):
+        ledger = _json(ledger_path)
+        if ledger.get("device_id") != device_id:
+            raise ValueError("pending publication belongs to another device")
+        state = ledger.get("state")
+        source = _safe_path(recording_root, ledger.get("source_relpath"))
+        prepared = _safe_path(recording_root, ledger.get("prepared_relpath"))
+        final = _safe_path(recording_root, ledger.get("final_relpath"))
+        if state == "PREPARING":
+            candidates = [path for path in (prepared, final) if path.exists()]
+            if source.exists() and candidates:
+                raise ValueError("preparing publication has conflicting payload locations")
+            if len(candidates) > 1:
+                raise ValueError("preparing publication has multiple payload locations")
+            if candidates and not source.exists():
+                source.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                os.rename(candidates[0], source)
+                _fsync_dir(source.parent)
+            ledger.update(state="ROLLED_BACK")
+            _atomic_json(ledger_path, ledger)
+            recovered.append(str(ledger.get("recording_id")))
+            continue
+        if state != "PREPARED":
+            continue
+        if final.exists() and prepared.exists():
+            raise ValueError("prepared publication has multiple payload locations")
+        if not final.is_dir():
+            if not prepared.is_dir():
+                raise ValueError("prepared publication payload is unavailable")
+            os.rename(prepared, final)
+            _fsync_dir(final.parent)
+        payload = ledger.get("catalog")
+        if not isinstance(payload, dict):
+            raise ValueError("prepared publication catalog payload is invalid")
+        if (
+            payload.get("recording_id") != ledger.get("recording_id")
+            or payload.get("device_id") != device_id
+            or payload.get("final_relpath") != ledger.get("final_relpath")
+        ):
+            raise ValueError("prepared publication catalog identity is inconsistent")
+        _publish_catalog(catalog_db_path, payload)
+        ledger.update(state="PUBLISHED")
+        _atomic_json(ledger_path, ledger)
+        recovered.append(str(ledger.get("recording_id")))
+    return recovered
+
+
 def publish_session(
     *,
     session: Path,
@@ -99,6 +182,7 @@ def publish_session(
     rgb_frames = counts.get("rgb_input_frames")
     imu_samples = counts.get("stm32_packets")
     duration_s = metrics.get("formal_host_span_s")
+    stm32_metrics = metrics.get("stm32")
     if (
         not isinstance(pairs, int)
         or isinstance(pairs, bool)
@@ -110,6 +194,11 @@ def publish_session(
         or not isinstance(duration_s, (int, float))
         or isinstance(duration_s, bool)
         or duration_s <= 0
+        or not isinstance(stm32_metrics, dict)
+        or any(stm32_metrics.get(name) != 0 for name in STM32_ZERO_METRICS)
+        or not isinstance(stm32_metrics.get("observed_rate_hz"), (int, float))
+        or isinstance(stm32_metrics.get("observed_rate_hz"), bool)
+        or not 395.0 <= float(stm32_metrics["observed_rate_hz"]) <= 405.0
     ):
         raise ValueError("native session counters cannot prove STEREO_IMU completion")
 
@@ -126,13 +215,31 @@ def publish_session(
         raise ValueError("EGO recording identifier is invalid")
     prepared = completed / f".{recording_id}.publishing"
     final = completed / recording_id
-    if prepared.exists() or final.exists():
+    ledger_path = ledger_dir / f"{recording_id}.json"
+    if prepared.exists() or final.exists() or ledger_path.exists():
         raise FileExistsError("recording publication target already exists")
 
+    try:
+        source_relpath = session.relative_to(recording_root).as_posix()
+    except ValueError as error:
+        raise ValueError("native session is outside the recording root") from error
+    final_relpath = f"recordings-v2/completed/{recording_id}"
+    ledger: dict[str, Any] = {
+        "schema_version": 2,
+        "state": "PREPARING",
+        "device_id": device_id,
+        "job_id": job_id,
+        "request_id": request_id,
+        "recording_id": recording_id,
+        "source_relpath": source_relpath,
+        "prepared_relpath": f"recordings-v2/completed/.{recording_id}.publishing",
+        "final_relpath": final_relpath,
+    }
+    _atomic_json(ledger_path, ledger)
     os.rename(session, prepared)
     try:
         metadata_dir = prepared / "metadata"
-        metadata_dir.mkdir(mode=0o700)
+        metadata_dir.mkdir(mode=0o700, exist_ok=True)
         recorded_at = _recorded_at(recording_id)
         metadata = {
             "schema_version": 2,
@@ -181,27 +288,7 @@ def publish_session(
             raise ValueError("manifest digest is invalid")
         _fsync_dir(metadata_dir)
         _fsync_dir(prepared)
-        os.rename(prepared, final)
-        _fsync_dir(completed)
-
-        final_relpath = f"recordings-v2/completed/{recording_id}"
-        ledger = {
-            "schema_version": 1,
-            "state": "PUBLISHED",
-            "job_id": job_id,
-            "request_id": request_id,
-            "recording_id": recording_id,
-            "prepared_relpath": f"recordings-v2/completed/.{recording_id}.publishing",
-            "final_relpath": final_relpath,
-            "manifest_sha256": manifest_sha256,
-        }
-        _atomic_json(ledger_dir / f"{recording_id}.json", ledger)
-
-        from catalog_db import CatalogDb
-
-        catalog = CatalogDb(catalog_db_path)
-        catalog.migrate()
-        catalog.publish_recording(
+        catalog_payload = dict(
             recording_id=recording_id,
             device_id=device_id,
             recorded_at=recorded_at,
@@ -220,9 +307,23 @@ def publish_session(
             capture_mode="STEREO_IMU",
             imu_quality_status="PASSED",
         )
+        ledger.update(
+            state="PREPARED",
+            manifest_sha256=manifest_sha256,
+            catalog=catalog_payload,
+        )
+        _atomic_json(ledger_path, ledger)
+        os.rename(prepared, final)
+        _fsync_dir(completed)
+        _publish_catalog(catalog_db_path, catalog_payload)
+        ledger.update(state="PUBLISHED")
+        _atomic_json(ledger_path, ledger)
     except BaseException:
-        if prepared.exists() and not session.exists():
+        if prepared.exists() and not session.exists() and not final.exists():
             os.rename(prepared, session)
+            _fsync_dir(session.parent)
+            ledger.update(state="ROLLED_BACK")
+            _atomic_json(ledger_path, ledger)
         raise
     return {
         "recording_id": recording_id,

@@ -42,13 +42,10 @@ must additionally provide:
 - locked Python 3.12 aarch64 dependencies;
 - generated ARM64 binaries, release manifest and `SHA256SUMS`.
 
-The bound full package is intentionally not tracked here because generated
-binaries and `.so` files are ignored. Deployment artifact:
-
-```text
-rk3576-umi-0.2.0.tar.gz
-SHA-256 7d8bd54d59b70513c90b958e1d4d933fd7e5c6288ab8435aca456a72e1f1e84c
-```
+The full package is intentionally not tracked here because generated binaries
+and `.so` files are ignored. The previously bench-tested `0.2.0` archive is not
+bound to this fail-closed `0.2.1-umi` source revision. Build a fresh aarch64
+artifact, verify its manifest and record its SHA-256 before installation.
 
 The source tree includes matching public librealsense headers and the upstream
 license. Generated files under `native/bin/`, `runtime/` and `vendor/` must not
@@ -65,6 +62,21 @@ models match.
 TLS private keys, trusted App keys, calibration files, recordings, Catalog
 databases and logs remain outside Git. The supplied services bind preview and
 Admin endpoints to loopback.
+
+All four hardware identity fields are mandatory. The controller and preview
+service fail closed when any field is absent or still contains a `CHANGE_ME`
+placeholder; there are no bench-device fallback serials.
+
+STM32 flags bit 4 (`IMU_COUNTER_GAP`), bit 5 (`IMU_QUEUE_OVERFLOW`) and bit 6
+(`PC_TX_QUEUE_OVERFLOW`) are hard capture failures, just like CRC, framing,
+sequence and validity failures. A session carrying any of them cannot be
+published as `PASSED`.
+
+Active jobs are tied to boot ID, PID and Linux process start ticks. After a
+power loss or worker crash, stale state is converted to `interrupted` instead
+of permanently blocking the next App request. Publication uses a durable
+prepare ledger; preflight completes a Catalog transaction left between the
+final directory rename and the idempotent Catalog insert.
 
 ## Bound evidence
 

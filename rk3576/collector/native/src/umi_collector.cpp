@@ -525,6 +525,9 @@ struct SerialMetrics {
   std::uint64_t sequence_regressions = 0;
   std::uint64_t invalid_imu_flags = 0;
   std::uint64_t invalid_encoder_flags = 0;
+  std::uint64_t imu_counter_gap_flags = 0;
+  std::uint64_t imu_queue_overflow_flags = 0;
+  std::uint64_t pc_tx_queue_overflow_flags = 0;
 };
 
 class SerialCollector final {
@@ -688,6 +691,9 @@ class SerialCollector final {
               previous_sequence = sequence;
               if ((flags & 0x01U) == 0) ++metrics_.invalid_imu_flags;
               if ((flags & 0x02U) == 0) ++metrics_.invalid_encoder_flags;
+              if ((flags & 0x10U) != 0) ++metrics_.imu_counter_gap_flags;
+              if ((flags & 0x20U) != 0) ++metrics_.imu_queue_overflow_flags;
+              if ((flags & 0x40U) != 0) ++metrics_.pc_tx_queue_overflow_flags;
               const std::uint64_t record_index = metrics_.packets++;
               if (!first_rx) first_rx = rx_ns;
               last_rx = rx_ns;
@@ -1244,7 +1250,10 @@ std::string Capture(const Options& options) {
         serial_metrics.packets == 0 || serial_metrics.crc_errors != 0 ||
         serial_metrics.discarded_bytes != 0 || serial_metrics.sequence_gaps != 0 ||
         serial_metrics.sequence_regressions != 0 || serial_metrics.invalid_imu_flags != 0 ||
-        serial_metrics.invalid_encoder_flags != 0) {
+        serial_metrics.invalid_encoder_flags != 0 ||
+        serial_metrics.imu_counter_gap_flags != 0 ||
+        serial_metrics.imu_queue_overflow_flags != 0 ||
+        serial_metrics.pc_tx_queue_overflow_flags != 0) {
       throw Error("STM32 integrity or rate check failed");
     }
     fs::rename(left_partial, partial / "infrared-left-y8.h265");
@@ -1313,6 +1322,10 @@ std::string Capture(const Options& options) {
             << ",\"sequence_regressions\":" << serial_metrics.sequence_regressions
             << ",\"invalid_imu_flags\":" << serial_metrics.invalid_imu_flags
             << ",\"invalid_encoder_flags\":" << serial_metrics.invalid_encoder_flags
+            << ",\"imu_counter_gap_flags\":" << serial_metrics.imu_counter_gap_flags
+            << ",\"imu_queue_overflow_flags\":" << serial_metrics.imu_queue_overflow_flags
+            << ",\"pc_tx_queue_overflow_flags\":"
+            << serial_metrics.pc_tx_queue_overflow_flags
             << "}}";
     const std::string files_json = FileClaims(partial);
     std::ostringstream manifest;

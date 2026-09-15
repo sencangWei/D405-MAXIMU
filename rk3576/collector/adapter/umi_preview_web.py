@@ -22,13 +22,20 @@ RENEW_SECONDS = 5.0
 HANDOFF_SECONDS = 12.0
 
 
+def required_env(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value or value.startswith("CHANGE_ME"):
+        raise RuntimeError(f"{name} must be explicitly configured")
+    return value
+
+
 class State:
     def __init__(self) -> None:
         root = Path(__file__).resolve().parents[1]
         self.native = Path(os.environ.get("UMI_NATIVE_COLLECTOR", str(root / "native/bin/umi-record-native")))
         self.output_root = Path(os.environ.get("UMI_RECORDING_ROOT", "/home/pi/umi-recordings")) / "preview"
-        self.sdk_serial = os.environ.get("UMI_D405_SDK_SERIAL", "260322273737")
-        self.usb_serial = os.environ.get("UMI_D405_USB_SERIAL", "260323071293")
+        self.sdk_serial = required_env("UMI_D405_SDK_SERIAL")
+        self.usb_serial = required_env("UMI_D405_USB_SERIAL")
         self.source_port = int(os.environ.get("UMI_PREVIEW_SOURCE_PORT", "18081"))
         self.lock = threading.RLock()
         self.session_id: str | None = None
