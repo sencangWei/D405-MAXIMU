@@ -99,9 +99,12 @@ ln -sfn /home/pi/umi-collector/current/bin/recorderctl /home/pi/.local/bin/recor
 sudo install -m 0644 /home/pi/umi-collector/current/99-umi-devices.rules /etc/udev/rules.d/99-umi-devices.rules
 sudo udevadm control --reload-rules
 sudo udevadm trigger
+sudo loginctl enable-linger pi
 systemctl --user daemon-reload
 systemctl --user enable --now umi-preview.service umi-admin.service
 ```
+
+`enable-linger` 使用户服务在无人 SSH 登录时也能随系统启动；安装后用 `loginctl show-user pi -p Linger` 确认值为 `yes`。
 
 服务只监听板端回环地址：预览 `127.0.0.1:18080`，签名 Admin API `127.0.0.1:18443`。这避免把采集控制和文件接口裸露在局域网；App 侧应复用 EGO 已有的安全通道/代理。临时人工诊断可使用 SSH 隧道：
 
