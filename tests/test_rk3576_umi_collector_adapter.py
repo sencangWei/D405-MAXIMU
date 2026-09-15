@@ -4,6 +4,7 @@ import importlib
 import json
 from pathlib import Path
 import sys
+import types
 
 import pytest
 
@@ -112,6 +113,110 @@ def test_process_identity_uses_pid_start_ticks(monkeypatch: pytest.MonkeyPatch, 
     assert recorderctl.process_matches({"record_pid": 77, "record_start_ticks": 1235}) is False
 
 
+def test_missing_worker_stops_native_orphan_before_releasing_state(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    umi_modules,
+) -> None:
+    recorderctl, _ = umi_modules
+    monkeypatch.setenv("UMI_DEVICE_ID", "umi-rk3576-161")
+    monkeypatch.setenv("UMI_D405_SDK_SERIAL", "sdk-serial-161")
+    monkeypatch.setenv("UMI_D405_USB_SERIAL", "usb-serial-161")
+    monkeypatch.setenv("UMI_STM32_PORT", str(tmp_path / "stm32"))
+    monkeypatch.setenv("UMI_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("UMI_RECORDING_ROOT", str(tmp_path / "recordings"))
+    config = recorderctl.Config()
+    config.prepare()
+    state = {
+        "job_id": "umi-orphan",
+        "boot_id": config.boot_id,
+        "state": "recording",
+        "worker_pid": 100,
+        "worker_start_ticks": 1,
+        "record_pid": 101,
+        "record_start_ticks": 2,
+    }
+    monkeypatch.setattr(recorderctl, "worker_matches", lambda cfg, value: False)
+    stopped = []
+    monkeypatch.setattr(recorderctl, "_stop_orphan_recorder", lambda value: stopped.append(value) or True)
+
+    recovered = recorderctl.reconcile_stale_state(config, state)
+
+    assert stopped == [state]
+    assert recovered["state"] == "interrupted"
+    assert recovered["recovery_reason"] == "STALE_PROCESS_IDENTITY"
+
+
+def test_publication_recovery_updates_failed_job_and_current(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    umi_modules,
+) -> None:
+    recorderctl, _ = umi_modules
+    monkeypatch.setenv("UMI_DEVICE_ID", "umi-rk3576-161")
+    monkeypatch.setenv("UMI_D405_SDK_SERIAL", "sdk-serial-161")
+    monkeypatch.setenv("UMI_D405_USB_SERIAL", "usb-serial-161")
+    monkeypatch.setenv("UMI_STM32_PORT", str(tmp_path / "stm32"))
+    monkeypatch.setenv("UMI_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("UMI_RECORDING_ROOT", str(tmp_path / "recordings"))
+    config = recorderctl.Config()
+    config.prepare()
+    state = {"job_id": "umi-job", "state": "incomplete", "local_data_present": False}
+    recorderctl.atomic_json(config.jobs / "umi-job.json", state)
+    recorderctl.atomic_json(config.current, state)
+    publication = {
+        "job_id": "umi-job",
+        "recording_id": "recording_test",
+        "output_dir": str(tmp_path / "recordings" / "recordings-v2" / "completed" / "recording_test"),
+        "manifest_sha256": "a" * 64,
+        "stereo_pairs": 30,
+        "imu_samples": 400,
+    }
+
+    recorderctl.reconcile_published_job(config, publication)
+
+    recovered = recorderctl.read_json(config.current)
+    assert recovered["state"] == "complete_local"
+    assert recovered["local_data_present"] is True
+    assert recovered["imu_quality_status"] == "PASSED"
+    assert recovered["recovery_reason"] == "PUBLICATION_LEDGER_REPLAYED"
+
+
+def test_idempotent_start_reconciles_stale_request_state(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    umi_modules,
+) -> None:
+    recorderctl, _ = umi_modules
+    monkeypatch.setenv("UMI_DEVICE_ID", "umi-rk3576-161")
+    monkeypatch.setenv("UMI_D405_SDK_SERIAL", "sdk-serial-161")
+    monkeypatch.setenv("UMI_D405_USB_SERIAL", "usb-serial-161")
+    monkeypatch.setenv("UMI_STM32_PORT", str(tmp_path / "stm32"))
+    monkeypatch.setenv("UMI_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("UMI_RECORDING_ROOT", str(tmp_path / "recordings"))
+    config = recorderctl.Config()
+    config.prepare()
+    request_id = "2f1713ab-e535-4ded-9c58-bbc7f9c39c84"
+    state = {
+        "job_id": "umi-stale",
+        "request_id": request_id,
+        "boot_id": "earlier-boot",
+        "state": "recording",
+    }
+    recorderctl.atomic_json(config.jobs / "umi-stale.json", state)
+    recorderctl.atomic_json(config.requests / f"{request_id}.json", state)
+    recorderctl.atomic_json(config.current, state)
+
+    response = recorderctl.start(config, request_id, 60)
+
+    assert response == {
+        "accepted": True,
+        "idempotent": True,
+        "job_id": "umi-stale",
+        "state": "interrupted",
+    }
+
+
 def test_recording_root_cannot_change_device_owner(tmp_path: Path, umi_modules) -> None:
     _, publish = umi_modules
     root = tmp_path / "recordings"
@@ -170,6 +275,15 @@ def test_prepared_publication_is_recovered_into_catalog(
         "device_id": "umi-rk3576-161",
         "final_relpath": f"recordings-v2/completed/{recording_id}",
     }
+    manifest_sha256 = "a" * 64
+    result = {
+        "job_id": "umi-job",
+        "recording_id": recording_id,
+        "output_dir": str(root / "recordings-v2" / "completed" / recording_id),
+        "manifest_sha256": manifest_sha256,
+        "stereo_pairs": 30,
+        "imu_samples": 400,
+    }
     publish._atomic_json(
         ledger_path,
         {
@@ -177,10 +291,13 @@ def test_prepared_publication_is_recovered_into_catalog(
             "state": "PREPARED",
             "device_id": "umi-rk3576-161",
             "recording_id": recording_id,
+            "job_id": "umi-job",
             "source_relpath": "incoming/native-session",
             "prepared_relpath": f"recordings-v2/completed/.{recording_id}.publishing",
             "final_relpath": f"recordings-v2/completed/{recording_id}",
             "catalog": payload,
+            "result": result,
+            "manifest_sha256": manifest_sha256,
         },
     )
     published = []
@@ -192,7 +309,7 @@ def test_prepared_publication_is_recovered_into_catalog(
         device_id="umi-rk3576-161",
     )
 
-    assert recovered == [recording_id]
+    assert recovered == [result]
     assert published == [(tmp_path / "catalog.sqlite3", payload)]
     assert (root / "recordings-v2" / "completed" / recording_id).is_dir()
     assert publish._json(ledger_path)["state"] == "PUBLISHED"
@@ -247,13 +364,55 @@ def test_catalog_failure_after_final_rename_remains_durably_retryable(
 
     calls = []
     monkeypatch.setattr(publish, "_publish_catalog", lambda path, payload: calls.append(payload))
+    recovered = publish.recover_pending_publications(
+        recording_root=root,
+        catalog_db_path=tmp_path / "catalog.sqlite3",
+        device_id="umi-rk3576-161",
+    )
+    assert recovered[0]["recording_id"] == recording_id
+    assert calls[0]["recording_id"] == recording_id
+    assert publish._json(ledger_path)["state"] == "PUBLISHED"
+
+
+def test_catalog_recovery_restores_json_assets_to_required_tuple(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    umi_modules,
+) -> None:
+    _, publish = umi_modules
+    observed = []
+
+    class StrictCatalog:
+        def __init__(self, path: Path) -> None:
+            observed.append(path)
+
+        def migrate(self) -> None:
+            return None
+
+        def publish_recording(self, **payload) -> None:
+            assert isinstance(payload["assets"], tuple)
+            observed.append(payload)
+
+    monkeypatch.setitem(sys.modules, "catalog_db", types.SimpleNamespace(CatalogDb=StrictCatalog))
+    publish._publish_catalog(
+        tmp_path / "catalog.sqlite3",
+        {"recording_id": "recording_test", "assets": [{"relative_path": "rgb.h265"}]},
+    )
+
+    assert observed[1]["assets"] == ({"relative_path": "rgb.h265"},)
+
+
+def test_legacy_published_ledger_does_not_block_upgrade(tmp_path: Path, umi_modules) -> None:
+    _, publish = umi_modules
+    root = tmp_path / "recordings"
+    ledger = root / "recordings-v2" / ".publication-ledger" / "recording_legacy.json"
+    publish._atomic_json(ledger, {"schema_version": 1, "state": "PUBLISHED"})
+
     assert publish.recover_pending_publications(
         recording_root=root,
         catalog_db_path=tmp_path / "catalog.sqlite3",
         device_id="umi-rk3576-161",
-    ) == [recording_id]
-    assert calls[0]["recording_id"] == recording_id
-    assert publish._json(ledger_path)["state"] == "PUBLISHED"
+    ) == []
 
 
 def test_release_provenance_describes_source_until_new_arm_artifact_is_built() -> None:

@@ -130,25 +130,53 @@ def process_matches(state: dict) -> bool:
 def worker_matches(cfg: Config, state: dict) -> bool:
     if state.get("boot_id") != cfg.boot_id:
         return False
-    for pid_field, ticks_field in (
-        ("record_pid", "record_start_ticks"),
-        ("worker_pid", "worker_start_ticks"),
-    ):
-        pid = state.get(pid_field)
-        ticks = state.get(ticks_field)
-        if not isinstance(pid, int) or pid <= 0 or not isinstance(ticks, int):
-            continue
+    pid = state.get("worker_pid")
+    ticks = state.get("worker_start_ticks")
+    if not isinstance(pid, int) or pid <= 0 or not isinstance(ticks, int):
+        return False
+    try:
+        return proc_ticks(pid) == ticks
+    except (FileNotFoundError, ProcessLookupError, PermissionError, ValueError):
+        return False
+
+
+def _save_job_and_current_if_selected(cfg: Config, state: dict) -> None:
+    atomic_json(cfg.jobs / f"{state['job_id']}.json", state)
+    current = read_json(cfg.current)
+    if current is not None and current.get("job_id") == state.get("job_id"):
+        atomic_json(cfg.current, state)
+
+
+def _stop_orphan_recorder(state: dict) -> bool:
+    if not process_matches(state):
+        return True
+    pid = state["record_pid"]
+    for signum, timeout_s in ((signal.SIGINT, 4.0), (signal.SIGTERM, 2.0)):
         try:
-            if proc_ticks(pid) == ticks:
+            os.kill(pid, signum)
+        except ProcessLookupError:
+            return True
+        deadline = time.monotonic() + timeout_s
+        while time.monotonic() < deadline:
+            if not process_matches(state):
                 return True
-        except (FileNotFoundError, ProcessLookupError, PermissionError, ValueError):
-            continue
-    return False
+            time.sleep(0.05)
+    return not process_matches(state)
 
 
 def reconcile_stale_state(cfg: Config, state: dict | None) -> dict | None:
     if state is None or state.get("state") not in ACTIVE or worker_matches(cfg, state):
         return state
+    if state.get("boot_id") == cfg.boot_id and not _stop_orphan_recorder(state):
+        unresolved = dict(state)
+        unresolved.update(
+            phase="orphan_recorder_shutdown_pending",
+            error="controller worker disappeared and native recorder has not stopped",
+            recovery_reason="ORPHAN_RECORDER_STILL_RUNNING",
+            last_heartbeat_at=now_iso(),
+        )
+        _save_job_and_current_if_selected(cfg, unresolved)
+        return unresolved
     recovered = dict(state)
     recovered.update(
         state="interrupted",
@@ -157,11 +185,34 @@ def reconcile_stale_state(cfg: Config, state: dict | None) -> dict | None:
         recovery_reason="STALE_PROCESS_IDENTITY",
         last_heartbeat_at=now_iso(),
     )
-    atomic_json(cfg.jobs / f"{recovered['job_id']}.json", recovered)
-    current = read_json(cfg.current)
-    if current is not None and current.get("job_id") == recovered.get("job_id"):
-        atomic_json(cfg.current, recovered)
+    _save_job_and_current_if_selected(cfg, recovered)
     return recovered
+
+
+def reconcile_published_job(cfg: Config, publication: dict) -> None:
+    job_id = publication.get("job_id")
+    if not isinstance(job_id, str) or SAFE_ID.fullmatch(job_id) is None:
+        raise ValueError("recovered publication job_id is invalid")
+    state = read_json(cfg.jobs / f"{job_id}.json")
+    if state is None or state.get("state") == "complete_local":
+        return
+    state.update(
+        state="complete_local",
+        phase="done",
+        mode="STEREO_IMU",
+        stereo_pairs=publication.get("stereo_pairs"),
+        imu_samples=publication.get("imu_samples"),
+        imu_runtime_state="ok",
+        imu_quality_status="PASSED",
+        imu_quality_error_codes=[],
+        local_data_present=True,
+        recording_id=publication.get("recording_id"),
+        output_dir=publication.get("output_dir"),
+        manifest_sha256=publication.get("manifest_sha256"),
+        recovery_reason="PUBLICATION_LEDGER_REPLAYED",
+        last_heartbeat_at=now_iso(),
+    )
+    _save_job_and_current_if_selected(cfg, state)
 
 
 def status_data(state: dict | None) -> dict:
@@ -249,11 +300,14 @@ def identity(cfg: Config) -> dict:
 
 def _preflight_locked(cfg: Config) -> dict:
     state = reconcile_stale_state(cfg, read_json(cfg.current))
-    recover_pending_publications(
+    publications = recover_pending_publications(
         recording_root=cfg.recording_root,
         catalog_db_path=cfg.catalog_db,
         device_id=cfg.device_id,
     )
+    for publication in publications:
+        reconcile_published_job(cfg, publication)
+    state = read_json(cfg.current)
     active = status_data(state) if state and state.get("state") in ACTIVE else None
     try:
         free = shutil.disk_usage(cfg.recording_root).free
@@ -299,11 +353,12 @@ def start(cfg: Config, request_id: str, duration: int) -> dict:
         raise ControllerError("INVALID_DURATION", "duration must be 0..86400 seconds")
     cfg.prepare()
     with locked(cfg):
+        current = reconcile_stale_state(cfg, read_json(cfg.current))
         replay = read_json(cfg.requests / f"{request_id}.json")
         if replay is not None:
             state = read_json(cfg.jobs / f"{replay['job_id']}.json") or replay
+            state = reconcile_stale_state(cfg, state) or state
             return {"accepted": True, "idempotent": True, "job_id": replay["job_id"], "state": state["state"]}
-        current = reconcile_stale_state(cfg, read_json(cfg.current))
         check = _preflight_locked(cfg)
         if current and current.get("state") in ACTIVE:
             raise ControllerError("ALREADY_RECORDING", "a recording is already active", status_data(current))

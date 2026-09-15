@@ -96,27 +96,59 @@ def _safe_path(root: Path, relative: object) -> Path:
 def _publish_catalog(catalog_db_path: Path, payload: dict[str, Any]) -> None:
     from catalog_db import CatalogDb
 
+    normalized = dict(payload)
+    assets = normalized.get("assets")
+    if isinstance(assets, list):
+        normalized["assets"] = tuple(assets)
     catalog = CatalogDb(catalog_db_path)
     catalog.migrate()
-    catalog.publish_recording(**payload)
+    catalog.publish_recording(**normalized)
+
+
+def _ledger_result(ledger: dict[str, Any], final: Path) -> dict[str, Any]:
+    result = ledger.get("result")
+    if (
+        not isinstance(result, dict)
+        or result.get("job_id") != ledger.get("job_id")
+        or result.get("recording_id") != ledger.get("recording_id")
+        or result.get("output_dir") != str(final)
+        or result.get("manifest_sha256") != ledger.get("manifest_sha256")
+        or not isinstance(result.get("stereo_pairs"), int)
+        or isinstance(result.get("stereo_pairs"), bool)
+        or result.get("stereo_pairs", 0) <= 0
+        or not isinstance(result.get("imu_samples"), int)
+        or isinstance(result.get("imu_samples"), bool)
+        or result.get("imu_samples", 0) <= 0
+    ):
+        raise ValueError("publication ledger result is invalid")
+    return result
 
 
 def recover_pending_publications(
     *, recording_root: Path, catalog_db_path: Path, device_id: str
-) -> list[str]:
+) -> list[dict[str, Any]]:
     """Recover durable publication ledgers left by process loss or power failure."""
     ledger_dir = recording_root / "recordings-v2" / ".publication-ledger"
     if not ledger_dir.is_dir():
         return []
-    recovered: list[str] = []
+    recovered: list[dict[str, Any]] = []
     for ledger_path in sorted(ledger_dir.glob("recording_*.json")):
         ledger = _json(ledger_path)
+        state = ledger.get("state")
+        if state == "PUBLISHED" and ledger.get("schema_version") == 1:
+            continue
+        if ledger.get("schema_version") != 2:
+            raise ValueError("pending publication ledger schema is unsupported")
         if ledger.get("device_id") != device_id:
             raise ValueError("pending publication belongs to another device")
-        state = ledger.get("state")
         source = _safe_path(recording_root, ledger.get("source_relpath"))
         prepared = _safe_path(recording_root, ledger.get("prepared_relpath"))
         final = _safe_path(recording_root, ledger.get("final_relpath"))
+        if state == "PUBLISHED":
+            if not final.is_dir():
+                raise ValueError("published recording payload is unavailable")
+            recovered.append(_ledger_result(ledger, final))
+            continue
         if state == "PREPARING":
             candidates = [path for path in (prepared, final) if path.exists()]
             if source.exists() and candidates:
@@ -129,7 +161,6 @@ def recover_pending_publications(
                 _fsync_dir(source.parent)
             ledger.update(state="ROLLED_BACK")
             _atomic_json(ledger_path, ledger)
-            recovered.append(str(ledger.get("recording_id")))
             continue
         if state != "PREPARED":
             continue
@@ -149,10 +180,11 @@ def recover_pending_publications(
             or payload.get("final_relpath") != ledger.get("final_relpath")
         ):
             raise ValueError("prepared publication catalog identity is inconsistent")
+        result = _ledger_result(ledger, final)
         _publish_catalog(catalog_db_path, payload)
         ledger.update(state="PUBLISHED")
         _atomic_json(ledger_path, ledger)
-        recovered.append(str(ledger.get("recording_id")))
+        recovered.append(result)
     return recovered
 
 
@@ -311,6 +343,15 @@ def publish_session(
             state="PREPARED",
             manifest_sha256=manifest_sha256,
             catalog=catalog_payload,
+            result={
+                "job_id": job_id,
+                "recording_id": recording_id,
+                "output_dir": str(final),
+                "manifest_sha256": manifest_sha256,
+                "stereo_pairs": pairs,
+                "imu_samples": imu_samples,
+                "duration_s": float(duration_s),
+            },
         )
         _atomic_json(ledger_path, ledger)
         os.rename(prepared, final)
