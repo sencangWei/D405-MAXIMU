@@ -24,10 +24,10 @@
 uname -m
 python3 --version
 gst-inspect-1.0 mpph265enc >/dev/null && echo MPP_OK
-sha256sum rk3576-umi-0.2.2.tar.gz
+sha256sum rk3576-umi-0.2.3.tar.gz
 ```
 
-SHA-256 必须与发布记录一致。源码分支是 `umi-rk3576-collector-adapter`；发布 manifest 还会记录实际构建所绑定的源码提交。
+正式包 SHA-256、大小和源码提交必须同时与仓库的 `RELEASE_PROVENANCE.json` 一致。源码分支是 `umi-rk3576-collector-adapter`，包内 manifest 也会固定实际构建所绑定的提交。
 
 ## 3. 查找并固定设备身份
 
@@ -53,16 +53,16 @@ for f in /sys/bus/usb/devices/*/serial; do printf '%s: ' "$f"; cat "$f"; done
 在管理电脑上传并登录板子：
 
 ```bash
-scp rk3576-umi-0.2.2.tar.gz pi@BOARD_IP:/home/pi/
+scp rk3576-umi-0.2.3.tar.gz pi@BOARD_IP:/home/pi/
 ssh pi@BOARD_IP
 ```
 
 在板上解包、校验并安装：
 
 ```bash
-mkdir -p /home/pi/umi-package-0.2.2
-tar -xzf /home/pi/rk3576-umi-0.2.2.tar.gz -C /home/pi/umi-package-0.2.2
-cd /home/pi/umi-package-0.2.2
+mkdir -p /home/pi/umi-package-0.2.3
+tar -xzf /home/pi/rk3576-umi-0.2.3.tar.gz -C /home/pi/umi-package-0.2.3
+cd /home/pi/umi-package-0.2.3
 sha256sum --strict --check SHA256SUMS
 bash check-host.sh
 bash install.sh /home/pi/umi-collector

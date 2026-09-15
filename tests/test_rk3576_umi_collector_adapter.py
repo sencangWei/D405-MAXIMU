@@ -422,7 +422,7 @@ def test_release_provenance_describes_source_until_new_arm_artifact_is_built() -
 
     assert provenance["artifact"] is None
     assert provenance["collector"]["native_binary_sha256"] is None
-    assert provenance["collector"]["adapter_version"] == "0.2.2-umi"
+    assert provenance["collector"]["adapter_version"] == "0.2.3-umi"
     assert provenance["status"] == "SOURCE_VALIDATED"
 
 
@@ -446,3 +446,9 @@ def test_host_check_does_not_mutate_hashed_release_with_bytecode() -> None:
     host_check = (COLLECTOR / "check-host.sh").read_text(encoding="utf-8")
 
     assert "export PYTHONDONTWRITEBYTECODE=1" in host_check
+
+
+def test_all_python_launchers_keep_immutable_release_free_of_bytecode() -> None:
+    for relative in ("bin/recorderctl", "bin/umi-admin-service", "bin/umi-preview-service"):
+        launcher = (COLLECTOR / relative).read_text(encoding="utf-8")
+        assert "export PYTHONDONTWRITEBYTECODE=1" in launcher

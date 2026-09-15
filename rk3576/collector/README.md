@@ -47,9 +47,9 @@ mutate files covered by `SHA256SUMS`; `install.sh` rechecks every file before
 copying and again before atomically selecting the immutable version.
 
 The full package is intentionally not tracked here because generated binaries
-and `.so` files are ignored. The previously bench-tested `0.2.0` archive is not
-bound to this fail-closed `0.2.2-umi` source revision. Build a fresh aarch64
-artifact, verify its manifest and record its SHA-256 before installation.
+and `.so` files are ignored. The immutable `0.2.3` aarch64 archive is bound to
+the source commit recorded in `RELEASE_PROVENANCE.json`; verify its filename,
+size, archive SHA-256 and native-binary SHA-256 before installation.
 
 The source tree includes matching public librealsense headers and the upstream
 license. Generated files under `native/bin/`, `runtime/` and `vendor/` must not

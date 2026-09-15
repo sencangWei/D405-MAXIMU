@@ -24,7 +24,7 @@ from umi_publish import publish_session, recover_pending_publications
 
 
 SCHEMA_VERSION = 1
-CONTROLLER_VERSION = "0.2.2-umi"
+CONTROLLER_VERSION = "0.2.3-umi"
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 ACTIVE = {"starting", "recording", "stop_requested", "finalizing"}
 FINAL = {"complete_local", "incomplete", "interrupted"}
