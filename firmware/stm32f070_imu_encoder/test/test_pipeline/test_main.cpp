@@ -286,14 +286,18 @@ void test_mixed_generation_drain_restarts_before_fresh_frame() {
     TEST_ASSERT_FALSE(pipeline.popOutput(output));
 }
 
-void test_rx_overflow_flag_is_sticky_on_next_sample() {
+void test_rx_overflow_flag_is_reported_once_after_successful_output() {
     capture::Pipeline pipeline;
     pipeline.noteImuQueueOverflow();
     TEST_ASSERT_EQUAL_UINT32(1U, pipeline.imuQueueOverflows());
 
     feedFrame(pipeline, makeImuFrame(1U), 100U);
-    const combined::Sample output = popOne(pipeline);
+    combined::Sample output = popOne(pipeline);
     TEST_ASSERT_BITS_HIGH(combined::kImuQueueOverflow, output.flags);
+
+    feedFrame(pipeline, makeImuFrame(2U), 200U);
+    output = popOne(pipeline);
+    TEST_ASSERT_BITS_LOW(combined::kImuQueueOverflow, output.flags);
 }
 
 void test_output_queue_overflow_is_reported_on_later_sample() {
@@ -311,6 +315,10 @@ void test_output_queue_overflow_is_reported_on_later_sample() {
     while (pipeline.popOutput(output)) {
         if (output.imu_counter == 6U) {
             TEST_ASSERT_BITS_HIGH(combined::kPcTxQueueOverflow, output.flags);
+            feedFrame(pipeline, makeImuFrame(7U), 700U);
+            output = popOne(pipeline);
+            TEST_ASSERT_EQUAL_UINT32(7U, output.imu_counter);
+            TEST_ASSERT_BITS_LOW(combined::kPcTxQueueOverflow, output.flags);
             return;
         }
     }
@@ -356,7 +364,7 @@ int main(int, char**) {
     RUN_TEST(test_receive_discontinuity_discards_partial_frame_and_encoder);
     RUN_TEST(test_explicit_rx_error_advances_buffer_generation);
     RUN_TEST(test_mixed_generation_drain_restarts_before_fresh_frame);
-    RUN_TEST(test_rx_overflow_flag_is_sticky_on_next_sample);
+    RUN_TEST(test_rx_overflow_flag_is_reported_once_after_successful_output);
     RUN_TEST(test_output_queue_overflow_is_reported_on_later_sample);
     RUN_TEST(test_buffered_drain_preserves_timestamp_and_encoder_association);
     return UNITY_END();

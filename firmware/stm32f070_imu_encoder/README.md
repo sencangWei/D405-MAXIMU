@@ -111,7 +111,7 @@ python tools/combined_capture.py --port COM5 --baud 921600 --csv capture.csv --r
 | 24 | 37 | KT-EX9原始帧 |
 | 61 | 2 | CRC-16/CCITT-FALSE |
 
-flags：bit0 IMU有效、bit1编码器有效、bit2编码器错误/ERRFL诊断、bit3编码器奇偶校验错误、bit4 IMU计数器缺口、bit5 IMU接收队列溢出或USART接收错误、bit6 PC发送队列溢出。bit2置位时bit1必须为0，`encoder_response`低3位依次是AS5047P的FRERR、INVCOMM、PARERR。
+flags：bit0 IMU有效、bit1编码器有效、bit2编码器错误/ERRFL诊断、bit3编码器奇偶校验错误、bit4 IMU计数器缺口、bit5 IMU接收队列溢出或USART接收错误、bit6 PC发送队列溢出。bit5/bit6是事件标志：在下一份成功入队的样本上报告一次，若再次发生则再次报告；不会把启动期的一次错误永久带入后续采集。bit2置位时bit1必须为0，`encoder_response`低3位依次是AS5047P的FRERR、INVCOMM、PARERR。
 
 ## 上板验收顺序
 

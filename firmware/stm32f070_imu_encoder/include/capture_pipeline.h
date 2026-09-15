@@ -174,6 +174,8 @@ public:
 private:
     void emitFrame(const kt_ex9::Frame& frame) {
         combined::Sample sample{};
+        const bool report_imu_overflow = imu_overflow_sticky_;
+        const bool report_output_overflow = output_overflow_sticky_;
         sample.flags = combined::kImuValid;
         if (have_previous_counter_ &&
             kt_ex9::isCounterDiscontinuity(previous_counter_, frame.counter)) {
@@ -183,11 +185,11 @@ private:
         previous_counter_ = frame.counter;
         have_previous_counter_ = true;
 
-        if (imu_overflow_sticky_) {
+        if (report_imu_overflow) {
             sample.flags = static_cast<uint16_t>(
                 sample.flags | combined::kImuQueueOverflow);
         }
-        if (output_overflow_sticky_) {
+        if (report_output_overflow) {
             sample.flags = static_cast<uint16_t>(
                 sample.flags | combined::kPcTxQueueOverflow);
         }
@@ -221,6 +223,13 @@ private:
         if (!output_queue_.push(sample)) {
             output_overflow_sticky_ = true;
             ++output_queue_overflows_;
+            return;
+        }
+        if (report_imu_overflow) {
+            imu_overflow_sticky_ = false;
+        }
+        if (report_output_overflow) {
+            output_overflow_sticky_ = false;
         }
     }
 
