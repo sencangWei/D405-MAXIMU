@@ -124,6 +124,19 @@ def _ledger_result(ledger: dict[str, Any], final: Path) -> dict[str, Any]:
     return result
 
 
+def _catalog_tombstoned(catalog_db_path: Path, recording_id: Any) -> bool:
+    """True when the Catalog row was tombstoned by recording_delete_v1."""
+    if not isinstance(recording_id, str) or not SAFE_ID.fullmatch(recording_id):
+        return False
+    try:
+        from catalog_db import CatalogDb
+
+        row = CatalogDb(catalog_db_path).get_recording(recording_id)
+    except Exception:
+        return False
+    return isinstance(row, dict) and row.get("save_state") == "SOURCE_DELETED"
+
+
 def recover_pending_publications(
     *, recording_root: Path, catalog_db_path: Path, device_id: str
 ) -> list[dict[str, Any]]:
@@ -135,6 +148,8 @@ def recover_pending_publications(
     for ledger_path in sorted(ledger_dir.glob("recording_*.json")):
         ledger = _json(ledger_path)
         state = ledger.get("state")
+        if state == "DELETED":
+            continue
         if state == "PUBLISHED" and ledger.get("schema_version") == 1:
             continue
         if ledger.get("schema_version") != 2:
@@ -146,6 +161,12 @@ def recover_pending_publications(
         final = _safe_path(recording_root, ledger.get("final_relpath"))
         if state == "PUBLISHED":
             if not final.is_dir():
+                if _catalog_tombstoned(catalog_db_path, ledger.get("recording_id")):
+                    # recording_delete_v1 removed the payload deliberately; retire
+                    # the ledger instead of blocking every later capture start.
+                    ledger.update(state="DELETED")
+                    _atomic_json(ledger_path, ledger)
+                    continue
                 raise ValueError("published recording payload is unavailable")
             recovered.append(_ledger_result(ledger, final))
             continue

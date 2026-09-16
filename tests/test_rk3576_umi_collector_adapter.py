@@ -518,16 +518,112 @@ def test_legacy_published_ledger_does_not_block_upgrade(tmp_path: Path, umi_modu
     ) == []
 
 
+def test_recovery_retires_published_ledger_when_catalog_tombstoned(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, umi_modules
+) -> None:
+    """recording_delete_v1 removes the payload on purpose; recovery must retire
+    the stale PUBLISHED ledger instead of blocking every later capture start."""
+    _, publish = umi_modules
+    root = tmp_path / "recordings"
+    recording_id = "recording_rk3576-rsusb-20260916T095534Z-770a2d09"
+    ledger_path = root / "recordings-v2" / ".publication-ledger" / f"{recording_id}.json"
+    publish._atomic_json(
+        ledger_path,
+        {
+            "schema_version": 2,
+            "state": "PUBLISHED",
+            "device_id": "umi-rk3576-161",
+            "recording_id": recording_id,
+            "job_id": "umi-job",
+            "source_relpath": "incoming/native-session",
+            "prepared_relpath": f"recordings-v2/completed/.{recording_id}.publishing",
+            "final_relpath": f"recordings-v2/completed/{recording_id}",
+        },
+    )
+    monkeypatch.setattr(publish, "_catalog_tombstoned", lambda path, rid: rid == recording_id)
+
+    assert publish.recover_pending_publications(
+        recording_root=root,
+        catalog_db_path=tmp_path / "catalog.sqlite3",
+        device_id="umi-rk3576-161",
+    ) == []
+    assert publish._json(ledger_path)["state"] == "DELETED"
+
+
+def test_recovery_raises_for_missing_payload_without_catalog_tombstone(
+    tmp_path: Path, umi_modules
+) -> None:
+    """A payload that vanished without a confirmed deletion is still an anomaly."""
+    _, publish = umi_modules
+    root = tmp_path / "recordings"
+    recording_id = "recording_rk3576-rsusb-20260916T095534Z-770a2d09"
+    ledger_path = root / "recordings-v2" / ".publication-ledger" / f"{recording_id}.json"
+    publish._atomic_json(
+        ledger_path,
+        {
+            "schema_version": 2,
+            "state": "PUBLISHED",
+            "device_id": "umi-rk3576-161",
+            "recording_id": recording_id,
+            "job_id": "umi-job",
+            "source_relpath": "incoming/native-session",
+            "prepared_relpath": f"recordings-v2/completed/.{recording_id}.publishing",
+            "final_relpath": f"recordings-v2/completed/{recording_id}",
+        },
+    )
+
+    with pytest.raises(ValueError, match="published recording payload is unavailable"):
+        publish.recover_pending_publications(
+            recording_root=root,
+            catalog_db_path=tmp_path / "catalog.sqlite3",
+            device_id="umi-rk3576-161",
+        )
+
+
+def test_recovery_skips_retired_deleted_ledger(tmp_path: Path, umi_modules) -> None:
+    _, publish = umi_modules
+    root = tmp_path / "recordings"
+    ledger = root / "recordings-v2" / ".publication-ledger" / "recording_retired.json"
+    publish._atomic_json(ledger, {"schema_version": 2, "state": "DELETED"})
+
+    assert publish.recover_pending_publications(
+        recording_root=root,
+        catalog_db_path=tmp_path / "catalog.sqlite3",
+        device_id="umi-rk3576-161",
+    ) == []
+
+
+def test_catalog_tombstone_helper_queries_save_state(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, umi_modules
+) -> None:
+    _, publish = umi_modules
+    rows = {"recording-a": {"save_state": "SOURCE_DELETED"}}
+
+    class Catalog:
+        def __init__(self, path):
+            self.path = path
+
+        def get_recording(self, recording_id):
+            return rows.get(recording_id)
+
+    monkeypatch.setitem(
+        sys.modules, "catalog_db", types.SimpleNamespace(CatalogDb=Catalog)
+    )
+    assert publish._catalog_tombstoned(tmp_path / "catalog.sqlite3", "recording-a") is True
+    assert publish._catalog_tombstoned(tmp_path / "catalog.sqlite3", "recording-b") is False
+    assert publish._catalog_tombstoned(tmp_path / "catalog.sqlite3", "../escape") is False
+
+
 def test_release_provenance_binds_the_arm_artifact() -> None:
     provenance = json.loads(
         (COLLECTOR / "RELEASE_PROVENANCE.json").read_text(encoding="utf-8")
     )
 
-    assert provenance["artifact"]["sha256"] == "f2ebbb71e87fd00a32e8acb6f16a83c5222711fc235f64ee9b37367c830104f1"
-    assert provenance["artifact"]["source_commit"] == "d0ba8ed61a5149c9c97742165f8f088b10adad49"
-    assert provenance["collector"]["native_binary_sha256"] == "7893f0aa988d68c254dd2827e7c4db5044ba3e265845b308ad60c7153161b2da"
-    assert provenance["collector"]["adapter_version"] == "0.2.3-umi"
-    assert provenance["status"] == "ARM_ARTIFACT_AND_IP161_INSTALL_VALIDATED"
+    assert provenance["artifact"]["sha256"] == "d15445127fd8927da9ceba206dd74e0a683a326312a974c7626282e9e44b8850"
+    assert provenance["artifact"]["source_commit"] == "d17b2c2b6dca9ac967d7b9a0d02573e18b01ce0d"
+    assert provenance["artifact"]["base_release"] == "0.2.3-fix1"
+    assert provenance["collector"]["adapter_version"] == "0.2.5-umi"
+    assert provenance["status"] == "DEPLOYED_AND_ACCEPTED_ON_IP161_20260916"
 
 
 def test_repository_does_not_track_generated_runtime_or_private_keys() -> None:

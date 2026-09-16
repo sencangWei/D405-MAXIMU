@@ -719,6 +719,25 @@ def _manifest_delete_snapshot(root: Path, identity: dict) -> tuple[dict, list[di
     return root_identity, catalog_assets
 
 
+def _retire_publication_ledger(cfg: Config, recording_id: str) -> None:
+    """Mark the publication ledger DELETED so recovery does not treat the
+    user-confirmed deletion as a lost payload and block later captures."""
+    ledger_path = cfg.recording_root / "recordings-v2" / ".publication-ledger" / f"{recording_id}.json"
+    ledger = read_json(ledger_path)
+    if (
+        not isinstance(ledger, dict)
+        or ledger.get("recording_id") != recording_id
+        or ledger.get("state") == "DELETED"
+    ):
+        return
+    ledger.update(
+        state="DELETED",
+        deleted_at=now_iso(),
+        delete_reason="recording_delete_v1 confirmed by user",
+    )
+    atomic_json(ledger_path, ledger)
+
+
 def _mark_jobs_deleted(cfg: Config, recording_id: str, root: Path) -> None:
     resolved = root.resolve(strict=False)
     for path in [*sorted(cfg.jobs.glob("umi-*.json")), cfg.current]:
@@ -749,6 +768,7 @@ def delete_recording_sync(cfg: Config, operation: dict) -> dict:
     root = cfg.recording_root / "recordings-v2" / "completed" / recording_id
     if identity.get("save_state") == "SOURCE_DELETED":
         _mark_jobs_deleted(cfg, recording_id, root)
+        _retire_publication_ledger(cfg, recording_id)
         return {"state": "complete", "recording_id": recording_id, "request_id": request_id, "idempotent": True}
     if root.exists():
         root_identity, assets = _manifest_delete_snapshot(root, identity)
@@ -785,6 +805,7 @@ def delete_recording_sync(cfg: Config, operation: dict) -> dict:
     if not isinstance(result, dict) or result.get("save_state") != "SOURCE_DELETED":
         raise ControllerError("CATALOG_UPDATE_FAILED", "catalog deletion state is invalid")
     _mark_jobs_deleted(cfg, recording_id, root)
+    _retire_publication_ledger(cfg, recording_id)
     return {"state": "complete", "recording_id": recording_id, "request_id": request_id, "idempotent": False}
 
 

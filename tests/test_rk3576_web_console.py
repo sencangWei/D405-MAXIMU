@@ -275,6 +275,69 @@ def test_secure_recording_delete_tombstones_catalog_and_current_job(
     assert recorderctl.read_json(config.jobs / "umi-job.json")["local_data_present"] is False
 
 
+def test_secure_recording_delete_retires_publication_ledger(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    recorderctl,
+) -> None:
+    """The 0.2.5 delete flow removed payloads but left PUBLISHED ledgers behind,
+    which bricked later capture starts; deletion must retire the ledger."""
+    config = _configure_recorder(monkeypatch, tmp_path, recorderctl)
+    config.prepare()
+    recording_id = "recording_rk3576-test"
+    root, manifest_sha256 = _published_recording(config, recording_id)
+    ledger_path = (
+        config.recording_root
+        / "recordings-v2"
+        / ".publication-ledger"
+        / f"{recording_id}.json"
+    )
+    recorderctl.atomic_json(
+        ledger_path,
+        {
+            "schema_version": 2,
+            "state": "PUBLISHED",
+            "device_id": config.device_id,
+            "recording_id": recording_id,
+            "job_id": "umi-job",
+            "final_relpath": f"recordings-v2/completed/{recording_id}",
+        },
+    )
+
+    def secure_delete(path, identity, assets):
+        __import__("shutil").rmtree(path)
+
+    class Catalog:
+        def __init__(self, path):
+            pass
+
+        def mark_recording_deleted(self, **identity):
+            return {**identity, "save_state": "SOURCE_DELETED"}
+
+    monkeypatch.setitem(
+        sys.modules,
+        "transfer_commit",
+        types.SimpleNamespace(
+            delete_catalog_tree=secure_delete,
+            TransferCommitError=RuntimeError,
+        ),
+    )
+    monkeypatch.setitem(sys.modules, "catalog_db", types.SimpleNamespace(CatalogDb=Catalog))
+
+    result = recorderctl.delete_recording_sync(
+        config,
+        {
+            "recording_id": recording_id,
+            "request_id": "0e9d63a4-4fe2-41ac-b735-73a11b5ca2e1",
+        },
+    )
+
+    assert result["state"] == "complete"
+    ledger = recorderctl.read_json(ledger_path)
+    assert ledger["state"] == "DELETED"
+    assert ledger["recording_id"] == recording_id
+
+
 def test_recording_delete_rejects_unpublished_or_unsafe_identity(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
