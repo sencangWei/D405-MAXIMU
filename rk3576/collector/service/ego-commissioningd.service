@@ -1,0 +1,28 @@
+[Unit]
+Description=EGO BLE Wi-Fi commissioning daemon (QR provisioning)
+Documentation=file:/opt/umi-collector/current/commissioningd/README.md
+After=bluetooth.service NetworkManager.service
+Requires=bluetooth.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /opt/umi-collector/current/commissioningd/main.py \
+    --identity-path /etc/ego/ble/device-identity.json \
+    --registry-path /etc/ego/ble/controller-bindings.json \
+    --adapter /org/bluez/hci0 \
+    --wifi-device wlan0 \
+    --https-origin https://192.168.113.161:18443 \
+    --cert-path /etc/ego/tls/device-api.pem
+Restart=on-failure
+RestartSec=3
+# Hardening: the daemon needs root for /etc/ego and the evdev node; it never
+# writes outside /run/ego, /etc/ego/ble and the NetworkManager D-Bus socket.
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/run/ego /etc/ego/ble
+
+[Install]
+WantedBy=multi-user.target
