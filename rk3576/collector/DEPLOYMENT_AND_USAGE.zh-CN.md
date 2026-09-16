@@ -234,3 +234,14 @@ systemctl --user restart umi-preview.service umi-admin.service
 - Web service 随不可变 release 发布，不再依赖 `/home/pi/umi-web-console` 的板外目录。
 - 本版本不启用 QR 配网；固定二维码载荷、首次绑定和换网身份恢复必须等待
   `ego-contracts` / `ego-device-platform` 的正式合同后另行发布。
+
+## 12. 0.2.6 删除后无法开始采集的修复
+
+- 0.2.5 的"删除数据"只删了负载并在 Catalog 写了 tombstone，但遗留
+  `recordings-v2/.publication-ledger/` 中 `state=PUBLISHED` 的账本，导致下一次
+  开始采集时恢复逻辑报 `published recording payload is unavailable`。
+- 0.2.6 删除流程在 Catalog tombstone 成功后把账本置为 `DELETED`；恢复逻辑跳过
+  `DELETED` 账本，并对"已确认删除 + Catalog 已 tombstone"的 `PUBLISHED` 账本自愈，
+  未确认删除而负载消失仍然会失败关闭。
+- 已处于卡死状态的板子：把对应账本文件的状态改为 `DELETED` 即可立即恢复，或部署
+  0.2.6 后由恢复逻辑自动自愈。

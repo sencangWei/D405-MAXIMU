@@ -116,6 +116,13 @@ QR provisioning is intentionally not enabled in this release; its fixed-code
 binding payload and roaming identity behavior remain gated on the canonical
 `ego-contracts` and `ego-device-platform` contracts.
 
+Release 0.2.6 fixes a 0.2.5 regression where the new recording deletion left
+the durable publication ledger at state PUBLISHED, so the next capture start
+failed recovery with "published recording payload is unavailable". Deletion
+now retires the ledger, and recovery self-heals published ledgers whose
+payload was removed by a confirmed deletion while still failing closed when
+a payload vanishes without one.
+
 ## Operator documentation
 
 See [DEPLOYMENT_AND_USAGE.zh-CN.md](DEPLOYMENT_AND_USAGE.zh-CN.md) for the

@@ -27,7 +27,7 @@ from umi_publish import publish_session, recover_pending_publications
 
 
 SCHEMA_VERSION = 1
-CONTROLLER_VERSION = "0.2.5-umi"
+CONTROLLER_VERSION = "0.2.6-umi"
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 HEX64 = re.compile(r"[0-9a-f]{64}\Z")
 RECORDING_ID = re.compile(r"recording_[A-Za-z0-9_-]{1,160}\Z")
