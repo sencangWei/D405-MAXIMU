@@ -1,21 +1,22 @@
 {
   "schema_version": 1,
   "artifact": {
-    "filename": "rk3576-umi-0.2.3.tar.gz",
-    "sha256": "f2ebbb71e87fd00a32e8acb6f16a83c5222711fc235f64ee9b37367c830104f1",
-    "size_bytes": 11164690,
+    "filename": "rk3576-umi-0.2.5.tar.gz",
+    "sha256": "d15445127fd8927da9ceba206dd74e0a683a326312a974c7626282e9e44b8850",
+    "size_bytes": 11177964,
     "architecture": "aarch64",
-    "source_commit": "d0ba8ed61a5149c9c97742165f8f088b10adad49"
+    "source_commit": "d17b2c2b6dca9ac967d7b9a0d02573e18b01ce0d",
+    "base_release": "0.2.3-fix1"
   },
   "collector": {
     "language": "C++17",
-    "native_binary_sha256": "7893f0aa988d68c254dd2827e7c4db5044ba3e265845b308ad60c7153161b2da",
-    "adapter_version": "0.2.3-umi"
+    "native_binary_inherited_from": "0.2.3-fix1",
+    "adapter_version": "0.2.5-umi"
   },
   "app_contract_runtime": {
     "repository": "JO-ara-dev/ego-recorder",
     "commit": "21520fac865c69def3fc6d3c8a9d67abd16ba50b"
   },
-  "status": "ARM_ARTIFACT_AND_IP161_INSTALL_VALIDATED",
-  "note": "The immutable 0.2.3 artifact was built and host-validated on RK3576, installed on 192.168.113.161, and its signed Admin/empty Catalog, service stability, package immutability, and fail-closed no-sensor behavior were verified. Capture/preview HIL remains bench evidence from the pinned .30 assembly; .161 had no D405 or STM32 attached during this installation."
+  "status": "DEPLOYED_AND_ACCEPTED_ON_IP161_20260916",
+  "note": "2026-09-16 deployed on 192.168.113.161: tarball sha256 verified, all 536 SHA256SUMS entries pass, check-host HOST_RUNTIME_PASS, install.sh atomically selected releases/0.2.5 (old releases kept). umi-web.service now runs the versioned in-release console on :8766 instead of the out-of-release /home/pi/umi-web-console. Post-deploy: identity ok (controller_version 0.2.5-umi, capabilities include recording_delete_v1), preflight PASS with D405+STM32 attached, preview healthz ok, all three user services active. Acceptance capture: 60 s job umi-34ce1bae7cde4bd98182609b3dd05ad5 -> complete_local, 1800 stereo pairs, 24002 IMU samples, IMU quality PASSED, exit 0, elapsed monotonic over 11 status polls (0 backward steps). Rollback: ln -s /home/pi/umi-collector/releases/0.2.3-fix1 /home/pi/umi-collector/.current-rollback && mv -Tf .current-rollback current && systemctl --user restart umi-preview.service umi-admin.service (see DEPLOYMENT_AND_USAGE.zh-CN.md section 9)."
 }
