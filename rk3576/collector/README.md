@@ -20,6 +20,14 @@ Python adapter maps the native sealed session to existing App contracts.
 Shared EGO runtime code is a package-time dependency and is not duplicated in
 this repository.
 
+The release also contains the device-hosted `web-console`: it uses the same
+C++ RSUSB recorder through the adapter, extrapolates active duration from the
+last monotonic device sample instead of resetting to stale cached values, and
+offers an explicitly confirmed asynchronous deletion operation for one exact
+completed recording. Deletion reuses the EGO secure Catalog tree primitive,
+refuses active capture/transfer, tombstones the Catalog row, and removes a
+prepared browser-download archive only after source deletion completes.
+
 ## Precision boundary
 
 The two IR H.265 streams are compact and **lossy** (`lossless=false` in the
@@ -100,6 +108,13 @@ safe preview handoff, bounded encoder shutdown, packet-validated STM32 warmup,
 and a D405 udev power policy that prevents runtime autosuspend between repeated
 Web sessions. A one-second in-recording camera gap still fails closed; the
 collector never seals a discontinuous session as complete.
+
+Release 0.2.5 versions the device Web console inside the immutable release,
+keeps the displayed capture clock monotonic across duplicate samples/renders,
+and adds an explicitly confirmed, Catalog-authorized recording deletion flow.
+QR provisioning is intentionally not enabled in this release; its fixed-code
+binding payload and roaming identity behavior remain gated on the canonical
+`ego-contracts` and `ego-device-platform` contracts.
 
 ## Operator documentation
 

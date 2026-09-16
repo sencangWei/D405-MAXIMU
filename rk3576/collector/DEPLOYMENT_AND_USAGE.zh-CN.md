@@ -95,13 +95,14 @@ Admin 使用 Ed25519 App 公钥和 TLS。私钥只放在被授权的 App/管理�
 mkdir -p /home/pi/.config/systemd/user /home/pi/.local/bin
 cp /home/pi/umi-collector/current/service/umi-preview.service /home/pi/.config/systemd/user/
 cp /home/pi/umi-collector/current/service/umi-admin.service /home/pi/.config/systemd/user/
+cp /home/pi/umi-collector/current/service/umi-web.service /home/pi/.config/systemd/user/
 ln -sfn /home/pi/umi-collector/current/bin/recorderctl /home/pi/.local/bin/recorderctl
 sudo install -m 0644 /home/pi/umi-collector/current/99-umi-devices.rules /etc/udev/rules.d/99-umi-devices.rules
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 sudo loginctl enable-linger pi
 systemctl --user daemon-reload
-systemctl --user enable --now umi-preview.service umi-admin.service
+systemctl --user enable --now umi-preview.service umi-admin.service umi-web.service
 ```
 
 `enable-linger` 使用户服务在无人 SSH 登录时也能随系统启动；安装后用 `loginctl show-user pi -p Linger` 确认值为 `yes`。
@@ -111,6 +112,12 @@ systemctl --user enable --now umi-preview.service umi-admin.service
 ```bash
 ssh -L 18080:127.0.0.1:18080 -L 18443:127.0.0.1:18443 pi@BOARD_IP
 ```
+
+板载人工控制台监听当前局域网地址的 `8766` 端口。它不把旧 IP 当作设备身份，
+Host 校验使用实际接收连接的本机地址，因此 DHCP 地址变化后无需改 service 文件。
+网页“删除数据”只接受已完成的单条录制；录制、保存或该条数据转存进行中会拒绝。确认后
+后台逐文件核验 Catalog/manifest，再安全删除源目录并写入 Catalog tombstone；操作
+不可恢复，不能代替“先转存、下载并核验”的正常流程。
 
 ## 6. 本地检查、采集与预览
 
@@ -216,3 +223,14 @@ systemctl --user restart umi-preview.service umi-admin.service
 - D405 udev 规则固定 `power/control=on`，避免两次 Web 录制之间进入 runtime autosuspend。录制中出现 1 秒相机断流仍判失败，不允许用重试掩盖时间轴缺口。
 - STM32 preflight 只确认设备存在，不能在未采样时宣称 `ok`；正式采集边界要求连续、CRC 正确且 IMU/编码器有效的数据包。
 - AS5047P `flags=5` 表示 IMU 有效、编码器错误位锁存。持久修复位于 STM32 固件，需要通过 ST-Link/J4 烧录；CP2102N 串口不能升级该固件。
+
+## 11. 0.2.5 Web 计时与删除说明
+
+- 运行时长由板端单调时钟快照与浏览器单调时钟共同约束；重复状态采样和重复
+  `render()` 不再让显示时间加速或回退，停止后固定为采集端最终时长。
+- Web 增加“删除数据”操作。它只接受 Catalog 中已完成的精确录制身份，要求人工
+  二次确认，录制或同一数据转存中拒绝执行；删除前验证目录 inode、manifest 和全部
+  asset，完成后写入 `SOURCE_DELETED` tombstone。失败状态可重试，不会无限停在“删除中”。
+- Web service 随不可变 release 发布，不再依赖 `/home/pi/umi-web-console` 的板外目录。
+- 本版本不启用 QR 配网；固定二维码载荷、首次绑定和换网身份恢复必须等待
+  `ego-contracts` / `ego-device-platform` 的正式合同后另行发布。

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="UMI 设备采集控制台：启动、停止、实时预览和录制转存。">
+  <title>UMI · 采集控制台</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css"><script src="/clock.js" defer></script><script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="设备标识"><a class="brand" href="/" aria-label="UMI 首页">u<span>mi</span></a><div class="rail-line"></div><div class="rail-label">CAPTURE</div><div class="rail-bottom">01</div></aside>
+    <div class="workspace">
+      <header class="topbar"><div class="breadcrumb">设备工作台 <span>/</span> <strong>UMI 采集</strong></div><div class="connection" id="connection"><span class="dot"></span><span id="connectionLabel">正在连接</span></div></header>
+      <main>
+        <section class="page-heading"><div><div class="eyebrow">UMI DEVICE / LIVE WORKSPACE</div><h1>采集控制台<span class="title-mark"></span></h1><p class="intro">控制 UMI 采集，查看实时画面，保存录制数据。</p></div><div class="device-chip"><span class="device-icon" aria-hidden="true">▣</span><div><strong id="deviceId">UMI-D405-RK3576</strong><span id="deviceAddress">192.168.113.161</span></div><span class="version" id="version">—</span></div></section>
+        <div class="alert" id="alert" role="alert" hidden></div>
+        <section class="capture-grid" aria-label="采集与预览">
+          <article class="preview-card">
+            <div class="card-heading"><div><span class="section-number">01</span><h2>实时预览</h2></div><div class="preview-format">RGB <span>1280 × 720</span></div></div>
+            <div class="viewfinder" id="viewfinder">
+              <div class="viewfinder-grid"></div><span class="corner top-left"></span><span class="corner top-right"></span><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
+              <img id="previewImage" alt="D405 相机实时彩色画面" hidden>
+              <div class="preview-placeholder" id="previewPlaceholder"><div class="lens-icon" aria-hidden="true"><span></span></div><h3 id="previewTitle">画面尚未开启</h3><p id="previewHint">开启预览，查看相机当前视野</p><button id="previewCenterButton" class="button button-preview" disabled>开启实时预览 <span aria-hidden="true">↗</span></button></div>
+              <div class="preview-overlay"><span id="previewBadge">STANDBY</span><span id="previewCounter">RGB / LIVE VIEW</span></div>
+              <div class="record-indicator" id="recordIndicator" hidden><span></span> REC</div>
+            </div>
+            <div class="preview-footer"><span id="previewDescription">彩色预览 · 目标 15 帧/秒</span><button id="previewToggle" class="text-button" disabled>开启预览</button></div>
+          </article>
+          <article class="controls-card">
+            <div class="card-heading"><div><span class="section-number">02</span><h2>采集控制</h2></div><span id="stateBadge" class="state-badge">待连接</span></div>
+            <div class="capture-timer"><div class="small-label">任务运行时长</div><div id="elapsed" class="elapsed">00<span>:</span>00<span>:</span>00</div><span id="phaseText">连接设备后即可开始</span></div>
+            <label class="field-label" for="duration">结束方式</label><select id="duration"><option value="0">手动停止 · 最长 24 小时</option><option value="60">定时采集 · 1 分钟</option><option value="600">定时采集 · 10 分钟</option><option value="1800">定时采集 · 30 分钟</option></select>
+            <div class="control-buttons"><button class="button button-start" id="startButton" disabled><span class="play-icon" aria-hidden="true"></span>开始采集</button><button class="button button-stop" id="stopButton" disabled><span class="stop-icon" aria-hidden="true"></span>停止</button></div>
+            <div class="capture-profile"><div class="profile-title">本次采集内容<span>STEREO + IMU</span></div><div><span>彩色 + 左右红外</span><strong>720p / 30 Hz</strong></div><div><span>IMU + 磁编码器</span><strong>约 400 Hz</strong></div><p>视频 H.265 · 传感器原始数据</p></div>
+          </article>
+        </section>
+        <section class="metrics" aria-label="设备状态"><div class="metric"><span class="metric-label">相机</span><strong id="cameraState">—</strong><span class="metric-detail">Intel RealSense D405</span></div><div class="metric"><span class="metric-label">传感器接口</span><strong id="serialState">—</strong><span class="metric-detail">STM32 / USB 串口</span></div><div class="metric"><span class="metric-label">设备剩余空间</span><strong id="diskFree">—<small>GB</small></strong><div class="storage-track"><div id="storageFill"></div></div></div><div class="metric"><span class="metric-label">设备温度</span><strong id="temperature">—<small>°C</small></strong><span class="metric-detail" id="temperatureNote">等待设备数据</span></div></section>
+        <section class="recordings-card" aria-label="录制转存">
+          <div class="recordings-heading"><div><div class="heading-inline"><span class="section-number">03</span><h2>录制与转存</h2><span class="count" id="recordingCount">0</span></div><p>准备下载包后，保存到当前手机或电脑。设备原始数据保留。</p></div><button class="text-button refresh-button" id="refreshButton">刷新列表 <span aria-hidden="true">↻</span></button></div>
+          <div class="destination"><span class="folder-icon" aria-hidden="true">▱</span><span>转存到</span><code id="destinationPath">正在读取保存位置…</code></div>
+          <div class="empty-state" id="emptyState"><div class="empty-icon" aria-hidden="true">≡</div><div><h3>还没有完成的录制</h3><p>点击「开始采集」，停止并保存完成后，就可以在这里转存。</p></div></div>
+          <div class="table-wrap" id="recordingTableWrap" hidden><table><thead><tr><th>录制</th><th>时长 / 大小</th><th>状态</th><th class="action-heading">操作</th></tr></thead><tbody id="recordingRows"></tbody></table></div>
+        </section>
+        <footer class="page-footer"><span>UMI <span class="footer-divider">/</span> 设备采集工作台</span><span id="lastUpdated">等待连接</span></footer>
+      </main>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

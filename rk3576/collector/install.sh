@@ -28,6 +28,9 @@ chmod 755 \
   "$UMI_STAGE/bin/recorderctl" \
   "$UMI_STAGE/bin/umi-admin-service" \
   "$UMI_STAGE/bin/umi-preview-service" \
+  "$UMI_STAGE/web-console/device_server.py" \
+  "$UMI_STAGE/web-console/remote_agent.py" \
+  "$UMI_STAGE/web-console/server.py" \
   "$UMI_STAGE/native/bin/umi-record-native" \
   "$UMI_STAGE/native/bin/umi-rsusb-probe"
 mv -T -- "$UMI_STAGE" "$UMI_TARGET"
