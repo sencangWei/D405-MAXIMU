@@ -1,22 +1,22 @@
 {
   "schema_version": 1,
   "artifact": {
-    "filename": "rk3576-umi-0.2.5.tar.gz",
-    "sha256": "d15445127fd8927da9ceba206dd74e0a683a326312a974c7626282e9e44b8850",
-    "size_bytes": 11177964,
+    "filename": "rk3576-umi-0.2.6.tar.gz",
+    "sha256": "1206a791376581a6794ef7c2ffccd1e242d2aef114940acee0318a0af6af1ed5",
+    "size_bytes": 11203289,
     "architecture": "aarch64",
-    "source_commit": "d17b2c2b6dca9ac967d7b9a0d02573e18b01ce0d",
+    "source_commit": "6f01b2b204a24dff1eec4b62568d5e554b98bcf9",
     "base_release": "0.2.3-fix1"
   },
   "collector": {
     "language": "C++17",
     "native_binary_inherited_from": "0.2.3-fix1",
-    "adapter_version": "0.2.5-umi"
+    "adapter_version": "0.2.6-umi"
   },
   "app_contract_runtime": {
     "repository": "JO-ara-dev/ego-recorder",
     "commit": "21520fac865c69def3fc6d3c8a9d67abd16ba50b"
   },
-  "status": "DEPLOYED_AND_ACCEPTED_ON_IP161_20260916",
-  "note": "2026-09-16 deployed on 192.168.113.161: tarball sha256 verified, all 536 SHA256SUMS entries pass, check-host HOST_RUNTIME_PASS, install.sh atomically selected releases/0.2.5 (old releases kept). umi-web.service now runs the versioned in-release console on :8766 instead of the out-of-release /home/pi/umi-web-console. Post-deploy: identity ok (controller_version 0.2.5-umi, capabilities include recording_delete_v1), preflight PASS with D405+STM32 attached, preview healthz ok, all three user services active. Acceptance capture: 60 s job umi-34ce1bae7cde4bd98182609b3dd05ad5 -> complete_local, 1800 stereo pairs, 24002 IMU samples, IMU quality PASSED, exit 0, elapsed monotonic over 11 status polls (0 backward steps). Rollback: ln -s /home/pi/umi-collector/releases/0.2.3-fix1 /home/pi/umi-collector/.current-rollback && mv -Tf .current-rollback current && systemctl --user restart umi-preview.service umi-admin.service (see DEPLOYMENT_AND_USAGE.zh-CN.md section 9)."
+  "status": "DEPLOYED_AND_LOOP_ACCEPTED_ON_IP161_20260916",
+  "note": "2026-09-16 deployed on 192.168.113.161: fixes the 0.2.5 regression where recording deletion left the durable publication ledger at PUBLISHED and blocked all later capture starts with 'published recording payload is unavailable'. tarball sha256 verified, 537 SHA256SUMS entries pass, install.sh atomically selected releases/0.2.6 (0.2.5 and older kept). Three stale ledgers from 0.2.5-era UI deletions retired to DELETED. Loop acceptance on device: preflight PASS; 40s capture complete_local (1200 pairs/16000 IMU, exit 0); CLI delete-recording -> catalog SOURCE_DELETED tombstone + payload removed + ledger DELETED; 20s capture started immediately after delete -> complete_local (600 pairs/7999 IMU, exit 0). Recovery self-heals PUBLISHED ledgers whose payload was confirmed-deleted and still fails closed otherwise. Rollback: current -> releases/0.2.5 (or 0.2.3-fix1) per DEPLOYMENT_AND_USAGE.zh-CN.md section 9."
 }

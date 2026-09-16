@@ -147,7 +147,7 @@ def test_explicit_unit_identity_reaches_existing_app_contract(
     assert config.stm32_port == str(stm32)
     assert identity["device_id"] == "umi-rk3576-161"
     assert identity["model"] == "UMI-D405-RK3576"
-    assert identity["controller_version"] == "0.2.5-umi"
+    assert identity["controller_version"] == "0.2.6-umi"
     assert identity["capabilities"] == [
         "capture_timing_v1",
         "preview_v1",
@@ -619,11 +619,11 @@ def test_release_provenance_binds_the_arm_artifact() -> None:
         (COLLECTOR / "RELEASE_PROVENANCE.json").read_text(encoding="utf-8")
     )
 
-    assert provenance["artifact"]["sha256"] == "d15445127fd8927da9ceba206dd74e0a683a326312a974c7626282e9e44b8850"
-    assert provenance["artifact"]["source_commit"] == "d17b2c2b6dca9ac967d7b9a0d02573e18b01ce0d"
+    assert provenance["artifact"]["sha256"] == "1206a791376581a6794ef7c2ffccd1e242d2aef114940acee0318a0af6af1ed5"
+    assert provenance["artifact"]["source_commit"] == "6f01b2b204a24dff1eec4b62568d5e554b98bcf9"
     assert provenance["artifact"]["base_release"] == "0.2.3-fix1"
-    assert provenance["collector"]["adapter_version"] == "0.2.5-umi"
-    assert provenance["status"] == "DEPLOYED_AND_ACCEPTED_ON_IP161_20260916"
+    assert provenance["collector"]["adapter_version"] == "0.2.6-umi"
+    assert provenance["status"] == "DEPLOYED_AND_LOOP_ACCEPTED_ON_IP161_20260916"
 
 
 def test_repository_does_not_track_generated_runtime_or_private_keys() -> None:
