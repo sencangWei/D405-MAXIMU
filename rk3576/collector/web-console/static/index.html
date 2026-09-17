@@ -42,6 +42,20 @@
           <div class="empty-state" id="emptyState"><div class="empty-icon" aria-hidden="true">≡</div><div><h3>还没有完成的录制</h3><p>点击「开始采集」，停止并保存完成后，就可以在这里转存。</p></div></div>
           <div class="table-wrap" id="recordingTableWrap" hidden><table><thead><tr><th>录制</th><th>时长 / 大小</th><th>状态</th><th class="action-heading">操作</th></tr></thead><tbody id="recordingRows"></tbody></table></div>
         </section>
+        <section class="recordings-card incomplete-card" id="incompleteCard" aria-label="未完成录制" hidden>
+          <div class="recordings-heading"><div><div class="heading-inline"><span class="section-number">04</span><h2>未完成录制</h2><span class="count" id="incompleteCount">0</span></div><p>断电或中断的采集会留在这里。可以抢救成可用的本地录制，也可以直接删除以回收空间。</p></div></div>
+          <div class="incomplete-note" id="incompleteNote"></div>
+          <div class="table-wrap"><table><thead><tr><th>中断的采集</th><th>时长 / 大小</th><th>状态</th><th class="action-heading">操作</th></tr></thead><tbody id="incompleteRows"></tbody></table></div>
+          <div class="recover-panel" id="recoverPanel" hidden>
+            <div class="recover-title">选择抢救范围</div>
+            <label class="recover-option"><input type="radio" name="recoverAssets" value="all" checked><span>全部数据（彩色 + 左右红外 + IMU）</span></label>
+            <label class="recover-option"><input type="radio" name="recoverAssets" value="ir"><span>仅左右红外（SLAM 必需，占用更小）</span></label>
+            <label class="recover-option"><input type="radio" name="recoverAssets" value="rgb"><span>仅彩色</span></label>
+            <label class="recover-option"><input type="checkbox" id="recoverRemainder"><span>抢救成功后删除未选中的原始数据</span></label>
+            <div class="recover-space" id="recoverSpaceNote"></div>
+            <div class="recover-actions"><button class="button button-start" id="recoverConfirm">开始抢救</button><button class="button button-stop" id="recoverCancel">取消</button></div>
+          </div>
+        </section>
         <footer class="page-footer"><span>UMI <span class="footer-divider">/</span> 设备采集工作台</span><span id="lastUpdated">等待连接</span></footer>
       </main>
     </div>

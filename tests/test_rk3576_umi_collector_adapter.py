@@ -147,7 +147,7 @@ def test_explicit_unit_identity_reaches_existing_app_contract(
     assert config.stm32_port == str(stm32)
     assert identity["device_id"] == "umi-rk3576-161"
     assert identity["model"] == "UMI-D405-RK3576"
-    assert identity["controller_version"] == "0.2.6-umi"
+    assert identity["controller_version"] == "0.3.0-umi"
     assert identity["capabilities"] == [
         "capture_timing_v1",
         "preview_v1",
@@ -155,6 +155,8 @@ def test_explicit_unit_identity_reaches_existing_app_contract(
         "catalog_v1",
         "resumable_transfer_v1",
         "recording_delete_v1",
+        "incomplete_recovery_v1",
+        "incomplete_delete_v1",
     ]
 
 

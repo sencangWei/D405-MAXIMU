@@ -225,6 +225,39 @@ class Application:
         with self.control_lock:
             return self.bridge.rpc('delete_recording', recording_id=rid, request_id=request_id)
 
+    def recover_incomplete(self, session, request_id, assets='all', delete_remainder=False):
+        session = self.validate_incomplete_session(session)
+        try:
+            request_id = str(uuid.UUID(str(request_id)))
+        except (TypeError, ValueError, AttributeError) as error:
+            raise AppError('抢救请求编号无效。') from error
+        if assets not in ('all', 'rgb', 'ir'):
+            raise AppError('抢救范围无效。')
+        with self.control_lock:
+            return self.bridge.rpc(
+                'incomplete_recover', session=session, request_id=request_id,
+                assets=assets, delete_remainder=bool(delete_remainder),
+            )
+
+    def delete_incomplete(self, session, request_id):
+        session = self.validate_incomplete_session(session)
+        try:
+            request_id = str(uuid.UUID(str(request_id)))
+        except (TypeError, ValueError, AttributeError) as error:
+            raise AppError('删除请求编号无效。') from error
+        with self.control_lock:
+            return self.bridge.rpc(
+                'incomplete_delete', session=session, request_id=request_id
+            )
+
+    @staticmethod
+    def validate_incomplete_session(session):
+        if not isinstance(session, str) or not re.fullmatch(
+            r'rk3576-rsusb-cpp-\d{8}T\d{6}Z-[0-9a-f]{8}', session
+        ):
+            raise AppError('未完成录制编号无效。')
+        return session
+
     def update_transfer(self, rid, **values):
         with self.state_lock:
             self.transfers[rid].update(values)
@@ -313,7 +346,17 @@ def friendly_error(error):
                'MAINTENANCE_BUSY': '设备正在执行另一项维护操作，请稍后重试。',
                'RECORDING_CHANGED': '录制文件与清单不一致，已拒绝删除。',
                'LOCAL_DELETE_FAILED': '录制数据删除失败，原始状态已保留。',
-               'CATALOG_UPDATE_FAILED': '数据已处理，但目录状态更新失败，请重试恢复。'}
+               'CATALOG_UPDATE_FAILED': '数据已处理，但目录状态更新失败，请重试恢复。',
+               'INCOMPLETE_LIVE_CAPTURE': '该数据仍在写入（采集进行中），不能抢救或删除。',
+               'INCOMPLETE_ALREADY_PUBLISHED': '该数据已经抢救并登记为本地录制。',
+               'INCOMPLETE_VERIFY_FAILED': '抢救文件校验未通过，原始数据已保留。',
+               'INCOMPLETE_REMUX_FAILED': 'H.265 重新封装失败，原始数据已保留。',
+               'INCOMPLETE_GATE_FAILED': '帧或 IMU 计数不足以构成可用录制，原始数据已保留，可直接删除。',
+               'INCOMPLETE_UNSAFE_PATH': '未完成录制目录不安全，已拒绝操作。',
+               'INCOMPLETE_SESSION_INVALID': '未完成录制编号无效。',
+               'INCOMPLETE_NOT_FOUND': '该未完成录制已不存在，请刷新页面。',
+               'INCOMPLETE_ASSET_MISSING': '所选数据不完整，无法抢救。',
+               'INCOMPLETE_ASSET_UNREADABLE': '所选码流缺少参数集，无法重新封装。'}
     for key, value in mapping.items():
         if key in message:
             return value
@@ -459,6 +502,14 @@ class Handler(BaseHTTPRequestHandler):
                 result = self.app.close_preview(data.get('session_id'))
             elif path == '/api/transfers':
                 result = self.app.start_transfer(data.get('recording_id'))
+            elif path == '/api/incomplete-recover':
+                result = self.app.recover_incomplete(
+                    data.get('session'), data.get('request_id'),
+                    assets=data.get('assets', 'all'),
+                    delete_remainder=data.get('delete_remainder', False),
+                )
+            elif path == '/api/incomplete-delete':
+                result = self.app.delete_incomplete(data.get('session'), data.get('request_id'))
             elif path == '/api/delete-recording':
                 result = self.app.delete_recording(
                     data.get('recording_id'), data.get('request_id')

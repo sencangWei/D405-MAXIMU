@@ -218,8 +218,23 @@ def publish_session(
     job_id: str,
     request_id: str,
     boot_id: str,
+    recovery_hint: str | None = None,
+    display_name: str | None = None,
+    streams: list[dict[str, Any]] | None = None,
+    extra_metadata: dict[str, Any] | None = None,
+    quality_status: str = "PASSED",
+    enforce_completion_gate: bool = True,
 ) -> dict[str, Any]:
-    """Atomically publish a native session, ledger, and CatalogDb row."""
+    """Atomically publish a native session, ledger, and CatalogDb row.
+
+    The keyword defaults preserve the normal capture path byte for byte. The
+    rescue path (umi_recorderctl ``incomplete-recover``) passes
+    ``enforce_completion_gate=False`` plus ``recovery_hint``/``display_name``/
+    ``streams``: a rescued session is published as COMPLETE_LOCAL so the frozen
+    catalog delete path keeps working, and its truthfulness is carried by
+    ``quality_status`` and the recovery metadata rather than by pretending it
+    passed the normal capture gate.
+    """
     if not session.is_dir() or session.is_symlink():
         raise ValueError("sealed native session directory is unavailable")
     manifest = _json(session / "manifest.json")
@@ -240,20 +255,26 @@ def publish_session(
         not isinstance(pairs, int)
         or isinstance(pairs, bool)
         or pairs <= 0
-        or rgb_frames != pairs
         or not isinstance(imu_samples, int)
         or isinstance(imu_samples, bool)
         or imu_samples <= 0
         or not isinstance(duration_s, (int, float))
         or isinstance(duration_s, bool)
-        or duration_s <= 0
+        or duration_s < 0
         or not isinstance(stm32_metrics, dict)
+    ):
+        raise ValueError("native session counters cannot prove STEREO_IMU completion")
+    if enforce_completion_gate and (
+        rgb_frames != pairs
+        or duration_s <= 0
         or any(stm32_metrics.get(name) != 0 for name in STM32_ZERO_METRICS)
         or not isinstance(stm32_metrics.get("observed_rate_hz"), (int, float))
         or isinstance(stm32_metrics.get("observed_rate_hz"), bool)
         or not 395.0 <= float(stm32_metrics["observed_rate_hz"]) <= 405.0
     ):
         raise ValueError("native session counters cannot prove STEREO_IMU completion")
+    if quality_status not in {"PASSED", "DEGRADED", "FAILED", "UNKNOWN"}:
+        raise ValueError("recording quality status is invalid")
 
     ensure_recording_root(recording_root, device_id)
     completed = recording_root / "recordings-v2" / "completed"
@@ -305,7 +326,9 @@ def publish_session(
             "capture_duration_ns": round(float(duration_s) * 1_000_000_000),
             "published_at": recorded_at,
             "pairing": {"accepted_pairs": pairs},
-            "streams": [
+            "streams": streams
+            if streams is not None
+            else [
                 {"camera": "rgb", "segments": ["rgb.h265"]},
                 {"camera": "infrared-left", "segments": ["infrared-left-y8.h265"]},
                 {"camera": "infrared-right", "segments": ["infrared-right-y8.h265"]},
@@ -313,6 +336,8 @@ def publish_session(
             "imu": {"path": "stm32.bin", "samples": imu_samples},
             "native_session_schema": manifest.get("schema"),
         }
+        if extra_metadata:
+            metadata.update(extra_metadata)
         _atomic_json(metadata_dir / "recording.json", metadata)
 
         assets: list[dict[str, Any]] = []
@@ -350,7 +375,7 @@ def publish_session(
             state="COMPLETE_LOCAL",
             manifest_sha256=manifest_sha256,
             save_state="LOCAL_ONLY",
-            display_name=recording_id,
+            display_name=display_name or recording_id,
             recorded_at_source="device_clock",
             time_source="system_utc",
             job_id=job_id,
@@ -358,7 +383,8 @@ def publish_session(
             assets=tuple(assets),
             final_relpath=final_relpath,
             capture_mode="STEREO_IMU",
-            imu_quality_status="PASSED",
+            imu_quality_status=quality_status,
+            recovery_hint=recovery_hint,
         )
         ledger.update(
             state="PREPARED",

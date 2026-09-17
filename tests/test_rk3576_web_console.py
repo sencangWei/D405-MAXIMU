@@ -404,3 +404,115 @@ def test_delete_status_recovers_a_missing_worker_as_retryable_failure(
     assert result["state"] == "failed"
     assert result["phase"] == "worker_missing"
     assert "worker disappeared" in result["error"]
+
+
+# ---------------------------------------------------------------------------
+# incomplete (interrupted) recordings
+
+
+SESSION = "rk3576-rsusb-cpp-20260916T111301Z-49731d99"
+
+
+def _device_application(web_server, recorderctl, calls):
+    """A DeviceApplication whose bridge records the rpc actions it receives."""
+    class _Bridge:
+        def rpc(self, action, **args):
+            calls.append((action, args))
+            return {"action": action, "args": args}
+
+    application = object.__new__(web_server.Application)
+    application.bridge = _Bridge()
+    application.control_lock = __import__("threading").Lock()
+    application.state_lock = __import__("threading").Lock()
+    application.transfers = {}
+    application.download_dir = Path("/tmp")
+    return application
+
+
+def test_recover_incomplete_starts_the_exact_operation(web_server, recorderctl):
+    calls = []
+    application = _device_application(web_server, recorderctl, calls)
+    request_id = "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa"
+    application.recover_incomplete(SESSION, request_id, assets="ir", delete_remainder=True)
+    assert calls == [(
+        "incomplete_recover",
+        {"session": SESSION, "request_id": request_id, "assets": "ir", "delete_remainder": True},
+    )]
+
+
+def test_delete_incomplete_starts_the_exact_operation(web_server, recorderctl):
+    calls = []
+    application = _device_application(web_server, recorderctl, calls)
+    request_id = "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa"
+    application.delete_incomplete(SESSION, request_id)
+    assert calls == [("incomplete_delete", {"session": SESSION, "request_id": request_id})]
+
+
+def test_incomplete_actions_reject_invalid_session_names(web_server, recorderctl):
+    calls = []
+    application = _device_application(web_server, recorderctl, calls)
+    for bad in ("../../etc/passwd", "rk3576-rsusb-cpp-20260916T111301Z", "", None, 7):
+        with pytest.raises(web_server.AppError, match="未完成录制编号无效"):
+            application.recover_incomplete(bad, "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa")
+    assert calls == []
+
+
+def test_incomplete_actions_validate_the_request_id(web_server, recorderctl):
+    calls = []
+    application = _device_application(web_server, recorderctl, calls)
+    with pytest.raises(web_server.AppError, match="请求编号无效"):
+        application.recover_incomplete(SESSION, "not-a-uuid")
+    with pytest.raises(web_server.AppError, match="请求编号无效"):
+        application.delete_incomplete(SESSION, "not-a-uuid")
+    assert calls == []
+
+
+def test_incomplete_recover_rejects_an_unknown_asset_selection(web_server, recorderctl):
+    calls = []
+    application = _device_application(web_server, recorderctl, calls)
+    with pytest.raises(web_server.AppError, match="抢救范围无效"):
+        application.recover_incomplete(SESSION, "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa", assets="imu")
+    assert calls == []
+
+
+def test_friendly_error_localises_incomplete_codes(web_server):
+    assert "仍在写入" in web_server.friendly_error(RuntimeError("INCOMPLETE_LIVE_CAPTURE"))
+    assert "已经抢救" in web_server.friendly_error(RuntimeError("INCOMPLETE_ALREADY_PUBLISHED"))
+    assert "原始数据已保留" in web_server.friendly_error(RuntimeError("INCOMPLETE_REMUX_FAILED"))
+    assert "可直接删除" in web_server.friendly_error(RuntimeError("INCOMPLETE_GATE_FAILED"))
+    assert "不安全" in web_server.friendly_error(RuntimeError("INCOMPLETE_UNSAFE_PATH"))
+
+
+def test_remote_agent_exposes_incomplete_actions_and_snapshot_fields():
+    source = (WEB / "remote_agent.py").read_text(encoding="utf-8")
+    assert "'incomplete': incomplete" in source
+    assert "'incomplete_operations': incomplete_operations" in source
+    for action in ("incomplete_list", "incomplete_status", "incomplete_recover", "incomplete_delete"):
+        assert f"if action == '{action}':" in source
+    # the recover action must forward the selection and the remainder flag
+    assert "'--assets', assets" in source
+    assert "args.append('--delete-remainder')" in source
+
+
+def test_index_html_declares_the_incomplete_section():
+    html = (WEB / "static" / "index.html").read_text(encoding="utf-8")
+    assert 'id="incompleteCard"' in html
+    assert 'id="incompleteRows"' in html
+    assert 'name="recoverAssets"' in html
+    assert 'value="ir"' in html and 'value="rgb"' in html and 'value="all"' in html
+    assert 'id="recoverConfirm"' in html
+
+
+def test_app_js_wires_the_incomplete_flow_and_guards():
+    source = (WEB / "static" / "app.js").read_text(encoding="utf-8")
+    assert "function renderIncomplete()" in source
+    assert "renderIncomplete();" in source
+    # the section must refresh with the polled state, not freeze on first render
+    assert "incompleteSignature" in source
+    assert "/api/incomplete-recover" in source and "/api/incomplete-delete" in source
+    assert "requestUUID()" in source
+    # live data and an in-flight operation disable both actions
+    assert "deleteButton.disabled=!state.connected||item.live||recovering||deleting" in source
+    assert "recoverButton.disabled=" in source and "item.live" in source
+    # deletion requires an explicit confirmation
+    assert "确定永久删除这条未完成的录制吗" in source

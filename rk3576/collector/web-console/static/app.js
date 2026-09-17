@@ -1,7 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 let token = '', state = null, actionBusy = false, previewBusy = false, previewId = null;
-let renewing = false, pollBusy = false, startRequestId = null, toastTimer, clockBase = null, pendingPreviewJob = null, tableSignature = null, previewOpenedAt = 0;
+let renewing = false, pollBusy = false, startRequestId = null, toastTimer, clockBase = null, pendingPreviewJob = null, tableSignature = null, previewOpenedAt = 0, incompleteSignature = null, pendingRecover = null;
 const activeStates = new Set(['starting', 'recording', 'stop_requested', 'finalizing']);
 const stateNames = {idle:'待采集',starting:'正在启动',recording:'采集中',stop_requested:'正在停止',finalizing:'正在保存',complete_local:'已完成',interrupted:'采集中断',incomplete:'保存未完成'};
 const phaseNames = {idle:'设备就绪，等待开始',starting:'正在准备相机与传感器',recording:'图像与传感器数据正在记录',stop_requested:'正在停止采集，请等待封存',finalizing:'正在校验并保存录制',complete_local:'保存完成，可以下载到本机',interrupted:'请检查设备状态后重试',incomplete:'录制未完整保存，请检查设备'};
@@ -43,6 +43,7 @@ function render() {
   if(previewId){$('previewCounter').textContent=`已输出 ${Number(state.preview_frames||0).toLocaleString()} 帧`;}
   if(previewId&&!previewBusy&&!actionBusy&&state.owned_preview!==previewId&&state.updated_at*1000>=previewOpenedAt){previewId=null;$('previewImage').removeAttribute('src');previewUI('idle');}
   renderRecordings();
+  renderIncomplete();
 }
 
 function readableError(message) {
@@ -87,6 +88,75 @@ function renderRecordings() {
   });
   $('recordingRows').replaceChildren(fragment);
 }
+
+const kindNames = {unsealed:'未封存（断电或中断）',sealed_unpublished:'已封存·待登记'};
+const recoveryNames = {starting:'正在准备',recovering:'正在抢救',complete:'抢救完成',failed:'抢救未完成'};
+const incompleteDeleteNames = {starting:'正在准备删除',deleting:'正在删除',complete:'已删除',failed:'删除未完成'};
+
+function renderIncomplete() {
+  const data=state.incomplete||{}, sessions=data.sessions||[], operations=state.incomplete_operations||[];
+  const signature=JSON.stringify([sessions,operations,state.connected,state.status?.state,state.identity?.controller_version]);if(signature===incompleteSignature)return;incompleteSignature=signature;
+  const ops=new Map(operations.map(item=>[item.session,item]));
+  $('incompleteCard').hidden=!sessions.length;
+  $('incompleteCount').textContent=sessions.length;
+  const capturing=activeStates.has(state.status?.state||'idle');
+  $('incompleteNote').textContent=capturing&&sessions.length?'采集进行中：正在写入的数据受保护，不能抢救或删除；更早的中断数据仍可处理。':'';
+  const fragment=document.createDocumentFragment();
+  sessions.forEach(item=>{
+    const row=document.createElement('tr'), titleCell=document.createElement('td'), sizeCell=document.createElement('td'), statusCell=document.createElement('td'), actionCell=document.createElement('td');
+    const stamp=item.session.match(/-(\d{8}T\d{6}Z)-/);
+    const when=stamp?`${stamp[1].slice(0,4)}-${stamp[1].slice(4,6)}-${stamp[1].slice(6,8)} ${stamp[1].slice(9,11)}:${stamp[1].slice(11,13)}:${stamp[1].slice(13,15)}`:'中断的采集';
+    titleCell.append(text('div',when,'record-name'),text('span',item.session,'record-id'));
+    sizeCell.append(text('div',item.estimated_duration_s?duration(item.estimated_duration_s):'时长未知'),text('div',bytes(item.total_bytes),'record-secondary'));
+    const recovery=item.recovery||ops.get(item.session)||{}, deletion=item.deletion||{};
+    const recovering=['starting','recovering'].includes(recovery.state), deleting=['starting','deleting'].includes(deletion.state);
+    const failed=recovery.state==='failed'||deletion.state==='failed';
+    let statusText=recovering?(recoveryNames[recovery.state]||recovery.state):deleting?(incompleteDeleteNames[deletion.state]||deletion.state):item.live?'正在写入·不可操作':item.already_published?'已抢救为本地录制':(kindNames[item.kind]||item.kind);
+    statusCell.append(text('div',statusText,'row-state'+(failed?' failed':'')));
+    if(recovering&&recovery.total_bytes){const track=text('div','','progress'),fill=document.createElement('div');const percent=recovery.total_bytes?100*(recovery.bytes_done||0)/recovery.total_bytes:0;fill.style.width=`${Math.min(100,percent)}%`;track.append(fill);statusCell.append(track,text('div',`${Math.floor(percent)}% · ${bytes(recovery.bytes_done||0)} / ${bytes(recovery.total_bytes)}`,'record-secondary'));}
+    if(recovery.state==='complete')statusCell.append(text('div',`已入库为 ${recovery.recording_id||'本地录制'}${recovery.leftover_bytes?`；剩余未抢救数据 ${bytes(recovery.leftover_bytes)}`:''}`,'record-secondary'));
+    if(recovery.error)statusCell.append(text('div',recovery.error,'transfer-error'));
+    if(deletion.error)statusCell.append(text('div',deletion.error,'transfer-error'));
+    const actions=text('div','','row-actions');
+    const recoverButton=text('button','抢救数据','transfer-button');
+    const space=item.space||{}, free=data.free_bytes||0;
+    const affordable=sel=>(space[`required_${sel}`]||0)<=free;
+    recoverButton.disabled=!state.connected||recovering||deleting||item.live||item.already_published||recovery.state==='complete'||!affordable('all')&&!affordable('ir')&&!affordable('rgb');
+    recoverButton.addEventListener('click',()=>openRecoverPanel(item));
+    const deleteButton=text('button',deleting?'删除中…':failed?'重试删除':'删除数据','transfer-button delete-button');
+    deleteButton.disabled=!state.connected||item.live||recovering||deleting;
+    deleteButton.addEventListener('click',async()=>{if(!confirm(`确定永久删除这条未完成的录制吗？\n\n${item.session}\n共 ${bytes(item.total_bytes)}\n\n删除后无法再抢救，也无法恢复。`))return;deleteButton.disabled=true;try{await api('/api/incomplete-delete',{session:item.session,request_id:requestUUID()});toast('删除请求已受理，正在回收空间。');await poll();}catch(error){toast(error.message,true);}finally{deleteButton.disabled=false;}});
+    actions.append(recoverButton,deleteButton);actionCell.append(actions);row.append(titleCell,sizeCell,statusCell,actionCell);fragment.append(row);
+  });
+  $('incompleteRows').replaceChildren(fragment);
+  if(pendingRecover&&!sessions.some(item=>item.session===pendingRecover.session))closeRecoverPanel();
+  else if(pendingRecover)updateRecoverNote();
+}
+
+function openRecoverPanel(item) {
+  pendingRecover=item;$('recoverPanel').hidden=false;
+  const affordable=sel=>((item.space||{})[`required_${sel}`]||0)<=((state.incomplete||{}).free_bytes||0);
+  document.querySelectorAll('input[name="recoverAssets"]').forEach(input=>{input.disabled=!affordable(input.value);if(input.disabled&&input.checked)input.checked=false;});
+  if(!document.querySelector('input[name="recoverAssets"]:checked')){const first=[...document.querySelectorAll('input[name="recoverAssets"]')].find(input=>!input.disabled);if(first)first.checked=true;}
+  updateRecoverNote();$('recoverPanel').scrollIntoView({block:'nearest'});
+}
+function closeRecoverPanel() {pendingRecover=null;$('recoverPanel').hidden=true;}
+function updateRecoverNote() {
+  if(!pendingRecover)return;
+  const selected=document.querySelector('input[name="recoverAssets"]:checked'), selection=selected?selected.value:'all';
+  const space=(pendingRecover.space||{})[`required_${selection}`]||0, free=(state.incomplete||{}).free_bytes||0;
+  const names={all:'全部数据',ir:'仅左右红外',rgb:'仅彩色'};
+  $('recoverSpaceNote').textContent=space>free?`可用空间 ${bytes(free)}，少于「${names[selection]}」所需 ${bytes(space)}。可改选范围，或先删除其他数据释放空间。`:`「${names[selection]}」预计需要 ${bytes(space)}，当前可用 ${bytes(free)}。抢救完成后才会删除原始数据。`;
+  $('recoverConfirm').disabled=!selected||space>free;
+}
+$('recoverCancel').addEventListener('click',closeRecoverPanel);
+$('recoverConfirm').addEventListener('click',async()=>{
+  if(!pendingRecover)return;
+  const selected=document.querySelector('input[name="recoverAssets"]:checked');if(!selected)return;
+  const item=pendingRecover;pendingRecover=null;$('recoverPanel').hidden=true;
+  try{await api('/api/incomplete-recover',{session:item.session,request_id:requestUUID(),assets:selected.value,delete_remainder:$('recoverRemainder').checked});toast('抢救请求已受理：先无损封装为 MP4，校验通过后才删除原始数据。');await poll();}
+  catch(error){toast(error.message,true);}
+});
 
 async function poll() {if(pollBusy)return;pollBusy=true;try{const previous=state;state=await api('/api/state');for(const task of state.transfers||[]){const old=previous?.transfers?.find(t=>t.recording_id===task.recording_id);if(old&&old.state!=='complete'&&task.state==='complete')toast('下载包已准备好，文件校验通过，点击「下载录制」保存到本机。');}render();await resumePreview();}catch(e){$('connection').classList.remove('online');$('connectionLabel').textContent='设备服务未连接';$('alert').hidden=false;$('alert').textContent='设备网页暂时无响应，请检查设备电源和网络。';$('startButton').disabled=true;$('stopButton').disabled=true;}finally{pollBusy=false;} }
 

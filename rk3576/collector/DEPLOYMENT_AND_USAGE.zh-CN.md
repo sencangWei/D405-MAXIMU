@@ -214,6 +214,7 @@ systemctl --user restart umi-preview.service umi-admin.service
 - `RGB encoder ... Broken pipe`：检查 `mpph265enc`、系统负载和相机交接日志；失败会话不要用于 SLAM。
 - 容量不足：以真实多流码率和预留空间计算时长；先转存并确认最终回执，再按受控流程删除。
 - 断电/进程崩溃：控制器会按 boot ID、PID、启动 ticks 和 publication ledger 恢复；仍需检查该会话最终状态，不能手工把 `interrupted` 改成 `PASSED`。
+- 中断录制占满空间（网页上原本看不到也删不掉）：0.3.0 起在网页「未完成录制」区块处理；命令行等价物为 `bin/recorderctl incomplete-list --json`、`incomplete-recover --session <id> --request-id <uuid> [--assets ir|rgb|all] [--dry-run]`、`incomplete-delete --session <id> --request-id <uuid>`。
 
 发布、升级或回滚后都要保存：版本、源码提交、包 SHA-256、原生二进制 SHA-256、板端身份、服务状态、preflight/HIL 结果和失败日志。只有这些证据齐全，才能把“已安装”升级为“该物理设备已验收”。
 
@@ -245,3 +246,39 @@ systemctl --user restart umi-preview.service umi-admin.service
   未确认删除而负载消失仍然会失败关闭。
 - 已处于卡死状态的板子：把对应账本文件的状态改为 `DELETED` 即可立即恢复，或部署
   0.2.6 后由恢复逻辑自动自愈。
+
+## 13. 0.3.0 未完成录制的查看、删除与抢救
+
+背景：断电或进程被杀死时，原生采集器留下的未封口目录
+`incoming/.<session>.partial/`（标记文件 `.recording` 内容为 `unsealed`）不会被
+Catalog 登记，因此网页既不显示也无法删除，磁盘被静默占用（现场曾出现 32 GB）。
+
+- **网页操作**：设备网页新增「未完成录制」区块，逐条显示中断时间、时长估算、占用
+  空间与状态；每行提供「抢救数据」与「删除数据」。删除需要二次确认并显示将释放的
+  空间；采集进行中正在写入的那一条会被标记为不可操作（其余历史中断数据仍可处理）。
+- **命令行等价物**：
+  `bin/recorderctl incomplete-list --json`、
+  `bin/recorderctl incomplete-recover --session <session> --request-id <uuid>
+  [--assets all|rgb|ir] [--delete-remainder] [--dry-run]`、
+  `bin/recorderctl incomplete-delete --session <session> --request-id <uuid>`、
+  `bin/recorderctl incomplete-status [--session <session>] --json`。
+  `--dry-run` 只返回计划与空间判定，不写任何字节，适合先评估。
+- **抢救做什么**：把原始 H.265 码流**无损**重新封装为 MP4（不重编码，逐字节复制
+  access unit），IMU 原始数据按 63 字节包对齐后截掉断电残尾；帧数按 IR/RGB 索引的
+  较小值对齐。每个资产的源文件只有在它的 MP4 通过结构校验与 mdat 摘要比对之后才会
+  被删除，失败时原始数据完整保留。
+- **抢救结果**：作为一条普通本地录制写入 Catalog（`COMPLETE_LOCAL`），可以转存、
+  可以按既有删除流程删除；`display_name` 带「已抢救」，`recovery_hint` 记录抢救范围
+  与告警，`imu_quality_status` 如实标注为 `DEGRADED`/`FAILED`——抢救回来的数据不会
+  伪装成正常通过质量门的录制。
+- **空间**：完整抢救需要「最大单资产 × 1.02 + 512 MiB」的空闲空间（逐个资产验证后
+  释放源文件，不是整个会话的两倍）。空间不足时操作被拒绝并报出所需/可用字节；此时
+  可改选「仅左右红外」（SLAM 必需，通常最小）或「仅彩色」。
+- **为什么自带封装器**：本镜像的 GStreamer 只有 plugins-base/good 与 Rockchip 元素，
+  `h265parse` 缺失且 `gstreamer1.0-plugins-bad` 无安装候选，`mp4mux`/`matroskamux`
+  只接受 `hvc1`/`hev1`，因此没有任何 GStreamer 途径能把 Annex-B 码流变成可播放容器；
+  转码会破坏红外 y8 亮度语义，故不采用。`check-host.sh` 会校验 `qtdemux`/`mp4mux`/
+  `mppvideodec` 存在（**不要求** `h265parse`）。
+- **注意**：部分抢救（如仅红外）会留下未抢救的原始码流继续占用空间，网页与
+  `incomplete-status` 会报出剩余字节，确认后可用「删除数据」回收。
+- 回滚到 0.2.6 不会破坏任何东西：旧版本忽略未完成录制，已抢救出来的录制照常可用。

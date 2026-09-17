@@ -12,6 +12,12 @@ command -v gst-inspect-1.0 >/dev/null
 for element in mpph265enc jpegenc videorate multipartmux tcpserversink; do
   gst-inspect-1.0 "$element" >/dev/null
 done
+# Recording rescue verifies its own MP4 output through GStreamer's demuxer and
+# the Rockchip decoder. h265parse is deliberately NOT required: it ships in
+# gstreamer1.0-plugins-bad, which has no install candidate on this image.
+for element in qtdemux mp4mux mppvideodec; do
+  gst-inspect-1.0 "$element" >/dev/null
+done
 test -x "$RELEASE_ROOT/native/bin/umi-record-native"
 test -x "$RELEASE_ROOT/native/bin/umi-rsusb-probe"
 test -L "$RELEASE_ROOT/runtime/pyrealsense2.cpython-312-aarch64-linux-gnu.so.2.58"
@@ -21,5 +27,5 @@ if ldd "$RELEASE_ROOT/native/bin/umi-record-native" | grep -q 'not found'; then
   exit 1
 fi
 PYTHONPATH="$RELEASE_ROOT/adapter:$RELEASE_ROOT/vendor/ego-runtime:$RELEASE_ROOT/vendor/site-packages" \
-  python3 -c 'import fastapi, uvicorn, ego_service_bootstrap, umi_recorderctl, umi_preview_web, umi_publish'
+  python3 -c 'import fastapi, uvicorn, ego_service_bootstrap, umi_recorderctl, umi_preview_web, umi_publish, umi_remux'
 printf 'HOST_RUNTIME_PASS\n'

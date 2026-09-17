@@ -87,7 +87,10 @@ def run(request):
             preview = {'ok': False}
         records = catalog()
         deletions = controller.delete_status(cfg)
+        incomplete = controller.open_incomplete_list(cfg)
+        incomplete_operations = controller.incomplete_status(cfg)['operations']
         return {'identity': controller.identity(cfg), 'status': state, 'preview': preview,
+                'incomplete': incomplete, 'incomplete_operations': incomplete_operations,
                 'disk': {'free': disk.free, 'total': disk.total}, 'temperature': max(temps) if temps else None,
                 'camera_present': any((p / 'serial').is_file() and (p / 'serial').read_text().strip() == cfg.usb_serial
                                       for p in Path('/sys/bus/usb/devices').iterdir()),
@@ -131,6 +134,32 @@ def run(request):
         return control([
             'delete-recording', '--recording-id', rid,
             '--request-id', request_id,
+        ])
+    if action == 'incomplete_list':
+        return control(['incomplete-list'])
+    if action == 'incomplete_status':
+        return control(['incomplete-status'])
+    if action == 'incomplete_recover':
+        session = request.get('session', '')
+        if not re.fullmatch(r'rk3576-rsusb-cpp-\d{8}T\d{6}Z-[0-9a-f]{8}', session):
+            raise ValueError('Invalid incomplete session')
+        assets = request.get('assets', 'all')
+        if assets not in ('all', 'rgb', 'ir'):
+            raise ValueError('Invalid asset selection')
+        args = ['incomplete-recover', '--session', session,
+                '--request-id', request.get('request_id', ''), '--assets', assets]
+        if request.get('delete_remainder'):
+            args.append('--delete-remainder')
+        if request.get('dry_run'):
+            args.append('--dry-run')
+        return control(args)
+    if action == 'incomplete_delete':
+        session = request.get('session', '')
+        if not re.fullmatch(r'rk3576-rsusb-cpp-\d{8}T\d{6}Z-[0-9a-f]{8}', session):
+            raise ValueError('Invalid incomplete session')
+        return control([
+            'incomplete-delete', '--session', session,
+            '--request-id', request.get('request_id', ''),
         ])
     if action == 'manifest':
         import hashlib

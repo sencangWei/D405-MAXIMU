@@ -123,6 +123,23 @@ now retires the ledger, and recovery self-heals published ledgers whose
 payload was removed by a confirmed deletion while still failing closed when
 a payload vanishes without one.
 
+Release 0.3.0 makes interrupted captures visible, recoverable and deletable.
+A power loss or a killed collector leaves an unsealed staging directory in
+`incoming/.<session>.partial/`; no catalog row describes it, so the Web console
+neither listed it nor let an operator reclaim the space. The console now has an
+"Incomplete recordings" section backed by `recorderctl incomplete-list`, and
+`incomplete-recover` / `incomplete-delete` perform the two repairs. Rescue is a
+lossless byte-copy remux of the raw H.265 access units into MP4
+(`adapter/umi_remux.py`, stdlib only) because this image cannot install
+`h265parse` and no GStreamer element can turn an Annex-B stream into `hvc1`;
+re-encoding was rejected as it would damage the y8 luma infrared streams that
+stereo SLAM consumes. Each asset's source is released only after its MP4 is
+remuxed, structurally verified and byte-compared, and the result is published as
+an ordinary COMPLETE_LOCAL recording with `recovery_hint`/`display_name`
+marking it as rescued and an honest `imu_quality_status` - a rescued session is
+never presented as a verified capture. The 32 GB orphan that triggered this work
+was left untouched: the operator decides when to spend the space.
+
 ## Operator documentation
 
 See [DEPLOYMENT_AND_USAGE.zh-CN.md](DEPLOYMENT_AND_USAGE.zh-CN.md) for the
