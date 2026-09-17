@@ -28,26 +28,33 @@ class LegacyAdvertiser:
         self._path = "/org/ego/commissioning/advertisement0"
         self._advertisement = None
 
-    def register(self) -> None:
-        import dbus
+    def prepare(self) -> None:
         from dbus.mainloop.glib import DBusGMainLoop
 
         DBusGMainLoop(set_as_default=True)
-        self._bus = dbus.SystemBus()
-        self._advertisement = _LegacyAdvertisement(self._bus, self._path, self._local_name)
+        if self._bus is None:
+            import dbus
+
+            self._bus = dbus.SystemBus()
+            self._advertisement = _LegacyAdvertisement(self._bus, self._path, self._local_name)
+
+    def register(self, wait_seconds: float = 30.0) -> None:
+        from ble_gatt import _call_and_wait, dbus_dictionary, dbus_interface, dbus_object_path
+
+        self.prepare()
         adapter = self._bus.get_object("org.bluez", self._adapter_path)
-        manager = dbus.Interface(adapter, ADVERTISING_MANAGER_IFACE)
+        manager = dbus_interface(adapter, ADVERTISING_MANAGER_IFACE)
         try:
-            manager.UnregisterAdvertisement(dbus.ObjectPath(self._path))
-        except dbus.DBusException:
+            manager.UnregisterAdvertisement(dbus_object_path(self._path))
+        except Exception:  # noqa: BLE001 - not registered yet
             pass
-        try:
-            manager.RegisterAdvertisement(
-                dbus.ObjectPath(self._path), dbus.Dictionary({}, signature="sv")
-            )
-        except dbus.DBusException as exc:
-            LOGGER.error("legacy advertisement registration failed: %s", exc.get_dbus_name())
-            raise CommissioningError("UNAVAILABLE") from exc
+        _call_and_wait(
+            manager,
+            "RegisterAdvertisement",
+            (dbus_object_path(self._path), dbus_dictionary({})),
+            wait_seconds=wait_seconds,
+            description="legacy advertisement",
+        )
         LOGGER.info("legacy advertisement registered: name=%s", self._local_name)
 
     def unregister(self) -> None:
@@ -55,11 +62,13 @@ class LegacyAdvertiser:
             return
         import dbus
 
+        from ble_gatt import dbus_interface, dbus_object_path
+
         adapter = self._bus.get_object("org.bluez", self._adapter_path)
-        manager = dbus.Interface(adapter, ADVERTISING_MANAGER_IFACE)
+        manager = dbus_interface(adapter, ADVERTISING_MANAGER_IFACE)
         try:
-            manager.UnregisterAdvertisement(dbus.ObjectPath(self._path))
-        except dbus.DBusException:
+            manager.UnregisterAdvertisement(dbus_object_path(self._path))
+        except Exception:  # noqa: BLE001
             pass
 
 
@@ -95,6 +104,12 @@ class _LegacyAdvertisement:
                     "ServiceUUIDs": dbus.Array([SERVICE_UUID], signature="s"),
                     "Discoverable": dbus.Boolean(True),
                     "Includes": dbus.Array([], signature="s"),
+                    # A legacy ADV_IND carries at most 31 bytes. Flags (3) + the
+                    # 128-bit service UUID (18) + "EGO-ABC" (9) already fill 30,
+                    # so BlueZ's default TX-power field (3) overflows the packet
+                    # and the controller rejects it with
+                    # "Failed to add UUID: Authentication Failed (0x05)".
+                    "IncludeTxPower": dbus.Boolean(False),
                 }
 
         self._impl = _Impl(bus, path)

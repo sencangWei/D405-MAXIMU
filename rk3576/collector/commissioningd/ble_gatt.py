@@ -51,6 +51,58 @@ def _error_name(code: str) -> str:
     return f"org.ego.Commissioning.Error.{code}"
 
 
+def dbus_interface(obj, name):
+    import dbus
+
+    return dbus.Interface(obj, name)
+
+
+def dbus_object_path(value):
+    import dbus
+
+    return dbus.ObjectPath(value)
+
+
+def dbus_dictionary(value):
+    import dbus
+
+    return dbus.Dictionary(value, signature="sv")
+
+
+def _call_and_wait(manager, method: str, args: tuple, *, wait_seconds: float, description: str) -> None:
+    """Invoke a BlueZ manager method asynchronously and wait for its reply.
+
+    The reply must be delivered by the running main loop, so this must never be
+    called from the thread that runs the loop; mypy-free callers use a worker
+    thread. A blocking call here would stop the loop from answering BlueZ's
+    ObjectManager/GetAll callbacks, which BlueZ reports as
+    "gatt-database.c:client_ready_cb() No object received".
+    """
+    import threading
+
+    done = threading.Event()
+    outcome: dict = {}
+
+    def _reply():
+        outcome["ok"] = True
+        done.set()
+
+    def _failed(error):
+        outcome["error"] = error
+        done.set()
+
+    getattr(manager, method)(
+        *args, reply_handler=_reply, error_handler=_failed, timeout=wait_seconds
+    )
+    if not done.wait(wait_seconds + 5.0):
+        raise CommissioningError("UNAVAILABLE")
+    error = outcome.get("error")
+    if error is not None:
+        name = getattr(error, "get_dbus_name", lambda: str(error))()
+        LOGGER.error("%s registration failed: %s", description, name)
+        raise CommissioningError("UNAVAILABLE") from error
+
+
 class CommissioningGattApp:
     def __init__(self, state_machine, adapter_path: str = "/org/bluez/hci0"):
         self._sm = state_machine
@@ -61,27 +113,35 @@ class CommissioningGattApp:
         self._chars: dict[str, object] = {}
 
     # ------------------------------------------------------------------
-    def register(self) -> None:
+    def register(self, wait_seconds: float = 30.0) -> None:
+        """Register asynchronously: BlueZ calls back into our objects while
+        RegisterApplication is in flight, so the caller must keep the D-Bus main
+        loop running and wait for the reply outside it."""
+        self.prepare()
+        adapter = self._bus.get_object("org.bluez", self._adapter_path)
+        manager = dbus_interface(adapter, GATT_MANAGER_IFACE)
+        try:
+            manager.UnregisterApplication(dbus_object_path(APP_PATH))
+        except Exception:  # noqa: BLE001 - not registered yet
+            pass
+        _call_and_wait(
+            manager,
+            "RegisterApplication",
+            (dbus_object_path(APP_PATH), dbus_dictionary({})),
+            wait_seconds=wait_seconds,
+            description="GATT application",
+        )
+        LOGGER.info("GATT application registered (%d objects)", len(self._managed))
+
+    def prepare(self) -> None:
+        """Build the object tree on the system bus (main-loop thread safe)."""
         import dbus
         from dbus.mainloop.glib import DBusGMainLoop
 
         DBusGMainLoop(set_as_default=True)
-        self._bus = dbus.SystemBus()
-        self._register_objects()
-        adapter = self._bus.get_object("org.bluez", self._adapter_path)
-        manager = dbus.Interface(adapter, GATT_MANAGER_IFACE)
-        try:
-            manager.UnregisterApplication(dbus.ObjectPath(APP_PATH))
-        except dbus.DBusException:
-            pass
-        try:
-            manager.RegisterApplication(
-                dbus.ObjectPath(APP_PATH), dbus.Dictionary({}, signature="sv")
-            )
-        except dbus.DBusException as exc:
-            LOGGER.error("GATT application registration failed: %s", exc.get_dbus_name())
-            raise CommissioningError("UNAVAILABLE") from exc
-        LOGGER.info("GATT application registered (%d objects)", len(self._managed))
+        if self._bus is None:
+            self._bus = dbus.SystemBus()
+            self._register_objects()
 
     def unregister(self) -> None:
         if self._bus is None:
@@ -89,10 +149,10 @@ class CommissioningGattApp:
         import dbus
 
         adapter = self._bus.get_object("org.bluez", self._adapter_path)
-        manager = dbus.Interface(adapter, GATT_MANAGER_IFACE)
+        manager = dbus_interface(adapter, GATT_MANAGER_IFACE)
         try:
-            manager.UnregisterApplication(dbus.ObjectPath(APP_PATH))
-        except dbus.DBusException:
+            manager.UnregisterApplication(dbus_object_path(APP_PATH))
+        except Exception:  # noqa: BLE001
             pass
 
     def notify_status(self) -> None:

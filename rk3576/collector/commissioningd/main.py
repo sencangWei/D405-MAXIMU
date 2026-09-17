@@ -11,8 +11,10 @@ closed; there is no alternate profile fallback.
 The process runs a GLib main loop: BlueZ calls back into our registered GATT
 objects (GetAll/ReadValue/WriteValue) while RegisterApplication is in flight
 and during every central interaction, so D-Bus messages must be dispatched
-continuously. Registration itself is scheduled inside the loop for the same
-reason.
+continuously. The object tree is built on the loop's connection, while the
+registration calls themselves are issued asynchronously from a worker thread -
+a blocking call there stops the loop from answering BlueZ, which BlueZ reports
+as "gatt-database.c:client_ready_cb() No object received".
 """
 
 from __future__ import annotations
@@ -90,8 +92,11 @@ class CommissioningDaemon:
         signal.signal(signal.SIGTERM, self._on_signal)
         signal.signal(signal.SIGINT, self._on_signal)
 
-        # registration and periodic work both run inside the main loop
-        GLib.timeout_add(100, self._register_ble)
+        # The object tree must exist on the loop's connection, but the
+        # registration calls themselves run in a worker thread: they are
+        # asynchronous precisely so the loop keeps answering BlueZ's callbacks.
+        self._build_objects()
+        threading.Thread(target=self._register_ble, daemon=True).start()
         GLib.timeout_add(500, self._tick)
         if selftest_seconds:
             GLib.timeout_add(int(selftest_seconds * 1000), self._finish_selftest)
@@ -111,10 +116,9 @@ class CommissioningDaemon:
         return False
 
     # ------------------------------------------------------------------
-    def _register_ble(self) -> bool:
+    def _build_objects(self) -> None:
         from advertiser import LegacyAdvertiser
         from ble_gatt import CommissioningGattApp
-        from k1_trigger import K1Observer
         from ipc_sock import BindingIpcGateway
 
         self._gatt = CommissioningGattApp(self._sm, self._args.adapter)
@@ -122,17 +126,24 @@ class CommissioningDaemon:
             self._sm._identity.discriminator, self._args.adapter
         )
         self._gateway = BindingIpcGateway(self._args.ipc_path)
+        self._gatt.prepare()
+        self._advertiser.prepare()
+
+    def _register_ble(self) -> None:
+        from k1_trigger import K1Observer
+
         try:
             self._gatt.register()  # GATT application first (frozen order)
             self._advertiser.register()
             self._gateway.start()
-        except CommissioningError as exc:
-            LOGGER.error("BLE registration failed: %s", exc.code)
+        except Exception as exc:  # noqa: BLE001 - fail closed, no alternate profile
+            code = exc.code if isinstance(exc, CommissioningError) else "UNAVAILABLE"
+            LOGGER.error("BLE registration failed: %s", code)
             self._advertiser.unregister()
             self._gatt.unregister()
             if self._loop is not None:
                 self._loop.quit()
-            return False
+            return
         self._registered = True
         self._observer = K1Observer(self._events)
         try:
@@ -140,7 +151,6 @@ class CommissioningDaemon:
         except CommissioningError as exc:
             LOGGER.error("K1 observer unavailable: %s", exc.code)
             self._observer = None
-        return False  # one-shot
 
     def _tick(self) -> bool:
         from k1_trigger import COMMISSIONING_HOLD, SHORT_PRESS
