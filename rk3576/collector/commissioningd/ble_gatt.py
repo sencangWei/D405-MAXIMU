@@ -9,6 +9,11 @@ Characteristics (128-bit, base f3e0f8d0-7a11-4c9e-9d4b-45474f4f00XX):
   0007 Credentials      WRITE               framed AES-GCM envelope (message 7)
   0008 NetworkStatus    READ, NOTIFY        network-ready status JSON
 
+BlueZ discovers the object tree through
+``org.freedesktop.DBus.ObjectManager.GetManagedObjects`` on the application
+root path; without it ``RegisterApplication`` fails with
+``gatt-database.c:client_ready_cb() No object received``.
+
 Sanitized errors only: no challenge material, proofs, or session facts appear
 in D-Bus error text beyond the stable error code name.
 """
@@ -36,67 +41,14 @@ GATT_SERVICE_IFACE = "org.bluez.GattService1"
 GATT_CHARACTERISTIC_IFACE = "org.bluez.GattCharacteristic1"
 GATT_MANAGER_IFACE = "org.bluez.GattManager1"
 PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
+OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
 
 APP_PATH = "/org/ego/commissioning"
+SERVICE_PATH = f"{APP_PATH}/service0"
 
 
 def _error_name(code: str) -> str:
     return f"org.ego.Commissioning.Error.{code}"
-
-
-class _GattObject:
-    """Minimal D-Bus object: dispatches method calls, serves GetAll/Get."""
-
-    def __init__(self, bus, path: str, interface: str, methods: dict, props: dict):
-        self._methods = methods
-        self._props = props
-        self._interface = interface
-        self._subscribers: set = set()
-        bus.register_object(path, self._handle, None)
-
-    def _handle(self, interface, method, path, args, **kwargs):
-        import dbus
-
-        if interface == PROPERTIES_IFACE:
-            if method == "GetAll":
-                return {self._interface: self._props}
-            if method == "Get":
-                name = args[1] if len(args) > 1 else args[0]
-                if name in self._props:
-                    return self._props[name]
-                raise dbus.exceptions.DBusException(
-                    "no such property", name="org.freedesktop.DBus.Error.InvalidArgs"
-                )
-            if method == "Set":
-                raise dbus.exceptions.DBusException(
-                    "read-only", name="org.freedesktop.DBus.Error.PropertyReadOnly"
-                )
-        handler = self._methods.get(method)
-        if handler is None:
-            raise dbus.exceptions.DBusException(
-                f"unknown method {method}",
-                name="org.freedesktop.DBus.Error.UnknownMethod",
-            )
-        return handler(*args)
-
-    def emit_properties_changed(self, bus, path: str, value) -> None:
-        import dbus
-
-        signal = dbus.lowlevel.SignalMessage(
-            path, PROPERTIES_IFACE, "PropertiesChanged"
-        )
-        signal.append(
-            dbus.String(self._interface),
-            dbus.Dictionary({"Value": dbus.Array(value, signature="y")}, signature="sv"),
-            dbus.Array([], signature="s"),
-            signature="sa{sv}as",
-        )
-        for name in self._subscribers:
-            bus.send_message_with_reply(
-                signal, dbus.ByteArray(name.encode()), reply_handler=lambda *_: None,
-                error_handler=lambda *_: None,
-                timeout=0,
-            )
 
 
 class CommissioningGattApp:
@@ -104,8 +56,9 @@ class CommissioningGattApp:
         self._sm = state_machine
         self._adapter_path = adapter_path
         self._bus = None
-        self._characteristics: dict[str, _GattObject] = {}
-        self._service: _GattObject | None = None
+        self._managed: dict = {}
+        self._objects: list = []
+        self._chars: dict[str, object] = {}
 
     # ------------------------------------------------------------------
     def register(self) -> None:
@@ -123,13 +76,12 @@ class CommissioningGattApp:
             pass
         try:
             manager.RegisterApplication(
-                dbus.ObjectPath(APP_PATH),
-                dbus.Dictionary({}, signature="sv"),
+                dbus.ObjectPath(APP_PATH), dbus.Dictionary({}, signature="sv")
             )
         except dbus.DBusException as exc:
             LOGGER.error("GATT application registration failed: %s", exc.get_dbus_name())
             raise CommissioningError("UNAVAILABLE") from exc
-        LOGGER.info("GATT application registered")
+        LOGGER.info("GATT application registered (%d objects)", len(self._managed))
 
     def unregister(self) -> None:
         if self._bus is None:
@@ -144,133 +96,207 @@ class CommissioningGattApp:
             pass
 
     def notify_status(self) -> None:
-        char = self._characteristics.get(CHAR_STATUS)
+        char = self._chars.get(CHAR_STATUS)
         if char is not None:
-            char.emit_properties_changed(
-                self._bus, f"{APP_PATH}/status0", self._status_value()
-            )
+            char.emit_value(self._status_value())
 
     def notify_response(self) -> None:
-        char = self._characteristics.get(CHAR_RESPONSE)
+        char = self._chars.get(CHAR_RESPONSE)
         if char is not None:
             try:
                 value = self._sm.read_response()
             except CommissioningError:
                 return
-            char.emit_properties_changed(
-                self._bus, f"{APP_PATH}/response0", value
-            )
+            char.emit_value(value)
 
     # ------------------------------------------------------------------
 
     def _register_objects(self) -> None:
         import dbus
+        import dbus.service
 
-        service_props = {
-            "UUID": SERVICE_UUID,
-            "Primary": True,
-            "Includes": dbus.Array([], signature="o"),
+        characteristic_paths = []
+        values = {
+            "identity0": (CHAR_IDENTITY, ["read"], self._read_identity, None),
+            "challenge0": (
+                CHAR_CHALLENGE, ["write"], None,
+                lambda value: (
+                    self._sm.write_challenge(bytes(value)),
+                    self.notify_response(),
+                ),
+            ),
+            "response0": (CHAR_RESPONSE, ["read", "notify"], self._sm.read_response, None),
+            "control0": (
+                CHAR_CONTROL, ["write"], None,
+                lambda value: (
+                    self._sm.write_control(bytes(value)),
+                    self.notify_status(),
+                ),
+            ),
+            "devicekey0": (
+                CHAR_DEVICE_KEY, ["read"],
+                lambda: _b64u(self._sm.read_device_key()), None,
+            ),
+            "credentials0": (
+                CHAR_CREDENTIALS, ["write"], None,
+                lambda value: (
+                    self._sm.write_credentials(bytes(value)),
+                    self.notify_status(),
+                ),
+            ),
+            "status0": (CHAR_STATUS, ["read", "notify"], self._status_value, None),
         }
-        self._service = _GattObject(
-            self._bus, f"{APP_PATH}/service0", GATT_SERVICE_IFACE, {}, service_props
-        )
 
-        def characteristic(path_suffix: str, uuid: str, flags: list, methods: dict):
-            props = {
-                "Service": dbus.ObjectPath(f"{APP_PATH}/service0"),
-                "UUID": uuid,
-                "Flags": dbus.Array(flags, signature="s"),
+        for suffix, (uuid, flags, read, write) in values.items():
+            path = f"{APP_PATH}/{suffix}"
+            characteristic_paths.append(dbus.ObjectPath(path))
+            self._managed[path] = {
+                GATT_CHARACTERISTIC_IFACE: {
+                    "Service": dbus.ObjectPath(SERVICE_PATH),
+                    "UUID": dbus.String(uuid),
+                    "Flags": dbus.Array(flags, signature="s"),
+                }
             }
-            obj = _GattObject(
-                self._bus, f"{APP_PATH}/{path_suffix}", GATT_CHARACTERISTIC_IFACE,
-                methods, props,
+            char = _GattCharacteristic(
+                self._bus, path, uuid, flags, read=read, write=write
             )
-            self._characteristics[uuid] = obj
-            return obj
+            self._objects.append(char)
+            self._chars[uuid] = char
 
-        def read_value(options):
-            return dbus.Array(b"", signature="y")
+        self._managed[SERVICE_PATH] = {
+            GATT_SERVICE_IFACE: {
+                "UUID": dbus.String(SERVICE_UUID),
+                "Primary": dbus.Boolean(True),
+                "Includes": dbus.Array([], signature="o"),
+                "Characteristics": dbus.Array(characteristic_paths, signature="o"),
+            }
+        }
+        root = _ObjectManager(self._bus, APP_PATH, self._managed)
+        self._objects.append(root)
 
-        def notifiable(obj: _GattObject, value_fn):
-            def start_notify():
-                obj._subscribers.add("notify")
+    def _read_identity(self) -> bytes:
+        return self._sm.read_identity().encode()
 
-            def stop_notify():
-                obj._subscribers.discard("notify")
+    def _status_value(self) -> bytes:
+        return json.dumps(self._sm.read_status(), separators=(",", ":")).encode()
 
-            return start_notify, stop_notify
 
-        def wrapped(handler):
-            import dbus
+class _ObjectManager:
+    """Application root implementing org.freedesktop.DBus.ObjectManager."""
 
-            def inner(*args):
+    def __init__(self, bus, path: str, managed: dict):
+        import dbus.service
+
+        class _Impl(dbus.service.Object):
+            def __init__(self, bus, path):
+                super().__init__(bus, path)
+
+            @dbus.service.method(
+                OBJECT_MANAGER_IFACE, in_signature="", out_signature="a{oa{sa{sv}}}"
+            )
+            def GetManagedObjects(self):  # noqa: N802
+                return managed
+
+        self._impl = _Impl(bus, path)
+
+
+class _GattCharacteristic:
+    """org.bluez.GattCharacteristic1 at its own object path."""
+
+    def __init__(self, bus, path: str, uuid: str, flags: list, read=None, write=None):
+        import dbus
+        import dbus.service
+
+        self.uuid = uuid
+        self._notifying = False
+        parent = self
+
+        class _Impl(dbus.service.Object):
+            def __init__(self, bus, path):
+                super().__init__(bus, path)
+
+            @dbus.service.method(
+                PROPERTIES_IFACE, in_signature="s", out_signature="a{sv}"
+            )
+            def GetAll(self, interface):  # noqa: N802
+                if interface != GATT_CHARACTERISTIC_IFACE:
+                    raise dbus.exceptions.DBusException(
+                        "no such interface",
+                        name="org.freedesktop.DBus.Error.InvalidArgs",
+                    )
+                return {
+                    "Service": dbus.ObjectPath(SERVICE_PATH),
+                    "UUID": dbus.String(uuid),
+                    "Flags": dbus.Array(flags, signature="s"),
+                    "Notifying": dbus.Boolean(parent._notifying),
+                }
+
+            @dbus.service.method(PROPERTIES_IFACE, in_signature="ss", out_signature="v")
+            def Get(self, interface, prop):  # noqa: N802
+                return self.GetAll(interface)[prop]
+
+            @dbus.service.method(
+                GATT_CHARACTERISTIC_IFACE, in_signature="a{sv}", out_signature="ay"
+            )
+            def ReadValue(self, options):  # noqa: N802
+                if read is None:
+                    raise dbus.exceptions.DBusException(
+                        "not readable", name="org.freedesktop.DBus.Error.NotSupported"
+                    )
                 try:
-                    return handler(*args)
+                    value = read()
+                except CommissioningError as exc:
+                    raise dbus.exceptions.DBusException(
+                        exc.code, name=_error_name(exc.code)
+                    ) from exc
+                return dbus.Array(bytearray(value), signature="y")
+
+            @dbus.service.method(
+                GATT_CHARACTERISTIC_IFACE, in_signature="aya{sv}", out_signature=""
+            )
+            def WriteValue(self, value, options):  # noqa: N802
+                if write is None:
+                    raise dbus.exceptions.DBusException(
+                        "not writable", name="org.freedesktop.DBus.Error.NotSupported"
+                    )
+                try:
+                    write(bytes(bytearray(value)))
                 except CommissioningError as exc:
                     raise dbus.exceptions.DBusException(
                         exc.code, name=_error_name(exc.code)
                     ) from exc
 
-            return inner
+            @dbus.service.method(GATT_CHARACTERISTIC_IFACE, in_signature="", out_signature="")
+            def StartNotify(self):  # noqa: N802
+                if "notify" not in flags:
+                    raise dbus.exceptions.DBusException(
+                        "not notifiable", name="org.freedesktop.DBus.Error.NotSupported"
+                    )
+                parent._notifying = True
 
-        # ...0002 DeviceIdentity (READ)
-        characteristic(
-            "identity0", CHAR_IDENTITY, ["read"],
-            {"ReadValue": wrapped(lambda options: dbus.Array(
-                self._sm.read_identity().encode(), signature="y"))},
-        )
-        # ...0003 BindingChallenge (WRITE)
-        def write_challenge(value, options):
-            self._sm.write_challenge(bytes(bytearray(value)))
-            self.notify_response()
+            @dbus.service.method(GATT_CHARACTERISTIC_IFACE, in_signature="", out_signature="")
+            def StopNotify(self):  # noqa: N802
+                parent._notifying = False
 
-        characteristic(
-            "challenge0", CHAR_CHALLENGE, ["write"],
-            {"WriteValue": wrapped(write_challenge)},
-        )
-        # ...0004 BindingResponse (READ, NOTIFY)
-        response_char = characteristic(
-            "response0", CHAR_RESPONSE, ["read", "notify"],
-            {"ReadValue": wrapped(lambda options: dbus.Array(
-                self._sm.read_response(), signature="y"))},
-        )
-        start, stop = notifiable(response_char, None)
-        response_char._methods["StartNotify"] = wrapped(start)
-        response_char._methods["StopNotify"] = wrapped(stop)
-        # ...0005 Control (WRITE, framed BEGIN/CANCEL)
-        characteristic(
-            "control0", CHAR_CONTROL, ["write"],
-            {"WriteValue": wrapped(lambda value, options: (
-                self._sm.write_control(bytes(bytearray(value))),
-                self.notify_status(),
-            )[0])},
-        )
-        # ...0006 DeviceKey (READ, raw X25519 public key value, unwrapped)
-        characteristic(
-            "devicekey0", CHAR_DEVICE_KEY, ["read"],
-            {"ReadValue": wrapped(lambda options: dbus.Array(
-                bytes(_b64u(self._sm.read_device_key())), signature="y"))},
-        )
-        # ...0007 Credentials (WRITE, framed AES-GCM envelope)
-        characteristic(
-            "credentials0", CHAR_CREDENTIALS, ["write"],
-            {"WriteValue": wrapped(lambda value, options: (
-                self._sm.write_credentials(bytes(bytearray(value))),
-                self.notify_status(),
-            )[0])},
-        )
-        # ...0008 NetworkStatus (READ, NOTIFY)
-        status_char = characteristic(
-            "status0", CHAR_STATUS, ["read", "notify"],
-            {"ReadValue": wrapped(lambda options: dbus.Array(
-                self._status_value(), signature="y"))},
-        )
-        start, stop = notifiable(status_char, None)
-        status_char._methods["StartNotify"] = wrapped(start)
-        status_char._methods["StopNotify"] = wrapped(stop)
+        self._impl = _Impl(bus, path)
 
-    def _status_value(self) -> bytes:
-        return json.dumps(self._sm.read_status(), separators=(",", ":")).encode()
+    def emit_value(self, value: bytes) -> None:
+        import dbus
+        import dbus.lowlevel
+
+        if not self._notifying:
+            return
+        message = dbus.lowlevel.SignalMessage(
+            self._impl.object_path, PROPERTIES_IFACE, "PropertiesChanged"
+        )
+        message.append(
+            dbus.String(GATT_CHARACTERISTIC_IFACE),
+            dbus.Dictionary(
+                {"Value": dbus.Array(bytearray(value), signature="y")}, signature="sv"
+            ),
+            dbus.Array([], signature="s"),
+        )
+        self._impl.connection.send_message(message)
 
 
 def _b64u(value: str) -> bytes:

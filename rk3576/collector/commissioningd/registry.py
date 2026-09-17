@@ -59,7 +59,7 @@ class ControllerEntry:
 
 class ControllerRegistry:
     def __init__(self, path: Path = REGISTRY_PATH, device_id: str = ""):
-        self._path = path
+        self._path = Path(path)
         self._device_id = device_id
         self._entries: list[ControllerEntry] = []
         self._load()

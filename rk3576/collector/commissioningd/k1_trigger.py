@@ -111,6 +111,13 @@ class K1Observer:
     def stop(self) -> None:
         self._stop.set()
 
+    def run_in_thread(self) -> threading.Thread:
+        """Resolve the device now (so failures surface) and observe in a thread."""
+        self._device = self._device or resolve_k1_device()
+        thread = threading.Thread(target=self.run, daemon=True)
+        thread.start()
+        return thread
+
     def run(self) -> None:
         device = self._device or resolve_k1_device()
         LOGGER.info("K1 observer using %s", device)
