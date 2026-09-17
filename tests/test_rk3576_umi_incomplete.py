@@ -752,3 +752,134 @@ def test_a_rescued_recording_deletes_through_the_existing_catalog_path(
     assert outcome["state"] == "complete"
     assert deleted and deleted[0][0] == root
     assert not root.exists()
+
+
+def test_a_stream_shorter_than_its_index_still_rescues(recorder, catalog_stubs):
+    """A capture killed mid-stream can hold fewer access units than its index
+    claims; the rescue must reconcile instead of refusing the data."""
+    recorderctl, _, config = recorder
+    directory = _orphan(config, pairs=40)
+    # the IR stream lost frames while the index kept claiming them
+    (directory / "infrared-left-y8.h265.partial").write_bytes(_hevc_stream(18))
+    (directory / "infrared-right-y8.h265.partial").write_bytes(_hevc_stream(18))
+    result = _run_recovery(recorderctl, config)
+    assert result["state"] == "complete"
+    assert result["stereo_pairs"] <= 18
+    assert "STREAM_LENGTH_MISMATCH" in result["warnings"]
+    published = Path(result["output_dir"])
+    manifest = json.loads((published / "manifest.json").read_text())
+    assert manifest["counts"]["ir_frames"] == result["stereo_pairs"]
+    # the shipped index must not claim more frames than the video holds
+    rows = len((published / "ir_frames.jsonl").read_text().strip().splitlines())
+    assert rows == result["stereo_pairs"]
+
+
+def test_index_longer_than_the_video_is_truncated_on_disk(recorder, catalog_stubs):
+    recorderctl, _, config = recorder
+    directory = _orphan(config, pairs=30, rgb_rows=30)
+    (directory / "rgb.h265.partial").write_bytes(_hevc_stream(12))
+    result = _run_recovery(recorderctl, config)
+    published = Path(result["output_dir"])
+    rgb_rows = len((published / "rgb_frames.jsonl").read_text().strip().splitlines())
+    assert rgb_rows == result["stereo_pairs"] == 12
+    assert not (directory / "rgb_frames.jsonl").exists()
+
+
+def test_a_failed_rescue_work_directory_is_visible_and_reclaimable(recorder):
+    """A rescue that fails before publishing leaves .recover-<session>/ behind;
+    once the orphan is deleted that directory is unreferenced garbage."""
+    recorderctl, _, config = recorder
+    staging = config.incoming / f".recover-{SESSION}"
+    staging.mkdir(parents=True)
+    (staging / "rgb.mp4").write_bytes(b"x" * 4096)
+
+    listing = recorderctl.open_incomplete_list(config)
+    assert [entry["kind"] for entry in listing["sessions"]] == ["staging_leftover"]
+    entry = listing["sessions"][0]
+    assert entry["total_bytes"] == 4096
+    assert entry["recoverable"] is False
+
+    with pytest.raises(recorderctl.ControllerError) as error:
+        recorderctl.start_incomplete_recover(
+            config, SESSION, "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa"
+        )
+    assert error.value.code == "INCOMPLETE_NOT_FOUND"
+
+    operation = {
+        "session": SESSION,
+        "request_id": "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa",
+        "state": "deleting",
+        "boot_id": config.boot_id,
+    }
+    recorderctl.atomic_json(config.incomplete_deletions / f"{SESSION}.json", operation)
+    result = recorderctl.incomplete_delete_sync(config, operation)
+    assert result["freed_bytes"] == 4096
+    assert not staging.exists()
+
+
+def test_deleting_an_orphan_also_reclaims_its_staging_directory(recorder):
+    recorderctl, _, config = recorder
+    _orphan(config, pairs=6)
+    staging = config.incoming / f".recover-{SESSION}"
+    staging.mkdir(parents=True)
+    (staging / "infrared-left-y8.mp4").write_bytes(b"y" * 2048)
+    operation = {
+        "session": SESSION,
+        "request_id": "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa",
+        "state": "deleting",
+        "boot_id": config.boot_id,
+    }
+    recorderctl.atomic_json(config.incomplete_deletions / f"{SESSION}.json", operation)
+    result = recorderctl.incomplete_delete_sync(config, operation)
+    assert result["freed_bytes"] > 2048
+    assert not staging.exists()
+    assert not (config.incoming / f".{SESSION}.partial").exists()
+
+
+def test_the_orphan_is_preferred_over_a_leftover_work_directory(recorder):
+    recorderctl, _, config = recorder
+    _orphan(config, pairs=5)
+    (config.incoming / f".recover-{SESSION}").mkdir(parents=True)
+    listing = recorderctl.open_incomplete_list(config)
+    assert [entry["kind"] for entry in listing["sessions"]] == ["unsealed"]
+
+
+def test_a_completed_deletion_does_not_hide_a_later_work_directory(recorder):
+    """Deleting the orphan once must not make a rescue work directory that
+    appears later permanently undeletable."""
+    recorderctl, _, config = recorder
+    request_id = "44b1d5f0-1a11-4d5e-9f2a-0f2b7f9a11aa"
+    recorderctl.atomic_json(
+        config.incomplete_deletions / f"{SESSION}.json",
+        {"session": SESSION, "request_id": request_id, "state": "complete", "phase": "done",
+         "freed_bytes": 1024, "boot_id": config.boot_id},
+    )
+    # nothing left: a replay is idempotent
+    data = recorderctl.start_incomplete_delete(config, SESSION, request_id)
+    assert data["idempotent"] is True
+
+    # a failed rescue leaves a work directory behind afterwards
+    staging = config.incoming / f".recover-{SESSION}"
+    staging.mkdir(parents=True)
+    (staging / "rgb.mp4").write_bytes(b"z" * 2048)
+    data = recorderctl.start_incomplete_delete(config, SESSION, "55c2e6a1-2b22-4e6f-8a3b-1f3c8faa22bb")
+    assert data["idempotent"] is False
+    operation = recorderctl.read_json(config.incomplete_deletions / f"{SESSION}.json")
+    result = recorderctl.incomplete_delete_sync(config, operation)
+    assert result["freed_bytes"] == 2048
+    assert not staging.exists()
+
+
+def test_incomplete_status_reports_the_most_recent_record(recorder):
+    recorderctl, _, config = recorder
+    recorderctl.atomic_json(
+        config.recoveries / f"{SESSION}.json",
+        {"session": SESSION, "state": "failed", "phase": "recovery_failed",
+         "last_heartbeat_at": "2026-09-17T10:00:00.000Z", "boot_id": config.boot_id},
+    )
+    recorderctl.atomic_json(
+        config.incomplete_deletions / f"{SESSION}.json",
+        {"session": SESSION, "state": "complete", "phase": "done", "freed_bytes": 4096,
+         "last_heartbeat_at": "2026-09-17T10:05:00.000Z", "boot_id": config.boot_id},
+    )
+    assert recorderctl.incomplete_status(config, SESSION)["state"] == "complete"

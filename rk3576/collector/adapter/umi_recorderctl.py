@@ -27,7 +27,7 @@ from umi_publish import STM32_ZERO_METRICS, publish_session, recover_pending_pub
 
 
 SCHEMA_VERSION = 1
-CONTROLLER_VERSION = "0.3.0-umi"
+CONTROLLER_VERSION = "0.3.3-umi"
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 HEX64 = re.compile(r"[0-9a-f]{64}\Z")
 RECORDING_ID = re.compile(r"recording_[A-Za-z0-9_-]{1,160}\Z")
@@ -1024,7 +1024,11 @@ def _session_dirs(cfg: Config, session: str) -> dict:
 
 
 def _classify_session_dir(path: Path) -> str:
-    """sealed_unpublished | unsealed | unknown (never guesses)."""
+    """sealed_unpublished | unsealed | staging_leftover | unknown (never guesses)."""
+    if path.name.startswith(STAGING_PREFIX):
+        # a rescue that failed before publishing leaves its work directory behind;
+        # once the orphan is gone it is unreferenced and only reclaimable here
+        return "staging_leftover"
     manifest_path = path / "manifest.json"
     if manifest_path.is_file():
         try:
@@ -1269,8 +1273,11 @@ def _incomplete_session_entries(cfg: Config) -> list[tuple[str, str, Path]]:
         if kind == "unknown":
             continue
         previous = found.get(session)
-        # prefer the live staging directory over a stale copy
-        if previous is None or path.name.startswith(STAGING_PREFIX):
+        # the orphan (or its sealed form) is the actionable entry; a staging
+        # directory is only reported when nothing else describes the session
+        if previous is None:
+            found[session] = (session, kind, path)
+        elif previous[1] == "staging_leftover" and kind != "staging_leftover":
             found[session] = (session, kind, path)
     return [found[key] for key in sorted(found)]
 
@@ -1288,8 +1295,12 @@ def open_incomplete_list(cfg: Config) -> dict:
         capturing = bool(state and state.get("state") in ACTIVE)
         sessions = []
         for session, kind, directory in _incomplete_session_entries(cfg):
-            entry = _orphan_inventory(cfg, session, directory, kind)
-            entry["live"] = _session_is_live(cfg, _session_dirs(cfg, session)) is not None
+            if kind == "staging_leftover":
+                entry = _staging_leftover_entry(cfg, session, directory)
+                entry["live"] = False
+            else:
+                entry = _orphan_inventory(cfg, session, directory, kind)
+                entry["live"] = _session_is_live(cfg, _session_dirs(cfg, session)) is not None
             entry["already_published"] = _recovery_target_exists(cfg, session)
             entry["recovery"] = (
                 _recovery_projection(read_json(cfg.recoveries / f"{session}.json"))
@@ -1402,11 +1413,21 @@ def start_incomplete_recover(
     dry_run: bool = False,
 ) -> dict:
     request_id = _resolve_request_id(request_id)
+    if not isinstance(session, str) or SESSION_NAME.fullmatch(session) is None:
+        raise ControllerError("INCOMPLETE_SESSION_INVALID", "incomplete session name is invalid")
     cfg.prepare()
     with locked(cfg):
+        previous = read_json(cfg.recoveries / f"{session}.json")
+        if previous is not None and previous.get("state") == "complete":
+            return {"accepted": True, "idempotent": True, **_recovery_projection(previous)}
         session, kind, directory = _session_or_fail(cfg, session)
         if delete_remainder not in (True, False):
             raise ControllerError("INVALID_ARGUMENT", "delete_remainder must be a boolean")
+        if kind == "staging_leftover":
+            raise ControllerError(
+                "INCOMPLETE_NOT_FOUND",
+                "only a failed rescue's work directory remains; delete it to reclaim the space",
+            )
         plan = _recovery_plan(cfg, session, directory, assets)
         if dry_run:
             return {"accepted": True, "dry_run": True, "kind": kind, **plan}
@@ -1417,13 +1438,10 @@ def start_incomplete_recover(
             raise ControllerError("MAINTENANCE_BUSY", "another maintenance operation is active")
         active = _active_recovery(cfg)
         path = cfg.recoveries / f"{session}.json"
-        previous = read_json(path)
         if active is not None:
             if active.get("session") == session and active.get("request_id") == request_id:
                 return {"accepted": True, "idempotent": True, **_recovery_projection(active)}
             raise ControllerError("MAINTENANCE_BUSY", "another recording rescue is active")
-        if previous is not None and previous.get("state") == "complete":
-            return {"accepted": True, "idempotent": True, **_recovery_projection(previous)}
         holder = _session_is_live(cfg, _session_dirs(cfg, session))
         if holder is not None:
             raise ControllerError(
@@ -1513,11 +1531,14 @@ def incomplete_status(cfg: Config, session: str | None = None) -> dict:
         if session is not None:
             if SESSION_NAME.fullmatch(session) is None:
                 raise ControllerError("INCOMPLETE_SESSION_INVALID", "incomplete session name is invalid")
-            value = read_json(cfg.recoveries / f"{session}.json")
-            if value is None:
-                value = read_json(cfg.incomplete_deletions / f"{session}.json")
-            if value is None:
+            candidates = [
+                read_json(directory / f"{session}.json")
+                for directory in (cfg.recoveries, cfg.incomplete_deletions)
+            ]
+            values = [value for value in candidates if value is not None]
+            if not values:
                 raise ControllerError("INCOMPLETE_NOT_FOUND", "incomplete session operation was not found")
+            value = max(values, key=lambda item: item.get("last_heartbeat_at") or "")
             return _recovery_projection(value)
         return {
             "operations": [
@@ -1594,8 +1615,14 @@ def _fsync_directory(path: Path) -> None:
 
 def start_incomplete_delete(cfg: Config, session: str, request_id: str) -> dict:
     request_id = _resolve_request_id(request_id)
+    if not isinstance(session, str) or SESSION_NAME.fullmatch(session) is None:
+        raise ControllerError("INCOMPLETE_SESSION_INVALID", "incomplete session name is invalid")
     cfg.prepare()
     with locked(cfg):
+        path = cfg.incomplete_deletions / f"{session}.json"
+        previous = read_json(path)
+        if previous is not None and previous.get("state") == "complete" and not _session_residue(cfg, session):
+            return {"accepted": True, "idempotent": True, **_incomplete_delete_projection(previous)}
         session, kind, directory = _session_or_fail(cfg, session)
         current = reconcile_stale_state(cfg, read_json(cfg.current))
         if current is not None and current.get("state") in ACTIVE:
@@ -1603,14 +1630,10 @@ def start_incomplete_delete(cfg: Config, session: str, request_id: str) -> dict:
         if _active_recovery(cfg) is not None or _active_delete(cfg) is not None:
             raise ControllerError("MAINTENANCE_BUSY", "another maintenance operation is active")
         active = _active_incomplete_delete(cfg)
-        path = cfg.incomplete_deletions / f"{session}.json"
-        previous = read_json(path)
         if active is not None:
             if active.get("session") == session and active.get("request_id") == request_id:
                 return {"accepted": True, "idempotent": True, **_incomplete_delete_projection(active)}
             raise ControllerError("MAINTENANCE_BUSY", "another incomplete deletion is active")
-        if previous is not None and previous.get("state") == "complete":
-            return {"accepted": True, "idempotent": True, **_incomplete_delete_projection(previous)}
         holder = _session_is_live(cfg, _session_dirs(cfg, session))
         if holder is not None:
             raise ControllerError(
@@ -1645,12 +1668,23 @@ def start_incomplete_delete(cfg: Config, session: str, request_id: str) -> dict:
     return {"accepted": True, "idempotent": False, **_incomplete_delete_projection(operation)}
 
 
+def _session_residue(cfg: Config, session: str) -> list[str]:
+    dirs = _session_dirs(cfg, session)
+    return [str(path) for path in dirs.values() if path.exists()]
+
+
 def incomplete_delete_sync(cfg: Config, operation: dict) -> dict:
     session = operation["session"]
     _, _, directory = _session_or_fail(cfg, session)
     operation.update(phase="delete_tree", last_heartbeat_at=now_iso())
     atomic_json(cfg.incomplete_deletions / f"{session}.json", operation)
     freed = _delete_orphan_tree(directory, cfg.incoming)
+    staging = cfg.incoming / f"{STAGING_PREFIX}{session}"
+    if staging.exists():
+        # a failed rescue leaves its work directory behind; the session is gone now
+        operation.update(phase="delete_staging", last_heartbeat_at=now_iso())
+        atomic_json(cfg.incomplete_deletions / f"{session}.json", operation)
+        freed += _delete_orphan_tree(staging, cfg.incoming)
     return {"state": "complete", "freed_bytes": freed}
 
 
@@ -1792,6 +1826,7 @@ def recover_incomplete_sync(cfg: Config, operation: dict) -> dict:
 
     counts = _video_counts(directory)
     pairs = min(counts["ir_frames"], counts["rgb_input_frames"])
+    warnings = list(RECOVERY_WARNINGS)
     if pairs <= 0:
         raise ControllerError(
             "INCOMPLETE_GATE_FAILED",
@@ -1821,7 +1856,7 @@ def recover_incomplete_sync(cfg: Config, operation: dict) -> dict:
         _touch_recovery(cfg, operation, phase="remux", asset=asset, free_bytes=free)
         target = staging / output_name
         try:
-            result = remux(source, target, fps=30, max_aus=pairs)
+            result = remux(source, target, fps=30)
             check = verify_roundtrip(
                 target, expected_samples=result.samples, expected_mdat_sha256=result.mdat_sha256
             )
@@ -1835,12 +1870,6 @@ def recover_incomplete_sync(cfg: Config, operation: dict) -> dict:
                 f"the remuxed {output_name} did not verify",
                 {"asset": asset, "problems": check.problems},
             )
-        if result.samples < pairs:
-            raise ControllerError(
-                "INCOMPLETE_GATE_FAILED",
-                f"{stem} holds fewer access units than the frame index claims",
-                {"asset": asset, "samples": result.samples, "pairs": pairs},
-            )
         # only now is the source released
         source.unlink()
         remuxed[asset] = {
@@ -1853,6 +1882,28 @@ def recover_incomplete_sync(cfg: Config, operation: dict) -> dict:
         }
         bytes_done += remuxed[asset]["source_bytes"]
         _touch_recovery(cfg, operation, phase="verify", asset=asset, remuxed=remuxed, bytes_done=bytes_done)
+
+    # The power cut can leave a stream shorter than its frame index (the collector
+    # died mid-frame). The truthful pair count is the minimum over the indexes and
+    # the access units the streams actually carry; publishing the index as-is would
+    # claim frames that no video holds.
+    natural = {asset: info["samples"] for asset, info in remuxed.items()}
+    short = {
+        asset: count for asset, count in natural.items()
+        if count < pairs or count != min(natural.values())
+    }
+    pairs = min([pairs, *[info["samples"] for info in remuxed.values()]])
+    if pairs <= 0:
+        raise ControllerError(
+            "INCOMPLETE_GATE_FAILED",
+            "the selected streams carry no complete access units",
+            {"samples": natural},
+        )
+    if short:
+        warnings.append("STREAM_LENGTH_MISMATCH")
+    _truncate_index(directory / "ir_frames.jsonl", pairs)
+    _truncate_index(directory / "rgb_frames.jsonl", pairs)
+    _touch_recovery(cfg, operation, phase="reconcile", pairs=pairs, stream_samples=natural)
 
     # move the small sidecar files into the staging directory; the sources of the
     # assets that were NOT selected stay behind for incomplete-delete
@@ -1892,8 +1943,9 @@ def recover_incomplete_sync(cfg: Config, operation: dict) -> dict:
     return _publish_recovered(
         cfg, operation, session, publish_dir,
         counts=counts, stm32=stm32, remuxed=remuxed, selection=selection,
-        warnings=[name for name in RECOVERY_WARNINGS],
+        warnings=warnings,
         publish_dir=publish_dir, write_manifest=True, leftover_dir=orphan_dir,
+        pairs_override=pairs,
     )
 
 
@@ -1907,6 +1959,27 @@ def _quality_status(stm32: dict, pairs: int, counts: dict) -> str:
     if counts.get("ir_frames") != counts.get("rgb_input_frames"):
         return "DEGRADED"
     return "DEGRADED"  # a rescued session is never a verified capture
+
+
+def _truncate_index(path: Path, rows: int) -> None:
+    """Keep only the first ``rows`` index rows so the index matches the video."""
+    if not path.is_file() or rows <= 0:
+        return
+    summary = _index_summary(path)
+    if summary["rows"] <= rows or summary["torn_tail"] is False and summary["rows"] == 0:
+        return
+    with path.open("r+b") as stream:
+        kept = 0
+        offset = 0
+        while kept < rows:
+            line = stream.readline()
+            if not line.endswith(b"\n"):
+                break
+            offset = stream.tell()
+            kept += 1
+        stream.truncate(offset)
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def _sealed_counts(directory: Path) -> dict:
@@ -1929,10 +2002,13 @@ def _publish_recovered(
     publish_dir: Path,
     write_manifest: bool,
     leftover_dir: Path | None = None,
+    pairs_override: int | None = None,
 ) -> dict:
     from umi_publish import publish_session
 
     pairs = min(counts["ir_frames"], counts["rgb_input_frames"])
+    if pairs_override is not None:
+        pairs = pairs_override
     if selection == "sealed":
         manifest_counts = _sealed_counts(directory)
         pairs = int(manifest_counts.get("ir_frames") or pairs)
@@ -2127,6 +2203,27 @@ def _selection_label(selection: str) -> str:
     return {"all": "全部", "rgb": "仅彩色", "ir": "仅左右红外", "sealed": "已封存数据"}.get(
         selection, selection
     )
+
+
+def _staging_leftover_entry(cfg: Config, session: str, directory: Path) -> dict:
+    total = _leftover_bytes(directory)
+    return {
+        "session": session,
+        "kind": "staging_leftover",
+        "directory": str(directory.relative_to(cfg.recording_root)),
+        "total_bytes": total,
+        "asset_bytes": {name: 0 for name in VIDEO_ASSETS},
+        "imu_bytes": 0,
+        "index_bytes": 0,
+        "assets_present": {name: False for name in VIDEO_ASSETS},
+        "usable": {name: False for name in VIDEO_ASSETS},
+        "probe": {name: {"annexb": False, "vps": False, "sps": False, "pps": False, "idr": False}
+                  for name in VIDEO_ASSETS},
+        "pairs": 0,
+        "estimated_duration_s": 0.0,
+        "space": {f"required_{selection}": 0 for selection in ASSET_SELECTIONS},
+        "recoverable": False,
+    }
 
 
 def _leftover_bytes(directory: Path) -> int:

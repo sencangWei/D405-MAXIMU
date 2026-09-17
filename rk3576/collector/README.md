@@ -140,6 +140,33 @@ marking it as rescued and an honest `imu_quality_status` - a rescued session is
 never presented as a verified capture. The 32 GB orphan that triggered this work
 was left untouched: the operator decides when to spend the space.
 
+Release 0.3.1 removes an over-strict rescue guard found on the board. A
+capture killed by a camera or stream failure can leave a stream holding fewer
+access units than its frame index claims; 0.3.0 refused such a session with
+INCOMPLETE_GATE_FAILED even though the data was usable. The rescue now
+reconciles the two: the published pair count is the minimum over the indexes and
+the access units the streams actually carry, the shipped frame indexes are
+truncated to that count so they never claim a frame no video holds, and the
+manifest records the per-stream counts plus STREAM_LENGTH_MISMATCH.
+
+Release 0.3.2 closes a gap the 0.3.1 board run exposed: a rescue that fails
+before publishing leaves its work directory `.recover-<session>/` behind, and
+once the operator deletes the orphan that directory is unreferenced - invisible
+to the console and unreclaimable (3.1 GB in the observed case). The listing now
+reports such a directory as `staging_leftover` with its size, deleting it
+reclaims the space, and deleting an orphan also reclaims its work directory.
+Rescue is refused for a work directory on its own, since there is no capture
+left to rescue.
+
+Release 0.3.3 fixes deletion idempotency for interrupted recordings. The
+adapter treated any completed deletion record as a replay and returned without
+doing anything, so a rescue work directory that appeared (or survived) after an
+earlier deletion could never be reclaimed - the board was left with a 3.1 GB
+directory that the console listed but refused to remove. A completed deletion is
+now only a replay while nothing remains on disk for that session, and
+`incomplete-status` reports the most recent record instead of always preferring
+the rescue record.
+
 ## Operator documentation
 
 See [DEPLOYMENT_AND_USAGE.zh-CN.md](DEPLOYMENT_AND_USAGE.zh-CN.md) for the
