@@ -35,6 +35,7 @@
 #include "keyframe.h"
 #include "utility/tic_toc.h"
 #include "pose_graph.h"
+#include "learned_loop_matches.h"
 #include "utility/CameraPoseVisualization.h"
 // #include "camodocal/camera_models/CameraFactory.h"
 #include "parameters.h"
@@ -76,6 +77,11 @@ int LARGE_LOOP_MIN_RIGHT_INLIERS = 30;
 double LARGE_LOOP_MIN_RIGHT_INLIER_RATIO = 0.45;
 double LARGE_LOOP_MAX_PNP_RMSE_PX = 2.5;
 double LARGE_LOOP_MAX_PNP_P95_PX = 5.0;
+std::string LEARNED_LOOP_MATCHES_PATH;
+double LEARNED_LOOP_TIMESTAMP_TOLERANCE_S = 0.020;
+double LEARNED_LOOP_MAX_TRACK_ASSOCIATION_PX = 4.0;
+int LEARNED_LOOP_MIN_MATCHES = 20;
+learned_loop::Database learned_loop_database;
 
 std::string WORLD_FRAME_ID = "world";
 std::string BODY_FRAME_ID = "body";
@@ -466,6 +472,17 @@ int main(int argc, char **argv)
     read_double("large_loop_min_right_inlier_ratio", LARGE_LOOP_MIN_RIGHT_INLIER_RATIO);
     read_double("large_loop_max_pnp_rmse_px", LARGE_LOOP_MAX_PNP_RMSE_PX);
     read_double("large_loop_max_pnp_p95_px", LARGE_LOOP_MAX_PNP_P95_PX);
+    const cv::FileNode learned_loop_matches_path_node =
+        fsSettings["learned_loop_matches_path"];
+    if (!learned_loop_matches_path_node.empty())
+        learned_loop_matches_path_node >> LEARNED_LOOP_MATCHES_PATH;
+    read_double(
+        "learned_loop_timestamp_tolerance_s",
+        LEARNED_LOOP_TIMESTAMP_TOLERANCE_S);
+    read_double(
+        "learned_loop_max_track_association_px",
+        LEARNED_LOOP_MAX_TRACK_ASSOCIATION_PX);
+    read_int("learned_loop_min_matches", LEARNED_LOOP_MIN_MATCHES);
     if (LOOP_CONFIRMATIONS < 1 || LARGE_LOOP_CONFIRMATIONS < LOOP_CONFIRMATIONS ||
         LARGE_LOOP_CORRECTION_THRESHOLD_M <= 0.0 || LARGE_LOOP_MIN_PNP_INLIERS < 4 ||
         LARGE_LOOP_MIN_RIGHT_INLIERS < 8 || LARGE_LOOP_MIN_PNP_INLIER_RATIO <= 0.0 ||
@@ -483,6 +500,31 @@ int main(int argc, char **argv)
            LARGE_LOOP_MIN_PNP_INLIERS, LARGE_LOOP_MIN_PNP_INLIER_RATIO,
            LARGE_LOOP_MIN_RIGHT_INLIERS, LARGE_LOOP_MIN_RIGHT_INLIER_RATIO,
            LARGE_LOOP_MAX_PNP_RMSE_PX, LARGE_LOOP_MAX_PNP_P95_PX);
+    if (!LEARNED_LOOP_MATCHES_PATH.empty())
+    {
+        if (LEARNED_LOOP_TIMESTAMP_TOLERANCE_S <= 0.0 ||
+            LEARNED_LOOP_MAX_TRACK_ASSOCIATION_PX <= 0.0 ||
+            LEARNED_LOOP_MIN_MATCHES < 4)
+        {
+            std::cerr << "ERROR: invalid learned-loop match parameters" << std::endl;
+            return 1;
+        }
+        std::string learned_loop_error;
+        if (!learned_loop_database.loadCsv(
+                LEARNED_LOOP_MATCHES_PATH, &learned_loop_error))
+        {
+            std::cerr << "ERROR: " << learned_loop_error << std::endl;
+            return 1;
+        }
+        printf("learned_loop_matches: %zu edges %zu matches from %s\n",
+               learned_loop_database.edgeCount(),
+               learned_loop_database.matchCount(),
+               LEARNED_LOOP_MATCHES_PATH.c_str());
+    }
+    else
+    {
+        printf("learned_loop_matches: disabled\n");
+    }
 
     rclcpp::init(argc, argv);
     auto n = rclcpp::Node::make_shared("loop_fusion");
@@ -570,7 +612,7 @@ int main(int argc, char **argv)
     }
 
     auto sub_vio          = n->create_subscription<nav_msgs::msg::Odometry>("/odometry", rclcpp::QoS(rclcpp::KeepLast(2000)), vio_callback);
-    rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(256));
+    rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(512));
     loop_keyframe_qos.reliable();
     auto sub_keyframe     = n->create_subscription<vins_fusion_ros2::msg::LoopKeyFrame>("/loop_fusion/keyframe", loop_keyframe_qos, keyframe_callback);
     auto sub_margin_point = n->create_subscription<sensor_msgs::msg::PointCloud>("/margin_cloud", rclcpp::QoS(rclcpp::KeepLast(2000)), margin_point_callback);

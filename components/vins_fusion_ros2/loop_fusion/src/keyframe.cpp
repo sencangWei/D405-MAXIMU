@@ -11,10 +11,13 @@
 
 #include "keyframe.h"
 #include "tracked_brief_matcher.h"
+#include "learned_loop_matches.h"
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
+
+extern learned_loop::Database learned_loop_database;
 
 template <typename Derived>
 static void reduceVector(vector<Derived> &v, vector<uchar> status)
@@ -425,6 +428,7 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 	last_loop_pnp_p95_px = std::numeric_limits<double>::infinity();
 	last_loop_right_inliers = 0;
 	last_loop_right_inlier_ratio = 0.0;
+	last_loop_used_learned_matches = false;
 	//printf("find Connection\n");
 	if (visual_quality_degraded || old_kf->visual_quality_degraded)
 	{
@@ -473,25 +477,91 @@ bool KeyFrame::findConnection(KeyFrame* old_kf)
 	const size_t old_descriptor_count = std::min(
 		old_kf->brief_descriptors.size(),
 		std::min(old_kf->keypoints.size(), old_kf->keypoints_norm.size()));
-	if (current_descriptor_count == 0 || old_descriptor_count < 2)
+	bool learned_matches_used = false;
+	const learned_loop::Edge *learned_edge = learned_loop_database.find(
+		time_stamp, old_kf->time_stamp, LEARNED_LOOP_TIMESTAMP_TOLERANCE_S);
+	if (learned_edge != nullptr && current_descriptor_count > 0)
 	{
-		printf("[AUTO_LOOP_REJECT] current=%d matched=%d reason=no_brief_descriptors\n",
-		       index, old_kf->index);
-		return false;
+		std::vector<bool> used_matches(learned_edge->matches.size(), false);
+		const double max_distance_squared =
+			LEARNED_LOOP_MAX_TRACK_ASSOCIATION_PX *
+			LEARNED_LOOP_MAX_TRACK_ASSOCIATION_PX;
+		for (size_t track = 0; track < current_descriptor_count; ++track)
+		{
+			size_t best_match_index = learned_edge->matches.size();
+			double best_distance_squared = max_distance_squared;
+			for (size_t match_index = 0;
+			     match_index < learned_edge->matches.size(); ++match_index)
+			{
+				if (used_matches[match_index])
+					continue;
+				const cv::Point2f delta = point_2d_uv[track] -
+					learned_edge->matches[match_index].current;
+				const double distance_squared = delta.dot(delta);
+				if (distance_squared <= best_distance_squared)
+				{
+					best_match_index = match_index;
+					best_distance_squared = distance_squared;
+				}
+			}
+			if (best_match_index == learned_edge->matches.size())
+				continue;
+			const learned_loop::Match &match =
+				learned_edge->matches[best_match_index];
+			Eigen::Vector3d previous_ray;
+			m_camera->liftProjective(
+				Eigen::Vector2d(match.previous.x, match.previous.y), previous_ray);
+			if (!previous_ray.allFinite() || std::abs(previous_ray.z()) < 1e-12)
+				continue;
+			used_matches[best_match_index] = true;
+			matched_2d_cur.push_back(point_2d_uv[track]);
+			matched_2d_cur_norm.push_back(point_2d_norm[track]);
+			matched_2d_old.push_back(match.previous);
+			matched_2d_old_norm.emplace_back(
+				previous_ray.x() / previous_ray.z(),
+				previous_ray.y() / previous_ray.z());
+			matched_3d.push_back(point_3d[track]);
+			matched_id.push_back(point_id[track]);
+		}
+		learned_matches_used =
+			matched_2d_cur.size() >= static_cast<size_t>(LEARNED_LOOP_MIN_MATCHES);
+		last_loop_used_learned_matches = learned_matches_used;
+		printf("[LEARNED_LOOP_ASSOCIATION] current=%d matched=%d supplied=%zu "
+		       "associated=%zu required=%d used=%d\n",
+		       index, old_kf->index, learned_edge->matches.size(),
+		       matched_2d_cur.size(), LEARNED_LOOP_MIN_MATCHES,
+		       learned_matches_used ? 1 : 0);
+		if (!learned_matches_used)
+		{
+			matched_2d_cur.clear();
+			matched_2d_cur_norm.clear();
+			matched_2d_old.clear();
+			matched_2d_old_norm.clear();
+			matched_3d.clear();
+			matched_id.clear();
+		}
 	}
-
-	const std::vector<tracked_brief::Match> brief_matches =
-		tracked_brief::match(
-			window_brief_descriptors, current_descriptor_count,
-			old_kf->brief_descriptors, old_descriptor_count);
-	for (const tracked_brief::Match &match : brief_matches)
+	if (!learned_matches_used)
 	{
-		matched_2d_cur.push_back(point_2d_uv[match.current_index]);
-		matched_2d_cur_norm.push_back(point_2d_norm[match.current_index]);
-		matched_2d_old.push_back(old_kf->keypoints[match.old_index].pt);
-		matched_2d_old_norm.push_back(old_kf->keypoints_norm[match.old_index].pt);
-		matched_3d.push_back(point_3d[match.current_index]);
-		matched_id.push_back(point_id[match.current_index]);
+		if (current_descriptor_count == 0 || old_descriptor_count < 2)
+		{
+			printf("[AUTO_LOOP_REJECT] current=%d matched=%d reason=no_brief_descriptors\n",
+			       index, old_kf->index);
+			return false;
+		}
+		const std::vector<tracked_brief::Match> brief_matches =
+			tracked_brief::match(
+				window_brief_descriptors, current_descriptor_count,
+				old_kf->brief_descriptors, old_descriptor_count);
+		for (const tracked_brief::Match &match : brief_matches)
+		{
+			matched_2d_cur.push_back(point_2d_uv[match.current_index]);
+			matched_2d_cur_norm.push_back(point_2d_norm[match.current_index]);
+			matched_2d_old.push_back(old_kf->keypoints[match.old_index].pt);
+			matched_2d_old_norm.push_back(old_kf->keypoints_norm[match.old_index].pt);
+			matched_3d.push_back(point_3d[match.current_index]);
+			matched_id.push_back(point_id[match.current_index]);
+		}
 	}
 	const size_t descriptor_match_count = matched_2d_cur.size();
 	if (descriptor_match_count >= 8)

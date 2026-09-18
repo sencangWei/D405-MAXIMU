@@ -145,6 +145,7 @@ public:
 	double last_loop_pnp_p95_px = std::numeric_limits<double>::infinity();
 	uint32_t last_loop_right_inliers = 0;
 	double last_loop_right_inlier_ratio = 0.0;
+	bool last_loop_used_learned_matches = false;
 
 	bool has_loop;
 	int loop_index;

@@ -44,6 +44,14 @@ if(BUILD_TESTING)
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${OpenCV_INCLUDE_DIRS}
   )
+  ament_add_gtest(test_learned_loop_matches
+    test/test_learned_loop_matches.cpp
+  )
+  target_include_directories(test_learned_loop_matches PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${OpenCV_INCLUDE_DIRS}
+  )
+  target_link_libraries(test_learned_loop_matches ${OpenCV_LIBS})
 endif()
 
 install(

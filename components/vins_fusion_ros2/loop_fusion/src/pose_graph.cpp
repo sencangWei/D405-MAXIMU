@@ -10,6 +10,9 @@
  *******************************************************/
 
 #include "pose_graph.h"
+#include "learned_loop_matches.h"
+
+extern learned_loop::Database learned_loop_database;
 
 #include <algorithm>
 #include <cmath>
@@ -52,6 +55,25 @@ double medianAngle(const std::vector<double> &values)
     for (double value : values)
         unwrapped.push_back(reference + Utility::normalizeAngle(value - reference));
     return Utility::normalizeAngle(medianScalar(unwrapped));
+}
+
+double medianTranslationDeviation(const std::vector<Eigen::Vector3d> &values,
+                                  const Eigen::Vector3d &center)
+{
+    std::vector<double> deviations;
+    deviations.reserve(values.size());
+    for (const Eigen::Vector3d &value : values)
+        deviations.push_back((value - center).norm());
+    return deviations.empty() ? 0.0 : medianScalar(deviations);
+}
+
+double medianYawDeviation(const std::vector<double> &values, double center)
+{
+    std::vector<double> deviations;
+    deviations.reserve(values.size());
+    for (double value : values)
+        deviations.push_back(std::abs(Utility::normalizeAngle(value - center)));
+    return deviations.empty() ? 0.0 : medianScalar(deviations);
 }
 }
 
@@ -188,9 +210,14 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
         KeyFrame* old_kf = getKeyFrame(loop_index);
 
 		if (old_kf != nullptr)
-        {
+		{
 			constexpr int kAcceptedLoopCooldownKeyframes = 10;
 			constexpr double kMaxAcceptedCorrectionM = 0.03;
+			constexpr double kMaxLearnedCorrectionM = 0.05;
+			// Learned large-loop corrections stay fail-closed unless the
+			// independently estimated stereo/PnP supports agree within 2 mm.
+			constexpr double kMaxLearnedTranslationMadM = 0.002;
+			constexpr double kMaxLearnedYawMadDeg = 0.5;
 			auto reset_pending_loop = [this]() {
 				pending_loop_index_ = -1;
 				pending_loop_count_ = 0;
@@ -228,7 +255,16 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 				cur_kf->last_loop_right_inlier_ratio >= LARGE_LOOP_MIN_RIGHT_INLIER_RATIO &&
 				cur_kf->last_loop_pnp_rmse_px <= LARGE_LOOP_MAX_PNP_RMSE_PX &&
 				cur_kf->last_loop_pnp_p95_px <= LARGE_LOOP_MAX_PNP_P95_PX;
-			if (large_loop_candidate && !large_loop_quality_ok)
+			const bool learned_large_loop_quality_ok =
+				cur_kf->last_loop_used_learned_matches &&
+				cur_kf->last_loop_pnp_inliers >= static_cast<uint32_t>(LARGE_LOOP_MIN_PNP_INLIERS) &&
+				cur_kf->last_loop_pnp_inlier_ratio >= MIN_LOOP_INLIER_RATIO &&
+				cur_kf->last_loop_right_inliers >= static_cast<uint32_t>(LARGE_LOOP_MIN_RIGHT_INLIERS) &&
+				cur_kf->last_loop_right_inlier_ratio >= LARGE_LOOP_MIN_RIGHT_INLIER_RATIO &&
+				cur_kf->last_loop_pnp_rmse_px <= LARGE_LOOP_MAX_PNP_RMSE_PX &&
+				cur_kf->last_loop_pnp_p95_px <= LARGE_LOOP_MAX_PNP_P95_PX;
+			if (large_loop_candidate &&
+			    !large_loop_quality_ok && !learned_large_loop_quality_ok)
 			{
 				printf("[AUTO_LOOP_LARGE_REJECT] current=%d matched=%d correction_t_m=%.4f "
 				       "pnp_inliers=%u ratio=%.3f rmse_px=%.3f p95_px=%.3f "
@@ -238,7 +274,8 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 				       cur_kf->last_loop_pnp_rmse_px, cur_kf->last_loop_pnp_p95_px,
 				       cur_kf->last_loop_right_inliers, cur_kf->last_loop_right_inlier_ratio);
 				cur_kf->clearLoop();
-				reset_pending_loop();
+				if (!cur_kf->last_loop_used_learned_matches)
+					reset_pending_loop();
 			}
 			else
 			{
@@ -288,6 +325,19 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 				pending_correction_norm >= LARGE_LOOP_CORRECTION_THRESHOLD_M;
 			const int required_loop_confirmations =
 				pending_large_loop ? LARGE_LOOP_CONFIRMATIONS : LOOP_CONFIRMATIONS;
+			const Vector3d fused_pending_correction_center =
+				medianTranslation(pending_loop_correction_translations_);
+			const double fused_pending_yaw_center =
+				medianAngle(pending_loop_correction_yaws_);
+			const double pending_translation_mad = medianTranslationDeviation(
+				pending_loop_correction_translations_, fused_pending_correction_center);
+			const double pending_yaw_mad = medianYawDeviation(
+				pending_loop_correction_yaws_, fused_pending_yaw_center);
+			const bool learned_consensus_inconsistent =
+				cur_kf->last_loop_used_learned_matches &&
+				pending_loop_count_ >= required_loop_confirmations &&
+				(pending_translation_mad > kMaxLearnedTranslationMadM ||
+				 pending_yaw_mad > kMaxLearnedYawMadDeg);
 
 			if (pending_loop_count_ < required_loop_confirmations)
 			{
@@ -302,15 +352,30 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 				       candidate_correction_yaw);
 				cur_kf->clearLoop();
 			}
+			else if (learned_consensus_inconsistent)
+			{
+				printf("[LEARNED_LOOP_CONSENSUS_REJECT] current=%d matched=%d "
+				       "confirmations=%d translation_mad_m=%.4f yaw_mad_deg=%.3f "
+				       "limits=(%.4f,%.3f)\n",
+				       cur_kf->index, loop_index, pending_loop_count_,
+				       pending_translation_mad, pending_yaw_mad,
+				       kMaxLearnedTranslationMadM, kMaxLearnedYawMadDeg);
+				cur_kf->clearLoop();
+				reset_pending_loop();
+			}
 			else if (pending_correction_norm >
-			         kMaxAcceptedCorrectionM)
+			         (cur_kf->last_loop_used_learned_matches
+			              ? kMaxLearnedCorrectionM
+			              : kMaxAcceptedCorrectionM))
 			{
 				const Vector3d rejected_correction =
 					medianTranslation(pending_loop_correction_translations_);
 				printf("[AUTO_LOOP_CORRECTION_REJECT] current=%d matched=%d "
 				       "fused_correction_t_m=%.4f limit_m=%.4f\n",
 				       cur_kf->index, loop_index, rejected_correction.norm(),
-				       kMaxAcceptedCorrectionM);
+				       cur_kf->last_loop_used_learned_matches
+				           ? kMaxLearnedCorrectionM
+				           : kMaxAcceptedCorrectionM);
 				cur_kf->clearLoop();
 				reset_pending_loop();
 			}
@@ -349,9 +414,12 @@ void PoseGraph::addKeyFrame(KeyFrame* cur_kf, bool flag_detect_loop)
 				cur_kf->updateLoop(fused_loop_info);
 				last_accepted_loop_current_index_ = cur_kf->index;
 				printf("[AUTO_LOOP_ACCEPT] current=%d matched=%d confirmations=%d "
-				       "inliers_gate=>%d fused_correction_t_m=%.4f fused_correction_yaw_deg=%.2f\n",
+				       "inliers_gate=>%d fused_correction_t_m=%.4f fused_correction_yaw_deg=%.2f "
+				       "learned=%d translation_mad_m=%.4f yaw_mad_deg=%.3f\n",
 				       cur_kf->index, loop_index, pending_loop_count_, MIN_LOOP_NUM,
-				       fused_correction_t.norm(), fused_correction_yaw);
+				       fused_correction_t.norm(), fused_correction_yaw,
+				       cur_kf->last_loop_used_learned_matches ? 1 : 0,
+				       pending_translation_mad, pending_yaw_mad);
 				reset_pending_loop();
             if (earliest_loop_index > loop_index || earliest_loop_index == -1)
                 earliest_loop_index = loop_index;
@@ -636,8 +704,33 @@ std::vector<int> PoseGraph::detectLoopCandidates(
     TicToc t_add;
     db.add(keyframe->brief_descriptors);
     //printf("add feature time: %f", t_add.toc());
-    // ret[0] is the nearest neighbour's score. threshold change with neighour score
     std::vector<int> candidates;
+    const std::vector<double> learned_timestamps =
+        learned_loop_database.candidateTimestamps(
+            keyframe->time_stamp, LEARNED_LOOP_TIMESTAMP_TOLERANCE_S);
+    for (const double previous_timestamp : learned_timestamps)
+    {
+        KeyFrame *best = nullptr;
+        double best_error = LEARNED_LOOP_TIMESTAMP_TOLERANCE_S;
+        for (KeyFrame *candidate : keyframelist)
+        {
+            const double error = std::abs(candidate->time_stamp - previous_timestamp);
+            if (error <= best_error)
+            {
+                best = candidate;
+                best_error = error;
+            }
+        }
+        if (best != nullptr &&
+            frame_index - best->index >= kLoopTemporalExclusionKeyframes)
+            candidates.push_back(best->index);
+    }
+    if (!learned_timestamps.empty())
+    {
+        printf("[LEARNED_LOOP_RETRIEVAL] current=%d supplied=%zu mapped=%zu\n",
+               frame_index, learned_timestamps.size(), candidates.size());
+    }
+    // ret[0] is the nearest neighbour's score. threshold change with neighbour score
     cv::Mat loop_result;
     if (DEBUG_IMAGE)
     {
@@ -662,7 +755,12 @@ std::vector<int> PoseGraph::detectLoopCandidates(
         ret.size() >= 2 && ret[0].Score > 0.05)
         for (const auto &result : ret)
             if (result.Score > 0.015)
-                candidates.push_back(static_cast<int>(result.Id));
+            {
+                const int candidate = static_cast<int>(result.Id);
+                if (std::find(candidates.begin(), candidates.end(), candidate) ==
+                    candidates.end())
+                    candidates.push_back(candidate);
+            }
 	if (frame_index > kLoopTemporalExclusionKeyframes && !ret.empty())
 	{
 		printf("[AUTO_LOOP_RETRIEVAL] current=%d returned=%zu eligible=%zu",

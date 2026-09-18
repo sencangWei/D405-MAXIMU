@@ -126,10 +126,11 @@ void VinsEstimator::initializerPublishers() {
   pub_odometry = this->create_publisher<nav_msgs::msg::Odometry>("odometry", 1);
   pub_image_track =
       this->create_publisher<sensor_msgs::msg::Image>("image_track", 1);
-  // A stereo keyframe is large enough that a four-message DDS history can be
-  // exhausted by short optimizer bursts during offline 30 fps replay.
-  // Keep a reliable backlog while the loop worker drains BRIEF/PnP work.
-  rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(256));
+  // Repeated scenes can keep BRIEF/PnP busy long enough to exceed a 256-frame
+  // DDS history during offline 30 fps replay.  Keep the publisher and
+  // subscriber histories matched so every generated keyframe reaches the
+  // loop worker without changing the pose-graph algorithm.
+  rclcpp::QoS loop_keyframe_qos(rclcpp::KeepLast(512));
   loop_keyframe_qos.reliable();
   pub_loop_keyframe =
       this->create_publisher<vins_fusion_ros2::msg::LoopKeyFrame>(
