@@ -297,9 +297,15 @@ effective_weight = np.clip(
 | [gt_roughness_vs_ate.py](gt_roughness_vs_ate.py) / .json | 真值毛糙度 vs ATE(**结果: 毛糙 0.86mm ≪ ATE 10.4mm**) |
 | [vins_weight_sweep.py](vins_weight_sweep.py) / .json(scratch) | VINS 分支取舍跨全组扫描(见 §10) |
 | [sigma_policy_sweep.py](sigma_policy_sweep.py) | 质量门策略 / 尺度权重 / 姿态节点密度扫描(见 §11) |
-| [zero_branch_check.py](zero_branch_check.py) | 把 onboard 分支真正压到 0 的单变量实测(见 §10.1) |
+| [zero_branch_check.py](zero_branch_check.py) | 把 onboard 分支真正压到 0 的单变量实测(见 §10.3) |
+| [cap_sweep.py](cap_sweep.py) | 修正幅度上限扫描(见 §13) |
+| [scale_sweep.py](scale_sweep.py) | `--docker2-scale-weight` 上界 + `--auto-docker2-scale-weight` 条件式投票(见 §13) |
 | [despike_test.py](despike_test.py) | 去尖峰+插值假说检验 |
 | `*_probe.py`, `f1.py`, `fps.py`, `cmp.py`, `crosscheck.py` | 排查过程中的一次性探针 |
+
+> `zero_branch_check.py` 与 `cap_sweep.py` 是薄包装: 只覆盖 `sigma_policy_sweep` 的
+> `SCRATCH` 与 `CONFIGS` 再调它的 `main()`。因此它们的逐项 JSON 沿用了上游的文件名
+> `spol.json`, 但各自落在自己的 scratch 目录(`.../zb/`、`.../cap/`)下, 不会串。
 
 ---
 
@@ -367,6 +373,41 @@ B 只是把中位数磨平了一点点(14.41 vs 14.57) —— 典型的"用尾�
   max 最差最好(23.70), 姿态略优(1.85 vs 1.89), 但中位三项都略差。
   若后续更看重"最坏组别"而非"典型组别", 可考虑切 D; 本次**不改**。
 - 质量门的策略问题(`visual_position_sigma` 方向、姿态节点密度)另见 §11。
+
+### 10.3 实测: 把两个开关**一起**关掉 (B2) —— 省掉 7 个 REJECT, 但赔掉唯一达标轨迹
+
+§4.2 断言"9 个 REJECT 的成因是 `--adaptive-local-weight` 的 0.02 地板, 不是 0.25 这个值"。
+[zero_branch_check.py](zero_branch_check.py) 直接把它证了: 同时关掉 `--docker2-local-weight`
+(设 0)与 `--adaptive-local-weight`, 有效权重变成**真 0**(G1 的语义), 全 18 项重跑。
+
+| 指标 | A(现役) | **B2(w=0 且无自适应层)** |
+|---|---|---|
+| **达标数** | **1** | **0** ← 丢掉唯一那条 |
+| **质量门 REJECT** | 9 | **2** |
+| max 中位 | 14.57 | 14.49 |
+| rmse 中位 | 5.53 | 4.97 |
+| max 最差 | 24.16 | **30.48** |
+| 逐项 Δmax | — | 改善 10 / 恶化 8, 中位 **−0.39**, 最差 **+6.32** |
+
+**预判命中**: 跑之前就由代码判据推出"REJECT 应从 9 降到 2, 且剩下的两项是
+`batch5/group3` 的 sparse+tight" —— 实测**逐项一致**。剩下那 2 项是被另一条分支
+`primary_shape_not_independently_supported` 拒的(双目 rmse 3.93/3.67mm ≥ 门 0.875×4mm=3.5mm),
+**该分支根本不看 `position_branch_weight`** ⇒ 与权重无关, 关开关救不了。
+
+三项读数:
+
+1. **§4.2 的机制断言成立**: 9 个 REJECT 里 **7 个**由自适应层的 0.02 地板造成,
+   与 0.25 这个取值无关。这条从"读代码推断"升级为"实测确认"。
+2. **但省 REJECT ≠ 变好**。丢掉的那条正是 §10.1 里对权重单调的 `v11b3/group2/tight`:
+   9.79 → **10.86**(+1.07, 越过 10mm 门)。这是"为了少 7 个 REJECT 而赔掉全部达标轨迹"。
+   最差情况同时恶化到 30.48(`collective_batch4/group1/tight` 24.16 → 30.48, **+6.32**)。
+3. **姿态确实普遍变好, 但不是免费的**: 原先被 REJECT 的 7 项姿态显著下降
+   (2.62→1.99、3.09→2.19、2.58→1.90、2.41→1.98), 因为去掉 VINS 分支后姿态只由
+   视觉+IMU 决定; 但**原先 OK 的项姿态反而略升**(1.95→2.03、1.87→1.89、1.89→1.96)。
+   误差与姿态是两笔账, 不能互相顶替。
+
+**结论: 不采纳 B2。** 有效权重保持 0.25 + 自适应层。现役 A 组在 18 项上仍是唯一
+能出达标轨迹的配置; 9 个 REJECT 是"贵但值得"的代价, 不是 bug。
 
 ---
 
