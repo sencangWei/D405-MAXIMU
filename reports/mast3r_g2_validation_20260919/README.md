@@ -99,6 +99,27 @@ G2 把权重提到 0.25 ⇒ **真的开始用 VINS 分支** ⇒ 该分支不可�
 **融合不是瓶颈** —— 全 15 组里融合↔真值中位 RMSE **5.28 mm**,
 而它的两个输入 VINS **24.21 mm**、MASt3R **15.91 mm**。融合比两条输入链好 3–5 倍。
 
+### 5.1 后续又排除了两条"怪真值"的假说 (都不成立)
+
+**(8) 真值 freeze-then-catchup 伪影** —— [gt_freeze_scan.py](gt_freeze_scan.py)。
+真值确实有这种失效(12/15 组检出: 先卡住再超速补回来), 但**把检出的窗口全部剔除后,
+22 个候选里没有一个 max 由 FAIL 转 PASS**。再精确一步: 直接定位 ATE 的 argmax,
+看它落在哪 —— **22 个候选里只有 1 个**(`collective_batch4/group2/sparse`)的 max
+落在伪影窗内。⇒ 真值伪影是真的, 但不是失败的原因。
+(注: `batch3/group1` 的 max 落在爆发首帧 1082, 但那里的"冻结"只是相对下陷
+—— 局部中位速率本身仅 1.45mm/帧, 所以 `d < 0.5×med` 的判据抓不到它。)
+
+**(9) 真值自身的高频毛糙** —— [gt_roughness_vs_ate.py](gt_roughness_vs_ate.py)。
+对真值做 Savitzky-Golay 局部二次拟合(窗 15 帧, 保直线/匀加速), 残差即真值毛糙:
+
+```
+22 项: GT 毛糙 p95 中位 0.86mm   vs   ATE p95 中位 10.41mm   (相关仅 0.37)
+```
+
+**真值毛糙比 ATE 小一个数量级 ⇒ 10mm 门测的是真实轨迹误差, 不是真值噪声。**
+(改用平滑真值打分确有 3 项 max 转 PASS, 但平滑同时抹掉了真运动,
+估计轨迹本来就比真值平滑, 这么比是循环论证 —— 只作线索, 不作结论。)
+
 落在 VINS 上的证据:
 
 - 误差向量方向对齐(融合最差 50 样本): `cos(e_融合, e_VINS)` = 0.90/0.84/0.76/0.76/0.68,
@@ -113,9 +134,25 @@ G2 把权重提到 0.25 ⇒ **真的开始用 VINS 分支** ⇒ 该分支不可�
 **一条整体缩短 37% 的轨迹覆盖率满分、步长更小、Z 保持 1.0 —— 每一项都过。**
 于是 VINS 尺度崩到 0.627 仍报 `SLAM_HEALTHY / product_usable: true`。
 
-融合侧还有个连带问题 (`graph_fusion_report.json`): VINS 分歧大时, 策略反而把
-**视觉**的 sigma 从 0.02 放宽到 0.04 (reason `independent_onboard_trajectory_branch_disagreement`),
-而 VINS 自身 sigma 固定 0.008 (`--relative-motion-sigma-m 0.008`) —— **信错了人**。
+融合侧还有个可疑策略 (`select_visual_position_sigma`,
+`fuse_mast3r_stereo_imu.py:587`): VINS 与视觉分歧 p95 ≥ 50mm 时, 把
+**视觉**的 sigma 从 0.02 放宽到 0.04(即降低视觉权重), reason
+`independent_onboard_trajectory_branch_disagreement`; 而 VINS 自身 sigma 固定 0.008。
+
+**我曾猜这个触发量被 VINS 的尺度误差污染(无尺度对齐 ⇒ 缩短 37% 的 VINS 必然巨残差),
+但实测否掉了** —— [scale_confound_check.py](scale_confound_check.py):
+
+```
+触发(rigid_p95 ≥ 50mm)的 10 项:
+  扣掉尺度后残差中位: 90.4mm  (原 92.9mm)      ← 几乎不降
+  隐含尺度中位: 1.009  范围 [0.908, 1.592]     ← 典型触发项的尺度是正常的
+  batch5/group4: rigid 94.3 / sim 94.4, scale 0.999, 比 1.0   ← 纯形状分歧
+```
+
+⇒ **触发量是真实的形状分歧, 不是尺度假象。** 该策略"方向对不对"仍存疑
+(已证 MASt3R 15.91mm 优于 VINS 24.21mm, 分歧时降视觉权重与证据相反),
+但**不能拿尺度当理由**。仅 `collective_batch4/group1`(scale 1.592)与
+`v11b3/group2/tight`(scale 0.908, 比 1.4)两项里尺度确有可观贡献。
 
 ## 6. 数据卫生: 一组必须 REJECT 的历史产物
 
@@ -143,6 +180,10 @@ G2 把权重提到 0.25 ⇒ **真的开始用 VINS 分支** ⇒ 该分支不可�
 | [tail_shape.py](tail_shape.py) | 峰宽/峰位/加速度形状分析 |
 | [time_offset_scan.py](time_offset_scan.py) / .json | 估计↔真值时间偏置扫描 |
 | [vm_offset_scan.py](vm_offset_scan.py) | VINS↔MASt3R 相对错位扫描 |
+| [scale_confound_check.py](scale_confound_check.py) / .json | 检验质量门触发量是否被 VINS 尺度污染(**结果: 否**) |
+| [gt_freeze_scan.py](gt_freeze_scan.py) / .json | 真值 freeze-then-catchup 伪影检测(**结果: 不是失败原因**) |
+| [gt_roughness_vs_ate.py](gt_roughness_vs_ate.py) / .json | 真值毛糙度 vs ATE(**结果: 毛糙 0.86mm ≪ ATE 10.4mm**) |
+| [vins_weight_sweep.py](vins_weight_sweep.py) | VINS 分支取舍跨全组扫描(见 §10) |
 | [despike_test.py](despike_test.py) | 去尖峰+插值假说检验 |
 | `*_probe.py`, `f1.py`, `fps.py`, `cmp.py`, `crosscheck.py` | 排查过程中的一次性探针 |
 
