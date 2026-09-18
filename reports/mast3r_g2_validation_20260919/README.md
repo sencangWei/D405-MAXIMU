@@ -27,6 +27,11 @@ external_ground_truth_used: false
 被评轨迹见 [trajectory_passing/](trajectory_passing/)
 (`sha256 579c81e2c8cd0a5b84378e65d671a87154becb61174fa81657f16e97bd17c204`)。
 
+> **⚠ 余量很薄, 别当"稳过"读。** 两项卡在门边:
+> `max` 9.79 / 门 10.0(**余量 2.1%**), `姿态` 1.886 / 门 2.0(**余量 5.7%**)。
+> 另三项余量充裕(RMSE 4.11/门10, P95 6.52/门10, 10mm内 100%/门95%)。
+> 也就是说这条达标轨迹**离不过只差一点点**, 不是"已经解决"。
+
 ---
 
 ## 1. 为什么要做这次验证: 现成产物全是"上一代"
@@ -91,6 +96,36 @@ input_disagreement_p95_m:    0.05310    →  0.05304        (底层量几乎逐�
 G2 把权重提到 0.25 ⇒ **真的开始用 VINS 分支** ⇒ 该分支不可观测 ⇒ 被拒。
 
 **这不是"门变严了"**, 是 G2 更依赖 VINS 的直接后果。
+
+### 4.1 关键: 这些 REJECT **零代价** (所以"回退 local-weight 到 0"的理由不成立)
+
+门是个对称夹逼(`assess_mast3r_fusion_input_quality.py:84-92`)—— 分歧 ≥50mm 时:
+
+| 情形 | 判定 |
+|---|---|
+| 用了 onboard 分支 (weight > 0) | REJECT `..._branch_unobservable` |
+| 没用 (weight == 0) 且 stereo_rmse ≥ 3.5mm | REJECT `primary_shape_not_independently_supported` |
+| 没用 (weight == 0) 且 stereo_rmse < 3.5mm | PASS |
+
+生产 G1 走的是第三行(weight 0 + stereo 够好)⇒ PASS。但把被拒的 9 项拿回 G1 下打分:
+
+```
+G2 触发质量门 REJECT 的 9 项, 在 G1 下的成绩:
+  batch5/group2      sparse  G1 max 13.01 rmse 4.21   **本身就不达标**
+  batch5/group2      tight   G1 max 16.57 rmse 5.22   **本身就不达标**
+  batch5/group3      sparse  G1 max 22.07 rmse 5.93   **本身就不达标**
+  batch5/group3      tight   G1 max 20.11 rmse 7.35   **本身就不达标**
+  batch5/group4      sparse  G1 max 15.33 rmse 4.99   **本身就不达标**
+  batch5/group4      tight   G1 max 15.10 rmse 5.27   **本身就不达标**
+  collective_batch4/group1 sparse G1 max 18.67 rmse 5.76 **本身就不达标**
+  collective_batch4/group1 tight  G1 max 30.39 rmse 7.50 **本身就不达标**
+  collective_batch4/group2 sparse G1 max 15.48 rmse 5.80 **本身就不达标**
+
+其中 G1 下本来达标的: 0 / 9
+```
+
+⇒ **G2 的 REJECT 拒掉的全是本就不该出厂的产物**, 代价为零。
+"REJECT 变多了"不能当作回退 G2 的理由 —— 该问的是 ATE 有没有变好(见 §10)。
 
 ## 5. 根因: VINS 的度量尺度 (本次排查的核心发现)
 
@@ -209,7 +244,13 @@ $P g2_sweep.py
 - `--docker2-local-weight` 是否回到 0? G2 用 0.25 换来 1 条达标, 代价是 6 组质量门 REJECT。
   **这是策略取舍, 需用户决定**; 任何改动都必须按"不许为单条轨迹调参"的规矩在全组重验
   (复现台已具备这个能力)。
-- VINS 侧: 验收门缺尺度项 —— 建议加一条与外部/几何尺度无关的自洽检查
-  (如 stereo/IMU 尺度比) 进 `run_acceptance`, 否则尺度崩了仍是绿的。
+- **VINS 侧: 验收门缺尺度项** —— 建议加一条进 `run_acceptance`。
+  为什么现在漏得掉, 值得记一笔: 报告里与 VINS 有关的诊断量都是**短时相对运动**的
+  (`relative_motion_rmse_before_m` 1.7–6.2mm, `relative_motion_initial_disagreement_p95_m`
+  3.7–12.8mm, 全部远低于 50mm 门) —— **VINS 的短时相对运动拟合得很紧,
+  坏的是全局度量尺度**(可差 37%)。整条链路都在查相对运动, 没人拿全局尺度去比一个
+  度量源。而 `metric_scale_consistency` 只比 IMU↔双目(`relative_difference` 2.3%/门15%),
+  **完全不含 VINS**。
+  ⇒ 建议: 加一条 VINS 全局尺度 vs 双目米制尺度的自洽检查。
 - 融合侧: `visual_position_sigma` 在 VINS 分歧时放宽视觉权重, 方向可疑, 需单独验证。
 - 未做: 在用户新录数据上验证; 换干净回路数据集绕开 tracker 假象。
