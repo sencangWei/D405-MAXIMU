@@ -93,6 +93,25 @@ G2(现役): --joint-correction-cap-mode per-node, --adaptive-local-weight,
 **判断: G2 总体不比 G1 差, 且是唯一能出达标轨迹的一代。但这不是"调参调出来的好结果"——
 真正的瓶颈在下一条。**
 
+### 3.1 样本口径: "18 项"是**以 VINS 通过为条件**的子集 (必读)
+
+本文所有全组统计(§3/§10/§11 及后续扫描)的口径不是"全部已录数据", 而是
+**preflight 通过的那 18 项**。preflight 要求 `docker2_slam/vio_corrected_stream.csv`
+存在且 `run_acceptance.json: result == PASS`。被挡掉的是整批
+`20260914_validation_v10_holdout_batch2` (4 项), 原因是 **VINS/Docker2 上游自己没过门**:
+
+| 组 | 挡掉的原因 |
+|---|---|
+| `holdout_batch2/group1` | `result: FAIL`, failures = `runtime watchdog is SLAM_FAILED: corrected_trajectory_jump` + `pose coverage 0.9590 < 0.9800` |
+| `holdout_batch2/group2` | 连 `docker2_slam/` 目录都没有 —— VINS 侧根本没产出 |
+
+两点必须记住:
+
+1. **扫描结论对"VINS 已通过"这一前提是条件性的。** 对 VINS 自己就失败的会话,
+   融合尾段的任何参数都不适用 —— 那不是尾段能修的问题(呼应 §12)。
+2. 因此**不要**把 §3 的 "G2 达标 1/18" 读成"全库达标率 1/22"。分母不同,
+   后者还包含 4 项在更上游就已失败的会话。
+
 ## 4. 关键机制: G2 触发输入质量门 REJECT (9 项)
 
 同一份底层数据, 生产报告 PASS、现役代码 REJECT:
@@ -417,5 +436,26 @@ B 只是把中位数磨平了一点点(14.41 vs 14.57) —— 典型的"用尾�
   度量源。而 `metric_scale_consistency` 只比 IMU↔双目(`relative_difference` 2.3%/门15%),
   **完全不含 VINS**。
   ⇒ 建议: 加一条 VINS 全局尺度 vs 双目米制尺度的自洽检查。
-- 融合侧: `visual_position_sigma` 在 VINS 分歧时放宽视觉权重, 方向可疑, 需单独验证。
+
+  **补强证据(2026-09-19 复核 `graph_fusion_report.json`)**: 现有尺度检查
+  `metric_scale_consistency` 比的 `imu_scale` 与 `stereo_scale` 是**同一条米制链**的两种
+  估计(都以 MASt3R 单位为单位), 二者几乎完全一致 ——
+
+  | 口径 | n | 相对差中位 | 相对差最大 | 超门(0.15) | imu/stereo 比值范围 |
+  |---|---|---|---|---|---|
+  | 18 项扫描样本内 | 18 | 0.024 | 0.062 | **0/18** | 0.944 ~ 1.065 |
+  | 全部有报告的 | 22 | 0.024 | 0.093 | **0/22** | 0.911 ~ 1.065 |
+
+  (两行都给, 因为 §3.1 的 18 项口径不含 `holdout_batch2`; 两行结论相同。)
+
+  也就是说 **IMU 与双目在尺度上互相印证得很牢** —— 它们俩谁都不飘, 飘的是
+  **VINS/Docker2 那条独立的相对链**。真正跨度大的量是 MASt3R 单位本身
+  (0.302→0.690, 极差/中位 0.89), 但那只是"单位换算", 不影响几何。
+  ⇒ 建议加的那条检查, 比对对象应当是
+  **VINS 全局尺度 ↔ 上述已自洽的 IMU/双目米制尺度**, 而不是再在 IMU↔双目内部加码。
+- ~~融合侧: `visual_position_sigma` 在 VINS 分歧时放宽视觉权重, 方向可疑, 需单独验证。~~
+  **已结案(§11 配置 E)**: 实测关掉它反而更差(max 最差 24.16→24.56) ⇒ 该策略有效,
+  我原先的"方向可疑"判断是错的, 已就地更正(见 §5 末尾的反悔块)。
+- **`--auto-docker2-scale-weight` 未测**(代码里有、现网没启用): 它把"借 VINS 尺度"
+  从无条件改成条件式。见 §13。
 - 未做: 在用户新录数据上验证; 换干净回路数据集绕开 tracker 假象。

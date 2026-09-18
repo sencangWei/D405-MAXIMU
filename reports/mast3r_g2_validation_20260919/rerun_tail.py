@@ -34,6 +34,7 @@ DEFAULTS = dict(
 FLAGS = dict(  # 布尔开关: 默认开
     auto_visual_position_sigma=True, full_rate_imu_position_refinement=True,
     adaptive_local_weight=True, use_docker2_orientation_for_lever_arm=True,
+    auto_docker2_scale_weight=False,   # 条件化尺度投票, 现网未启用 ⇒ 默认关
 )
 
 
@@ -47,6 +48,8 @@ def build(group: Path, out: Path, ov: dict, sub: str = "sparse"):
         k2 = k.replace("-", "_")
         if k2.startswith("no_"):
             fl[k2[3:]] = False
+        elif k2 in fl:                           # 允许 --set X=1 打开默认关的开关
+            fl[k2] = str(v) not in {"", "0", "false", "False", "no"}
     mo = out / sub / "mast3r"
     o = out / sub
     mo.mkdir(parents=True, exist_ok=True)
@@ -99,7 +102,9 @@ def build(group: Path, out: Path, ov: dict, sub: str = "sparse"):
           "--report", str(o / "fusion_report.json")]
     for f, ok in (("--adaptive-local-weight", fl["adaptive_local_weight"]),
                   ("--use-docker2-orientation-for-lever-arm",
-                   fl["use_docker2_orientation_for_lever_arm"])):
+                   fl["use_docker2_orientation_for_lever_arm"]),
+                  ("--auto-docker2-scale-weight",
+                   fl["auto_docker2_scale_weight"])):
         if ok:
             c2.append(f)
 
