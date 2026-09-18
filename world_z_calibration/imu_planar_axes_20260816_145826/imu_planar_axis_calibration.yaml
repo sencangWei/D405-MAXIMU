@@ -1,0 +1,272 @@
+format_version: 1
+calibration_id: imu_planar_axes_20260816_145826
+generated_at: '2026-08-16T14:58:26+08:00'
+type: imu_planar_motion_axis_alignment
+result: PASS
+known_constraints:
+- rig attitude fixed
+- true vertical acceleration is zero
+- labelled X and Z translations are horizontal and perpendicular
+source:
+  device_config: /home/robot/ego_vio_humble/config/devices_ubuntu.yaml
+  imu_intrinsic: /home/robot/桌面/ego_vio_calib_kit/imu_manual_calibration/intrinsic_20260803_000908/calibration_candidate.yaml
+  raw_data: /home/robot/桌面/ego_vio_calib_kit/world_z_calibration/imu_planar_axes_20260816_145826/raw_imu_planar_axes.npz
+application:
+  accelerometer: a_level = R_level_from_imu @ (M_accel @ a_raw + offset_g)
+  gyroscope: w_level = R_level_from_imu @ (w_raw - gyro_bias)
+  world_z: up; static specific force points toward -Z
+R_level_from_imu:
+- - 0.9999713771505678
+  - -0.007564128075427842
+  - 0.00016984126529698124
+- - -0.00016984126529698124
+  - -0.04488375925823483
+  - -0.9989922018258168
+- - 0.007564128075427842
+  - 0.9989635789763847
+  - -0.04488375925823483
+R_level_from_imu_opencv:
+  rows: 3
+  cols: 3
+  dt: d
+  data:
+  - 0.9999713771505678
+  - -0.007564128075427842
+  - 0.00016984126529698124
+  - -0.00016984126529698124
+  - -0.04488375925823483
+  - -0.9989922018258168
+  - 0.007564128075427842
+  - 0.9989635789763847
+  - -0.04488375925823483
+q_level_from_imu_xyzw:
+- 0.7227964609188118
+- -0.002675016328557249
+- 0.002675016328557249
+- 0.6910506238030066
+measurement:
+  segments:
+    static:
+      samples: 2080
+      duration_s: 5.197809695499018
+      rate_hz: 399.97616723064823
+    x_motion:
+      samples: 12848
+      duration_s: 32.11897202313412
+      rate_hz: 399.9816678674142
+    z_motion:
+      samples: 13585
+      duration_s: 33.96149849030189
+      rate_hz: 399.9823507163287
+  x_direction_imu:
+  - 0.983815937257008
+  - 0.0006012314166446987
+  - 0.17918102611576578
+  z_direction_imu:
+  - -0.012302213127820791
+  - 0.044974610864810464
+  - 0.9989123785045997
+  static_specific_force_imu:
+  - -0.01719898847216045
+  - -0.9988070131800665
+  - 0.04570279223252064
+  motion_specific_force_imu:
+  - -0.007564128075427842
+  - -0.9989635789763847
+  - 0.04488375925823483
+  axes_angle_deg: 80.39178756487851
+  vertical_disagreement_deg: 0.5541025978940273
+  x_principal_ratio: 0.8421018453001822
+  z_principal_ratio: 0.7875965068526606
+  x_motion_rms_g: 0.0332154391478917
+  z_motion_rms_g: 0.039106464384592074
+  fit_gyro_threshold_deg_s: 5.0
+  x_gyro_gated_fraction: 0.7472758405977584
+  z_gyro_gated_fraction: 0.7860875966139124
+  x_gyro_norm_p95_deg_s: 15.984786555872155
+  z_gyro_norm_p95_deg_s: 9.721732491046728
+  tilt_correction_deg: 2.608814824645806
+  difference_from_nominal_deg: 2.608814824645806
+  difference_from_current_pipeline_deg: 1.459092182470172
+reader_formal_window:
+  frames_ok: 49282
+  frames_bad: 0
+  resyncs: 0
+  dropped_frames: 0
+  counter_resets: 0
+  counter_stalls: 0
+  serial_errors: 0
+  serial_reconnects: 0
+  serial_connected: true
+  rate_hz: 400.03064729611225
+  dt_min_ms: 2.108490909449756
+  dt_max_ms: 2.808322082273662
+  dt_jitter_ms: 0.699831172823906
+quality_thresholds:
+  min_static_s: 5.0
+  min_motion_s: 8.0
+  min_static_samples: 1800
+  min_motion_samples: 3000
+  min_rate_hz: 399.0
+  max_rate_hz: 401.0
+  max_static_accel_std_g: 0.003
+  max_static_gyro_std_deg_s: 0.15
+  min_static_accel_norm_g: 0.98
+  max_static_accel_norm_g: 1.02
+  min_motion_rms_g: 0.01
+  min_principal_ratio: 0.6
+  min_axes_angle_deg: 75.0
+  max_axes_angle_deg: 105.0
+  max_fit_gyro_deg_s: 5.0
+  min_gyro_gated_fraction: 0.5
+  max_vertical_disagreement_deg: 5.0
+  max_counter_drop_events: 0
+  max_counter_resets: 0
+  max_serial_errors: 0
+quality:
+  result: PASS
+  checks:
+    static_duration_s:
+      value: 5.197809695499018
+      limit: 5.0
+      relation: '>='
+      pass: true
+    x_duration_s:
+      value: 32.11897202313412
+      limit: 8.0
+      relation: '>='
+      pass: true
+    z_duration_s:
+      value: 33.96149849030189
+      limit: 8.0
+      relation: '>='
+      pass: true
+    static_samples:
+      value: 2080.0
+      limit: 1800.0
+      relation: '>='
+      pass: true
+    x_samples:
+      value: 12848.0
+      limit: 3000.0
+      relation: '>='
+      pass: true
+    z_samples:
+      value: 13585.0
+      limit: 3000.0
+      relation: '>='
+      pass: true
+    static_rate_min_hz:
+      value: 399.97616723064823
+      limit: 399.0
+      relation: '>='
+      pass: true
+    static_rate_max_hz:
+      value: 399.97616723064823
+      limit: 401.0
+      relation: <=
+      pass: true
+    x_motion_rate_min_hz:
+      value: 399.9816678674142
+      limit: 399.0
+      relation: '>='
+      pass: true
+    x_motion_rate_max_hz:
+      value: 399.9816678674142
+      limit: 401.0
+      relation: <=
+      pass: true
+    z_motion_rate_min_hz:
+      value: 399.9823507163287
+      limit: 399.0
+      relation: '>='
+      pass: true
+    z_motion_rate_max_hz:
+      value: 399.9823507163287
+      limit: 401.0
+      relation: <=
+      pass: true
+    static_accel_std_g:
+      value: 0.0010894839783097425
+      limit: 0.003
+      relation: <=
+      pass: true
+    static_gyro_std_deg_s:
+      value: 0.07384503448514039
+      limit: 0.15
+      relation: <=
+      pass: true
+    static_accel_norm_min_g:
+      value: 1.0001502572253542
+      limit: 0.98
+      relation: '>='
+      pass: true
+    static_accel_norm_max_g:
+      value: 1.0001502572253542
+      limit: 1.02
+      relation: <=
+      pass: true
+    x_motion_rms_g:
+      value: 0.0332154391478917
+      limit: 0.01
+      relation: '>='
+      pass: true
+    z_motion_rms_g:
+      value: 0.039106464384592074
+      limit: 0.01
+      relation: '>='
+      pass: true
+    x_principal_ratio:
+      value: 0.8421018453001822
+      limit: 0.6
+      relation: '>='
+      pass: true
+    z_principal_ratio:
+      value: 0.7875965068526606
+      limit: 0.6
+      relation: '>='
+      pass: true
+    axes_angle_min_deg:
+      value: 80.39178756487851
+      limit: 75.0
+      relation: '>='
+      pass: true
+    axes_angle_max_deg:
+      value: 80.39178756487851
+      limit: 105.0
+      relation: <=
+      pass: true
+    x_gyro_gated_fraction:
+      value: 0.7472758405977584
+      limit: 0.5
+      relation: '>='
+      pass: true
+    z_gyro_gated_fraction:
+      value: 0.7860875966139124
+      limit: 0.5
+      relation: '>='
+      pass: true
+    vertical_disagreement_deg:
+      value: 0.5541025978940273
+      limit: 5.0
+      relation: <=
+      pass: true
+    counter_drop_events:
+      value: 0.0
+      limit: 0.0
+      relation: <=
+      pass: true
+    counter_resets:
+      value: 0.0
+      limit: 0.0
+      relation: <=
+      pass: true
+    serial_errors:
+      value: 0.0
+      limit: 0.0
+      relation: <=
+      pass: true
+  failed_checks: []
+activation:
+  automatically_enabled: false
+  reason: 通过后与相机-IMU外参的约90度轴变换成对组合，再用水平和真实升降数据A/B。
