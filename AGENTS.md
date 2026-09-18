@@ -6,9 +6,10 @@
 D405 相机 + KT-EX9-2 IMU(400Hz)的标定工具包: IMU 内参/零偏、IMU-相机外参与时间偏移(Kalibr)、采集与分析脚本。
 
 ## 关键事实(勿重复踩)
-- **08-08 Kalibr 结果是时间偏移权威值**: `td = -0.0117s`(T_cam_imu 旋转 1.41°)。它被 bake 进 VINS 配置(`estimate_td:0` + `td=-0.0117`)和 ORB 回放(`--imu-shift-ms 11.7`)。
+- **Docker2 数据必须使用 Docker2 正式配置**: `estimate_td: 0`、`td = -0.009109323s`，配置源为 `umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml`，回放必须 `--imu-shift-ms 0`，不得再套用 `-0.0117s`。
+- `td = -0.0117s` 是非 Docker2 的旧通用标定记录；只允许用于明确指定该标定版本的数据，不能用于 Docker2 采集或报告。
 - **陈旧 7.36ms(08-04 标定)已废弃**: 用它 + 在线估计 = 双重补偿 → 发散 846m。看到任何脚本/配置里还有 7.36 就是过时值。
-- D405 硬件关键事实: RGB↔左IR 基线 ≈0.01mm(伪双目退化),双IR 基线 ≈10mm,Depth 单位 0.0001m。见 humble 的 AGENTS.md。
+- D405 硬件关键事实: RGB↔左IR 平移约0.017mm(几乎共光心，不可当双目),本机双IR出厂基线 18.083254mm,Depth 单位 0.0001m。见 humble 的 AGENTS.md。
 
 ## SLAM 主工作区(接任务去这里)
 VINS/ORB 的采集、回放、验证、精度工程全部在 `/home/robot/ego_vio_humble/`(有完整 AGENTS.md,含命令、铁律、已知 bug)。本仓库只做标定分析,SLAM 任务不要在这边做。
