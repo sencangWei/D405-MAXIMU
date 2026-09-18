@@ -1,0 +1,24 @@
+inherit: "config/base.yaml"
+
+# Keep the validated motion-keyframe policy. Apply the calibrated 400 Hz IMU
+# rotation prior early enough that turn-induced attitude error cannot deform the
+# visual pointmap before the offline backend runs.
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  imu_rotation_prior: True
+  imu_rotation_constraint_weight: 0.9
+  imu_rotation_constraint_gate_deg: 0.1
+  motion_keyframe_translation: 0.30
+  motion_keyframe_rotation_deg: 8.0
+
+retrieval:
+  confirmation_frames: 2
+  confirmation_immediate_frame_gap: 150
+  confirmation_frame_id_radius: 60
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 24

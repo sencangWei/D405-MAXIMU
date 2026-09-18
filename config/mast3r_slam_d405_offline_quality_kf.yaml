@@ -1,0 +1,7 @@
+inherit: "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml"
+
+# Appearance-quality keyframes: advance the keyframe before the current
+# reference loses enough learned correspondences to create a long weak span.
+# This remains UMI-only and does not use external evaluation trajectories.
+tracking:
+  match_frac_thresh: 0.40

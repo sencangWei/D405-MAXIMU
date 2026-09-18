@@ -161,9 +161,11 @@ class SlamRuntimeWatchdog:
         ]
         now = max(arrivals) if len(arrivals) == len(self.streams) else time.monotonic()
         self._evaluate_pending_corrected_steps(force=True)
-        return self.snapshot(now)
+        return self.snapshot(now, check_staleness=False)
 
-    def snapshot(self, now_monotonic_s: float) -> dict:
+    def snapshot(
+        self, now_monotonic_s: float, *, check_staleness: bool = True
+    ) -> dict:
         elapsed_s = max(0.0, now_monotonic_s - self.start_monotonic_s)
         runtime_failures = list(self.latched_failures)
         missing_streams = [
@@ -183,12 +185,14 @@ class SlamRuntimeWatchdog:
                 f"{stream}_stream_missing" for stream in missing_streams
             )
         else:
-            for name, state in self.streams.items():
-                if (
-                    state.last_arrival_s is not None
-                    and now_monotonic_s - state.last_arrival_s > self.stale_timeout_s
-                ):
-                    runtime_failures.append(f"{name}_stream_stale")
+            if check_staleness:
+                for name, state in self.streams.items():
+                    if (
+                        state.last_arrival_s is not None
+                        and now_monotonic_s - state.last_arrival_s
+                        > self.stale_timeout_s
+                    ):
+                        runtime_failures.append(f"{name}_stream_stale")
             timestamps = [
                 state.last_timestamp_s for state in self.streams.values()
             ]

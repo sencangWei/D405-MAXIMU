@@ -1,0 +1,54 @@
+inherit: "config/base.yaml"
+
+# Deterministic offline visual-inertial frontend. Robot and Lighthouse
+# trajectories are evaluation-only and are never consumed by MASt3R-SLAM.
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  # The workflow generates this prior from the fixed Docker2 calibration and
+  # the onboard 400 Hz IMU. It initializes every visual frame and softly limits
+  # only rotation estimates that disagree by more than the sensor-noise gate.
+  imu_rotation_prior: True
+  imu_rotation_constraint_weight: 0.6
+  imu_rotation_constraint_gate_deg: 0.5
+  # Experimental backend input remains disabled in the frozen production
+  # baseline until bad/good protection A/B passes.
+  stereo_pointmap_scale_prior: False
+  stereo_fix_pose_scale: False
+  stereo_pointmap_depth_anchor: False
+  stereo_preserve_keyframe_pointmap: False
+  stereo_keyframe_pnp: False
+  stereo_keyframe_pnp_min_points: 100
+  stereo_keyframe_pnp_min_inlier_ratio: 0.4
+  stereo_keyframe_pnp_reprojection_error_px: 2.0
+  stereo_keyframe_pnp_max_points: 5000
+  stereo_keyframe_pnp_lookback: 1
+  stereo_keyframe_pnp_max_visual_disagreement_m: 0.05
+  stereo_keyframe_pnp_max_visual_disagreement_deg: 5.0
+  stereo_keyframe_3d_translation_refine: False
+  stereo_keyframe_3d_min_points: 100
+  stereo_keyframe_3d_min_inlier_ratio: 0.3
+  stereo_keyframe_3d_max_residual_m: 0.02
+  stereo_scale_min_points: 500
+  stereo_scale_min_depth_m: 0.15
+  stereo_scale_max_depth_m: 0.65
+  stereo_scale_min_confidence: 1.5
+  stereo_scale_max_relative_jump: 0.25
+  stereo_depth_anchor_max_relative_residual: 0.5
+
+# Local retrieval factors preserve normal pose-graph connectivity.  A distant
+# factor must identify the same scene cluster in two consecutive queries before
+# it may deform the offline pose graph.
+retrieval:
+  confirmation_frames: 2
+  # Source-frame units make the gate independent of motion-dependent keyframe density.
+  confirmation_immediate_frame_gap: 150  # 5 s at 30 Hz
+  confirmation_frame_id_radius: 60       # same scene within 2 s
+  # Dense keyframes provide enough adjacent geometric evidence for scene-cluster
+  # confirmation. Sparse keyframes fall back to exact repeated retrieval.
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 24           # 0.8 s at 30 Hz

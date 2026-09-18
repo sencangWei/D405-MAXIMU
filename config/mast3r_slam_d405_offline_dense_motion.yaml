@@ -1,0 +1,9 @@
+inherit: "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml"
+
+# Preserve the normal appearance-based keyframe trigger, but prevent fast
+# rotations from being represented by a long chain of ordinary tracking poses.
+# All triggers use only the onboard visual trajectory and 400 Hz IMU prior.
+tracking:
+  motion_keyframe_rotation_deg: 2.0
+  motion_keyframe_max_gap_frames: 30
+  motion_keyframe_aged_translation: 0.01

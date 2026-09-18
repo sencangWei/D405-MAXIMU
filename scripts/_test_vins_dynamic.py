@@ -14,7 +14,8 @@ from nav_msgs.msg import Odometry
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = os.environ.get("VINS_CONFIG",
-    "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/d405_stereo_imu_config.yaml")
+    "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/"
+    "formal_runtime_calibration/vins_config.yaml")
 OUT = os.environ.get("VINS_OUT", "/tmp/vins_test_odom.csv")
 VINS_LOG = os.environ.get("VINS_LOG", "/tmp/vins_t.log")
 REPLAY_LOG = os.environ.get("REPLAY_LOG", "/tmp/replay_t.log")
@@ -52,7 +53,7 @@ def main():
     node.create_subscription(Odometry, "/odometry", cb, 100)
 
     # 回放 (子进程)
-    # shift 默认 0: 与配置固定 td=-0.0117 (08-08 Kalibr) 配对, 回放不再改 IMU 时间戳。
+    # Docker2 shift 固定为 0: 时间偏移仅由正式配置 td=-0.009109323 补偿。
     # 旧默认 7.36 (08-04 陈旧标定) + 固定 td 会双重补偿 → 发散 (见 dual-ir-divergence-rootcause)。
     replay_log = open(REPLAY_LOG, "w")
     replay_command = [

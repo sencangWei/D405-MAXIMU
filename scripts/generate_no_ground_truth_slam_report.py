@@ -7,6 +7,7 @@ import argparse
 import csv
 import json
 import math
+import re
 import shutil
 from pathlib import Path
 
@@ -91,6 +92,17 @@ def format_vector(values: list[float], digits: int = 2) -> str:
     return " / ".join(f"{value:.{digits}f}" for value in values)
 
 
+def load_candidate_time_offset(candidate: Path) -> tuple[Path | None, float | None]:
+    config = candidate.parent / "vins_auto_loop_config.yaml"
+    if not config.is_file():
+        return None, None
+    match = re.search(
+        r"(?m)^\s*td:\s*([-+0-9.eE]+)\s*$",
+        config.read_text(encoding="utf-8"),
+    )
+    return config.resolve(), float(match.group(1)) if match else None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--session", type=Path, required=True)
@@ -106,6 +118,7 @@ def main() -> int:
     acceptance = json.loads((args.session / "acceptance.json").read_text())
     baseline_time, baseline_points = load_trajectory(args.baseline)
     candidate_time, candidate_points = load_trajectory(args.candidate)
+    candidate_config, candidate_td_s = load_candidate_time_offset(args.candidate)
     baseline = trajectory_metrics(baseline_time, baseline_points, args.dwell_s)
     candidate = trajectory_metrics(candidate_time, candidate_points, args.dwell_s)
     synchronization = sync_metrics(args.session / "d405_frames.csv")
@@ -125,6 +138,10 @@ def main() -> int:
         "absolute_accuracy_status": "NOT_MEASURED",
         "reason": "未提供测量尺逐点轨迹、动捕、全站仪或标定靶真值",
         "session": str(args.session),
+        "candidate_vins_config": (
+            str(candidate_config) if candidate_config is not None else None
+        ),
+        "candidate_camera_imu_td_s": candidate_td_s,
         "capture": acceptance,
         "synchronization": synchronization,
         "baseline": baseline,
@@ -181,6 +198,12 @@ def main() -> int:
 
     camera = acceptance["camera"]["db3_streams"]
     imu = acceptance["imu"]
+    candidate_td_label = (
+        f"{candidate_td_s:.9f} s" if candidate_td_s is not None else "未记录"
+    )
+    candidate_config_label = (
+        str(candidate_config) if candidate_config is not None else "未找到相邻运行配置"
+    )
     report = f"""# D405 + KT-EX9-2 SLAM 精度与一致性报告
 
 ## 结论
@@ -196,7 +219,7 @@ def main() -> int:
 - 数据会话：`{args.session.name}`
 - 分辨率与频率：1280×720@30 fps，外置IMU 400 Hz
 - 视觉输入：D405左/右红外双目；彩色流同步落盘但不进入本次VINS估计
-- VIO：VINS-Fusion双目惯性，固定08-08外参与 `td=-0.0117 s`
+- VIO：VINS-Fusion双目惯性；本次运行配置 `{candidate_config_label}`，实际 `td={candidate_td_label}`
 - 用户提供的唯一验收事实：终点与起点接近但并非完全重合；算法没有接收该事实作为约束
 
 ## 采集质量

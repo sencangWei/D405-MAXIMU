@@ -1,0 +1,7 @@
+inherit: "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline_stereo_pointmap_pnp_retrieval_probe.yaml"
+
+# The synchronized D405 stereo depth is already embedded in preserved
+# keyframe pointmaps. Keep the existing retrieval graph, but stop treating the
+# metric depth residual as an effectively unconstrained 10 m quantity.
+local_opt:
+  sigma_depth: 0.05

@@ -1,0 +1,11 @@
+inherit: "config/base.yaml"
+
+# Restored-original v1 frontend: pristine upstream MASt3R-SLAM (e6f4e3d)
+# behavior, i.e. the state before motion-keyframes / IMU-rotation-prior /
+# stereo-pointmap experiments entered the tool directory. Only the minimal
+# D405 offline settings are kept. Robot/Lighthouse trajectories are
+# evaluation-only and are never consumed here.
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1

@@ -38,8 +38,8 @@ from slam_runtime_watchdog import SlamRuntimeWatchdog
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path(
-    "/home/robot/ros2_ws/src/vins_fusion_ros2/config/d405_stereo_imu/"
-    "d405_stereo_imu_config.yaml"
+    "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/"
+    "formal_runtime_calibration/vins_config.yaml"
 )
 VINS_EXECUTABLE = Path(
     "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/"
@@ -115,6 +115,7 @@ def run_provenance(
     loop_executable: Path = LOOP_EXECUTABLE,
     replay_executable: Path | None = None,
     imu_accel_calibration: Path | None = None,
+    learned_loop_matches: Path | None = None,
 ) -> dict[str, object]:
     files = {
         "runner": Path(__file__).resolve(),
@@ -130,6 +131,8 @@ def run_provenance(
         ).resolve()
     if imu_accel_calibration is not None:
         files["imu_accel_calibration"] = imu_accel_calibration.resolve()
+    if learned_loop_matches is not None:
+        files["learned_loop_matches"] = learned_loop_matches.resolve()
     acceptance = session.resolve() / "acceptance.json"
     if acceptance.is_file():
         files["capture_acceptance"] = acceptance
@@ -147,7 +150,7 @@ def run_provenance(
         "git_revisions": {
             "ego_vio_humble": git_revision(ROOT),
             "vins_fusion_ros2": git_revision(
-                Path("/home/robot/ros2_ws/src/vins_fusion_ros2")
+                ROOT / "components" / "vins_fusion_ros2"
             ),
         },
         "source_db3_hashed": False,
@@ -424,6 +427,11 @@ def main() -> int:
         default=LOOP_EXECUTABLE,
         help="显式指定回环节点二进制，支持不覆盖稳定安装的隔离A/B验证",
     )
+    parser.add_argument(
+        "--learned-loop-matches",
+        type=Path,
+        help="可选：MASt3R生成的回环像素对应CSV；只作为候选/匹配观测，仍由VINS PnP和双IR几何验真",
+    )
     parser.add_argument("--timeout-s", type=float, default=420.0)
     parser.add_argument("--drain-timeout-s", type=float, default=180.0)
     parser.add_argument("--duration-s", type=float, default=0.0)
@@ -464,7 +472,10 @@ def main() -> int:
     ]
     if environment_failures:
         run_acceptance = {
+            "schema": "umi_docker2_run_acceptance_v1",
             "result": "FAIL",
+            "slam_supervision": False,
+            "external_ground_truth_used": False,
             "failure_scope": "INFRASTRUCTURE",
             "runtime_error": "benchmark environment preflight failed",
             "ros_domain_id": args.ros_domain_id,
@@ -486,16 +497,35 @@ def main() -> int:
     (loop_output / "pose_graph").mkdir(exist_ok=True)
 
     config_text = args.config.read_text(encoding="utf-8")
-    config_text = config_text.replace(
-        'output_path: "/home/robot/vins_output/"',
+    # Keep every replay hermetic, including product configs whose paths live
+    # under /data/runtime rather than the historical /home/robot/vins_output.
+    # Only anchored YAML keys are rewritten; calibration and algorithm values
+    # remain byte-for-byte identical to the requested input config.
+    config_text = re.sub(
+        r'(?m)^output_path:\s*"[^"]*"\s*$',
         f'output_path: "{loop_output}/"',
-    ).replace(
-        'pose_graph_save_path: "/home/robot/vins_output/pose_graph/"',
-        f'pose_graph_save_path: "{loop_output}/pose_graph/"',
-    ).replace(
-        "save_image: 0",
-        "save_image: 1",
+        config_text,
+        count=1,
     )
+    config_text = re.sub(
+        r'(?m)^pose_graph_save_path:\s*"[^"]*"\s*$',
+        f'pose_graph_save_path: "{loop_output}/pose_graph/"',
+        config_text,
+        count=1,
+    )
+    config_text = re.sub(r"(?m)^save_image:\s*0\s*$", "save_image: 1", config_text, count=1)
+    if args.learned_loop_matches is not None:
+        learned_matches = args.learned_loop_matches.resolve()
+        if not learned_matches.is_file():
+            raise FileNotFoundError(
+                f"learned loop match CSV does not exist: {learned_matches}"
+            )
+        config_text += (
+            f'\nlearned_loop_matches_path: "{learned_matches}"\n'
+            "learned_loop_timestamp_tolerance_s: 0.020\n"
+            "learned_loop_max_track_association_px: 4.0\n"
+            "learned_loop_min_matches: 20\n"
+        )
     run_config = args.out_dir / "vins_auto_loop_config.yaml"
     run_config.write_text(config_text, encoding="utf-8")
     calibration_paths: dict[str, Path] = {}
@@ -516,6 +546,7 @@ def main() -> int:
         loop_executable=args.loop_executable,
         replay_executable=args.replay_executable,
         imu_accel_calibration=args.imu_accel_calibration,
+        learned_loop_matches=args.learned_loop_matches,
     )
     camera_frames, camera_frame_count_source = camera_frame_count(
         args.session, args.image_db3
@@ -793,7 +824,10 @@ def main() -> int:
                 f"true-elevation retention {z_retention_ratio:.3f} < 0.900"
             )
     run_acceptance = {
+        "schema": "umi_docker2_run_acceptance_v1",
         "result": "PASS" if return_code == 0 and not failures else "FAIL",
+        "slam_supervision": False,
+        "external_ground_truth_used": False,
         "failure_scope": classify_run_scope(
             runtime_error, camera_frames, len(corrected_rows)
         ),
@@ -804,6 +838,10 @@ def main() -> int:
         "benchmark_environment": benchmark_environment,
         "provenance": provenance,
         "session": str(args.session.resolve()),
+        "raw_trajectory": str((args.out_dir / "vio_raw.csv").resolve()),
+        "corrected_trajectory": str(
+            (args.out_dir / "vio_corrected_stream.csv").resolve()
+        ),
         "replay_rate": args.rate,
         "replay_backend": args.replay_backend,
         "imu_accel_calibration": accel_calibration,

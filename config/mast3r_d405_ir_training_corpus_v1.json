@@ -1,0 +1,62 @@
+{
+  "schema": "umi_mast3r_d405_ir_training_corpus_v1",
+  "purpose": "lighthouse_free_d405_ir_domain_adaptation",
+  "truth_policy": {
+    "source": "d405_stereo_ir_and_onboard_imu_only",
+    "never_input_to_slam": true,
+    "external_ground_truth_for_training": false,
+    "final_acceptance_requires_new_unseen_captures": true
+  },
+  "cross_validation": {
+    "method": "capture_level_holdout",
+    "fold_count": 5,
+    "per_session_parameter_overrides_forbidden": true
+  },
+  "datasets": [
+    {
+      "id": "d405_20260908_151750",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_151750"
+    },
+    {
+      "id": "d405_20260908_222718",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_222718"
+    },
+    {
+      "id": "d405_20260913_123725",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260913_123725"
+    },
+    {
+      "id": "d405_20260915_001045",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_001045"
+    },
+    {
+      "id": "d405_20260915_001258",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_001258"
+    },
+    {
+      "id": "d405_20260915_103600",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_103600"
+    },
+    {
+      "id": "d405_20260915_123605",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_123605"
+    },
+    {
+      "id": "d405_20260915_123930",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_123930"
+    },
+    {
+      "id": "d405_20260915_124730",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_124730"
+    }
+  ]
+}

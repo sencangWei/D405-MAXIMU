@@ -1,0 +1,10 @@
+inherit: "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline_stereo_pointmap_probe.yaml"
+
+# Experimental metric frontend with long-range image retrieval enabled.
+# Keep the two-sided stereo 3D translation refinement disabled: the D405
+# short baseline made its depth noise slightly worse than the guarded PnP pose.
+tracking:
+  stereo_keyframe_3d_translation_refine: False
+
+retrieval:
+  enabled: True

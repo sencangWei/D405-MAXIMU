@@ -1,0 +1,23 @@
+inherit: "config/base.yaml"
+
+# Dense-keyframe candidate for fast handheld turns. External reference
+# trajectories are evaluation-only and are never consumed by MASt3R-SLAM.
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  imu_rotation_prior: True
+  imu_rotation_constraint_weight: 0.6
+  imu_rotation_constraint_gate_deg: 0.5
+  # The default 0.333 left 1.2-1.8 s keyframe gaps during fast turns.
+  match_frac_thresh: 0.50
+
+retrieval:
+  confirmation_frames: 2
+  confirmation_immediate_frame_gap: 150
+  confirmation_frame_id_radius: 60
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 24

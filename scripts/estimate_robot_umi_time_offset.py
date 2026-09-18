@@ -159,7 +159,26 @@ def main() -> int:
     parser.add_argument("--search-max-ms", type=float, default=500.0)
     args = parser.parse_args()
     umi_t, umi_p = load_umi_positions(args.umi)
-    robot_t, robot_T, _ = _MODULE.load_robot(args.robot.resolve())
+    loaded_robot = _MODULE.load_robot(args.robot.resolve())
+    robot_t, robot_T, _, robot_time = loaded_robot
+    if robot_time.get("uses_event_time"):
+        result = {
+            "schema": "robot_umi_clock_offset_report_v1",
+            "robot_query_offset_ms": 0.0,
+            "method": "shared host epoch from SocketCAN kernel feedback events",
+            "uses_endpoint_constraint": False,
+            "uses_handeye_constraint": False,
+            "robot_timestamp_source": robot_time["timestamp_source"],
+            "robot_timestamp_semantics": robot_time["semantics"],
+            "warning": None,
+        }
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(
+            json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
     result = estimate_offset(
         umi_t,
         umi_p,

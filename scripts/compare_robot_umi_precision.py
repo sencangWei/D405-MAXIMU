@@ -237,7 +237,14 @@ def apply_gripper_tcp_offset(
 
 
 def load_robot(path: Path):
-    """Load robot epoch timestamps and FK poses for leader/target/actual."""
+    """Load robot poses using one timestamp domain and report its provenance.
+
+    New recorder rows carry the SocketCAN kernel receive event for the
+    feedback frames that produced ``actual_deg``.  Legacy rows only contain
+    the file-writer observation time.  Never mix those domains silently: if a
+    log contains both, retain only event-timed rows and report the discarded
+    legacy rows to the caller.
+    """
     import sys
 
     fk_root = Path("/home/robot/vla_test/scripts")
@@ -245,7 +252,8 @@ def load_robot(path: Path):
         sys.path.insert(0, str(fk_root))
     from rebot_rs_urdf_kinematics import gripper_transform
 
-    times: list[float] = []
+    timed_rows: list[tuple[float, dict]] = []
+    legacy_rows: list[tuple[float, dict]] = []
     poses: dict[str, list[np.ndarray]] = {
         "leader": [],
         "target": [],
@@ -256,15 +264,21 @@ def load_robot(path: Path):
         if not line.strip():
             continue
         row = json.loads(line)
-        if "host_wall_epoch_s" not in row:
-            continue
         if not all(
             name + "_deg" in row and len(row[name + "_deg"]) >= 6
             for name in poses
         ):
             continue
         try:
-            timestamp = float(row["host_wall_epoch_s"])
+            event_source = row.get("feedback_timestamp_source")
+            event_timestamp = row.get("feedback_frame_rx_wall_epoch")
+            timestamp = float(event_timestamp) if event_timestamp not in (None, "") else float("nan")
+            is_event_timed = (
+                event_source == "can_kernel_rx_timestamp"
+                and math.isfinite(timestamp)
+            )
+            if not is_event_timed:
+                timestamp = float(row.get("host_wall_epoch_s", "nan"))
             transforms = {
                 name: gripper_transform(np.radians(np.asarray(row[name + "_deg"][:6], dtype=float)))
                 for name in poses
@@ -273,12 +287,23 @@ def load_robot(path: Path):
             continue
         if not math.isfinite(timestamp):
             continue
+        (timed_rows if is_event_timed else legacy_rows).append((timestamp, (transforms, row)))
+    if timed_rows:
+        selected_rows = timed_rows
+        timestamp_source = "can_kernel_rx_timestamp"
+        discarded_legacy_rows = len(legacy_rows)
+    else:
+        selected_rows = legacy_rows
+        timestamp_source = "host_wall_epoch_s_legacy"
+        discarded_legacy_rows = 0
+    if len(selected_rows) < 2:
+        raise ValueError(f"robot log has fewer than two timestamped samples: {path}")
+    times: list[float] = []
+    for timestamp, (transforms, row) in selected_rows:
         times.append(timestamp)
         for name, transform in transforms.items():
             poses[name].append(transform)
             joints[name].append(np.asarray(row[name + "_deg"][:6], dtype=float))
-    if len(times) < 2:
-        raise ValueError(f"robot log has fewer than two timestamped samples: {path}")
     order = np.argsort(times, kind="stable")
     source_times = np.asarray(times, dtype=float)[order]
     keep = np.r_[True, np.diff(source_times) > 0.0]
@@ -287,7 +312,19 @@ def load_robot(path: Path):
     joint_result = {name: np.asarray([joints[name][i] for i in order], dtype=float)[keep] for name in poses}
     if np.any(np.diff(source_times) <= 0.0):
         raise ValueError(f"robot timestamps are not strictly increasing: {path}")
-    return source_times, result, joint_result
+    return source_times, result, joint_result, {
+        "timestamp_source": timestamp_source,
+        "uses_event_time": timestamp_source == "can_kernel_rx_timestamp",
+        "event_rows": len(timed_rows),
+        "legacy_rows": len(legacy_rows),
+        "discarded_legacy_rows": discarded_legacy_rows,
+        "semantics": (
+            "SocketCAN kernel CLOCK_REALTIME receive event for feedback frames; "
+            "converted with one startup realtime-minus-monotonic offset"
+            if timestamp_source == "can_kernel_rx_timestamp"
+            else "legacy host wall-clock timestamp written after feedback polling"
+        ),
+    }
 
 
 def _brackets(query: np.ndarray, source: np.ndarray, max_gap_s: float):
@@ -743,9 +780,20 @@ def process(
     elif gripper_tcp_offset_path is not None:
         raise ValueError("--gripper-tcp-offset 必须与 --handeye 一起提供")
 
-    robot_t, robot_T, robot_joints = load_robot(robot_path.resolve())
+    robot_t, robot_T, robot_joints, robot_time = load_robot(robot_path.resolve())
     raw_actual_T = robot_T["actual"]
-    offset_s = clock_offset_ms / 1000.0
+    requested_clock_offset_ms = float(clock_offset_ms)
+    if robot_time["uses_event_time"]:
+        # Event timestamps are already in the same host monotonic/epoch
+        # contract as the UMI stream.  Applying the historical fixed offset
+        # again would double-shift the trajectory.
+        offset_s = 0.0
+        effective_clock_offset_ms = 0.0
+        effective_clock_offset_source = "robot_can_kernel_event_timestamp"
+    else:
+        offset_s = clock_offset_ms / 1000.0
+        effective_clock_offset_ms = float(clock_offset_ms)
+        effective_clock_offset_source = clock_offset_source
     query_t = umi_t + offset_s
     bracket_gap_s = max_bracket_gap_ms / 1000.0
     # Shape and relative-motion diagnostics stay on the URDF gripper_end
@@ -904,12 +952,25 @@ def process(
         "robot_reference_transform": "T_base_link_gripper_end",
         "absolute_tcp_reference_frame": tcp_frame if handeye_path is not None else None,
         "clock": {
-            "robot_query_offset_ms": float(clock_offset_ms),
-            "offset_policy": "fixed_device_level_file_or_cli_value; no per-run optimization",
-            "offset_source": clock_offset_source,
+            "robot_query_offset_ms": effective_clock_offset_ms,
+            "requested_legacy_offset_ms": requested_clock_offset_ms,
+            "offset_policy": (
+                "zero additional offset; robot CAN kernel event timestamp is already "
+                "in the UMI host epoch domain"
+                if robot_time["uses_event_time"]
+                else "fixed device-level file or CLI value; no per-run optimization"
+            ),
+            "offset_source": effective_clock_offset_source,
+            "robot_timestamp_source": robot_time["timestamp_source"],
+            "robot_timestamp_semantics": robot_time["semantics"],
+            "discarded_legacy_robot_rows": robot_time["discarded_legacy_rows"],
             "max_association_error_ms": float(max_pair_error_ms),
             "max_interpolation_bracket_gap_ms": float(max_bracket_gap_ms),
-            "paired_time_definition": "robot pose linearly interpolated at umi_t + robot_query_offset_ms",
+            "paired_time_definition": (
+                "robot pose linearly interpolated at umi_t in the shared host epoch"
+                if robot_time["uses_event_time"]
+                else "robot pose linearly interpolated at umi_t + robot_query_offset_ms"
+            ),
             "sample_delta_gate_policy": "diagnostic_only_with_linear_interpolation; not a validity gate",
         },
         "sample_counts": {
@@ -950,7 +1011,12 @@ def process(
         tcp_dir.mkdir(parents=True, exist_ok=True)
         tcp_reference_tum = tcp_dir / "robot_actual_matched.tum"
         tcp_estimate_tum = tcp_dir / "umi_tcp_handeye_anchored.tum"
-        _write_tum(tcp_reference_tum, paired_t, paired_robot_p, paired_robot_q)
+        # The TCP comparison must use the same physical point on both sides.
+        # ``paired_robot_p`` is the URDF ``gripper_end`` origin; when a
+        # gripper TCP offset is requested, the robot reference is
+        # ``paired_tcp_p`` instead.  Using the former here silently re-added
+        # the lever arm on only the UMI side in the exported artifacts.
+        _write_tum(tcp_reference_tum, paired_t, paired_tcp_p, paired_tcp_q)
         _write_tum(tcp_estimate_tum, paired_t, mapped_paired_umi_p, mapped_umi_q)
         handeye_evo = _run_evo(
             tcp_dir, tcp_reference_tum, tcp_estimate_tum, align=False
@@ -1038,7 +1104,10 @@ def process(
             ]
         )
     if mapped_paired_umi_p is not None:
-        tcp_error = np.linalg.norm(mapped_paired_umi_p - paired_robot_p, axis=1)
+        # ``paired_robot_p`` is the raw gripper_end origin.  The exported TCP
+        # error must be computed against the interpolated physical TCP point,
+        # otherwise every sample includes the full lever arm as a false error.
+        tcp_error = np.linalg.norm(mapped_paired_umi_p - paired_tcp_p, axis=1)
         with (output_dir / "matched_tcp_handeye.csv").open("w", newline="", encoding="utf-8") as stream:
             writer = csv.writer(stream)
             writer.writerow(
@@ -1053,12 +1122,12 @@ def process(
                 [
                     [
                         f"{t:.9f}", f"{d * 1000.0:.6f}",
-                        *[f"{x:.9f}" for x in rp],
+                        *[f"{x:.9f}" for x in tcp_rp],
                         *[f"{x:.9f}" for x in up],
                         f"{err * 1000.0:.6f}",
                     ]
-                    for t, d, rp, up, err in zip(
-                        paired_t, nearest_delta[valid], paired_robot_p,
+                    for t, d, tcp_rp, up, err in zip(
+                        paired_t, nearest_delta[valid], paired_tcp_p,
                         mapped_paired_umi_p, tcp_error
                     )
                 ]
@@ -1080,8 +1149,9 @@ def _markdown_report(report: dict) -> str:
         f"- UMI 输入：`{report['umi_source']}`（{report['umi_source_kind']}）",
         f"- 机械臂参考：从臂 `actual_deg` 经 B601-RS URDF FK 得到 `{report['robot_reference_frame']}`，位于 `{report['robot_fk_coordinate_frame']}` 坐标系",
         f"- 参考点变换：`{report['robot_reference_transform']}`；绝对 TCP 小节另行使用同一杆臂变换",
-        f"- 固定时间偏移：{report['clock']['robot_query_offset_ms']:.3f} ms；没有按本次数据自动优化",
-        f"- 时间配对：在固定偏移后对从臂 TCP 做线性插值；插值括区 ≤ {report['clock']['max_interpolation_bracket_gap_ms']:.3f} ms",
+        f"- 机械臂时间源：`{report['clock']['robot_timestamp_source']}`（{report['clock']['robot_timestamp_semantics']}）",
+        f"- 额外时间偏移：{report['clock']['robot_query_offset_ms']:.3f} ms；事件时间源不会叠加历史固定偏移",
+        f"- 时间配对：在统一主机时间轴上对从臂 TCP 做线性插值；插值括区 ≤ {report['clock']['max_interpolation_bracket_gap_ms']:.3f} ms",
         f"- 配对：{report['sample_counts']['paired_after_gate']}/{report['sample_counts']['umi_full_corrected']}（覆盖率 {report['sample_counts']['association_coverage'] * 100.0:.2f}%）",
         f"- 共同有效区间：{report['time_overlap_s']:.3f} s；UMI/机械臂累计距离：{report['relative_motion']['path_length_umi_m']:.4f}/{report['relative_motion']['path_length_robot_actual_m']:.4f} m（差 {report['relative_motion']['path_length_difference_m']:.4f} m）",
         "",

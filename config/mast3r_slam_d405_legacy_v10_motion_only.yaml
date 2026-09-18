@@ -1,0 +1,24 @@
+inherit: "config/base.yaml"
+
+# Reconstruct the September 12 v10 frontend behavior from its saved reports:
+# keep visual-motion keyframe insertion, but do not inject the later onboard-IMU
+# rotation prior or require the later multi-frame loop confirmation policy.
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  imu_rotation_prior: False
+  imu_rotation_constraint_weight: 0.0
+  imu_rotation_constraint_gate_deg: 0.0
+  motion_keyframe_translation: 0.30
+  motion_keyframe_rotation_deg: 8.0
+
+retrieval:
+  confirmation_frames: 1
+  confirmation_immediate_frame_gap: 0
+  confirmation_frame_id_radius: 0
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 0

@@ -1,0 +1,6 @@
+inherit: "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline_stereo_pointmap_pnp_retrieval_probe.yaml"
+
+# Diagnostic only: estimate against the preceding keyframe as an independent
+# longer-baseline pose candidate.  External truth is not available here.
+tracking:
+  stereo_keyframe_pnp_lookback: 2

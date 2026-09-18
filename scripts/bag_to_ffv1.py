@@ -29,8 +29,6 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-W, H, FPS = 1280, 720, 30
-
 TOPIC_PREFIX = "/device_0/sensor_0/"
 STREAM_TOPICS = {
     "ir_left":  TOPIC_PREFIX + "Infrared_1/image/data",
@@ -40,13 +38,61 @@ STREAM_TOPICS = {
 META_TOPICS = {k: t.replace("/data", "/metadata") for k, t in STREAM_TOPICS.items()}
 META_TS_RE = re.compile(r"timestamp=([0-9.]+)")
 META_FN_RE = re.compile(r"Frame number=(\d+)")
+GEOMETRY_PROBE_FRAMES = 60
+IR_PIX_FMT = {
+    "8uc1": "gray", "mono8": "gray",
+    "16uc1": "gray16le", "mono16": "gray16le",
+}
 
 
-def start_ffv1(path: Path, pix_fmt_in: str):
+def probe_geometry(db3: Path, streams):
+    """从 db3 内容探测 (宽, 高, 帧率) 与 IR 编码, 供 720p30 / 848x480@90 共用。
+
+    几何不能靠常量: 下面按 W*H 截断原始字节喂 ffmpeg, 常量偏大时每帧少喂字节,
+    ffmpeg 会跨帧错位吞流且不报错, 输出静默损坏。
+    """
+    import rosbag2_py
+    from rclpy.serialization import deserialize_message
+    from sensor_msgs.msg import Image as RosImage
+    from std_msgs.msg import String
+
+    key = next(k for k in streams if k.startswith("ir_"))
+    data_topic = STREAM_TOPICS[key]
+    meta_topic = META_TOPICS[key]
+
+    reader = rosbag2_py.SequentialReader()
+    reader.open(rosbag2_py.StorageOptions(uri=str(db3), storage_id="sqlite3"),
+                rosbag2_py.ConverterOptions("", ""))
+    reader.set_filter(rosbag2_py.StorageFilter(topics=[data_topic, meta_topic]))
+    size = None
+    ir_encoding = None
+    stamps = []
+    while reader.has_next() and len(stamps) < GEOMETRY_PROBE_FRAMES:
+        topic, data, _ = reader.read_next()
+        if size is None and topic == data_topic:
+            img = deserialize_message(data, RosImage)
+            size = (img.width, img.height)
+            ir_encoding = img.encoding.lower()
+        elif topic == meta_topic:
+            m = META_TS_RE.search(deserialize_message(data, String).data)
+            if m:
+                stamps.append(float(m.group(1)))
+
+    if size is None:
+        raise SystemExit(f"db3 内没有 {data_topic} 图像, 无法探测几何: {db3}")
+    if ir_encoding not in IR_PIX_FMT:
+        raise SystemExit(f"IR 编码 {ir_encoding!r} 不受支持, 拒绝静默错喂: {db3}")
+    gaps = sorted(b - a for a, b in zip(stamps, stamps[1:]) if b > a)
+    if not gaps:
+        raise SystemExit(f"db3 内 {meta_topic} 时间戳不足 2 帧, 无法探测帧率: {db3}")
+    return size[0], size[1], max(1, round(1000.0 / gaps[len(gaps) // 2])), ir_encoding
+
+
+def start_ffv1(path: Path, pix_fmt_in: str, w: int, h: int, fps: int):
     """无损 FFV1 (.mkv): 使用 context 建模提高灰度 IR 压缩率。"""
     cmd = [
         "ffmpeg", "-y", "-v", "error",
-        "-f", "rawvideo", "-pix_fmt", pix_fmt_in, "-s", f"{W}x{H}", "-r", str(FPS),
+        "-f", "rawvideo", "-pix_fmt", pix_fmt_in, "-s", f"{w}x{h}", "-r", str(fps),
         "-i", "-",
         "-c:v", "ffv1", "-level", "3", "-coder", "1", "-context", "1",
         "-g", "1", "-slices", "4", "-slicecrc", "1",
@@ -55,10 +101,10 @@ def start_ffv1(path: Path, pix_fmt_in: str):
     return subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
 
-def start_nvenc(path: Path, pix_fmt_in: str, codec: str, cq: int):
+def start_nvenc(path: Path, pix_fmt_in: str, codec: str, cq: int, w: int, h: int, fps: int):
     cmd = [
         "ffmpeg", "-y", "-v", "error",
-        "-f", "rawvideo", "-pix_fmt", pix_fmt_in, "-s", f"{W}x{H}", "-r", str(FPS),
+        "-f", "rawvideo", "-pix_fmt", pix_fmt_in, "-s", f"{w}x{h}", "-r", str(fps),
         "-i", "-",
         "-vf", "format=yuv420p",
         "-c:v", codec, "-preset", "p6", "-tune", "ll", "-rc", "vbr",
@@ -121,6 +167,10 @@ def main() -> int:
 
     color_pix_fmt = "yuyv422"
 
+    W, H, FPS, ir_encoding = probe_geometry(db3, streams)
+    ir_pix_fmt = IR_PIX_FMT[ir_encoding]
+    print(f"[convert] 探测: {W}x{H} @ {FPS}fps, IR 编码 {ir_encoding!r} -> {ir_pix_fmt}")
+
     readers = {}
     for key in streams:
         r = rosbag2_py.SequentialReader()
@@ -151,11 +201,11 @@ def main() -> int:
     for key in streams:
         if key.startswith("ir_"):
             path = mp4_dir / (key + ".mkv")
-            proc = start_ffv1(path, "gray")
+            proc = start_ffv1(path, ir_pix_fmt, W, H, FPS)
             print(f"[convert] {key:9s} -> {path.name} (FFV1 无损)")
         else:
             path = mp4_dir / (key + ".mp4")
-            proc = start_nvenc(path, color_pix_fmt, "h264_nvenc", args.rgb_cq)
+            proc = start_nvenc(path, color_pix_fmt, "h264_nvenc", args.rgb_cq, W, H, FPS)
             print(f"[convert] {key:9s} -> {path.name} (H264 cq{args.rgb_cq}, 观看)")
         encoders[key] = (proc, path)
 

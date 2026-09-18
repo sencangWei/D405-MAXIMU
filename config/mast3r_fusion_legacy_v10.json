@@ -1,0 +1,55 @@
+{
+  "schema": "umi_mast3r_fusion_profile_v1",
+  "profile": "legacy_v10_20260912",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "frontend": {
+    "toolchain": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM-legacy-v10",
+    "commit": "e6f4e3d474fad0e11f561482012be864ba8c3f17",
+    "dirty_diff_sha256": "d06f5a8cdaa0726b5fd248ba8ffec61b03cd657b9708d8c8db9ace8e670ff420",
+    "sparse_config": "config/mast3r_slam_d405_offline_motion_kf.yaml",
+    "sparse_config_sha256": "340b556b1f52f26f75e6936e95d6e51ffb0f6aa8f4d161f3260f0e432c906bf2",
+    "tight_config": "config/mast3r_slam_d405_offline_motion_kf_tight.yaml",
+    "tight_config_sha256": "1858a7da955448cc6c55c60cc8a9ff83764729548f8b3dbce38d81117afa3278"
+  },
+  "graph_backend": {
+    "script": "scripts/fuse_mast3r_stereo_imu_legacy_v10.py",
+    "sha256": "04a241ed4954b9e3bb9d80eed34651b2c63c7ee4bc0bc5da48e4bb2b98c4b54a",
+    "stereo_reports": ["short_bidirectional", "long_hops_8_12_16"],
+    "orientation_node_stride": 10,
+    "position_node_stride": 10,
+    "relative_motion_sigma_m": 0.012,
+    "full_rate_max_correction_mm": 20.0,
+    "metric_scale_mode": "stereo",
+    "position_mode": "keyframe-graph"
+  },
+  "complementary_fusion": {
+    "script": "scripts/fuse_docker2_mast3r_complementary_legacy_v10.py",
+    "sha256": "9c0e97d7d4fb5c13812b704cbc3c085095b34b65a97f81073b1cc4f4551397df",
+    "sparse": {
+      "smoothing_s": 8.0,
+      "docker2_local_weight": 0.20,
+      "docker2_scale_weight": 0.475
+    },
+    "tight": {
+      "smoothing_s": 15.0,
+      "docker2_local_weight": 0.35,
+      "docker2_scale_weight": 0.85
+    },
+    "adaptive_local_weight": true,
+    "roughness_threshold_mm": 9.0,
+    "adaptive_weight_strength": 0.45,
+    "use_docker2_orientation_for_lever_arm": true
+  },
+  "time_alignment": {
+    "estimate_td": 0,
+    "td_s": -0.009109323,
+    "replay_imu_shift_ms": 0
+  },
+  "selection": {
+    "script": "scripts/select_mast3r_fusion_candidate.py",
+    "maximum_scale_relative_difference": 0.15,
+    "minimum_tight_stereo_improvement_ratio": 0.10,
+    "policy": "tight only when onboard stereo/IMU scale is observable and tight keyframes materially reduce stereo edge residual"
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "schema": "umi_mast3r_fusion_regression_corpus_v1",
+  "purpose": "development_cross_validation",
+  "truth_policy": {
+    "source": "independent_lighthouse_tracker",
+    "usage": "post_slam_scoring_and_aggregate_parameter_selection_only",
+    "never_input_to_slam": true,
+    "final_acceptance_requires_new_unseen_captures": true
+  },
+  "rigid_mount_assumption": {
+    "tracker_serial": "LHR-A2A59C7D",
+    "tracker_to_umi_unchanged_across_sessions": true,
+    "confirmed_by": "operator",
+    "calibration_epoch_policy": "use_frozen_independent_calibration_while_rigid_mount_is_unchanged",
+    "lighthouse_world_configuration_is_session_specific": true
+  },
+  "tracker_body_calibration": {
+    "path": "/home/robot/ego_vio_humble/reports/lighthouse_direct_body_joint_r2_r5_20260912_v2/lighthouse_tracker_body_frozen_v2.json",
+    "sha256": "41c88c0e82afe40b8ad62dc76081b16c344fe55e2666fd65fd19fdc77dba887e"
+  },
+  "cross_validation": {
+    "method": "five_fold_by_capture",
+    "fold_count": 5,
+    "selection_objective": "minimize aggregate RMSE and P95 without worsening worst-session maximum ATE",
+    "per_session_parameter_overrides_forbidden": true
+  },
+  "thresholds": {
+    "max_ate_rmse_mm": 10.0,
+    "max_ate_p95_mm": 10.0,
+    "max_ate_max_mm": 10.0,
+    "min_within_10mm_ratio": 0.95,
+    "max_rotation_rmse_deg": 2.0,
+    "min_timestamp_overlap_ratio": 0.98
+  },
+  "datasets": [
+    {
+      "id": "d405_20260908_151750",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_151750",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_151740_evaluation/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_151740_evaluation/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_151740_evaluation/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "26d668e10191e40ea338a8eef806b40631cdc5e8e7d62da9d1af73624e8e2fe6",
+      "lighthouse_world_epoch_sha256": "149162d142020b7a072035dcc9fa56473fd4c372efbce12104827c8c0c71b12e",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_151740_evaluation/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "e31bac3470feee125d3bb0a61996d30179318f09dea36e085470c3f2df171888",
+      "motion_tags": ["translation", "elevation", "moderate_turn", "normal_texture"]
+    },
+    {
+      "id": "d405_20260908_153426",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_153426",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_153417_evaluation/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_153417_evaluation/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_153417_evaluation/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "74d6eb5195ccd6eae8427a9b8223dc72416989b7d602a434c289c80f9cf01a92",
+      "lighthouse_world_epoch_sha256": "149162d142020b7a072035dcc9fa56473fd4c372efbce12104827c8c0c71b12e",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_153417_evaluation/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "94872b4cf267989b507d687e733ba348101e2596579e659006882b27151d4625",
+      "motion_tags": ["translation", "elevation", "fast_turn", "normal_texture"]
+    },
+    {
+      "id": "d405_20260908_211157",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_211157",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_211146_docker2_vs_mast3r/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_211146_docker2_vs_mast3r/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_211146_docker2_vs_mast3r/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "f78cf254b4317b79248e70f6f1cf5d8d7fc366388a3cfdf72b737a8b5c24e28a",
+      "lighthouse_world_epoch_sha256": "0095175ac934ce025e78380f167688b2192a8247e178559d8f9a9f8c5b9d10e3",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_211146_docker2_vs_mast3r/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "f35ccef4362ad46ab98856b0d99a7a6a11ade2fbb316ac2e45f3c7c16b822414",
+      "motion_tags": ["translation", "elevation", "slow_turn", "low_texture", "dark"]
+    },
+    {
+      "id": "d405_20260908_222027",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_222027",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222018_docker2_vs_mast3r/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222018_docker2_vs_mast3r/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222018_docker2_vs_mast3r/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "d5ca0bb57dd871e68c32c5d3275a6528a84d5df6e39d9ac75a2f02749ae6491b",
+      "lighthouse_world_epoch_sha256": "0095175ac934ce025e78380f167688b2192a8247e178559d8f9a9f8c5b9d10e3",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222018_docker2_vs_mast3r/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "f35ccef4362ad46ab98856b0d99a7a6a11ade2fbb316ac2e45f3c7c16b822414",
+      "motion_tags": ["translation", "elevation", "slow_turn", "partial_low_texture"]
+    },
+    {
+      "id": "d405_20260908_222453",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_222453",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222444_repeat2_capture_only/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222444_repeat2_capture_only/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222444_repeat2_capture_only/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "cfe0c0fc91b68e405480698665b1a4a372af576598bccb136068819cea89c005",
+      "lighthouse_world_epoch_sha256": "0095175ac934ce025e78380f167688b2192a8247e178559d8f9a9f8c5b9d10e3",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222444_repeat2_capture_only/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "f35ccef4362ad46ab98856b0d99a7a6a11ade2fbb316ac2e45f3c7c16b822414",
+      "motion_tags": ["translation", "elevation", "very_fast_turn", "low_texture", "motion_blur"]
+    },
+    {
+      "id": "d405_20260908_222718",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_222718",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222709_repeat3_capture_only/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222709_repeat3_capture_only/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222709_repeat3_capture_only/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "55247ae9236a59b378a2ee394b62e4bc3143c07d70ff1b8a73daa26601255271",
+      "lighthouse_world_epoch_sha256": "0095175ac934ce025e78380f167688b2192a8247e178559d8f9a9f8c5b9d10e3",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260908_222709_repeat3_capture_only/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "f35ccef4362ad46ab98856b0d99a7a6a11ade2fbb316ac2e45f3c7c16b822414",
+      "motion_tags": ["translation", "elevation", "fast_turn", "low_texture"]
+    },
+    {
+      "id": "d405_20260910_142926",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260910_142926",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260910_142924_slam_compare_repeat_02/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260910_142924_slam_compare_repeat_02/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260910_142924_slam_compare_repeat_02/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "71d83bfc17127b237e4febc08031ef8cbae06b5384a77dc15f463376df45bab3",
+      "lighthouse_world_epoch_sha256": "db24c26ca2d776b4d08bc4b64e05032fc34c8ba36145ac5c6e7bc5b4bb111cfd",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260910_142924_slam_compare_repeat_02/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "5e74b9ad67bd0a916a5c3b2f59500f258c3c8bb26d1cba79a6cd36a2ea799c72",
+      "motion_tags": ["translation", "elevation", "moderate_turn", "low_texture_windows"]
+    },
+    {
+      "id": "d405_20260911_121354",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260911_121354",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260911_121324_slam_compare_new_extrinsic_turn_02/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260911_121324_slam_compare_new_extrinsic_turn_02/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260911_121324_slam_compare_new_extrinsic_turn_02/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "f5dbce271f934ce8433352ec6ed16e519c29300e5d3a7607be3b175691fc293d",
+      "lighthouse_world_epoch_sha256": "db24c26ca2d776b4d08bc4b64e05032fc34c8ba36145ac5c6e7bc5b4bb111cfd",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260911_121324_slam_compare_new_extrinsic_turn_02/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "5e74b9ad67bd0a916a5c3b2f59500f258c3c8bb26d1cba79a6cd36a2ea799c72",
+      "motion_tags": ["translation", "elevation", "very_fast_turn", "low_texture"]
+    },
+    {
+      "id": "d405_20260912_034633",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260912_034633",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260912_034624_evaluation/capture/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260912_034624_evaluation/capture/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260912_034624_evaluation/capture/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "a2e415cfa95fde651e2396fa5ec182483467fe32021064aada01760bbb47e0dd",
+      "lighthouse_world_epoch_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260912_034624_evaluation/capture/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "motion_tags": ["translation", "elevation", "moderate_turn", "mixed_texture"]
+    },
+    {
+      "id": "d405_20260912_153103",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260912_153103",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_153054_fusion_v6_validation/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_153054_fusion_v6_validation/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_153054_fusion_v6_validation/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "bf541ac3f3237b56887aca66c5ffc0f36fe2f827d9142b86730d3f0f14b4c7f4",
+      "lighthouse_world_epoch_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_153054_fusion_v6_validation/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "motion_tags": ["translation", "elevation", "fast_turn", "partial_low_texture"]
+    },
+    {
+      "id": "d405_20260912_180513",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260912_180513",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_180508_fusion_v10_blind_holdout/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_180508_fusion_v10_blind_holdout/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_180508_fusion_v10_blind_holdout/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "80e2b4c36314a438505eb7e2f4a3341aee606f9affcc925d0f80eef07c351ea0",
+      "lighthouse_world_epoch_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260912_180508_fusion_v10_blind_holdout/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "motion_tags": ["translation", "elevation", "fast_turn", "low_texture"]
+    },
+    {
+      "id": "d405_20260913_020724",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260913_020724",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_020719_fusion_v10_postfix_blind_holdout/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_020719_fusion_v10_postfix_blind_holdout/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_020719_fusion_v10_postfix_blind_holdout/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "357485b6d04a41912b9d23ed4cbd5df6909b6209485278e26ca5398aff2bdc3f",
+      "lighthouse_world_epoch_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_020719_fusion_v10_postfix_blind_holdout/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "motion_tags": ["translation", "elevation", "moderate_turn", "low_texture", "dark"]
+    },
+    {
+      "id": "d405_20260913_123725",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260913_123725",
+      "tracker_csv": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_123720_fusion_oneclick_holdout2/tracker.csv",
+      "tracker_integrity": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_123720_fusion_oneclick_holdout2/tracker_integrity.json",
+      "tracker_d405_overlap": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_123720_fusion_oneclick_holdout2/tracker_d405_overlap.json",
+      "capture_acceptance_sha256": "1ee4c4cdffee627f61173dca156830f5d68c1ef39cc16c0d076ef8238462473c",
+      "lighthouse_world_epoch_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "lighthouse_runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260913_123720_fusion_oneclick_holdout2/libsurvive_runtime_config.json",
+      "lighthouse_runtime_config_sha256": "e307b60dc862540ada846f9b189f522caa2e06df619a5eafe32395a29c495639",
+      "motion_tags": ["translation", "elevation", "moderate_turn", "normal_texture"]
+    }
+  ]
+}

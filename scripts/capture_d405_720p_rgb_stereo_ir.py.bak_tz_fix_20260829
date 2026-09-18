@@ -23,9 +23,7 @@ import sys
 import threading
 import time
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import cv2
 import numpy as np
@@ -213,44 +211,6 @@ def read_db3_metadata(bag_path: Path) -> dict[str, list[MetadataFrame]]:
     return records
 
 
-def analyze_db3_storage_timestamps(bag_path: Path) -> dict:
-    """Check rosbag storage timestamps in write order for every image stream."""
-    topic_to_key = {
-        topic: key
-        for key, topic in METADATA_TOPICS.items()
-        if key in STREAM_KEYS
-    }
-    placeholders = ",".join("?" for _ in topic_to_key)
-    query = f"""
-        SELECT topics.name, messages.timestamp
-        FROM messages JOIN topics ON messages.topic_id = topics.id
-        WHERE topics.name IN ({placeholders})
-        ORDER BY messages.id
-    """
-    timestamps: dict[str, list[int]] = {key: [] for key in topic_to_key.values()}
-    with sqlite3.connect(bag_path) as connection:
-        for topic, stamp in connection.execute(query, tuple(topic_to_key)):
-            timestamps[topic_to_key[topic]].append(int(stamp))
-
-    streams = {}
-    for key, values in timestamps.items():
-        backward_steps = [
-            values[index - 1] - values[index]
-            for index in range(1, len(values))
-            if values[index] <= values[index - 1]
-        ]
-        streams[key] = {
-            "received": len(values),
-            "timestamp_regressions": len(backward_steps),
-            "max_backward_ms": max(backward_steps) / 1e6 if backward_steps else 0.0,
-        }
-    passed = bool(streams) and all(
-        stream["received"] > 1 and stream["timestamp_regressions"] == 0
-        for stream in streams.values()
-    )
-    return {"result": "PASS" if passed else "FAIL", "streams": streams}
-
-
 def analyze_ir_exposure(
     records: dict[str, list[MetadataFrame]],
     limit_us: float,
@@ -407,21 +367,8 @@ def write_frames_csv(
     records: dict[str, list[MetadataFrame]],
     epoch_offset: float,
     tolerance_ms: float,
-    queue_timing: dict[tuple[str, int], tuple[float, float]] | None = None,
 ) -> int:
-    """Write paired frame metadata with explicit event/queue timestamp fields.
-
-    ``arrival_mono``/``arrival_wall`` are retained as compatibility aliases
-    for the historical sensor-time proxy.  New consumers must use
-    ``sensor_event_*`` for the D405 global-time event and ``queue_rx_*`` only
-    for host queue-arrival diagnostics.
-    """
-    fields = [
-        "set_index", "arrival_mono", "arrival_wall",
-        "sensor_event_mono", "sensor_event_wall",
-        "queue_rx_mono", "queue_rx_wall",
-        "sensor_to_queue_delay_ms", "timestamp_source",
-    ]
+    fields = ["set_index", "arrival_mono", "arrival_wall"]
     for name in STREAM_KEYS:
         fields.extend(
             [f"{name}_frame_number", f"{name}_device_ms", f"{name}_mono", f"{name}_domain"]
@@ -439,25 +386,7 @@ def write_frames_csv(
                 "set_index": index,
                 "arrival_mono": f"{arrival_wall - epoch_offset:.9f}",
                 "arrival_wall": f"{arrival_wall:.6f}",
-                "sensor_event_mono": f"{arrival_wall - epoch_offset:.9f}",
-                "sensor_event_wall": f"{arrival_wall:.6f}",
-                "timestamp_source": "d405_global_time_event",
             }
-            queue_values = [
-                queue_timing.get((name, record.number))
-                for name, record in pair.items()
-                if queue_timing is not None
-            ]
-            queue_values = [value for value in queue_values if value is not None]
-            if queue_values:
-                queue_mono = max(value[0] for value in queue_values)
-                queue_wall = max(value[1] for value in queue_values)
-                row["queue_rx_mono"] = f"{queue_mono:.9f}"
-                row["queue_rx_wall"] = f"{queue_wall:.6f}"
-                row["sensor_to_queue_delay_ms"] = f"{(queue_mono - (arrival_wall - epoch_offset)) * 1000.0:.3f}"
-                row["timestamp_source"] = "d405_global_time_event+host_queue_rx_diagnostic"
-            else:
-                row["sensor_to_queue_delay_ms"] = ""
             for name, record in pair.items():
                 row[f"{name}_frame_number"] = record.number
                 row[f"{name}_device_ms"] = f"{record.device_ms:.6f}"
@@ -593,27 +522,6 @@ def stream_key_from_profile(profile) -> str | None:
     return None
 
 
-def stream_calibration_from_profiles(profiles: list) -> dict:
-    calibration = {}
-    for profile in profiles:
-        key = stream_key_from_profile(profile)
-        if key is None:
-            continue
-        video = profile.as_video_stream_profile()
-        intrinsics = video.get_intrinsics()
-        calibration[key] = {
-            "width": int(intrinsics.width),
-            "height": int(intrinsics.height),
-            "fx": float(intrinsics.fx),
-            "fy": float(intrinsics.fy),
-            "cx": float(intrinsics.ppx),
-            "cy": float(intrinsics.ppy),
-            "distortion_model": str(intrinsics.model),
-            "distortion_coefficients": [float(value) for value in intrinsics.coeffs],
-        }
-    return calibration
-
-
 def preview_mosaic(frame_map: dict) -> np.ndarray:
     left = np.asanyarray(frame_map["infrared_left"].get_data())
     right = np.asanyarray(frame_map["infrared_right"].get_data())
@@ -651,11 +559,7 @@ def main() -> int:
     STREAM_KEYS = tuple(name for name, *_ in STREAMS)
     CAMERA_RAW_BYTES_PER_SECOND = 1280 * 720 * (2 + 1 + 1) * 30
     realsense_backend = os.environ.get("EGO_VIO_REALSENSE_BACKEND", "system-default")
-    session_start_wall_epoch = time.time()
-    report_tz = ZoneInfo(os.environ.get("EGO_VIO_REPORT_TZ", "Asia/Shanghai"))
-    stamp = datetime.fromtimestamp(session_start_wall_epoch, report_tz).strftime(
-        "%Y%m%d_%H%M%S"
-    )
+    stamp = time.strftime("%Y%m%d_%H%M%S")
     session = args.output_root.resolve() / f"d405_720p_{args.capture_mode}_{stamp}"
     session.mkdir(parents=True, exist_ok=False)
     bag_path = session / f"d405_720p_{args.capture_mode}.db3"
@@ -724,14 +628,12 @@ def main() -> int:
     recorder_device.pause()
     sensor = recorder_device.first_depth_sensor()
     profiles = select_profiles(sensor)
-    stream_calibration = stream_calibration_from_profiles(profiles)
     frame_queue = rs.frame_queue(MONITOR_QUEUE_CAPACITY, keep_frames=True)
 
     stream_stats = {key: StreamContinuity() for key in STREAM_KEYS}
     warmup_counts = {key: 0 for key in STREAM_KEYS}
     warmup_cutoff = {key: -1 for key in STREAM_KEYS}
     latest_frames: dict[str, object] = {}
-    queue_timing: dict[tuple[str, int], tuple[float, float]] = {}
     last_complete_signature = None
     complete_sets = 0
     formal_start_mono = None
@@ -747,7 +649,6 @@ def main() -> int:
     stage_move_error = None
     stage_move_duration_s = 0.0
     ir_exposure_configuration = None
-    preview_window_title = f"D405 720p: {args.capture_mode} | IR Left | IR Right"
     epoch_offset = time.time() - time.monotonic()
     if args.publish_vins:
         from ego_vio.vio.openvins_ros2_bridge import OpenVINSROS2Bridge
@@ -768,9 +669,6 @@ def main() -> int:
             f"IMU运行时标定={vins_imu_calibration.calibration_id}"
         )
     try:
-        if not args.no_preview:
-            cv2.namedWindow(preview_window_title, cv2.WINDOW_AUTOSIZE)
-            cv2.waitKey(1)
         imu_recorder.start()
         imu_recorder_started = True
         if not imu.start():
@@ -871,10 +769,6 @@ def main() -> int:
                 continue
             device_ms = float(frame.get_timestamp())
             stream_stats[key].add(number, device_ms)
-            # Keep the host queue-arrival event separate from the D405
-            # global-time exposure event.  The latter remains authoritative
-            # for replay/VINS; the former is diagnostic provenance only.
-            queue_timing[(key, number)] = (now_mono, time.time())
             latest_frames[key] = frame
 
             if len(latest_frames) == len(STREAM_KEYS):
@@ -916,7 +810,7 @@ def main() -> int:
                     live_vins_frames_forwarded += 1
                 if not args.no_preview and now_mono >= next_preview_mono:
                     cv2.imshow(
-                        preview_window_title,
+                        f"D405 720p: {args.capture_mode} | IR Left | IR Right",
                         preview_mosaic(latest_frames),
                     )
                     next_preview_mono = now_mono + 0.1
@@ -984,20 +878,14 @@ def main() -> int:
     bag_error = None
     bag_streams = {}
     db3_records = {}
-    db3_storage_timestamps = {"result": "FAIL", "streams": {}}
     csv_error = None
     csv_rows = 0
     if bag_path.exists() and bag_path.stat().st_size > 0:
         try:
             db3_records = read_db3_metadata(bag_path)
             bag_streams = analyze_metadata_records(db3_records)
-            db3_storage_timestamps = analyze_db3_storage_timestamps(bag_path)
             csv_rows = write_frames_csv(
-                frame_csv_path,
-                db3_records,
-                epoch_offset,
-                SYNC_TOLERANCE_MS,
-                queue_timing=queue_timing,
+                frame_csv_path, db3_records, epoch_offset, SYNC_TOLERANCE_MS
             )
         except Exception as exc:
             bag_error = f"{type(exc).__name__}: {exc}"
@@ -1035,7 +923,6 @@ def main() -> int:
         and csv_error is None
         and ir_exposure_configuration is not None
         and ir_exposure_acceptance["result"] == "PASS"
-        and db3_storage_timestamps["result"] == "PASS"
         and csv_rows > 1
         and set(bag_streams) == set(STREAM_KEYS)
         and all(
@@ -1068,16 +955,9 @@ def main() -> int:
             and live_vins_transport.get("ros_imu_pub", 0) >= imu_samples_written
         )
     )
-    session_end_wall_epoch = time.time()
     report = {
         "result": "PASS" if camera_ok and imu_ok and live_vins_ok else "FAIL",
         "session": str(session),
-        "session_name_timezone": str(report_tz),
-        "created_wall_time": datetime.fromtimestamp(
-            session_start_wall_epoch, report_tz
-        ).isoformat(),
-        "capture_start_wall_epoch_s": session_start_wall_epoch,
-        "capture_end_wall_epoch_s": session_end_wall_epoch,
         "bag": str(bag_path),
         "capture_error": capture_error,
         "resolution": [1280, 720],
@@ -1101,19 +981,12 @@ def main() -> int:
         "camera_serial": args.serial,
         "camera_firmware": firmware,
         "usb_type": usb_type,
-        "camera_stream_calibration": stream_calibration,
         "warmup_frames": max(0, args.warmup_frames),
         "imu_warmup_frames": IMU_WARMUP_FRAMES,
         "warmup_recorded": False,
         "complete_framesets_for_csv": csv_rows,
         "monitor_complete_framesets": complete_sets,
         "csv_sync_tolerance_ms": SYNC_TOLERANCE_MS,
-        "timestamp_contract": {
-            "camera_sensor_event": "D405 global_time exposure timestamp; authoritative replay/VINS event time",
-            "camera_queue_rx": "host monotonic time at frame_queue.wait_for_frame return; diagnostic only",
-            "camera_legacy_aliases": "arrival_mono/arrival_wall remain sensor-event aliases for compatibility",
-            "imu": "host IMU reader timestamp contract is recorded in external_imu/imu_ts.csv",
-        },
         "duration_s": duration,
         "thresholds": {
             "camera_min_rate_hz": MIN_CAMERA_RATE_HZ,
@@ -1126,7 +999,6 @@ def main() -> int:
             "result": "PASS" if camera_ok else "FAIL",
             "monitor_queue_streams": source_streams,
             "db3_streams": bag_streams,
-            "db3_storage_timestamps": db3_storage_timestamps,
             "db3_analysis_error": bag_error,
             "csv_rebuild_error": csv_error,
             "authoritative_stream_stats": "db3_streams",
