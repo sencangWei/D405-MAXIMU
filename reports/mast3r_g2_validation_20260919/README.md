@@ -70,6 +70,18 @@ G2(现役): --joint-correction-cap-mode per-node, --adaptive-local-weight,
 它带 `preflight()`: 无 VINS 轨迹 / 无 `graph_fusion_report` / **VINS 验收非 PASS** 的组直接跳过,
 不把"输入本来就废"的组算进参数对照。
 
+### 2.1 复现台自校验: 逐字节复现已提交的达标轨迹
+
+复现台若不能重放原产物, 后续所有对照都不成立。用现役参数(A 组)重跑
+`v11b3/group2` tight, 与 §0 那条已推送并**从远端回取验证过**的达标轨迹比对:
+
+```
+579c81e2c8cd0a5b84378e65d671a87154becb61174fa81657f16e97bd17c204  /tmp/.../vsw/A_g2_w0.250_sig0.008/.../tight/trajectory_fused.csv
+579c81e2c8cd0a5b84378e65d671a87154becb61174fa81657f16e97bd17c204  trajectory_passing/v11b3_group2_tight_G2_trajectory_fused.csv
+```
+
+⇒ **sha256 逐位一致**, 复现台与产线同源。本目录所有参数对照都建立在同一个前端之上。
+
 ## 3. 全组对照结果 (18 项可比)
 
 - **G1 达标 0 / G2 达标 1**
@@ -81,7 +93,7 @@ G2(现役): --joint-correction-cap-mode per-node, --adaptive-local-weight,
 **判断: G2 总体不比 G1 差, 且是唯一能出达标轨迹的一代。但这不是"调参调出来的好结果"——
 真正的瓶颈在下一条。**
 
-## 4. 关键机制: G2 触发输入质量门 REJECT (6 项)
+## 4. 关键机制: G2 触发输入质量门 REJECT (9 项)
 
 同一份底层数据, 生产报告 PASS、现役代码 REJECT:
 
@@ -128,6 +140,47 @@ G2 触发质量门 REJECT 的 9 项, 在 G1 下的成绩:
 
 ⇒ **G2 的 REJECT 拒掉的全是本就不该出厂的产物**, 代价为零。
 "REJECT 变多了"不能当作回退 G2 的理由 —— 该问的是 ATE 有没有变好(见 §10)。
+
+### 4.2 为什么"把 `--docker2-local-weight` 退回 0"救不了这 9 项
+
+直觉是: 退回 0 ⇒ "没用到 onboard 分支" ⇒ 走第三行 ⇒ PASS。**实测不成立。**
+
+§10 的 B 组(`--docker2-local-weight 0`, 其余同现役)在**同样这 9 项上全部照拒**,
+而且 reason 仍是 `..._branch_unobservable`。查被拒报告的原始字段:
+
+```
+B 组(weight 设 0)被拒项: position_branch_weight_max = 0.02   ← 根本不是 0
+                         stereo_edge_rmse 2.74 / 2.95 / 2.97 / 3.07 / 3.67 mm
+```
+
+根因在 [fuse_docker2_mast3r_complementary.py:359-362](../scripts/fuse_docker2_mast3r_complementary.py):
+
+```python
+effective_weight = np.clip(
+    local_weight + adaptive_weight_strength * activation * relative_roughness,
+    0.02,        # ← 硬下界: 开了 --adaptive-local-weight 就再也回不到 0
+    0.98,
+)
+```
+
+**`--adaptive-local-weight` 给有效权重压了个 0.02 的硬下界**, 于是
+"用户把 local-weight 设成 0" 与 "输出真的没用 onboard 分支" 不再等价 ——
+质量门看到 `weight > 0`, 判定该分支"被用了", 照旧 REJECT。
+
+⇒ 这 9 项 REJECT 的**直接成因是 `--adaptive-local-weight` 的 0.02 下界**,
+不是 `0.25` 这个数值本身(两者任一都足以触发)。生产 G1 之所以 PASS
+(`position_branch_weight_max = 0.0`), 是因为它**同时**没有 adaptive 层。
+想靠回退拿到 G1 的 PASS, 必须**两个开关一起关** —— 而那等于退回 G1,
+而 G1 达标 0 项(§3)。
+
+> 附注: 上表"生产 G1 PASS"是**按当时的门**成立的。现役门多了
+> `primary_shape_not_independently_supported` 分支, 按现役门重算,
+> `batch5/group3` sparse/tight 的双目 `stereo_rmse` 3.93/3.67mm ≥ 3.5mm,
+> 即便 weight 真的回到 0 也仍会触发该分支。
+> "两个开关一起关"的净效果由 [zero_branch_check.py](zero_branch_check.py)
+> 单变量实测, 结果见 §10.3。
+>
+> **但这条路本身不值得走**: 它等价于退回 G1, 而 G1 达标 0 项(§3)。
 
 ## 5. 根因: VINS 的度量尺度 (本次排查的核心发现)
 
@@ -220,7 +273,9 @@ G2 触发质量门 REJECT 的 9 项, 在 G1 下的成绩:
 | [scale_confound_check.py](scale_confound_check.py) / .json | 检验质量门触发量是否被 VINS 尺度污染(**结果: 否**) |
 | [gt_freeze_scan.py](gt_freeze_scan.py) / .json | 真值 freeze-then-catchup 伪影检测(**结果: 不是失败原因**) |
 | [gt_roughness_vs_ate.py](gt_roughness_vs_ate.py) / .json | 真值毛糙度 vs ATE(**结果: 毛糙 0.86mm ≪ ATE 10.4mm**) |
-| [vins_weight_sweep.py](vins_weight_sweep.py) | VINS 分支取舍跨全组扫描(见 §10) |
+| [vins_weight_sweep.py](vins_weight_sweep.py) / .json(scratch) | VINS 分支取舍跨全组扫描(见 §10) |
+| [sigma_policy_sweep.py](sigma_policy_sweep.py) | 质量门策略 / 尺度权重 / 姿态节点密度扫描(见 §11) |
+| [zero_branch_check.py](zero_branch_check.py) | 把 onboard 分支真正压到 0 的单变量实测(见 §10.1) |
 | [despike_test.py](despike_test.py) | 去尖峰+插值假说检验 |
 | `*_probe.py`, `f1.py`, `fps.py`, `cmp.py`, `crosscheck.py` | 排查过程中的一次性探针 |
 
@@ -241,11 +296,69 @@ $P rerun_tail.py \
 $P g2_sweep.py
 ```
 
-## 9. 待办 / 未决
+## 10. VINS 分支取舍: 现役 A 组就是最优解 (已实测, 不再是"待决")
 
-- `--docker2-local-weight` 是否回到 0? G2 用 0.25 换来 1 条达标, 代价是 6 组质量门 REJECT。
-  **这是策略取舍, 需用户决定**; 任何改动都必须按"不许为单条轨迹调参"的规矩在全组重验
-  (复现台已具备这个能力)。
+问题(原 §9 第 1 条): 现役用 `--docker2-local-weight 0.25` 换来 1 条达标轨迹,
+代价是 9 项质量门 REJECT。**把权重退回 0 是不是更好?**
+
+[vins_weight_sweep.py](vins_weight_sweep.py) 在全 18 项上单变量扫了 4 个配置
+(前端/标定输入逐字节冻结, 只动尾段参数):
+
+| 配置 | 可比 | **达标** | **REJECT** | max 中位 | rmse 中位 | **max 最差** |
+|---|---|---|---|---|---|---|
+| **A: `--docker2-local-weight 0.25`(现役)** | 18 | **1** | 9 | 14.57 | 5.53 | **24.16** |
+| B: `--docker2-local-weight 0` | 18 | 0 | 9 | 14.41 | 4.99 | 29.79 |
+| C: `--docker2-local-weight 0.125` | 18 | 0 | 9 | 14.46 | 5.22 | 26.43 |
+| D: `--relative-motion-sigma-m 0.020`(放松 VINS 运动约束) | 18 | **1** | 9 | 15.09 | 5.57 | 23.70 |
+
+### 10.1 三条决定性证据
+
+**(1) 唯一那条达标轨迹对 VINS 权重是单调的** —— 权重越低越差:
+
+```
+v11b3/group2 tight   A(w=0.25)  max  9.79  rot 1.89  → PASS
+                     C(w=0.125) max 10.31  rot 1.92  → FAIL
+                     B(w=0)     max 10.77  rot 1.96  → FAIL
+```
+
+**B 与 C 都丢掉这条轨迹。** 注意这与 §5 "元凶是 VINS" 并不矛盾:
+VINS 在**全局**上是最差的一条链(尺度可差 37%), 但在融合的鲁棒机制
+(节点图 + 尺度修正 + 上限截断)兜住之后, 在**这条好轨迹**上多给一点
+VINS 位置权重反而是净收益。全局结论不能外推到单条。
+
+**(2) 退回 0 一个 REJECT 也省不掉**: 四组配置的 REJECT 数**全是 9**。
+机制见 §4.2 —— `--adaptive-local-weight` 的 `np.clip(..., 0.02, 0.98)`
+把有效权重顶在 0.02, 质量门照样判定"用了 onboard 分支"。
+[zero_branch_check.py](zero_branch_check.py) 把 local-weight 与 adaptive **两个开关
+一起关**(等价于 G1 的 `weight == 0`)再测一遍, 结果见 §10.3。
+
+**(3) B 的最差情况明显更坏**: max 最差 29.79mm vs A 的 24.16mm(差 5.6mm)。
+B 只是把中位数磨平了一点点(14.41 vs 14.57) —— 典型的"用尾部风险换中位数",
+对本项目不可接受。
+
+### 10.2 结论与建议
+
+- **保持现役 A 组不变**(`--docker2-local-weight 0.25`)。
+  回退到 B 的收益是 0(REJECT 不减、中位几乎不动), 代价是丢掉唯一达标轨迹
+  且最差情况恶化 5.6mm。**§9 原第 1 条"待用户决定"就此关闭。**
+- **D 组可作为备选**: 达标数与 A 持平(同一条轨迹, max 9.80 vs 9.79),
+  max 最差最好(23.70), 姿态略优(1.85 vs 1.89), 但中位三项都略差。
+  若后续更看重"最坏组别"而非"典型组别", 可考虑切 D; 本次**不改**。
+- 质量门的策略问题(`visual_position_sigma` 方向、姿态节点密度)另见 §11。
+
+---
+
+## 11. 其余策略扫描
+
+§10 的 [vins_weight_sweep.py](vins_weight_sweep.py) 只动了 VINS 权重一条轴。
+[sigma_policy_sweep.py](sigma_policy_sweep.py) 再把 §5 里标为"方向存疑"的
+两条策略、G2↔G1 的 cap 模式差异、以及姿态节点密度各扫一遍(7 配置 × 18 项,
+同样逐字节冻结前端)。**结果待补。**
+
+---
+
+## 12. 待办 / 未决
+
 - **VINS 侧: 验收门缺尺度项** —— 建议加一条进 `run_acceptance`。
   为什么现在漏得掉, 值得记一笔: 报告里与 VINS 有关的诊断量都是**短时相对运动**的
   (`relative_motion_rmse_before_m` 1.7–6.2mm, `relative_motion_initial_disagreement_p95_m`
