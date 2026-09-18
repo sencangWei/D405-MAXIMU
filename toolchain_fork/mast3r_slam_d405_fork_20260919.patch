@@ -1,0 +1,1961 @@
+From 1484dd02fc5d146b16c865c7cbcab782339ffdd1 Mon Sep 17 00:00:00 2001
+From: sencangWei <272473936+sencangWei@users.noreply.github.com>
+Date: Sat, 19 Sep 2026 02:28:52 +0800
+Subject: [PATCH] =?UTF-8?q?D405=20fork:=20=E7=AB=8B=E4=BD=93=E7=82=B9?=
+ =?UTF-8?q?=E5=9B=BE=20SLAM=20+=20=E6=A0=87=E5=AE=9A/IMU=20=E5=85=88?=
+ =?UTF-8?q?=E9=AA=8C=20+=20=E5=85=B3=E9=94=AE=E5=B8=A7=E5=9B=BE=E8=81=94?=
+ =?UTF-8?q?=E5=90=88=E4=BC=98=E5=8C=96?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+在 MASt3R-SLAM 上游 (rmurai0610/MASt3R-SLAM @ e6f4e3d) 之上的 D405 定制改动,
+此前一直只存在于工作区, 无分支无 tag 无 stash。本次首次落盘。
+
+主要改动:
+- mast3r_slam/stereo_depth.py (新增, 388 行): D405 双红外立体深度与点图机制
+- main.py: --calib 相机模型载入(把 config["use_calib"] 置 True 的唯一途径)、
+  allow_tf32、关键帧/回环参数、标定与 IMU 先验入口
+- tracker.py (+420): 立体点图位姿求解、IMU 旋转先验约束
+- global_opt.py (+169): 多段关键帧图联合优化与修正量上限
+- frame.py / dataloader.py / evaluate.py: 立体帧、时间戳与评测支持
+- mast3r_slam/backend/src/{gn_kernels,matching_kernels}.cu, setup.py: 后端算子与构建调整
+- thirdparty/mast3r: model.py / retrieval/processor.py / curope kernels.cu 兼容性修正
+
+未纳入本提交(第三方/产物, 可重建):
+  thirdparty/lietorch (237M 依赖), .cuda/ (空), *.so (.gitignore 已排除)
+---
+ main.py                                       | 269 ++++++++++-
+ mast3r_slam/backend/src/gn_kernels.cu         |   8 +-
+ mast3r_slam/backend/src/matching_kernels.cu   |   4 +-
+ mast3r_slam/dataloader.py                     |  81 +++-
+ mast3r_slam/evaluate.py                       |  35 ++
+ mast3r_slam/frame.py                          |  42 +-
+ mast3r_slam/global_opt.py                     | 169 +++++++
+ mast3r_slam/stereo_depth.py                   | 388 ++++++++++++++++
+ mast3r_slam/tracker.py                        | 420 +++++++++++++++++-
+ setup.py                                      |   2 +
+ .../dust3r/croco/models/curope/kernels.cu     |   2 +-
+ thirdparty/mast3r/mast3r/model.py             |   5 +-
+ .../mast3r/mast3r/retrieval/processor.py      |   4 +-
+ 13 files changed, 1395 insertions(+), 34 deletions(-)
+ create mode 100644 mast3r_slam/stereo_depth.py
+
+diff --git a/main.py b/main.py
+index 20cfbbc..382397f 100644
+--- a/main.py
++++ b/main.py
+@@ -1,4 +1,5 @@
+ import argparse
++import dataclasses
+ import datetime
+ import pathlib
+ import sys
+@@ -21,10 +22,28 @@ from mast3r_slam.mast3r_utils import (
+ )
+ from mast3r_slam.multiprocess_utils import new_queue, try_get_msg
+ from mast3r_slam.tracker import FrameTracker
+-from mast3r_slam.visualization import WindowMsg, run_visualization
+ import torch.multiprocessing as mp
+ 
+ 
++@dataclasses.dataclass
++class RuntimeWindowMsg:
++    """Headless-safe copy of the visualization control message defaults."""
++
++    is_terminated: bool = False
++    is_paused: bool = False
++    next: bool = False
++    C_conf_threshold: float = 1.5
++
++
++def apply_rotation_prior(T_WC, quaternion_xyzw):
++    delta_data = torch.zeros((1, 8), dtype=T_WC.data.dtype, device=T_WC.data.device)
++    delta_data[:, 3:7] = torch.as_tensor(
++        quaternion_xyzw, dtype=T_WC.data.dtype, device=T_WC.data.device
++    )
++    delta_data[:, 7] = 1.0
++    return T_WC * lietorch.Sim3(delta_data)
++
++
+ def relocalization(frame, keyframes, factor_graph, retrieval_database):
+     # we are adding and then removing from the keyframe, so we need to be careful.
+     # The lock slows viz down but safer this way...
+@@ -71,12 +90,84 @@ def relocalization(frame, keyframes, factor_graph, retrieval_database):
+         return successful_loop_closure
+ 
+ 
++def confirmed_retrieval_indices(
++    retrieval_inds,
++    retrieval_history,
++    required_frames,
++    candidate_frame_ids=None,
++    current_frame_id=None,
++    immediate_frame_gap=0,
++    frame_id_radius=0,
++):
++    """Keep local candidates or scene-consistent candidates across queries."""
++    candidates = list(retrieval_inds)
++    if candidate_frame_ids is None:
++        candidate_frame_ids = {candidate: candidate for candidate in candidates}
++    if required_frames <= 1:
++        return candidates
++    recent = retrieval_history[-(required_frames - 1) :]
++    confirmed = []
++    for candidate in candidates:
++        candidate_frame_id = candidate_frame_ids[candidate]
++        if (
++            current_frame_id is not None
++            and 0 < current_frame_id - candidate_frame_id <= immediate_frame_gap
++        ):
++            confirmed.append(candidate)
++            continue
++        if len(recent) < required_frames - 1:
++            continue
++        if all(
++            any(
++                abs(candidate_frame_id - previous_frame_id) <= frame_id_radius
++                for previous_frame_id in previous
++            )
++            for previous in recent
++        ):
++            confirmed.append(candidate)
++    return confirmed
++
++
+ def run_backend(cfg, model, states, keyframes, K):
+     set_global_config(cfg)
+ 
+     device = keyframes.device
+     factor_graph = FactorGraph(model, keyframes, K, device)
+     retrieval_database = load_retriever(model)
++    retrieval_history = []
++    confirmation_frames = int(config["retrieval"].get("confirmation_frames", 1))
++    confirmation_frame_id_radius = int(
++        config["retrieval"].get("confirmation_frame_id_radius", 0)
++    )
++    confirmation_immediate_frame_gap = int(
++        config["retrieval"].get("confirmation_immediate_frame_gap", 0)
++    )
++    density_window = int(config["retrieval"].get("density_window", 10))
++    dense_min_keyframes = int(
++        config["retrieval"].get("dense_min_keyframes", density_window)
++    )
++    dense_max_mean_frame_gap = float(
++        config["retrieval"].get("dense_max_mean_frame_gap", 0)
++    )
++    retrieval_enabled = bool(config["retrieval"].get("enabled", True))
++    if confirmation_frames < 1:
++        raise ValueError("retrieval.confirmation_frames must be positive")
++    if confirmation_frame_id_radius < 0:
++        raise ValueError("retrieval.confirmation_frame_id_radius must be non-negative")
++    if confirmation_immediate_frame_gap < 0:
++        raise ValueError(
++            "retrieval.confirmation_immediate_frame_gap must be non-negative"
++        )
++    if density_window < 2:
++        raise ValueError("retrieval.density_window must be at least two")
++    if dense_min_keyframes < 3 or dense_min_keyframes > density_window:
++        raise ValueError(
++            "retrieval.dense_min_keyframes must be within [3, density_window]"
++        )
++    if dense_max_mean_frame_gap < 0:
++        raise ValueError("retrieval.dense_max_mean_frame_gap must be non-negative")
++    previous_confirmation_mode = None
++    dense_confirmation_latched = False
+ 
+     mode = states.get_mode()
+     while mode is not Mode.TERMINATED:
+@@ -106,12 +197,73 @@ def run_backend(cfg, model, states, keyframes, K):
+         for j in range(min(n_consec, idx)):
+             kf_idx.append(idx - 1 - j)
+         frame = keyframes[idx]
+-        retrieval_inds = retrieval_database.update(
+-            frame,
+-            add_after_query=True,
+-            k=config["retrieval"]["k"],
+-            min_thresh=config["retrieval"]["min_thresh"],
++        raw_retrieval_inds = (
++            list(
++                retrieval_database.update(
++                    frame,
++                    add_after_query=True,
++                    k=config["retrieval"]["k"],
++                    min_thresh=config["retrieval"]["min_thresh"],
++                )
++            )
++            if retrieval_enabled
++            else []
+         )
++        candidate_frame_ids = {
++            candidate: int(keyframes[candidate].frame_id)
++            for candidate in raw_retrieval_inds
++        }
++        current_frame_id = int(frame.frame_id)
++        density_start = max(1, idx - density_window)
++        density_frame_ids = [
++            int(keyframes[keyframe_index].frame_id)
++            for keyframe_index in range(density_start, idx + 1)
++        ]
++        dense_keyframes_observed = False
++        if len(density_frame_ids) >= dense_min_keyframes:
++            mean_frame_gap = (
++                density_frame_ids[-1] - density_frame_ids[0]
++            ) / (len(density_frame_ids) - 1)
++            dense_keyframes_observed = mean_frame_gap <= dense_max_mean_frame_gap
++        else:
++            mean_frame_gap = float("inf")
++        dense_confirmation_latched = (
++            dense_confirmation_latched or dense_keyframes_observed
++        )
++        dense_keyframes = dense_confirmation_latched
++        confirmation_mode = "dense_scene_cluster" if dense_keyframes else "sparse_exact"
++        if confirmation_mode != previous_confirmation_mode:
++            print(
++                "Loop confirmation mode",
++                idx,
++                ":",
++                confirmation_mode,
++                "mean_source_frame_gap=",
++                mean_frame_gap,
++            )
++            previous_confirmation_mode = confirmation_mode
++        immediate_frame_gap = (
++            confirmation_immediate_frame_gap if dense_keyframes else 0
++        )
++        frame_id_radius = confirmation_frame_id_radius if dense_keyframes else 0
++        retrieval_inds = confirmed_retrieval_indices(
++            raw_retrieval_inds,
++            retrieval_history,
++            confirmation_frames,
++            candidate_frame_ids=candidate_frame_ids,
++            current_frame_id=current_frame_id,
++            immediate_frame_gap=immediate_frame_gap,
++            frame_id_radius=frame_id_radius,
++        )
++        rejected_retrieval_inds = sorted(set(raw_retrieval_inds) - set(retrieval_inds))
++        retrieval_history.append(set(candidate_frame_ids.values()))
++        if rejected_retrieval_inds:
++            print(
++                "Retrieval pending multi-frame confirmation",
++                idx,
++                ": ",
++                rejected_retrieval_inds,
++            )
+         kf_idx += retrieval_inds
+ 
+         lc_inds = set(retrieval_inds)
+@@ -155,7 +307,13 @@ if __name__ == "__main__":
+     parser.add_argument("--config", default="config/base.yaml")
+     parser.add_argument("--save-as", default="default")
+     parser.add_argument("--no-viz", action="store_true")
++    parser.add_argument("--no-reconstruction", action="store_true")
+     parser.add_argument("--calib", default="")
++    parser.add_argument(
++        "--checkpoint",
++        default=None,
++        help="optional MASt3R model checkpoint; defaults to the official metric model",
++    )
+ 
+     args = parser.parse_args()
+ 
+@@ -169,7 +327,25 @@ if __name__ == "__main__":
+ 
+     dataset = load_dataset(args.dataset)
+     dataset.subsample(config["dataset"]["subsample"])
++    use_imu_rotation_prior = bool(
++        config["tracking"].get("imu_rotation_prior", False)
++    )
++    use_stereo_pointmap_scale = bool(
++        config["tracking"].get("stereo_pointmap_scale_prior", False)
++    )
++    if use_imu_rotation_prior and dataset.rotation_priors is None:
++        raise ValueError(
++            "tracking.imu_rotation_prior requires imu_rotation_priors.csv"
++        )
++    if use_imu_rotation_prior:
++        print("Using calibrated IMU rotation priors for frame initialization")
+     h, w = dataset.get_img_shape()[0]
++    if use_stereo_pointmap_scale and dataset.stereo_depth_provider is None:
++        raise ValueError(
++            "tracking.stereo_pointmap_scale_prior requires exported stereo-right images"
++        )
++    if use_stereo_pointmap_scale:
++        print("Using synchronized D405 stereo pointmap scale priors")
+ 
+     if args.calib:
+         with open(args.calib, "r") as f:
+@@ -187,13 +363,15 @@ if __name__ == "__main__":
+     states = SharedStates(manager, h, w)
+ 
+     if not args.no_viz:
++        from mast3r_slam.visualization import run_visualization
++
+         viz = mp.Process(
+             target=run_visualization,
+             args=(config, states, keyframes, main2viz, viz2main),
+         )
+         viz.start()
+ 
+-    model = load_mast3r(device=device)
++    model = load_mast3r(path=args.checkpoint, device=device)
+     model.share_memory()
+ 
+     has_calib = dataset.has_calib()
+@@ -220,7 +398,7 @@ if __name__ == "__main__":
+             recon_file.unlink()
+ 
+     tracker = FrameTracker(model, keyframes, device)
+-    last_msg = WindowMsg()
++    last_msg = RuntimeWindowMsg()
+ 
+     backend = mp.Process(target=run_backend, args=(config, model, states, keyframes, K))
+     backend.start()
+@@ -229,6 +407,8 @@ if __name__ == "__main__":
+     fps_timer = time.time()
+ 
+     frames = []
++    tracked_poses = []
++    online_poses = []
+ 
+     while True:
+         mode = states.get_mode()
+@@ -260,27 +440,59 @@ if __name__ == "__main__":
+             if i == 0
+             else states.get_frame().T_WC
+         )
+-        frame = create_frame(i, img, T_WC, img_size=dataset.img_size, device=device)
++        if use_imu_rotation_prior and i > 0:
++            T_WC = apply_rotation_prior(T_WC, dataset.get_rotation_prior(i))
++        metric_depth = (
++            dataset.get_stereo_depth(i, (h, w)) if use_stereo_pointmap_scale else None
++        )
++        frame = create_frame(
++            i,
++            img,
++            T_WC,
++            img_size=dataset.img_size,
++            device=device,
++            metric_depth=metric_depth,
++        )
+ 
+         if mode == Mode.INIT:
+             # Initialize via mono inference, and encoded features neeed for database
+             X_init, C_init = mast3r_inference_mono(model, frame)
++            (X_init,), stereo_scale_report = tracker.scale_pointmaps(
++                (X_init,), C_init, frame.metric_depth
++            )
++            frame.metric_anchor_mask = tracker.last_metric_anchor_mask
++            if use_stereo_pointmap_scale:
++                print("Stereo pointmap scale", frame.frame_id, stereo_scale_report)
+             frame.update_pointmap(X_init, C_init)
+             keyframes.append(frame)
++            tracked_poses.append(
++                (frame.frame_id, 0, lietorch.Sim3.Identity(1).data.cpu())
++            )
++            online_poses.append((frame.frame_id, frame.T_WC.data.detach().cpu()))
+             states.queue_global_optimization(len(keyframes) - 1)
+             states.set_mode(Mode.TRACKING)
+             states.set_frame(frame)
+             i += 1
+             continue
+ 
++        add_new_kf = False
++        tracked = False
+         if mode == Mode.TRACKING:
+             add_new_kf, match_info, try_reloc = tracker.track(frame)
+             if try_reloc:
+                 states.set_mode(Mode.RELOC)
++            else:
++                tracked = True
+             states.set_frame(frame)
+ 
+         elif mode == Mode.RELOC:
+             X, C = mast3r_inference_mono(model, frame)
++            (X,), stereo_scale_report = tracker.scale_pointmaps(
++                (X,), C, frame.metric_depth
++            )
++            frame.metric_anchor_mask = tracker.last_metric_anchor_mask
++            if use_stereo_pointmap_scale:
++                print("Stereo pointmap scale", frame.frame_id, stereo_scale_report)
+             frame.update_pointmap(X, C)
+             states.set_frame(frame)
+             states.queue_reloc()
+@@ -303,6 +515,24 @@ if __name__ == "__main__":
+                     if len(states.global_optimizer_tasks) == 0:
+                         break
+                 time.sleep(0.01)
++        if tracked:
++            anchor_idx = len(keyframes) - 1
++            if add_new_kf:
++                relative_pose = lietorch.Sim3.Identity(1)
++            else:
++                relative_pose = keyframes[anchor_idx].T_WC.inv() * frame.T_WC
++            tracked_poses.append(
++                (frame.frame_id, anchor_idx, relative_pose.data.detach().cpu())
++            )
++            online_poses.append((frame.frame_id, frame.T_WC.data.detach().cpu()))
++        elif mode == Mode.RELOC and states.get_mode() == Mode.TRACKING:
++            anchor_idx = len(keyframes) - 1
++            anchor = keyframes[anchor_idx]
++            if anchor.frame_id == frame.frame_id:
++                tracked_poses.append(
++                    (frame.frame_id, anchor_idx, lietorch.Sim3.Identity(1).data.cpu())
++                )
++                online_poses.append((frame.frame_id, frame.T_WC.data.detach().cpu()))
+         # log time
+         if i % 30 == 0:
+             FPS = i / (time.time() - fps_timer)
+@@ -312,12 +542,27 @@ if __name__ == "__main__":
+     if dataset.save_results:
+         save_dir, seq_name = eval.prepare_savedir(args, dataset)
+         eval.save_traj(save_dir, f"{seq_name}.txt", dataset.timestamps, keyframes)
+-        eval.save_reconstruction(
++        eval.save_full_traj(
+             save_dir,
+-            f"{seq_name}.ply",
++            f"{seq_name}_full.txt",
++            dataset.timestamps,
+             keyframes,
+-            last_msg.C_conf_threshold,
++            tracked_poses,
+         )
++        eval.save_online_traj(
++            save_dir,
++            f"{seq_name}_online.txt",
++            dataset.timestamps,
++            keyframes,
++            online_poses,
++        )
++        if not args.no_reconstruction:
++            eval.save_reconstruction(
++                save_dir,
++                f"{seq_name}.ply",
++                keyframes,
++                last_msg.C_conf_threshold,
++            )
+         eval.save_keyframes(
+             save_dir / "keyframes" / seq_name, dataset.timestamps, keyframes
+         )
+diff --git a/mast3r_slam/backend/src/gn_kernels.cu b/mast3r_slam/backend/src/gn_kernels.cu
+index bf2d588..4e9c372 100644
+--- a/mast3r_slam/backend/src/gn_kernels.cu
++++ b/mast3r_slam/backend/src/gn_kernels.cu
+@@ -799,7 +799,7 @@ std::vector<torch::Tensor> gauss_newton_points_cuda(
+ 
+     // Termination criteria
+     // Need to specify this second argument otherwise ambiguous function call...
+-    delta_norm = torch::linalg::linalg_norm(dx, std::optional<c10::Scalar>(), {}, false, {});
++    delta_norm = at::norm(dx);
+     if (delta_norm.item<float>() < delta_thresh) {
+       break;
+     }
+@@ -1216,7 +1216,7 @@ std::vector<torch::Tensor> gauss_newton_rays_cuda(
+ 
+     // Termination criteria
+     // Need to specify this second argument otherwise ambiguous function call...
+-    delta_norm = torch::linalg::linalg_norm(dx, std::optional<c10::Scalar>(), {}, false, {});
++    delta_norm = at::norm(dx);
+     if (delta_norm.item<float>() < delta_thresh) {
+       break;
+     }
+@@ -1626,7 +1626,7 @@ std::vector<torch::Tensor> gauss_newton_calib_cuda(
+ 
+     // Termination criteria
+     // Need to specify this second argument otherwise ambiguous function call...
+-    delta_norm = torch::linalg::linalg_norm(dx, std::optional<c10::Scalar>(), {}, false, {});
++    delta_norm = at::norm(dx);
+     if (delta_norm.item<float>() < delta_thresh) {
+       break;
+     }
+@@ -1635,4 +1635,4 @@ std::vector<torch::Tensor> gauss_newton_calib_cuda(
+   }
+ 
+   return {dx}; // For debugging
+-}
+\ No newline at end of file
++}
+diff --git a/mast3r_slam/backend/src/matching_kernels.cu b/mast3r_slam/backend/src/matching_kernels.cu
+index 288fa4c..c4fe931 100644
+--- a/mast3r_slam/backend/src/matching_kernels.cu
++++ b/mast3r_slam/backend/src/matching_kernels.cu
+@@ -100,7 +100,7 @@ std::vector<torch::Tensor> refine_matches_cuda(
+   torch::Tensor p1_new = torch::zeros(
+     {batch_size, n, 2}, opts);
+ 
+-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(D11.type(), "refine_matches_kernel", ([&] {
++  AT_DISPATCH_FLOATING_TYPES_AND_HALF(D11.scalar_type(), "refine_matches_kernel", ([&] {
+     refine_matches_kernel<scalar_t><<<blocks, threads>>>(
+       D11.packed_accessor32<scalar_t,4,torch::RestrictPtrTraits>(),
+       D21.packed_accessor32<scalar_t,3,torch::RestrictPtrTraits>(),
+@@ -313,4 +313,4 @@ std::vector<torch::Tensor> iter_proj_cuda(
+ 
+   return {p_new, converged};
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/mast3r_slam/dataloader.py b/mast3r_slam/dataloader.py
+index 35e6f9d..59c7a29 100644
+--- a/mast3r_slam/dataloader.py
++++ b/mast3r_slam/dataloader.py
+@@ -1,14 +1,17 @@
+ import pathlib
+ import re
++import csv
+ import cv2
+ from natsort import natsorted
+ import numpy as np
+ import torch
+ import pyrealsense2 as rs
+ import yaml
++from scipy.spatial.transform import Rotation
+ 
+ from mast3r_slam.mast3r_utils import resize_img
+ from mast3r_slam.config import config
++from mast3r_slam.stereo_depth import StereoDepthProvider
+ 
+ HAS_TORCHCODEC = True
+ try:
+@@ -17,6 +20,24 @@ except Exception as e:
+     HAS_TORCHCODEC = False
+ 
+ 
++def reverse_incremental_rotation_priors(rotation_priors):
++    """Invert forward frame increments for reverse chronological tracking."""
++    rotation_priors = np.asarray(rotation_priors)
++    if rotation_priors.ndim != 2 or rotation_priors.shape[1] != 4:
++        raise ValueError("rotation priors must have shape (N, 4)")
++    if len(rotation_priors) == 0:
++        return rotation_priors.copy()
++    reversed_priors = np.empty_like(rotation_priors)
++    reversed_priors[0] = np.asarray(
++        [0.0, 0.0, 0.0, 1.0], dtype=rotation_priors.dtype
++    )
++    if len(rotation_priors) > 1:
++        reversed_priors[1:] = Rotation.from_quat(
++            rotation_priors[:0:-1]
++        ).inv().as_quat().astype(rotation_priors.dtype)
++    return reversed_priors
++
++
+ class MonocularDataset(torch.utils.data.Dataset):
+     def __init__(self, dtype=np.float32):
+         self.dtype = dtype
+@@ -24,6 +45,8 @@ class MonocularDataset(torch.utils.data.Dataset):
+         self.timestamps = []
+         self.img_size = 512
+         self.camera_intrinsics = None
++        self.rotation_priors = None
++        self.stereo_depth_provider = None
+         self.use_calibration = config["use_calib"]
+         self.save_results = True
+ 
+@@ -59,6 +82,21 @@ class MonocularDataset(torch.utils.data.Dataset):
+     def subsample(self, subsample):
+         self.rgb_files = self.rgb_files[::subsample]
+         self.timestamps = self.timestamps[::subsample]
++        if self.rotation_priors is not None:
++            if subsample != 1:
++                raise ValueError("IMU rotation priors currently require dataset subsample=1")
++
++    def get_rotation_prior(self, idx):
++        if self.rotation_priors is None:
++            return None
++        return self.rotation_priors[idx]
++
++    def get_stereo_depth(self, idx, target_shape):
++        if self.stereo_depth_provider is None:
++            return None
++        return self.stereo_depth_provider.get_depth(
++            pathlib.Path(self.rgb_files[idx]), target_shape
++        )
+ 
+     def has_calib(self):
+         return self.camera_intrinsics is not None
+@@ -272,6 +310,33 @@ class RGBFiles(MonocularDataset):
+         self.dataset_path = pathlib.Path(dataset_path)
+         self.rgb_files = natsorted(list((self.dataset_path).glob("*.png")))
+         self.timestamps = np.arange(0, len(self.rgb_files)).astype(self.dtype) / 30.0
++        self.stereo_depth_provider = StereoDepthProvider.from_dataset(self.dataset_path)
++        reverse_order = bool(config["dataset"].get("reverse_order", False))
++        if reverse_order:
++            self.rgb_files.reverse()
++        prior_path = self.dataset_path / "imu_rotation_priors.csv"
++        if prior_path.is_file():
++            rows = list(csv.DictReader(prior_path.open(newline="", encoding="utf-8")))
++            if len(rows) != len(self.rgb_files):
++                raise ValueError("IMU rotation prior count does not match RGB frames")
++            indices = [int(row["input_index"]) for row in rows]
++            if indices != list(range(len(rows))):
++                raise ValueError("IMU rotation prior indices are not contiguous")
++            rotation_priors = np.asarray(
++                [
++                    [float(row[key]) for key in ("qx", "qy", "qz", "qw")]
++                    for row in rows
++                ],
++                dtype=self.dtype,
++            )
++            if reverse_order:
++                # Forward row i stores the increment from frame i-1 to i.
++                # A reverse pass needs the inverse increments in reverse order;
++                # its first frame, like the forward pass, has an identity prior.
++                rotation_priors = reverse_incremental_rotation_priors(
++                    rotation_priors
++                )
++            self.rotation_priors = rotation_priors
+ 
+ 
+ class Intrinsics:
+@@ -304,12 +369,16 @@ class Intrinsics:
+         if len(calib) > 4:
+             distortion = np.array(calib[4:])
+         K = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
+-        K_opt = K.copy()
+-        mapx, mapy = None, None
+-        center = config["dataset"]["center_principle_point"]
+-        K_opt, _ = cv2.getOptimalNewCameraMatrix(
+-            K, distortion, (W, H), 0, (W, H), centerPrincipalPoint=center
+-        )
++        zero_distortion = np.allclose(distortion, 0.0, atol=1e-12)
++        if zero_distortion and not always_undistort:
++            # Preserve the measured D405 pixel geometry. Re-centering a
++            # distortion-free image shifts it relative to the raw stereo depth.
++            K_opt = K.copy()
++        else:
++            center = config["dataset"]["center_principle_point"]
++            K_opt, _ = cv2.getOptimalNewCameraMatrix(
++                K, distortion, (W, H), 0, (W, H), centerPrincipalPoint=center
++            )
+         mapx, mapy = cv2.initUndistortRectifyMap(
+             K, distortion, None, K_opt, (W, H), cv2.CV_32FC1
+         )
+diff --git a/mast3r_slam/evaluate.py b/mast3r_slam/evaluate.py
+index c5605b1..456ff3c 100644
+--- a/mast3r_slam/evaluate.py
++++ b/mast3r_slam/evaluate.py
+@@ -44,6 +44,41 @@ def save_traj(
+             f.write(f"{t} {x} {y} {z} {qx} {qy} {qz} {qw}\n")
+ 
+ 
++def save_full_traj(logdir, logfile, timestamps, frames, tracked_poses):
++    """Save tracked camera poses after re-anchoring them to optimized keyframes.
++
++    Each record stores the frame pose relative to the keyframe that tracked it.
++    Applying the final optimized keyframe pose propagates offline backend and loop
++    corrections without inventing poses from an external trajectory.
++    """
++    logfile = pathlib.Path(logdir) / logfile
++    logfile.parent.mkdir(exist_ok=True, parents=True)
++    with logfile.open("w") as stream:
++        for frame_id, anchor_idx, relative_pose_data in tracked_poses:
++            anchor = frames[anchor_idx].T_WC
++            relative = type(anchor)(relative_pose_data.to(anchor.data.device))
++            T_WC = as_SE3(anchor * relative)
++            x, y, z, qx, qy, qz, qw = T_WC.data.numpy().reshape(-1)
++            stream.write(
++                f"{timestamps[frame_id]} {x} {y} {z} {qx} {qy} {qz} {qw}\n"
++            )
++
++
++def save_online_traj(logdir, logfile, timestamps, frames, online_poses):
++    """Save the poses emitted by the frontend before backend re-anchoring."""
++    logfile = pathlib.Path(logdir) / logfile
++    logfile.parent.mkdir(exist_ok=True, parents=True)
++    pose_type = type(frames[0].T_WC)
++    device = frames[0].T_WC.data.device
++    with logfile.open("w") as stream:
++        for frame_id, pose_data in online_poses:
++            T_WC = as_SE3(pose_type(pose_data.to(device)))
++            x, y, z, qx, qy, qz, qw = T_WC.data.numpy().reshape(-1)
++            stream.write(
++                f"{timestamps[frame_id]} {x} {y} {z} {qx} {qy} {qz} {qw}\n"
++            )
++
++
+ def save_reconstruction(savedir, filename, keyframes, c_conf_threshold):
+     savedir = pathlib.Path(savedir)
+     savedir.mkdir(exist_ok=True, parents=True)
+diff --git a/mast3r_slam/frame.py b/mast3r_slam/frame.py
+index 127fa06..5b2e8af 100644
+--- a/mast3r_slam/frame.py
++++ b/mast3r_slam/frame.py
+@@ -2,6 +2,7 @@ import dataclasses
+ from enum import Enum
+ from typing import Optional
+ import lietorch
++import numpy as np
+ import torch
+ from mast3r_slam.mast3r_utils import resize_img
+ from mast3r_slam.config import config
+@@ -29,6 +30,8 @@ class Frame:
+     N: int = 0
+     N_updates: int = 0
+     K: Optional[torch.Tensor] = None
++    metric_depth: Optional[np.ndarray] = None
++    metric_anchor_mask: Optional[torch.Tensor] = None
+ 
+     def get_score(self, C):
+         filtering_score = config["tracking"]["filtering_score"]
+@@ -108,17 +111,18 @@ class Frame:
+         return self.C / self.N if self.C is not None else None
+ 
+ 
+-def create_frame(i, img, T_WC, img_size=512, device="cuda:0"):
++def create_frame(i, img, T_WC, img_size=512, device="cuda:0", metric_depth=None):
+     img = resize_img(img, img_size)
+     rgb = img["img"].to(device=device)
+     img_shape = torch.tensor(img["true_shape"], device=device)
+     img_true_shape = img_shape.clone()
+-    uimg = torch.from_numpy(img["unnormalized_img"]) / 255.0
++    # PIL-backed arrays can be read-only; SharedKeyframes may retain this tensor.
++    uimg = torch.from_numpy(np.array(img["unnormalized_img"], copy=True)) / 255.0
+     downsample = config["dataset"]["img_downsample"]
+     if downsample > 1:
+         uimg = uimg[::downsample, ::downsample]
+         img_shape = img_shape // downsample
+-    frame = Frame(i, rgb, img_shape, img_true_shape, uimg, T_WC)
++    frame = Frame(i, rgb, img_shape, img_true_shape, uimg, T_WC, metric_depth=metric_depth)
+     return frame
+ 
+ 
+@@ -151,6 +155,10 @@ class SharedStates:
+         self.C = torch.zeros(h * w, 1, device=device, dtype=dtype).share_memory_()
+         self.feat = torch.zeros(1, self.num_patches, self.feat_dim, device=device, dtype=dtype).share_memory_()
+         self.pos = torch.zeros(1, self.num_patches, 2, device=device, dtype=torch.long).share_memory_()
++        self.metric_anchor_mask = torch.zeros(h * w, device=device, dtype=torch.bool).share_memory_()
++        self.metric_depth = torch.full(
++            (h, w), float("nan"), device="cpu", dtype=dtype
++        ).share_memory_()
+         # fmt: on
+ 
+     def set_frame(self, frame):
+@@ -165,6 +173,16 @@ class SharedStates:
+             self.C[:] = frame.C
+             self.feat[:] = frame.feat
+             self.pos[:] = frame.pos
++            if frame.metric_anchor_mask is None:
++                self.metric_anchor_mask.zero_()
++            else:
++                self.metric_anchor_mask[:] = frame.metric_anchor_mask
++            if frame.metric_depth is None:
++                self.metric_depth.fill_(float("nan"))
++            else:
++                self.metric_depth[:] = torch.as_tensor(
++                    frame.metric_depth, device="cpu", dtype=self.dtype
++                )
+ 
+     def get_frame(self):
+         with self.lock:
+@@ -180,6 +198,8 @@ class SharedStates:
+             frame.C = self.C
+             frame.feat = self.feat
+             frame.pos = self.pos
++            frame.metric_anchor_mask = self.metric_anchor_mask
++            frame.metric_depth = self.metric_depth
+             return frame
+ 
+     def queue_global_optimization(self, idx):
+@@ -245,6 +265,10 @@ class SharedKeyframes:
+         self.pos = torch.zeros(buffer, 1, self.num_patches, 2, device=device, dtype=torch.long).share_memory_()
+         self.is_dirty = torch.zeros(buffer, 1, device=device, dtype=torch.bool).share_memory_()
+         self.K = torch.zeros(3, 3, device=device, dtype=dtype).share_memory_()
++        self.metric_anchor_mask = torch.zeros(buffer, h * w, device=device, dtype=torch.bool).share_memory_()
++        self.metric_depth = torch.full(
++            (buffer, h, w), float("nan"), device="cpu", dtype=dtype
++        ).share_memory_()
+         # fmt: on
+ 
+     def __getitem__(self, idx) -> Frame:
+@@ -264,6 +288,8 @@ class SharedKeyframes:
+             kf.pos = self.pos[idx]
+             kf.N = int(self.N[idx])
+             kf.N_updates = int(self.N_updates[idx])
++            kf.metric_anchor_mask = self.metric_anchor_mask[idx]
++            kf.metric_depth = self.metric_depth[idx]
+             if config["use_calib"]:
+                 kf.K = self.K
+             return kf
+@@ -285,6 +311,16 @@ class SharedKeyframes:
+             self.pos[idx] = value.pos
+             self.N[idx] = value.N
+             self.N_updates[idx] = value.N_updates
++            if value.metric_anchor_mask is None:
++                self.metric_anchor_mask[idx].zero_()
++            else:
++                self.metric_anchor_mask[idx] = value.metric_anchor_mask
++            if value.metric_depth is None:
++                self.metric_depth[idx].fill_(float("nan"))
++            else:
++                self.metric_depth[idx] = torch.as_tensor(
++                    value.metric_depth, device="cpu", dtype=self.dtype
++                )
+             self.is_dirty[idx] = True
+             return idx
+ 
+diff --git a/mast3r_slam/global_opt.py b/mast3r_slam/global_opt.py
+index 33d0c00..047ef9b 100644
+--- a/mast3r_slam/global_opt.py
++++ b/mast3r_slam/global_opt.py
+@@ -1,4 +1,5 @@
+ import lietorch
++import numpy as np
+ import torch
+ from mast3r_slam.config import config
+ from mast3r_slam.frame import SharedKeyframes
+@@ -6,6 +7,10 @@ from mast3r_slam.geometry import (
+     constrain_points_to_ray,
+ )
+ from mast3r_slam.mast3r_utils import mast3r_match_symmetric
++from mast3r_slam.stereo_depth import (
++    force_unit_sim3_scale,
++    solve_metric_keyframe_pnp,
++)
+ import mast3r_slam_backends
+ 
+ 
+@@ -27,6 +32,151 @@ class FactorGraph:
+ 
+         self.K = K
+ 
++    def _metric_pnp_direction(
++        self, source_frame, target_frame, target_to_source_index, valid_target
++    ):
++        """Estimate one directed camera motion from source stereo depth."""
++        cfg = self.cfg
++        report = {"accepted": False}
++        if self.K is None:
++            report["reason"] = "camera_intrinsics_unavailable"
++            return None, report
++        if (
++            source_frame.metric_anchor_mask is None
++            or target_frame.metric_anchor_mask is None
++            or source_frame.metric_depth is None
++        ):
++            report["reason"] = "metric_depth_unavailable"
++            return None, report
++
++        pixel_count = int(target_to_source_index.numel())
++        current_indices = torch.arange(pixel_count, device=self.device)
++        source_indices = target_to_source_index.reshape(-1).long()
++        valid = valid_target.reshape(-1).bool()
++        valid &= source_indices >= 0
++        valid &= source_indices < source_frame.metric_anchor_mask.numel()
++        valid &= target_frame.metric_anchor_mask[:pixel_count]
++        safe_source_indices = source_indices.clamp(
++            min=0, max=source_frame.metric_anchor_mask.numel() - 1
++        )
++        valid &= source_frame.metric_anchor_mask[safe_source_indices]
++        candidates = current_indices[valid]
++        maximum_points = int(cfg.get("metric_loop_pnp_max_points", 5000))
++        if candidates.numel() > maximum_points:
++            sample = torch.linspace(
++                0,
++                candidates.numel() - 1,
++                maximum_points,
++                device=candidates.device,
++            ).long()
++            candidates = candidates[sample]
++        if candidates.numel() == 0:
++            report["reason"] = "no_metric_correspondences"
++            return None, report
++
++        source_indices = safe_source_indices[candidates].cpu()
++        candidates = candidates.cpu()
++        source_width = int(source_frame.img.shape[-1])
++        target_width = int(target_frame.img.shape[-1])
++        source_depth = source_frame.metric_depth.reshape(-1)[source_indices]
++        finite_depth = torch.isfinite(source_depth) & (source_depth > 0.0)
++        candidates = candidates[finite_depth]
++        source_indices = source_indices[finite_depth]
++        source_depth = source_depth[finite_depth]
++        if candidates.numel() == 0:
++            report["reason"] = "no_finite_metric_depth"
++            return None, report
++        source_u = (source_indices % source_width).to(source_depth.dtype)
++        source_v = (source_indices // source_width).to(source_depth.dtype)
++        camera_matrix = self.K.detach().cpu()
++        fx, fy = camera_matrix[0, 0], camera_matrix[1, 1]
++        cx, cy = camera_matrix[0, 2], camera_matrix[1, 2]
++        object_points = torch.stack(
++            (
++                (source_u - cx) * source_depth / fx,
++                (source_v - cy) * source_depth / fy,
++                source_depth,
++            ),
++            dim=-1,
++        )
++        image_points = torch.stack(
++            (candidates % target_width, candidates // target_width), dim=-1
++        ).float()
++        transform, pnp_report = solve_metric_keyframe_pnp(
++            object_points.detach().cpu().numpy(),
++            image_points.detach().cpu().numpy(),
++            camera_matrix.numpy(),
++            minimum_points=int(cfg.get("metric_loop_pnp_min_points", 100)),
++            minimum_inlier_ratio=float(
++                cfg.get("metric_loop_pnp_min_inlier_ratio", 0.5)
++            ),
++            reprojection_error_px=float(
++                cfg.get("metric_loop_pnp_reprojection_error_px", 2.0)
++            ),
++        )
++        report.update(pnp_report)
++        maximum_p95 = float(
++            cfg.get("metric_loop_pnp_max_reprojection_p95_px", 4.0)
++        )
++        if not pnp_report.get("accepted"):
++            return None, report
++        if float(pnp_report["reprojection_p95_px"]) > maximum_p95:
++            report["accepted"] = False
++            report["reason"] = "metric_pnp_reprojection_p95_high"
++            return None, report
++        return transform, report
++
++    def metric_loop_gate(
++        self,
++        frame_i,
++        frame_j,
++        index_j_to_i,
++        valid_j,
++        index_i_to_j,
++        valid_i,
++    ):
++        """Validate a retrieval with bidirectional onboard-stereo geometry."""
++        report = {
++            "accepted": False,
++            "first_frame_id": int(frame_i.frame_id),
++            "second_frame_id": int(frame_j.frame_id),
++            "geometry_source": "bidirectional_d405_stereo_depth",
++        }
++        forward, forward_report = self._metric_pnp_direction(
++            frame_i, frame_j, index_j_to_i, valid_j
++        )
++        report["forward"] = forward_report
++        if forward is None:
++            report["reason"] = "forward_metric_pnp_failed"
++            return False, report
++
++        reverse, reverse_report = self._metric_pnp_direction(
++            frame_j, frame_i, index_i_to_j, valid_i
++        )
++        report["reverse"] = reverse_report
++        if reverse is None:
++            report["reason"] = "reverse_metric_pnp_failed"
++            return False, report
++
++        cycle = reverse @ forward
++        cycle_translation_m = float(np.linalg.norm(cycle[:3, 3]))
++        rotation_cosine = np.clip((np.trace(cycle[:3, :3]) - 1.0) / 2.0, -1.0, 1.0)
++        cycle_rotation_deg = float(np.degrees(np.arccos(rotation_cosine)))
++        report["cycle_translation_m"] = cycle_translation_m
++        report["cycle_rotation_deg"] = cycle_rotation_deg
++        if cycle_translation_m > float(
++            self.cfg.get("metric_loop_pnp_max_cycle_translation_m", 0.01)
++        ):
++            report["reason"] = "metric_pnp_cycle_translation_high"
++            return False, report
++        if cycle_rotation_deg > float(
++            self.cfg.get("metric_loop_pnp_max_cycle_rotation_deg", 2.0)
++        ):
++            report["reason"] = "metric_pnp_cycle_rotation_high"
++            return False, report
++        report["accepted"] = True
++        return True, report
++
+     def add_factors(self, ii, jj, min_match_frac, is_reloc=False):
+         kf_ii = [self.frames[idx] for idx in ii]
+         kf_jj = [self.frames[idx] for idx in jj]
+@@ -73,6 +223,22 @@ class FactorGraph:
+         consecutive_edges = ii_tensor == (jj_tensor - 1)
+         invalid_edges = (~consecutive_edges) & invalid_edges
+ 
++        if bool(self.cfg.get("metric_loop_gate", False)):
++            for edge_index, consecutive in enumerate(consecutive_edges.tolist()):
++                if consecutive or bool(invalid_edges[edge_index].item()):
++                    continue
++                accepted, report = self.metric_loop_gate(
++                    kf_ii[edge_index],
++                    kf_jj[edge_index],
++                    idx_i2j[edge_index],
++                    valid_j[edge_index],
++                    idx_j2i[edge_index],
++                    valid_i[edge_index],
++                )
++                print("Metric loop gate", report)
++                if not accepted:
++                    invalid_edges[edge_index] = True
++
+         if invalid_edges.any() and is_reloc:
+             return False
+ 
+@@ -209,5 +375,8 @@ class FactorGraph:
+             delta_thresh,
+         )
+ 
++        if bool(config["tracking"].get("stereo_fix_pose_scale", False)):
++            T_WCs = force_unit_sim3_scale(T_WCs)
++
+         # Update the keyframe T_WC
+         self.frames.update_T_WCs(T_WCs[pin:], unique_kf_idx[pin:])
+diff --git a/mast3r_slam/stereo_depth.py b/mast3r_slam/stereo_depth.py
+new file mode 100644
+index 0000000..db2c089
+--- /dev/null
++++ b/mast3r_slam/stereo_depth.py
+@@ -0,0 +1,388 @@
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import cv2
++import numpy as np
++import torch
++
++
++def force_unit_sim3_scale(pose):
++    data = pose.data.clone() if hasattr(pose.data, "clone") else pose.data.copy()
++    data[..., 7] = 1.0
++    return type(pose)(data)
++
++
++def pose_optimization_jacobian(jacobian, fixed_scale):
++    return jacobian[..., :6] if fixed_scale else jacobian
++
++
++def embed_pose_increment(increment, fixed_scale):
++    if not fixed_scale:
++        return increment
++    return torch.cat(
++        (increment, torch.zeros_like(increment[..., :1])), dim=-1
++    )
++
++
++def solve_metric_keyframe_pnp(
++    object_points: np.ndarray,
++    image_points: np.ndarray,
++    camera_matrix: np.ndarray,
++    minimum_points: int,
++    minimum_inlier_ratio: float,
++    reprojection_error_px: float,
++) -> tuple[np.ndarray | None, dict]:
++    object_points = np.asarray(object_points, dtype=np.float32).reshape(-1, 3)
++    image_points = np.asarray(image_points, dtype=np.float32).reshape(-1, 2)
++    if object_points.shape[0] != image_points.shape[0]:
++        raise ValueError("PnP object/image point counts differ")
++    if object_points.shape[0] < minimum_points:
++        return None, {
++            "accepted": False,
++            "reason": "insufficient_metric_correspondences",
++            "candidate_points": int(object_points.shape[0]),
++        }
++    # OpenCV's RANSAC sampler uses process-global RNG state. Resetting it makes
++    # repeated offline runs bitwise reproducible instead of occasionally
++    # selecting a planar degenerate sample.
++    cv2.setRNGSeed(0)
++    success, rvec, tvec, inliers = cv2.solvePnPRansac(
++        object_points,
++        image_points,
++        np.asarray(camera_matrix, dtype=np.float64),
++        None,
++        iterationsCount=100,
++        reprojectionError=float(reprojection_error_px),
++        confidence=0.999,
++        flags=cv2.SOLVEPNP_EPNP,
++    )
++    inlier_count = 0 if inliers is None else int(len(inliers))
++    inlier_ratio = inlier_count / max(object_points.shape[0], 1)
++    if not success or inlier_count < minimum_points or inlier_ratio < minimum_inlier_ratio:
++        return None, {
++            "accepted": False,
++            "reason": "metric_pnp_inliers_low",
++            "candidate_points": int(object_points.shape[0]),
++            "inlier_points": inlier_count,
++            "inlier_ratio": inlier_ratio,
++        }
++    inlier_indices = inliers[:, 0]
++    if hasattr(cv2, "solvePnPRefineLM"):
++        rvec, tvec = cv2.solvePnPRefineLM(
++            object_points[inlier_indices],
++            image_points[inlier_indices],
++            np.asarray(camera_matrix, dtype=np.float64),
++            None,
++            rvec,
++            tvec,
++        )
++    rotation, _ = cv2.Rodrigues(rvec)
++    projected, _ = cv2.projectPoints(
++        object_points[inlier_indices],
++        rvec,
++        tvec,
++        np.asarray(camera_matrix, dtype=np.float64),
++        None,
++    )
++    reprojection_error = np.linalg.norm(
++        projected.reshape(-1, 2) - image_points[inlier_indices], axis=1
++    )
++    keyframe_to_current = np.eye(4, dtype=np.float64)
++    keyframe_to_current[:3, :3] = rotation
++    keyframe_to_current[:3, 3] = np.asarray(tvec).reshape(3)
++    return keyframe_to_current, {
++        "accepted": True,
++        "candidate_points": int(object_points.shape[0]),
++        "inlier_points": inlier_count,
++        "inlier_ratio": inlier_ratio,
++        "reprojection_median_px": float(np.median(reprojection_error)),
++        "reprojection_p95_px": float(np.percentile(reprojection_error, 95)),
++    }
++
++
++def refine_metric_translation_3d3d(
++    source_points: np.ndarray,
++    target_points: np.ndarray,
++    source_to_target: np.ndarray,
++    minimum_points: int,
++    minimum_inlier_ratio: float,
++    maximum_residual_m: float,
++) -> tuple[np.ndarray | None, dict]:
++    """Refine only translation from paired metric 3D points at fixed rotation."""
++    source = np.asarray(source_points, dtype=np.float64).reshape(-1, 3)
++    target = np.asarray(target_points, dtype=np.float64).reshape(-1, 3)
++    transform = np.asarray(source_to_target, dtype=np.float64)
++    if source.shape != target.shape:
++        raise ValueError("3D source/target point counts differ")
++    finite = np.isfinite(source).all(axis=1) & np.isfinite(target).all(axis=1)
++    source = source[finite]
++    target = target[finite]
++    if source.shape[0] < minimum_points:
++        return None, {
++            "accepted": False,
++            "reason": "insufficient_metric_3d_correspondences",
++            "candidate_points": int(source.shape[0]),
++        }
++
++    rotation = transform[:3, :3]
++    translation_samples = target - source @ rotation.T
++    translation = np.median(translation_samples, axis=0)
++    residual = np.linalg.norm(translation_samples - translation, axis=1)
++    residual_median = float(np.median(residual))
++    residual_mad = float(np.median(np.abs(residual - residual_median)))
++    robust_limit = max(0.002, residual_median + 3.0 * 1.4826 * residual_mad)
++    threshold = min(float(maximum_residual_m), robust_limit)
++    inliers = residual <= threshold
++    inlier_count = int(np.count_nonzero(inliers))
++    inlier_ratio = inlier_count / source.shape[0]
++    if inlier_count < minimum_points or inlier_ratio < minimum_inlier_ratio:
++        return None, {
++            "accepted": False,
++            "reason": "metric_3d_translation_inliers_low",
++            "candidate_points": int(source.shape[0]),
++            "inlier_points": inlier_count,
++            "inlier_ratio": inlier_ratio,
++            "residual_threshold_m": threshold,
++        }
++
++    translation = np.median(translation_samples[inliers], axis=0)
++    refined_residual = np.linalg.norm(
++        translation_samples[inliers] - translation, axis=1
++    )
++    refined = transform.copy()
++    refined[:3, 3] = translation
++    return refined, {
++        "accepted": True,
++        "candidate_points": int(source.shape[0]),
++        "inlier_points": inlier_count,
++        "inlier_ratio": inlier_ratio,
++        "residual_threshold_m": threshold,
++        "residual_p95_m": float(np.percentile(refined_residual, 95)),
++    }
++
++
++def metric_depth_anchor_mask(
++    primary_scaled: torch.Tensor,
++    confidence: torch.Tensor,
++    metric_depth: np.ndarray | None,
++    cfg: dict,
++) -> torch.Tensor:
++    point_count = primary_scaled.reshape(-1, 3).shape[0]
++    empty = torch.zeros(point_count, dtype=torch.bool, device=primary_scaled.device)
++    if metric_depth is None or not bool(cfg.get("stereo_pointmap_depth_anchor", False)):
++        return empty
++    metric = np.asarray(metric_depth, dtype=np.float32).reshape(-1)
++    confidence_flat = confidence.detach().reshape(-1)
++    primary_flat = primary_scaled.reshape(-1, 3)
++    if point_count != metric.size or confidence_flat.numel() != metric.size:
++        return empty
++    metric_tensor = torch.as_tensor(
++        metric, device=primary_flat.device, dtype=primary_flat.dtype
++    )
++    valid = torch.isfinite(metric_tensor)
++    valid &= metric_tensor >= float(cfg.get("stereo_scale_min_depth_m", 0.15))
++    valid &= metric_tensor <= float(cfg.get("stereo_scale_max_depth_m", 0.65))
++    valid &= confidence_flat >= float(cfg.get("stereo_scale_min_confidence", 1.5))
++    valid &= primary_flat[:, 2] > 1e-6
++    relative_residual = torch.full_like(metric_tensor, float("inf"))
++    relative_residual[valid] = torch.abs(
++        metric_tensor[valid] / primary_flat[valid, 2] - 1.0
++    )
++    return valid & (
++        relative_residual
++        <= float(cfg.get("stereo_depth_anchor_max_relative_residual", 0.5))
++    )
++
++
++def compute_stereo_depth(
++    left: np.ndarray,
++    right: np.ndarray,
++    focal_length_px: float,
++    baseline_m: float,
++    minimum_depth_m: float,
++    maximum_depth_m: float,
++    num_disparities: int = 128,
++    consistency_tolerance_px: float = 1.0,
++) -> np.ndarray:
++    if left.ndim != 2 or right.ndim != 2 or left.shape != right.shape:
++        raise ValueError("stereo images must be matching grayscale arrays")
++    num_disparities = max(16, int(np.ceil(num_disparities / 16.0)) * 16)
++    common = dict(
++        numDisparities=num_disparities,
++        blockSize=5,
++        P1=8 * 5 * 5,
++        P2=32 * 5 * 5,
++        disp12MaxDiff=1,
++        uniquenessRatio=8,
++        speckleWindowSize=80,
++        speckleRange=2,
++        preFilterCap=31,
++        mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY,
++    )
++    disparity_left = cv2.StereoSGBM_create(minDisparity=0, **common).compute(
++        left, right
++    ).astype(np.float32) / 16.0
++    disparity_right = cv2.StereoSGBM_create(
++        minDisparity=-num_disparities, **common
++    ).compute(right, left).astype(np.float32) / 16.0
++
++    height, width = left.shape
++    y, x = np.indices((height, width))
++    right_x = np.rint(x - disparity_left).astype(np.int32)
++    inside = (right_x >= 0) & (right_x < width) & (disparity_left > 0.5)
++    sampled_right = np.full(left.shape, np.nan, dtype=np.float32)
++    sampled_right[inside] = disparity_right[y[inside], right_x[inside]]
++    valid = inside & (
++        np.abs(disparity_left + sampled_right) <= consistency_tolerance_px
++    )
++
++    depth = np.full(left.shape, np.nan, dtype=np.float32)
++    depth[valid] = focal_length_px * baseline_m / disparity_left[valid]
++    valid &= (depth >= minimum_depth_m) & (depth <= maximum_depth_m)
++    depth[~valid] = np.nan
++    return depth
++
++
++def robust_pointmap_metric_scale(
++    pointmap_z: np.ndarray,
++    confidence: np.ndarray,
++    metric_depth: np.ndarray,
++    minimum_points: int,
++    minimum_depth_m: float,
++    maximum_depth_m: float,
++    minimum_confidence: float,
++) -> dict:
++    pointmap_z = np.asarray(pointmap_z, dtype=np.float64).reshape(-1)
++    confidence = np.asarray(confidence, dtype=np.float64).reshape(-1)
++    metric_depth = np.asarray(metric_depth, dtype=np.float64).reshape(-1)
++    if not (pointmap_z.size == confidence.size == metric_depth.size):
++        raise ValueError("pointmap, confidence, and metric depth sizes differ")
++
++    valid = np.isfinite(metric_depth) & np.isfinite(pointmap_z)
++    valid &= (metric_depth >= minimum_depth_m) & (metric_depth <= maximum_depth_m)
++    valid &= pointmap_z > 1e-6
++    valid &= confidence >= minimum_confidence
++    candidate_points = int(np.count_nonzero(valid))
++    if candidate_points < minimum_points:
++        return {
++            "accepted": False,
++            "reason": "insufficient_metric_depth_points",
++            "candidate_points": candidate_points,
++        }
++
++    ratios = metric_depth[valid] / pointmap_z[valid]
++    ratios = ratios[np.isfinite(ratios) & (ratios >= 0.02) & (ratios <= 20.0)]
++    if ratios.size < minimum_points:
++        return {
++            "accepted": False,
++            "reason": "insufficient_scale_ratio_points",
++            "candidate_points": candidate_points,
++            "ratio_points": int(ratios.size),
++        }
++    center = float(np.median(ratios))
++    mad = float(np.median(np.abs(ratios - center)))
++    threshold = max(3.0 * 1.4826 * mad, 0.03 * center)
++    inliers = np.abs(ratios - center) <= threshold
++    if int(np.count_nonzero(inliers)) < minimum_points:
++        return {
++            "accepted": False,
++            "reason": "insufficient_robust_scale_inliers",
++            "candidate_points": candidate_points,
++            "ratio_points": int(ratios.size),
++            "inlier_points": int(np.count_nonzero(inliers)),
++        }
++    scale = float(np.median(ratios[inliers]))
++    return {
++        "accepted": True,
++        "scale": scale,
++        "candidate_points": candidate_points,
++        "inlier_points": int(np.count_nonzero(inliers)),
++        "relative_mad": mad / max(center, 1e-12),
++    }
++
++
++def scale_pointmaps_with_metric_depth(
++    pointmaps: tuple[torch.Tensor, ...],
++    confidence: torch.Tensor,
++    metric_depth: np.ndarray | None,
++    cfg: dict,
++) -> tuple[tuple[torch.Tensor, ...], dict]:
++    if metric_depth is None:
++        return pointmaps, {"accepted": False, "reason": "metric_depth_unavailable"}
++    primary = pointmaps[0]
++    result = robust_pointmap_metric_scale(
++        primary[..., 2].detach().cpu().numpy(),
++        confidence.detach().cpu().numpy(),
++        metric_depth,
++        minimum_points=int(cfg.get("stereo_scale_min_points", 500)),
++        minimum_depth_m=float(cfg.get("stereo_scale_min_depth_m", 0.15)),
++        maximum_depth_m=float(cfg.get("stereo_scale_max_depth_m", 0.65)),
++        minimum_confidence=float(cfg.get("stereo_scale_min_confidence", 1.5)),
++    )
++    if not result["accepted"]:
++        return pointmaps, result
++    scale = primary.new_tensor(result["scale"])
++    scaled = tuple(pointmap * scale for pointmap in pointmaps)
++    if not bool(cfg.get("stereo_pointmap_depth_anchor", False)):
++        return scaled, result
++
++    primary_scaled = scaled[0].clone().reshape(-1, 3)
++    metric_tensor = torch.as_tensor(
++        np.asarray(metric_depth, dtype=np.float32).reshape(-1),
++        device=primary_scaled.device,
++        dtype=primary_scaled.dtype,
++    )
++    valid = metric_depth_anchor_mask(scaled[0], confidence, metric_depth, cfg)
++    maximum_residual = float(cfg.get("stereo_depth_anchor_max_relative_residual", 0.5))
++    if valid.any():
++        ray_scale = metric_tensor[valid] / primary_scaled[valid, 2]
++        primary_scaled[valid] *= ray_scale[:, None]
++
++    anchored = (primary_scaled.reshape_as(scaled[0]), *scaled[1:])
++    return anchored, dict(
++        result,
++        depth_anchor_points=int(valid.sum().item()),
++        depth_anchor_max_relative_residual=maximum_residual,
++    )
++
++
++class StereoDepthProvider:
++    def __init__(self, dataset_path: Path, metadata: dict):
++        self.dataset_path = dataset_path
++        self.right_directory = dataset_path / metadata["right_directory"]
++        self.focal_length_px = float(metadata["left_focal_length_px"])
++        self.baseline_m = float(metadata["baseline_m"])
++        self.minimum_depth_m = float(metadata.get("minimum_depth_m", 0.15))
++        self.maximum_depth_m = float(metadata.get("maximum_depth_m", 0.65))
++
++    @classmethod
++    def from_dataset(cls, dataset_path: Path) -> StereoDepthProvider | None:
++        manifest_path = dataset_path / "dataset_manifest.json"
++        if not manifest_path.is_file():
++            return None
++        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
++        stereo = manifest.get("stereo_depth_source")
++        return cls(dataset_path, stereo) if stereo else None
++
++    def get_depth(self, left_path: Path, target_shape: tuple[int, int]) -> np.ndarray:
++        left = cv2.imread(str(left_path), cv2.IMREAD_GRAYSCALE)
++        right_path = self.right_directory / left_path.name
++        right = cv2.imread(str(right_path), cv2.IMREAD_GRAYSCALE)
++        if left is None or right is None:
++            raise FileNotFoundError(f"missing stereo pair for {left_path.name}")
++        depth = compute_stereo_depth(
++            left,
++            right,
++            self.focal_length_px,
++            self.baseline_m,
++            self.minimum_depth_m,
++            self.maximum_depth_m,
++        )
++        target_height, target_width = target_shape
++        if depth.shape != target_shape:
++            depth = cv2.resize(
++                depth, (target_width, target_height), interpolation=cv2.INTER_NEAREST
++            )
++        return depth
+diff --git a/mast3r_slam/tracker.py b/mast3r_slam/tracker.py
+index 58a039b..87430ce 100644
+--- a/mast3r_slam/tracker.py
++++ b/mast3r_slam/tracker.py
+@@ -1,4 +1,7 @@
+ import torch
++import lietorch
++import numpy as np
++from scipy.spatial.transform import Rotation
+ from mast3r_slam.frame import Frame
+ from mast3r_slam.geometry import (
+     act_Sim3,
+@@ -10,6 +13,74 @@ from mast3r_slam.geometry import (
+ from mast3r_slam.nonlinear_optimizer import check_convergence, huber
+ from mast3r_slam.config import config
+ from mast3r_slam.mast3r_utils import mast3r_match_asymmetric
++from mast3r_slam.stereo_depth import (
++    embed_pose_increment,
++    force_unit_sim3_scale,
++    metric_depth_anchor_mask,
++    pose_optimization_jacobian,
++    refine_metric_translation_3d3d,
++    scale_pointmaps_with_metric_depth,
++    solve_metric_keyframe_pnp,
++)
++
++
++def rotation_disagreement_deg(T_visual, T_prior):
++    """Return the shortest angular distance between two Sim3 rotations."""
++    q_visual = torch.nn.functional.normalize(T_visual.data[..., 3:7], dim=-1)
++    q_prior = torch.nn.functional.normalize(T_prior.data[..., 3:7], dim=-1)
++    dot = torch.sum(q_visual * q_prior, dim=-1).abs().clamp(max=1.0)
++    return torch.rad2deg(2.0 * torch.acos(dot))
++
++
++def blend_sim3_rotation(T_visual, T_prior, weight):
++    """Slerp only the rotation from visual pose toward the IMU prior pose."""
++    if not 0.0 <= weight <= 1.0:
++        raise ValueError("rotation prior weight must be within [0, 1]")
++    if weight == 0.0:
++        return T_visual
++
++    visual_data = T_visual.data.clone()
++    q_visual = torch.nn.functional.normalize(visual_data[..., 3:7], dim=-1)
++    q_prior = torch.nn.functional.normalize(T_prior.data[..., 3:7], dim=-1)
++    dot = torch.sum(q_visual * q_prior, dim=-1, keepdim=True)
++    q_prior = torch.where(dot < 0.0, -q_prior, q_prior)
++    dot = torch.sum(q_visual * q_prior, dim=-1, keepdim=True).clamp(-1.0, 1.0)
++    theta = torch.acos(dot)
++    sin_theta = torch.sin(theta)
++    linear = torch.nn.functional.normalize(
++        (1.0 - weight) * q_visual + weight * q_prior, dim=-1
++    )
++    spherical = (
++        torch.sin((1.0 - weight) * theta) / sin_theta * q_visual
++        + torch.sin(weight * theta) / sin_theta * q_prior
++    )
++    quaternion = torch.where(sin_theta.abs() < 1e-6, linear, spherical)
++    visual_data[..., 3:7] = torch.nn.functional.normalize(quaternion, dim=-1)
++    return lietorch.Sim3(visual_data)
++
++
++def motion_keyframe_trigger(T_CkCf, T_prior, T_keyframe, cfg, frame_gap=0):
++    """Request a keyframe only after independently bounded motion."""
++    translation_limit = float(cfg.get("motion_keyframe_translation", 0.0))
++    rotation_limit_deg = float(cfg.get("motion_keyframe_rotation_deg", 0.0))
++    maximum_frame_gap = int(cfg.get("motion_keyframe_max_gap_frames", 0))
++    aged_translation_limit = float(
++        cfg.get("motion_keyframe_aged_translation", 0.0)
++    )
++    translation = float(torch.linalg.vector_norm(T_CkCf.data[..., :3]).item())
++    rotation_deg = float(rotation_disagreement_deg(T_prior, T_keyframe).item())
++    aged_motion = (
++        maximum_frame_gap > 0
++        and frame_gap >= maximum_frame_gap
++        and aged_translation_limit > 0.0
++        and translation >= aged_translation_limit
++    )
++    triggered = (
++        translation_limit > 0.0 and translation >= translation_limit
++    ) or (
++        rotation_limit_deg > 0.0 and rotation_deg >= rotation_limit_deg
++    ) or aged_motion
++    return triggered, translation, rotation_deg
+ 
+ 
+ class FrameTracker:
+@@ -18,19 +89,148 @@ class FrameTracker:
+         self.model = model
+         self.keyframes = frames
+         self.device = device
++        self.metric_pointmap_scale = None
++        self.last_metric_anchor_mask = None
+ 
+         self.reset_idx_f2k()
+ 
++    def scale_pointmaps(self, pointmaps, confidence, metric_depth):
++        scaled, report = scale_pointmaps_with_metric_depth(
++            pointmaps, confidence, metric_depth, self.cfg
++        )
++        self.last_metric_anchor_mask = metric_depth_anchor_mask(
++            scaled[0], confidence, metric_depth, self.cfg
++        )
++        if report["accepted"]:
++            scale = float(report["scale"])
++            maximum_jump = float(self.cfg.get("stereo_scale_max_relative_jump", 0.25))
++            if maximum_jump < 0.0:
++                raise ValueError("tracking.stereo_scale_max_relative_jump must be non-negative")
++            if self.metric_pointmap_scale is not None:
++                relative_jump = abs(scale / self.metric_pointmap_scale - 1.0)
++                if relative_jump > maximum_jump:
++                    fallback = pointmaps[0].new_tensor(self.metric_pointmap_scale)
++                    report = dict(
++                        report,
++                        accepted=False,
++                        reason="metric_scale_jump_rejected",
++                        relative_jump=relative_jump,
++                        fallback_scale=self.metric_pointmap_scale,
++                    )
++                    return tuple(pointmap * fallback for pointmap in pointmaps), report
++            self.metric_pointmap_scale = scale
++            return scaled, report
++        if self.metric_pointmap_scale is not None:
++            fallback = pointmaps[0].new_tensor(self.metric_pointmap_scale)
++            report = dict(report, fallback_scale=self.metric_pointmap_scale)
++            return tuple(pointmap * fallback for pointmap in pointmaps), report
++        return pointmaps, report
++
+     # Initialize with identity indexing of size (1,n)
+     def reset_idx_f2k(self):
+         self.idx_f2k = None
+ 
++    def solve_metric_pose(
++        self,
++        Xf,
++        Xk,
++        Cf,
++        Ck,
++        Qk,
++        valid_match_k,
++        idx_f2k,
++        keyframe_anchor_mask,
++        current_anchor_mask,
++        K,
++        img_size,
++    ):
++        metric_valid = (
++            valid_match_k[:, 0]
++            & (Cf[:, 0] > self.cfg["C_conf"])
++            & (Ck[:, 0] > self.cfg["C_conf"])
++            & (Qk[:, 0] > self.cfg["Q_conf"])
++            & keyframe_anchor_mask
++            & current_anchor_mask[idx_f2k]
++        )
++        candidate_indices = torch.where(metric_valid)[0]
++        maximum_points = int(self.cfg.get("stereo_keyframe_pnp_max_points", 5000))
++        if candidate_indices.numel() > maximum_points:
++            sampled = torch.linspace(
++                0,
++                candidate_indices.numel() - 1,
++                maximum_points,
++                device=candidate_indices.device,
++            ).long()
++            candidate_indices = candidate_indices[sampled]
++        width = int(img_size[1])
++        current_indices = idx_f2k[candidate_indices]
++        image_points = torch.stack(
++            (current_indices % width, current_indices // width), dim=-1
++        ).float()
++        keyframe_to_current, report = solve_metric_keyframe_pnp(
++            Xk[candidate_indices].detach().cpu().numpy(),
++            image_points.detach().cpu().numpy(),
++            K.detach().cpu().numpy(),
++            minimum_points=int(self.cfg.get("stereo_keyframe_pnp_min_points", 100)),
++            minimum_inlier_ratio=float(
++                self.cfg.get("stereo_keyframe_pnp_min_inlier_ratio", 0.4)
++            ),
++            reprojection_error_px=float(
++                self.cfg.get("stereo_keyframe_pnp_reprojection_error_px", 2.0)
++            ),
++        )
++        if keyframe_to_current is None:
++            return None, report
++
++        current_to_keyframe = np.linalg.inv(keyframe_to_current)
++        if bool(self.cfg.get("stereo_keyframe_3d_translation_refine", False)):
++            refined_pose, refinement_report = refine_metric_translation_3d3d(
++                Xf[candidate_indices].detach().cpu().numpy(),
++                Xk[candidate_indices].detach().cpu().numpy(),
++                current_to_keyframe,
++                minimum_points=int(
++                    self.cfg.get("stereo_keyframe_3d_min_points", 100)
++                ),
++                minimum_inlier_ratio=float(
++                    self.cfg.get("stereo_keyframe_3d_min_inlier_ratio", 0.3)
++                ),
++                maximum_residual_m=float(
++                    self.cfg.get("stereo_keyframe_3d_max_residual_m", 0.02)
++                ),
++            )
++            report = dict(report, translation_3d_refinement=refinement_report)
++            if refined_pose is not None:
++                current_to_keyframe = refined_pose
++
++        quaternion = Rotation.from_matrix(current_to_keyframe[:3, :3]).as_quat()
++        pose_data = Xf.new_zeros((1, 8))
++        pose_data[:, :3] = torch.as_tensor(
++            current_to_keyframe[:3, 3],
++            device=pose_data.device,
++            dtype=pose_data.dtype,
++        )
++        pose_data[:, 3:7] = torch.as_tensor(
++            quaternion, device=pose_data.device, dtype=pose_data.dtype
++        )
++        pose_data[:, 7] = 1.0
++        return lietorch.Sim3(pose_data), report
++
+     def track(self, frame: Frame):
+         keyframe = self.keyframes.last_keyframe()
++        rotation_prior_pose = frame.T_WC
+ 
+         idx_f2k, valid_match_k, Xff, Cff, Qff, Xkf, Ckf, Qkf = mast3r_match_asymmetric(
+             self.model, frame, keyframe, idx_i2j_init=self.idx_f2k
+         )
++        (Xff, Xkf), stereo_scale_report = self.scale_pointmaps(
++            (Xff, Xkf), Cff, frame.metric_depth
++        )
++        frame.metric_anchor_mask = self.last_metric_anchor_mask
++        if (
++            self.cfg.get("stereo_pointmap_scale_prior", False)
++            and frame.frame_id % 30 == 0
++        ):
++            print("Stereo pointmap scale", frame.frame_id, stereo_scale_report)
+         # Save idx for next
+         self.idx_f2k = idx_f2k.clone()
+ 
+@@ -69,6 +269,134 @@ class FrameTracker:
+             print(f"Skipped frame {frame.frame_id}")
+             return False, [], True
+ 
++        metric_pose = None
++        metric_pose_report = None
++        if bool(self.cfg.get("stereo_keyframe_pnp", False)) and use_calib:
++            metric_pose, metric_pose_report = self.solve_metric_pose(
++                Xf,
++                Xk,
++                Cf,
++                Ck,
++                Qk,
++                valid_match_k,
++                idx_f2k,
++                keyframe.metric_anchor_mask,
++                frame.metric_anchor_mask,
++                K,
++                img_size,
++            )
++
++            lookback = int(self.cfg.get("stereo_keyframe_pnp_lookback", 1))
++            if lookback > 1 and len(self.keyframes) > 1:
++                current_report = metric_pose_report
++                current_world_pose = (
++                    None if metric_pose is None else T_WCk * metric_pose
++                )
++                previous_keyframe = self.keyframes[len(self.keyframes) - 2]
++                (
++                    previous_idx,
++                    previous_valid_match,
++                    previous_Xff,
++                    previous_Cff,
++                    previous_Qff,
++                    _,
++                    _,
++                    previous_Qkf,
++                ) = mast3r_match_asymmetric(self.model, frame, previous_keyframe)
++                (previous_Xff,), previous_scale_report = (
++                    scale_pointmaps_with_metric_depth(
++                        (previous_Xff,), previous_Cff, frame.metric_depth, self.cfg
++                    )
++                )
++                previous_current_anchor = metric_depth_anchor_mask(
++                    previous_Xff,
++                    previous_Cff,
++                    frame.metric_depth,
++                    self.cfg,
++                )
++                previous_idx = previous_idx[0]
++                previous_valid_match = previous_valid_match[0]
++                previous_current_points = min(
++                    previous_Qff.shape[0],
++                    previous_Xff.shape[0],
++                    previous_Cff.shape[0],
++                    previous_current_anchor.numel(),
++                )
++                safe_previous_idx = previous_idx.clamp(
++                    min=0, max=previous_current_points - 1
++                )
++                previous_Qk = torch.sqrt(
++                    previous_Qff[safe_previous_idx] * previous_Qkf
++                )
++                previous_Xf = constrain_points_to_ray(
++                    img_size, previous_Xff[None], K
++                ).squeeze(0)[safe_previous_idx]
++                previous_Xk = constrain_points_to_ray(
++                    img_size, previous_keyframe.X_canon[None], K
++                ).squeeze(0)
++                previous_pose, previous_report = self.solve_metric_pose(
++                    previous_Xf,
++                    previous_Xk,
++                    previous_Cff[safe_previous_idx],
++                    previous_keyframe.get_average_conf(),
++                    previous_Qk,
++                    previous_valid_match,
++                    safe_previous_idx,
++                    previous_keyframe.metric_anchor_mask,
++                    previous_current_anchor,
++                    K,
++                    img_size,
++                )
++                metric_pose_report = dict(
++                    current_report or {},
++                    previous_keyframe=previous_report,
++                    previous_scale=previous_scale_report,
++                )
++                if previous_pose is not None:
++                    previous_world_pose = previous_keyframe.T_WC * previous_pose
++                    translation_disagreement = float(
++                        torch.linalg.vector_norm(
++                            previous_world_pose.data[..., :3]
++                            - current_world_pose.data[..., :3]
++                        ).item()
++                    ) if current_world_pose is not None else 0.0
++                    rotation_disagreement = float(
++                        rotation_disagreement_deg(
++                            previous_world_pose, current_world_pose
++                        ).item()
++                    ) if current_world_pose is not None else 0.0
++                    metric_pose_report["previous_world_disagreement_m"] = (
++                        translation_disagreement
++                    )
++                    metric_pose_report["previous_world_disagreement_deg"] = (
++                        rotation_disagreement
++                    )
++                    maximum_translation = float(
++                        self.cfg.get(
++                            "stereo_keyframe_pnp_history_max_disagreement_m", 0.03
++                        )
++                    )
++                    maximum_rotation = float(
++                        self.cfg.get(
++                            "stereo_keyframe_pnp_history_max_disagreement_deg", 3.0
++                        )
++                    )
++                    current_reprojection = float(
++                        (current_report or {}).get("reprojection_p95_px", float("inf"))
++                    )
++                    previous_reprojection = float(
++                        previous_report.get("reprojection_p95_px", float("inf"))
++                    )
++                    if (
++                        translation_disagreement <= maximum_translation
++                        and rotation_disagreement <= maximum_rotation
++                        and previous_reprojection < current_reprojection
++                    ):
++                        metric_pose = previous_world_pose
++                        metric_pose_report["selected_keyframe_age"] = (
++                            frame.frame_id - previous_keyframe.frame_id
++                        )
++
+         try:
+             # Track
+             if not use_calib:
+@@ -92,11 +420,74 @@ class FrameTracker:
+             print(f"Cholesky failed {frame.frame_id}")
+             return False, [], True
+ 
++        if metric_pose is not None:
++            metric_pose_is_world = int(
++                self.cfg.get("stereo_keyframe_pnp_lookback", 1)
++            ) > 1 and (
++                metric_pose_report or {}
++            ).get("selected_keyframe_age") is not None
++            metric_world_pose = metric_pose if metric_pose_is_world else T_WCk * metric_pose
++            translation_disagreement = float(
++                torch.linalg.vector_norm(
++                    metric_world_pose.data[..., :3] - T_WCf.data[..., :3]
++                ).item()
++            )
++            rotation_disagreement = float(
++                rotation_disagreement_deg(metric_world_pose, T_WCf).item()
++            )
++            metric_pose_report = dict(
++                metric_pose_report or {},
++                visual_translation_disagreement_m=translation_disagreement,
++                visual_rotation_disagreement_deg=rotation_disagreement,
++            )
++            maximum_translation = float(
++                self.cfg.get("stereo_keyframe_pnp_max_visual_disagreement_m", 0.05)
++            )
++            maximum_rotation = float(
++                self.cfg.get("stereo_keyframe_pnp_max_visual_disagreement_deg", 5.0)
++            )
++            if (
++                translation_disagreement <= maximum_translation
++                and rotation_disagreement <= maximum_rotation
++            ):
++                T_WCf = metric_world_pose
++                T_CkCf = T_WCk.inv() * T_WCf
++            else:
++                metric_pose_report["accepted"] = False
++                metric_pose_report["reason"] = "metric_pnp_visual_disagreement"
++        if frame.frame_id % 30 == 0 and metric_pose_report is not None:
++            print("Stereo keyframe PnP", frame.frame_id, metric_pose_report)
++
++        prior_weight = float(self.cfg.get("imu_rotation_constraint_weight", 0.0))
++        prior_gate_deg = float(self.cfg.get("imu_rotation_constraint_gate_deg", 0.0))
++        if not 0.0 <= prior_weight <= 1.0:
++            raise ValueError("tracking.imu_rotation_constraint_weight must be within [0, 1]")
++        if prior_gate_deg < 0.0:
++            raise ValueError("tracking.imu_rotation_constraint_gate_deg must be non-negative")
++        disagreement_deg = float(
++            rotation_disagreement_deg(T_WCf, rotation_prior_pose).item()
++        )
++        if prior_weight > 0.0 and disagreement_deg > prior_gate_deg:
++            gated_weight = prior_weight * (
++                1.0 - prior_gate_deg / max(disagreement_deg, 1e-6)
++            )
++            T_WCf = blend_sim3_rotation(T_WCf, rotation_prior_pose, gated_weight)
++            T_CkCf = T_WCk.inv() * T_WCf
++
++        if bool(self.cfg.get("stereo_fix_pose_scale", False)):
++            T_WCf = force_unit_sim3_scale(T_WCf)
++            T_CkCf = T_WCk.inv() * T_WCf
++
+         frame.T_WC = T_WCf
+ 
+         # Use pose to transform points to update keyframe
+         Xkk = T_CkCf.act(Xkf)
+-        keyframe.update_pointmap(Xkk, Ckf)
++        preserve_metric_keyframe = bool(
++            self.cfg.get("stereo_pointmap_depth_anchor", False)
++            and self.cfg.get("stereo_preserve_keyframe_pointmap", False)
++        )
++        if not preserve_metric_keyframe:
++            keyframe.update_pointmap(Xkk, Ckf)
+         # write back the fitered pointmap
+         self.keyframes[len(self.keyframes) - 1] = keyframe
+ 
+@@ -108,6 +499,22 @@ class FrameTracker:
+         )
+ 
+         new_kf = min(match_frac_k, unique_frac_f) < self.cfg["match_frac_thresh"]
++        motion_triggered, relative_translation, relative_rotation_deg = (
++            motion_keyframe_trigger(
++                T_CkCf,
++                rotation_prior_pose,
++                T_WCk,
++                self.cfg,
++                frame.frame_id - keyframe.frame_id,
++            )
++        )
++        if motion_triggered and not new_kf:
++            print(
++                "Motion keyframe"
++                f" {frame.frame_id}: translation={relative_translation:.4f},"
++                f" rotation={relative_rotation_deg:.3f}deg"
++            )
++            new_kf = True
+ 
+         # Rest idx if new keyframe
+         if new_kf:
+@@ -170,6 +577,13 @@ class FrameTracker:
+ 
+         return tau_j, cost
+ 
++    def solve_pose_increment(self, sqrt_info, r, J):
++        fixed_scale = bool(self.cfg.get("stereo_fix_pose_scale", False))
++        tau, cost = self.solve(
++            sqrt_info, r, pose_optimization_jacobian(J, fixed_scale)
++        )
++        return embed_pose_increment(tau, fixed_scale), cost
++
+     def opt_pose_ray_dist_sim3(self, Xf, Xk, T_WCf, T_WCk, Qk, valid):
+         last_error = 0
+         sqrt_info_ray = 1 / self.cfg["sigma_ray"] * valid * torch.sqrt(Qk)
+@@ -191,7 +605,7 @@ class FrameTracker:
+             # Jacobian
+             J = -drd_f_Ck_dXf_Ck @ dXf_Ck_dT_CkCf
+ 
+-            tau_ij_sim3, new_cost = self.solve(sqrt_info, r, J)
++            tau_ij_sim3, new_cost = self.solve_pose_increment(sqrt_info, r, J)
+             T_CkCf = T_CkCf.retr(tau_ij_sim3)
+ 
+             if check_convergence(
+@@ -243,7 +657,7 @@ class FrameTracker:
+             # Jacobian
+             J = -dpzf_Ck_dXf_Ck @ dXf_Ck_dT_CkCf
+ 
+-            tau_ij_sim3, new_cost = self.solve(sqrt_info2, r, J)
++            tau_ij_sim3, new_cost = self.solve_pose_increment(sqrt_info2, r, J)
+             T_CkCf = T_CkCf.retr(tau_ij_sim3)
+ 
+             if check_convergence(
+diff --git a/setup.py b/setup.py
+index ee79545..27ebbe9 100644
+--- a/setup.py
++++ b/setup.py
+@@ -34,6 +34,8 @@ if has_cuda:
+         "-gencode=arch=compute_75,code=sm_75",
+         "-gencode=arch=compute_80,code=sm_80",
+         "-gencode=arch=compute_86,code=sm_86",
++        "-gencode=arch=compute_120,code=sm_120",
++        "-gencode=arch=compute_120,code=compute_120",
+     ]
+     ext_modules = [
+         CUDAExtension(
+diff --git a/thirdparty/mast3r/dust3r/croco/models/curope/kernels.cu b/thirdparty/mast3r/dust3r/croco/models/curope/kernels.cu
+index 7156cd1..bf777c2 100644
+--- a/thirdparty/mast3r/dust3r/croco/models/curope/kernels.cu
++++ b/thirdparty/mast3r/dust3r/croco/models/curope/kernels.cu
+@@ -98,7 +98,7 @@ void rope_2d_cuda( torch::Tensor tokens, const torch::Tensor pos, const float ba
+     const int N_BLOCKS = B * N; // each block takes care of H*D values
+     const int SHARED_MEM = sizeof(float) * (D + D/4);
+ 
+-    AT_DISPATCH_FLOATING_TYPES_AND_HALF(tokens.type(), "rope_2d_cuda", ([&] {
++    AT_DISPATCH_FLOATING_TYPES_AND_HALF(tokens.scalar_type(), "rope_2d_cuda", ([&] {
+         rope_2d_cuda_kernel<scalar_t> <<<N_BLOCKS, THREADS_PER_BLOCK, SHARED_MEM>>> (
+             //tokens.data_ptr<scalar_t>(), 
+             tokens.packed_accessor32<scalar_t,4,torch::RestrictPtrTraits>(),
+diff --git a/thirdparty/mast3r/mast3r/model.py b/thirdparty/mast3r/mast3r/model.py
+index f328c5e..9013e49 100644
+--- a/thirdparty/mast3r/mast3r/model.py
++++ b/thirdparty/mast3r/mast3r/model.py
+@@ -21,7 +21,10 @@ inf = float('inf')
+ def load_model(model_path, device, verbose=True):
+     if verbose:
+         print('... loading model from', model_path)
+-    ckpt = torch.load(model_path, map_location='cpu')
++    # The official checkpoint contains its argparse.Namespace configuration.
++    # PyTorch 2.6+ defaults to weights_only=True, so opt into the legacy format
++    # explicitly for this pinned and checksum-verified upstream artifact.
++    ckpt = torch.load(model_path, map_location='cpu', weights_only=False)
+     args = ckpt['args'].model.replace("ManyAR_PatchEmbed", "PatchEmbedDust3R")
+     if 'landscape_only' not in args:
+         args = args[:-1] + ', landscape_only=False)'
+diff --git a/thirdparty/mast3r/mast3r/retrieval/processor.py b/thirdparty/mast3r/mast3r/retrieval/processor.py
+index 735bdc0..940cd25 100644
+--- a/thirdparty/mast3r/mast3r/retrieval/processor.py
++++ b/thirdparty/mast3r/mast3r/retrieval/processor.py
+@@ -67,7 +67,7 @@ class Retriever(object):
+         # load the model
+         assert os.path.isfile(modelname), modelname
+         print(f'Loading retrieval model from {modelname}')
+-        ckpt = torch.load(modelname, 'cpu')  # TODO from pretrained to download it automatically
++        ckpt = torch.load(modelname, 'cpu', weights_only=False)  # trusted official checkpoint
+         ckpt_args = ckpt['args']
+         if backbone is None:
+             backbone = AsymmetricMASt3R.from_pretrained(ckpt_args.pretrained)
+@@ -126,4 +126,4 @@ class Retriever(object):
+                 os.makedirs(os.path.dirname(outfile), exist_ok=True)
+             np.save(outfile, scores)
+             print(f'Scores matrix saved in {outfile}')
+-        return scores
+\ No newline at end of file
++        return scores
+-- 
+2.34.1
+
