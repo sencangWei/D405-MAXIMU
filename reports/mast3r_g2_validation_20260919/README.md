@@ -300,6 +300,7 @@ effective_weight = np.clip(
 | [zero_branch_check.py](zero_branch_check.py) | 把 onboard 分支真正压到 0 的单变量实测(见 §10.3) |
 | [cap_sweep.py](cap_sweep.py) | 修正幅度上限扫描(见 §13) |
 | [scale_sweep.py](scale_sweep.py) | `--docker2-scale-weight` 上界 + `--auto-docker2-scale-weight` 条件式投票(见 §13) |
+| [vins_global_scale_gap.py](vins_global_scale_gap.py) / [.json](vins_global_scale_gap.json) | VINS 全局 vs 局部尺度缺口, 含 Umeyama 自校验(见 §12.1) |
 | [despike_test.py](despike_test.py) | 去尖峰+插值假说检验 |
 | `*_probe.py`, `f1.py`, `fps.py`, `cmp.py`, `crosscheck.py` | 排查过程中的一次性探针 |
 
@@ -494,6 +495,52 @@ B 只是把中位数磨平了一点点(14.41 vs 14.57) —— 典型的"用尾�
   (0.302→0.690, 极差/中位 0.89), 但那只是"单位换算", 不影响几何。
   ⇒ 建议加的那条检查, 比对对象应当是
   **VINS 全局尺度 ↔ 上述已自洽的 IMU/双目米制尺度**, 而不是再在 IMU↔双目内部加码。
+
+### 12.1 把建议落成判据: VINS 全局尺度缺口 (已离线标定)
+
+[vins_global_scale_gap.py](vins_global_scale_gap.py) 把这个量算出来了。
+**全程不碰真值**(Lighthouse 仅评测用), 只用两样**在机**产物:
+
+```
+s = 相似变换(VINS 的 vio_corrected_stream.csv  →  MASt3R 的米制轨迹) 的尺度因子
+```
+
+Umeyama 每次运行都先做合成数据自校验(历史上这里踩过转置坑): 真值 s=1.37
+回收 1.370000000、旋转误差 1.5e-14°、残差 1.8e-15 m ✓。全 19 项结果:
+
+| 指标 | 值 |
+|---|---|
+| 中位 | **1.0011** |
+| 范围 | 0.6282 ~ 1.1012 |
+| 偏离 >5% | 10/19 |
+| 偏离 >10% | **3/19** |
+
+**决定性的一组是 `collective_batch4/group1`** —— 同一组里, 全局与局部给出完全相反的读法:
+
+```
+                        全局尺度   局部(1s窗)比中位   拟合 p95
+collective_batch4/g1 sparse   0.6282      0.9863        0.160 m
+collective_batch4/g1 tight    0.6450      1.0166        0.165 m
+```
+
+**局部比值 ≈ 1**(VINS 的短时尺度是对的), **全局尺度 0.63**(整体延伸差 37%)。
+现有验收门里所有与 VINS 有关的量都不是短时就是无尺度
+(`relative_motion_alignment` 的 `alignment` 字段写死 `..._no_scale`,
+互补段的 `docker2_to_mast3r_ratio` 是 `--scale-horizon-s 1` 的短窗量, 对同组报 1.005)
+⇒ **它们结构上就看不见这个缺口**, 不是阈值调得松。
+
+**交叉验证**: `vins_scale_test.json` 里用真值相似对齐独立算出的 VINS 隐含尺度是
+**0.6265**, 与本脚本的 0.6282 吻合到 **0.3%**。(真值只用于**验证**这条判据,
+判据本身不需要真值。)
+
+> **但不要直接当硬门用**, 两条实测反证:
+> 1. **融合段本来就兜得住它** —— 同一组 `collective_batch4/group1` 的**融合产物**
+>    隐含真值尺度是 1.0094(正常)。硬拒这一组会扔掉一个融合后没问题的会话。
+> 2. **唯一达标的 `v11b3/group2/tight` 这条, 全局尺度是 1.1012**(偏 10%)。
+>    若把门限拍在 10%, 第一个被拒的就是当前唯一能达标的轨迹。
+>
+> ⇒ 建议分两步: 先作为 `run_acceptance` 里的**诊断量与告警带**上线(阈值在这份
+> 19 项分布上标定, 不拍脑袋); 等累积到"某组确实因此产出坏轨迹"的证据, 再谈升级为硬拒。
 - ~~融合侧: `visual_position_sigma` 在 VINS 分歧时放宽视觉权重, 方向可疑, 需单独验证。~~
   **已结案(§11 配置 E)**: 实测关掉它反而更差(max 最差 24.16→24.56) ⇒ 该策略有效,
   我原先的"方向可疑"判断是错的, 已就地更正(见 §5 末尾的反悔块)。
