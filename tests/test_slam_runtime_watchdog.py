@@ -111,6 +111,31 @@ def test_runtime_watchdog_detects_stale_and_skewed_streams():
     assert "corrected_stream_stale" in stale["failures"]
 
 
+def test_completion_snapshot_ignores_arrival_only_drain_delay():
+    monitor = healthy_monitor()
+    final_timestamp = 0.5
+    final_point = (0.07, 0.0, 0.0)
+    monitor.ingest(
+        "raw",
+        timestamp_s=final_timestamp,
+        point=final_point,
+        arrival_monotonic_s=0.5,
+    )
+    monitor.ingest(
+        "corrected",
+        timestamp_s=final_timestamp,
+        point=final_point,
+        arrival_monotonic_s=3.35,
+    )
+
+    online = monitor.snapshot(3.35)
+    sealed = monitor.completion_snapshot()
+
+    assert "raw_stream_stale" in online["failures"]
+    assert sealed["state"] == "SLAM_HEALTHY"
+    assert sealed["failures"] == []
+
+
 def test_runtime_watchdog_waits_for_matching_raw_motion_before_jump_decision():
     monitor = healthy_monitor()
     monitor.ingest(

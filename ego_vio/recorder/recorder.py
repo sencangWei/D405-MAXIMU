@@ -72,7 +72,10 @@ class UnitRecorder:
         ])
         self._imu_csv = open(self.dir / "imu_ts.csv", "w", newline="", encoding="utf-8")
         self._imu_csv_w = csv.writer(self._imu_csv)
-        self._imu_csv_w.writerow(["counter", "ts_mono", "rx_mono", "ts_wall"])
+        self._imu_csv_w.writerow([
+            "counter", "ts_mono", "rx_mono", "ts_wall",
+            "imu_sensor_ts_s", "timestamp_source",
+        ])
 
         self._running = True
         self._thread = threading.Thread(target=self._loop, name=f"rec-{self.unit_name}", daemon=True)
@@ -157,6 +160,9 @@ class UnitRecorder:
                         f"{s.ts:.9f}",
                         f"{s.rx_time:.9f}",
                         f"{time.time():.6f}",
+                        "" if getattr(s, "imu_sensor_ts_s", None) is None
+                        else f"{s.imu_sensor_ts_s:.9f}",
+                        getattr(s, "timestamp_source", "host_counter_fit"),
                     ])
             except Exception as e:
                 print(f"[rec-{self.unit_name}] 写盘错误: {e}")

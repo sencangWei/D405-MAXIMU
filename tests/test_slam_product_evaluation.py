@@ -10,7 +10,15 @@ from scipy.spatial.transform import Rotation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from evaluate_slam_ground_truth import body_trajectory_to_camera, pose_errors
+from evaluate_slam_ground_truth import (
+    acceptance,
+    body_trajectory_to_camera,
+    camera_trajectory_to_body,
+    camera_adjusted_body_transform,
+    pose_errors,
+    write_markdown,
+    write_plot,
+)
 from analyze_depth_plane_constraint import (
     PlaneObservation,
     apply_temporal_gate,
@@ -193,7 +201,63 @@ def test_pose_errors_remove_only_rigid_alignment_not_scale():
     metrics = pose_errors(estimate, quaternions, gt, gt_quaternions, delta=10)
 
     assert metrics["ate_translation_rmse_m"] > 0.02
+    assert metrics["sim3_diagnostic_ate_rmse_m"] < 1e-12
+    assert metrics["sim3_diagnostic_scale_gt_per_estimate"] == pytest.approx(1 / 1.1)
     assert metrics["endpoint_drift_percent_of_path"] > 9.0
+    assert metrics["ate_translation_min_m"] <= metrics["ate_translation_median_m"]
+    assert metrics["ate_translation_median_m"] <= metrics["ate_translation_max_m"]
+    assert 0.0 <= metrics["ate_translation_within_10mm_ratio"] <= 1.0
+
+
+def test_external_ground_truth_acceptance_uses_frozen_10mm_gate():
+    passing = {
+        "ate_translation_rmse_m": 0.006,
+        "ate_translation_p95_m": 0.009,
+        "ate_translation_max_m": 0.010,
+        "ate_translation_within_10mm_ratio": 0.96,
+        "ate_rotation_rmse_deg": 1.0,
+        "timestamp_overlap_ratio": 0.99,
+    }
+    result = acceptance(passing, 10.0, 10.0, 10.0, 0.95, 2.0, 0.98)
+    assert result["result"] == "PASS"
+    failing = dict(passing, ate_translation_p95_m=0.011)
+    result = acceptance(failing, 10.0, 10.0, 10.0, 0.95, 2.0, 0.98)
+    assert result["result"] == "FAIL"
+    assert "ate_translation_p95_over_limit" in result["failures"]
+
+    failing = dict(passing, ate_translation_max_m=0.011)
+    result = acceptance(failing, 10.0, 10.0, 10.0, 0.95, 2.0, 0.98)
+    assert "ate_translation_max_over_limit" in result["failures"]
+
+
+def test_external_ground_truth_writes_plot_and_markdown(tmp_path: Path):
+    timestamps = np.linspace(0.0, 4.0, 100)
+    ground_truth = np.column_stack(
+        (timestamps, 0.2 * np.sin(timestamps), 0.1 * np.cos(timestamps))
+    )
+    estimate = ground_truth + np.array([0.3, -0.2, 0.1])
+    plot = tmp_path / "precision.png"
+    write_plot(timestamps, estimate, ground_truth, plot)
+    assert plot.read_bytes().startswith(b"\x89PNG")
+
+    metrics = {
+        "result": "PASS",
+        "ate_translation_rmse_m": 0.004,
+        "ate_translation_mean_m": 0.003,
+        "ate_translation_min_m": 0.001,
+        "ate_translation_median_m": 0.003,
+        "ate_translation_p95_m": 0.007,
+        "ate_translation_max_m": 0.009,
+        "ate_translation_within_10mm_ratio": 1.0,
+        "ate_rotation_rmse_deg": 0.5,
+        "rpe_translation_rmse_m": 0.002,
+        "endpoint_drift_m": 0.003,
+        "sim3_diagnostic_ate_rmse_m": 0.001,
+        "sim3_diagnostic_scale_gt_per_estimate": 1.0,
+    }
+    markdown = tmp_path / "precision.md"
+    write_markdown(metrics, markdown)
+    assert "ATE 平均" in markdown.read_text(encoding="utf-8")
 
 
 def test_pose_errors_report_position_and_attitude_alignment_separately():
@@ -247,6 +311,53 @@ def test_body_trajectory_to_camera_applies_rotating_lever_arm():
         Rotation.from_quat(camera_quaternions).as_matrix(),
         body_rotation.as_matrix(),
         atol=1e-12,
+    )
+
+
+def test_camera_trajectory_to_body_inverts_rotating_lever_arm():
+    body_positions = np.array([[0.2, -0.1, 0.3], [0.4, 0.5, -0.2]])
+    body_rotation = Rotation.from_euler("z", [0.0, 90.0], degrees=True)
+    body_t_camera = np.eye(4)
+    body_t_camera[:3, :3] = Rotation.from_euler(
+        "x", 20.0, degrees=True
+    ).as_matrix()
+    body_t_camera[0, 3] = 0.1
+    camera_positions, camera_quaternions = body_trajectory_to_camera(
+        body_positions, body_rotation.as_quat(), body_t_camera
+    )
+
+    recovered_positions, recovered_quaternions = camera_trajectory_to_body(
+        camera_positions, camera_quaternions, body_t_camera
+    )
+
+    np.testing.assert_allclose(recovered_positions, body_positions, atol=1e-12)
+    np.testing.assert_allclose(
+        Rotation.from_quat(recovered_quaternions).as_matrix(),
+        body_rotation.as_matrix(),
+        atol=1e-12,
+    )
+
+
+def test_camera_adjusted_body_transform_converts_left_ir_to_color():
+    body_from_left = np.eye(4)
+    body_from_left[:3, 3] = [0.1, -0.2, 0.3]
+    color_from_left = np.eye(4)
+    color_from_left[:3, :3] = Rotation.from_euler(
+        "z", 20.0, degrees=True
+    ).as_matrix()
+    color_from_left[:3, 3] = [0.01, 0.02, 0.03]
+    report = {
+        "observation_frame": "color_camera_i",
+        "factory_stereo_calibration": {
+            "color_rotation_from_left": color_from_left[:3, :3].tolist(),
+            "color_translation_from_left_m": color_from_left[:3, 3].tolist(),
+        },
+    }
+
+    body_from_color = camera_adjusted_body_transform(body_from_left, report)
+
+    np.testing.assert_allclose(
+        body_from_color, body_from_left @ np.linalg.inv(color_from_left)
     )
 
 

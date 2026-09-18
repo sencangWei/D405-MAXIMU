@@ -17,7 +17,7 @@ RealSense D405(左IR+右IR 真双目 1280×720@30, 原始 db3)+ KT-EX9-2 IMU(400
 - **git 身份**: 本仓库已有本地 `user.name=JO-ara-dev`、`user.email=1482268287@qq.com`;不要依赖全局配置。
 
 ## 硬件关键事实
-- **双IR 基线 ≈10mm** → 视差 ≈0px @1-2m,深度约束弱但 stereo 可用。**RGB↔左IR 基线 ≈0.01mm**(伪双目完全退化,禁止把 RGB+IR 当 stereo)。
+- **本机双IR出厂基线 18.083254mm**（DB3 `Stereo_Baseline` 与 IR2 `tf/ref_0` 一致）→ 远距离深度约束仍会快速变弱，但近距离 stereo 可用。**RGB↔左IR 平移约0.017mm**(几乎共光心，禁止把 RGB+IR 当 stereo)。算法必须从每次录制的出厂外参读取精确值，不得写死标称基线。
 - Depth 单位 = 0.0001m;ORB RGB-D `RGBD.DepthMapFactor: 10000` 正确。
 - 左IR 内参(720p PinHole): fx=fy=647.52, cx=638.534, cy=369.768, 畸变 0。
 - IMU 二进制 40B `<dI7f`: ts(double,**单位是秒**), counter(uint), gx,gy,gz,ax,ay,az,temp。400Hz。
@@ -25,14 +25,14 @@ RealSense D405(左IR+右IR 真双目 1280×720@30, 原始 db3)+ KT-EX9-2 IMU(400
 ## 两套 SLAM 路径状态
 1. **VINS 双IR**(主): 稳定基座已打 tag。
    - `d405-mono-rgb-stable-20260809`(commit e7824ac): 6 文件修复集(RGB mono 配置基座),推荐 mono 配置 `config/d405_rgb_ir_imu/d405_rgb_mono_config.yaml`(num_of_cam=1, cam0=RGB);`d405_rgb_ir_imu_config.yaml` 是双IR 配置。
-   - `vins-dual-ir-stable-20260810`(commit e239352): 双IR 经验最优点配置,**别再调参**(26+ 变体全中性/更差,闭环可达 ~1.4cm)。最优值: `td=-0.0117`(estimate_td:0)、`iter 8`、`parallax 10`、`max_cnt 400`、`min_dist 20`。坏值: td=0 炸(122.8cm)、estimate_td:1 不生效、max_cnt 250 炸/600 更差、min_dist 15 不稳(1/3 跑 51.5cm)。
+   - `vins-dual-ir-stable-20260810`(commit e239352): 双IR 经验最优点配置。**Docker2 产品数据必须以 Docker2 正式运行配置为准：`td=-0.009109323`、`estimate_td:0`、`iter 8`、`parallax 10`、`max_cnt 400`、`min_dist 20`。** `td=-0.0117` 只属于非 Docker2 的旧通用标定记录，不能套用到 Docker2。坏值: td=0 炸(122.8cm)、estimate_td:1 不生效、max_cnt 250 炸/600 更差、min_dist 15 不稳(1/3 跑 51.5cm)。
    - 纯 origin 8/8 全败,必须用 fork。**改配置后须 rebuild + pkill 清场再复验**(记忆 vins-fork-state)。
 2. **ORB RGB-D-Inertial**: tag `orb-rgbd-inertial-stable-20260809`(commit d431b3a,fork 在 `/home/robot/ego_pipeline/work/toolchains/ORB_SLAM3`)。已跑通,世界帧重锚定后 z_mean 跨次极差 0.0152m。小回路(<1m)VINS 双IR 明显占优。
    - **负结果(勿重蹈)**: Allan 实测噪声(更小)→ IMU 约束强 361 倍盖过深度约束 → z 垂直漂 3.48m,已 revert;BA 迭代数加倍(z_mean 极差 8× 恶化)→ 已 revert。**基线即最优,别再压噪声/迭代数**。RGB-D 模式深度是尺度真值,视觉主导正确。
 
 ## 铁律(破坏必炸/发散,勿动)
 1. **~90° 重力 bake 成对**: 回放 `replay_db3_to_ros2.py` / `replay_mp4_to_ros2.py` 的 `publish_imu` **硬编码** IMU 旋转 R_rep≈91.42°(重力 y→z)。VINS/ORB 配置的 `body_T_cam0`/`T_b_c1` bake 了等量 ~90° 与之自洽。**必须成对保留,缺一即崩/发散**。"57°"是误记。
-2. **时间偏移单次补偿**: VINS = 回放 `--imu-shift-ms 0` + 配置 `estimate_td:0` + `td=-0.0117`(08-08 Kalibr)。ORB = 回放 `--imu-shift-ms 11.7`。**双重补偿必发散**(陈旧 7.36 + 在线估计 = 846m 爆炸;ORB 7.36 慢回路 = 318m)。ORB shift 扫描实测: 7.36→318m / 10.0→45cm / **11.7→最佳3.5cm** / 13.0→22.5cm,`_test_orb_dynamic.py` 默认已修 `ORB_SHIFT_MS=11.7`。
+2. **时间偏移单次补偿**: Docker2 VINS = 回放 `--imu-shift-ms 0` + 配置 `estimate_td:0` + `td=-0.009109323`。ORB 的独立配置仍使用回放 `--imu-shift-ms 11.7`。**双重补偿必发散**(陈旧 7.36 + 在线估计 = 846m 爆炸;ORB 7.36 慢回路 = 318m)。Docker2 VINS 不得把 `-0.0117` 或 `7.36ms` 混入配置。
 3. **关键录制必须旧 db3 管线**: `capture_d405_720p_rgb_stereo_ir.py` 生成的原始 db3 是生产母版。`bag_to_ffv1.py` 仅保留为未来磁盘受限时的无损候选。inline mkv 管线(`capture_d405_mp4_inline.py`)会周期性特征塌缩 → 尺度膨胀/闭环差(见下)。有损 HEVC 不可用于 SLAM。
 4. **系统必须保持 30fps**:用户要求录制、回放、视觉前端、VINS 后端和轨迹输出都以 30fps 为目标,禁止用固定15fps换精度。现有 `inputImageCount%2==0 || featureBuffer.empty()` 是历史自适应降载逻辑,尚未满足确定性30fps;后续必须在完整30fps下解决初始化稳定性并验收实际处理率。
 5. **图像 QoS**: IMU 深度 2000、图像 100(防处理延迟丢帧);回放图像 RELIABLE 而非 BEST_EFFORT。

@@ -6,10 +6,16 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+CAPTURE_SCRIPT = (
+    Path(__file__).resolve().parent.parent
+    / "scripts"
+    / "capture_d405_720p_rgb_stereo_ir.py"
+)
 
 from scripts.capture_d405_720p_rgb_stereo_ir import (
     MetadataFrame,
     StreamContinuity,
+    analyze_db3_storage_timestamps,
     analyze_ir_exposure,
     capture_streams_for_mode,
     configure_ir_auto_exposure,
@@ -59,6 +65,16 @@ class MismatchedReadbackSensor(FakeSensor):
         return value
 
 
+def test_preview_window_initializes_before_hardware_streams_start():
+    text = CAPTURE_SCRIPT.read_text(encoding="utf-8")
+
+    preview_init = text.index("cv2.namedWindow(")
+    imu_start = text.index("imu_recorder.start()")
+    camera_start = text.index("sensor.start(frame_queue)")
+
+    assert preview_init < imu_start < camera_start
+
+
 def test_stream_continuity_reports_frame_gaps_and_timestamp_regression():
     stats = StreamContinuity()
     stats.add(10, 1000.0)
@@ -73,6 +89,39 @@ def test_stream_continuity_reports_frame_gaps_and_timestamp_regression():
     assert report["gap_events"] == 1
     assert report["timestamp_regressions"] == 1
     assert report["gap_ratio"] == 0.4
+
+
+def test_db3_storage_timestamp_report_rejects_wall_clock_regression(tmp_path):
+    bag = tmp_path / "capture.db3"
+    import sqlite3
+
+    with sqlite3.connect(bag) as connection:
+        connection.execute("CREATE TABLE topics(id INTEGER PRIMARY KEY, name TEXT)")
+        connection.execute(
+            "CREATE TABLE messages(id INTEGER PRIMARY KEY, topic_id INTEGER, timestamp INTEGER)"
+        )
+        for topic_id, topic in enumerate(
+            (
+                "/device_0/sensor_0/Color_0/image/metadata",
+                "/device_0/sensor_0/Infrared_1/image/metadata",
+                "/device_0/sensor_0/Infrared_2/image/metadata",
+            ),
+            start=1,
+        ):
+            connection.execute("INSERT INTO topics VALUES (?, ?)", (topic_id, topic))
+            connection.executemany(
+                "INSERT INTO messages(topic_id, timestamp) VALUES (?, ?)",
+                ((topic_id, 1_000_000_000), (topic_id, 900_000_000)),
+            )
+
+    report = analyze_db3_storage_timestamps(bag)
+
+    assert report["result"] == "FAIL"
+    assert all(
+        stream["timestamp_regressions"] == 1
+        and stream["max_backward_ms"] == pytest.approx(100.0)
+        for stream in report["streams"].values()
+    )
 
 
 def test_depth_stereo_mode_replaces_color_without_dropping_dual_ir():
