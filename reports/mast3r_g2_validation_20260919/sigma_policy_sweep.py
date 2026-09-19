@@ -112,7 +112,10 @@ def main():
                     continue
                 rec = dict(group=gid, cand=sub, configs={})
                 for name, ov in CONFIGS:
-                    out = SCRATCH / name / b / g.name
+                    out = SCRATCH / name / b / g.name / sub  # 必须带 sub:
+                    # 否则同组的 sparse 与 tight 共用一个目录, 跑 tight 时 rmtree
+                    # 会删掉 sparse 的产物(分数不受影响 —— 每步跑完立即打分 —— 但
+                    # 中间产物留不下来, 事后无法回读报告复核)。
                     if out.exists():
                         shutil.rmtree(out)
                     res = RT.run_tail(g, out, ov, sub)

@@ -108,7 +108,9 @@ def main():
                     continue
                 rec = dict(group=gid, cand=sub, configs={})
                 for name, ov in CONFIGS:
-                    out = SCRATCH / name / b / g.name
+                    out = SCRATCH / name / b / g.name / sub  # 必须带 sub, 见
+                    # sigma_policy_sweep.py 同处注释: 不带 sub 会让同组 sparse 与
+                    # tight 共用目录, 跑 tight 时把 sparse 的产物删掉。
                     if out.exists():
                         shutil.rmtree(out)
                     res = RT.run_tail(g, out, ov, sub)
