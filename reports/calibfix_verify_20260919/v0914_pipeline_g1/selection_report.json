@@ -1,0 +1,17 @@
+{
+  "schema": "umi_mast3r_fusion_candidate_selection_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "selection_policy": "use the internally valid sparse candidate when tight fails quality gates",
+  "selected_candidate": "sparse",
+  "evidence": {
+    "fallback_reason": "tight_candidate_failed_internal_quality",
+    "tight_candidate_exit_status": 1
+  },
+  "inputs": {
+    "sparse_graph_report": "/home/robot/ego_vio_humble/reports/calibfix_verify_20260919/v0914_pipeline_g1/sparse/mast3r/graph_fusion_report.json",
+    "sparse_fusion_report": "/home/robot/ego_vio_humble/reports/calibfix_verify_20260919/v0914_pipeline_g1/sparse/fusion_report.json",
+    "sparse_trajectory": "/home/robot/ego_vio_humble/reports/calibfix_verify_20260919/v0914_pipeline_g1/sparse/trajectory_fused_unsmoothed.csv"
+  },
+  "output": "/home/robot/ego_vio_humble/reports/calibfix_verify_20260919/v0914_pipeline_g1/trajectory_selected_unsmoothed.csv"
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "umi_mast3r_dataset_v1",
+  "slam_supervision": false,
+  "source_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260916_115357",
+  "source_db3": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260916_115357/d405_720p_rgb_stereo_ir.db3",
+  "source_db3_size_bytes": 6644940800,
+  "source_frames_csv": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260916_115357/d405_frames.csv",
+  "source_frames_csv_sha256": "5f71d119f24d80019b5ce7ec762acc214a7c180d949f17d556b59cc07ef2746c",
+  "source_capture_result": "PASS",
+  "source_camera_serial": "260322279785",
+  "stream": "infrared_left",
+  "image_encoding": "lossless_png_mono8",
+  "timestamp_source": "d405_frames.csv:infrared_left_device_ms_global_time",
+  "camera_info": {
+    "width": 1280,
+    "height": 720,
+    "fx": 649.207,
+    "fy": 649.207,
+    "ppx": 638.44,
+    "ppy": 354.548,
+    "model": "Brown Conrady",
+    "coeffs": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "source_camera_info": {
+    "width": 1280,
+    "height": 720,
+    "fx": 649.207,
+    "fy": 649.207,
+    "ppx": 638.44,
+    "ppy": 354.548,
+    "model": "Brown Conrady",
+    "coeffs": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "image_preprocessing": {
+    "crop_bottom_px": 0,
+    "mask_fixed_self_occlusion": false,
+    "purpose": "exclude camera-rigid self-occlusion from visual SLAM"
+  },
+  "mast3r_distortion_policy": "opencv_brown_conrady",
+  "mast3r_calibration": "/home/robot/ego_vio_humble/reports/calibfix_verify_20260919/group1/dataset/calibration.yaml",
+  "every": 1,
+  "start_index": 0,
+  "frames": 1799,
+  "first_t_sec": 1789530840.3829913,
+  "last_t_sec": 1789530900.3396456,
+  "max_db3_vs_csv_timestamp_delta_ms": 0.0,
+  "stereo_depth_source": {
+    "right_directory": "stereo_right",
+    "baseline_m": 0.018083254,
+    "left_focal_length_px": 649.207,
+    "right_camera_info": {
+      "width": 1280,
+      "height": 720,
+      "fx": 649.207,
+      "fy": 649.207,
+      "ppx": 638.44,
+      "ppy": 354.548,
+      "model": "Brown Conrady",
+      "coeffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "max_left_right_skew_ms": 0.0,
+    "frames": 1799
+  }
+}
