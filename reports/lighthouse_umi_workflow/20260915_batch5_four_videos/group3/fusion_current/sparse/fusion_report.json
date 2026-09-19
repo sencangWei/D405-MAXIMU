@@ -1,0 +1,91 @@
+{
+  "schema": "umi_docker2_mast3r_complementary_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "algorithm": "MASt3R long-term pose + Docker2 high-pass local metric motion",
+  "inputs": {
+    "mast3r_camera_trajectory": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260915_batch5_four_videos/group3/fusion_current/sparse/mast3r/trajectory_graph.csv",
+    "docker2_body_trajectory": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260915_batch5_four_videos/group3/docker2_slam/vio_corrected_stream.csv",
+    "body_camera_calibration": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml"
+  },
+  "samples": 1743,
+  "timestamp_overlap_s": 58.070369243621826,
+  "scale": {
+    "horizon_s": 1.0,
+    "hop_samples": 30,
+    "candidate_windows": 1175,
+    "robust_inliers": 1066,
+    "ratio_median": 1.0186053762912257,
+    "ratio_p10": 0.9728395787254042,
+    "ratio_p90": 1.0674132675745938,
+    "ratio_mad": 0.02231503287238401,
+    "docker2_to_mast3r_ratio": 1.0186053762912257,
+    "stereo_reference_ratio": 1.0,
+    "selected_joint_ratio": 1.0087947953907193,
+    "relative_disagreement": 0.018433891546855274,
+    "selection_policy": "weighted_log_mean_of_stereo_and_docker2",
+    "docker2_scale_weight": 0.475,
+    "automatic_selection": null
+  },
+  "fusion": {
+    "smoothing_s": 8.0,
+    "local_weight": 0.25,
+    "adaptive_local_weight": true,
+    "roughness_threshold_mm": 9.0,
+    "adaptive_weight_strength": 0.45,
+    "injection_limit_mm": 9.0,
+    "injection_clipped_frames": 17,
+    "effective_local_weight_min": 0.2180792794160521,
+    "effective_local_weight_median": 0.24996249771921178,
+    "effective_local_weight_max": 0.2521565943448723,
+    "input_disagreement_p95_mm": 79.70220811555579,
+    "injected_correction_median_mm": 1.968189939184062,
+    "injected_correction_p95_mm": 8.096046454218799,
+    "injected_correction_max_mm": 9.000000000000002,
+    "alignment_rotation": [
+      [
+        0.9998612754277221,
+        0.016521404973932452,
+        -0.00211496518555572
+      ],
+      [
+        0.005063083698794167,
+        -0.4224419578952924,
+        -0.9063758367217488
+      ],
+      [
+        -0.01586805229093341,
+        0.9062393918757224,
+        -0.42246700407157584
+      ]
+    ],
+    "alignment_translation_m": [
+      -0.008043461738009808,
+      0.028074795934993124,
+      -0.10087407381603544
+    ]
+  },
+  "docker2_position_policy": {
+    "source_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260915_batch5_four_videos/group3/docker2_slam/run_acceptance.json",
+    "source_result": "PASS",
+    "source_failures": [],
+    "local_translation_allowed": true,
+    "policy": "accepted_run_local_translation_enabled"
+  },
+  "orientation_prior": {
+    "source": "Docker2 calibrated 400Hz IMU attitude",
+    "world_alignment_quaternion_xyzw": [
+      0.8244318894858423,
+      0.007390759236396205,
+      0.0004689774941320919,
+      0.5659127285516939
+    ],
+    "visual_prior_disagreement_median_deg": 1.03487115071904,
+    "visual_prior_disagreement_p95_deg": 2.149684835869981,
+    "visual_prior_disagreement_max_deg": 7.651468635367641,
+    "policy": "orientation prior changes only body attitude and calibrated lever-arm conversion"
+  },
+  "output_frame": "body_imu_origin",
+  "output": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260915_batch5_four_videos/group3/fusion_current/sparse/trajectory_fused_unsmoothed.csv"
+}

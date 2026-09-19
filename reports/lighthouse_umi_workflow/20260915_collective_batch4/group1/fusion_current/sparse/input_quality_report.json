@@ -1,0 +1,24 @@
+{
+  "schema": "umi_mast3r_fusion_input_quality_v1",
+  "result": "REJECT",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "reason": "independent_onboard_trajectory_branch_unobservable",
+  "stereo_edge_rmse_after_m": 0.003209370914850997,
+  "maximum_stereo_edge_rmse_m": 0.004,
+  "input_disagreement_p95_m": 0.164688677851893,
+  "maximum_input_disagreement_p95_m": 0.025,
+  "maximum_severe_input_disagreement_p95_m": 0.05,
+  "metric_scale_relative_difference": 0.05717813420312171,
+  "maximum_metric_scale_relative_difference": 0.12,
+  "full_rate_imu_requested_correction_m": 0.006079067696739378,
+  "maximum_full_rate_imu_requested_correction_m": 0.01,
+  "position_branch_used": true,
+  "position_branch_weight_max": 0.2506942255018688,
+  "primary_shape_independently_supported": true,
+  "policy": "reject when a position branch used by the output is unobservable, when an isolated primary branch also has marginal stereo geometry, when D405/stereo and visual-inertial geometry both fail, or when stereo/IMU metric scale and full-rate inertial shape correction independently exceed their consistency limits",
+  "inputs": {
+    "graph_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260915_collective_batch4/group1/fusion_current/sparse/mast3r/graph_fusion_report.json",
+    "fusion_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260915_collective_batch4/group1/fusion_current/sparse/fusion_report.json"
+  }
+}
