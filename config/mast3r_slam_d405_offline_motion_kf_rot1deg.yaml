@@ -1,0 +1,33 @@
+inherit: "config/base.yaml"
+
+# A/B 变体：只把 motion_keyframe_rotation_deg 从 5.0 收到 1.0，其余与
+# mast3r_slam_d405_offline_motion_kf_tight.yaml 逐字相同。
+#
+# 为什么动 rotation 而不是 translation：
+#   batch5/group3/tight 现役运行里第一个运动关键帧在帧 226，
+#   触发时 translation=0.0245、rotation=5.753deg —— 是【rotation】触发的，
+#   且 0.0245 本来就低于任何合理收紧后的 translation 阈值（如 0.03）。
+#   ⇒ 收紧 translation 对"把第一个关键帧提前"是空转，只有 rotation 能动它。
+#   151 次触发中 101 次 rotation 单独触发、42 次 translation 单独触发。
+#
+# 假设（待证伪）：开头 7.53s 相对后面被挪开 15-18mm，是因为运动起手段
+# [4.8s, 7.53s] 整个落在第一个关键帧区间内、没有被第二个关键帧约束。
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  imu_rotation_prior: True
+  imu_rotation_constraint_weight: 0.6
+  imu_rotation_constraint_gate_deg: 0.5
+  motion_keyframe_translation: 0.15
+  motion_keyframe_rotation_deg: 1.0
+
+retrieval:
+  confirmation_frames: 2
+  confirmation_immediate_frame_gap: 150
+  confirmation_frame_id_radius: 60
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 24
