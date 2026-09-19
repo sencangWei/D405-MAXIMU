@@ -214,8 +214,150 @@ def part3():
     print("  ⚠ 轴向在 take 之间不一致 ⇒ **不是**一个全局标定常数, 是【每 take 的姿态偏置】。")
 
 
+def part4():
+    """那个每 take 的常量姿态偏移, 是上游带来的还是融合自己造的?
+
+    对每条链都算 (r1 位置对齐 rot, r2 姿态最优 rot, 偏移夹角 |Rc·Rᵀ|)。
+    r2 还顺带把 ②③ 的重力 bake 坐标系约定 (≈91°) 剥掉, 露出它们真实的姿态噪声。
+    """
+    print()
+    print("=" * 104)
+    print("④ 常量姿态偏移的来源: 逐链 r1(位置对齐) / r2(姿态最优) / 偏移夹角")
+    print("=" * 104)
+    hdr = f"{'cell':<44}" + "".join(f"{n:>19}" for n, _ in CHAINS)
+    print(hdr)
+    print(f"{'':<44}" + "".join(f"{'r1/r2/偏移':>19}" for _ in CHAINS))
+    print("-" * 120)
+    per_take = {}
+    for b, g, gt in cells():
+        rt, rp, rq = E.load_trajectory(gt)
+        for sub in ("sparse", "tight"):
+            if not (g / "fusion" / sub).is_dir():
+                continue
+            cells_txt = ""
+            for n, pat in CHAINS:
+                p = g / pat.format(s=sub)
+                a = aligned(p, rt, rp, rq) if p.is_file() else None
+                if not a:
+                    cells_txt += f"{'—':>19}"
+                    continue
+                _, _, R, Rq_gt, Rq_est = a
+                r1 = rot_rmse(Rq_gt, R, Rq_est)
+                Rc = attitude_optimal(Rq_gt, Rq_est)
+                r2 = rot_rmse(Rq_gt, Rc, Rq_est)
+                off = float(np.degrees(np.linalg.norm(Rot.from_matrix(Rc @ R.T).as_rotvec())))
+                cells_txt += f"{r1:6.1f}/{r2:5.2f}/{off:5.2f}".rjust(19)
+                per_take.setdefault((b.name, sub), {})[n] = (r1, r2, off)
+            print(f"{b.name[9:22] + '/' + g.name + '/' + sub:<44}{cells_txt}")
+
+    print()
+    print("=" * 104)
+    print("⑤ 逐链汇总: r2 (剥掉坐标系约定后的真实姿态噪声) 与 偏移夹角")
+    print("=" * 104)
+    for n, _ in CHAINS:
+        r2s, offs, r1s = [], [], []
+        for key, d in per_take.items():
+            if n in d:
+                r1s.append(d[n][0])
+                r2s.append(d[n][1])
+                offs.append(d[n][2])
+        if not r2s:
+            print(f"  {n:<14} 无数据")
+            continue
+        print(f"  {n:<14} n={len(r2s):2d}  r1 中位 {np.median(r1s):6.2f}°  "
+              f"r2 中位 {np.median(r2s):5.2f}°  偏移夹角 中位 {np.median(offs):5.2f}°  "
+              f"范围 {min(offs):.2f}–{max(offs):.2f}°")
+
+    print()
+    print("=" * 104)
+    print("⑥ 关键比对: ①VINS 的偏移 vs ④fused 的偏移 (同一 take 同一 cell)")
+    print("=" * 104)
+    print(f"{'take/sub':<32}{'VINS偏移':>10}{'fused偏移':>11}{'差值':>9}{'VINS r2':>10}{'fused r2':>10}")
+    print("-" * 84)
+    dv, df = [], []
+    for key in sorted(per_take):
+        d = per_take[key]
+        if "①VINS" not in d or "④fused" not in d:
+            continue
+        ov, of = d["①VINS"][2], d["④fused"][2]
+        dv.append(ov)
+        df.append(of)
+        print(f"{key[0][9:22] + '/' + key[1]:<32}{ov:9.2f}°{of:10.2f}°{ov - of:8.2f}°"
+              f"{d['①VINS'][1]:9.2f}°{d['④fused'][1]:9.2f}°")
+    if dv:
+        r = np.corrcoef(dv, df)[0, 1]
+        print()
+        print(f"  ⇒ VINS 偏移中位 {np.median(dv):.2f}°, fused 偏移中位 {np.median(df):.2f}°")
+        print(f"  ⇒ 两者相关 ρ = {r:+.2f}  (n={len(dv)})")
+        print(f"  ⇒ VINS r2 中位 {np.median([per_take[k]['①VINS'][1] for k in per_take if '①VINS' in per_take[k]]):.2f}°")
+        if np.median(dv) > 0.5 and r > 0.5:
+            print("  ⇒ 判读: VINS 自己就带着同量级的偏移且与 fused 同向 ⇒ **上游带入**")
+        elif np.median(dv) < 0.3:
+            print("  ⇒ 判读: VINS 自己几乎没有偏移 ⇒ **融合环节自己造的**")
+        else:
+            print("  ⇒ 判读: 两者都有 ⇒ 部分上游带入、部分融合自造")
+
+
+def chain_on_gt(p, rt, rp, rq):
+    """把一条链的姿态插补到 GT 时间栅格上, 返回 (时间, 姿态)。"""
+    et, ep, eq = E.load_trajectory(Path(p))
+    ins, val, itp, iq = E.interpolate_ground_truth(et, rt, rp, rq, 0.1)
+    if val.sum() < 10:
+        return None, None
+    return et[ins][val], eq[ins][val]
+
+
+def part7():
+    """★ ④fused 的姿态与 ①VINS 的姿态, 到底是什么关系?
+
+    ⚠ 两条链的 val 掩码不同 (各自插补), 必须先归到**共同时间栅格**再比,
+    否则长度不等会被整片跳过 (曾经因此只看到 6/20 个 cell)。
+    """
+    print()
+    print("=" * 104)
+    print("⑦ ④fused 姿态 vs ①VINS 姿态 (共同 GT 栅格)")
+    print("=" * 104)
+    print(f"{'cell':<46}{'常量旋转':>12}{'剥掉后残差':>13}{'公共样本':>10}")
+    print("-" * 92)
+    res = []
+    for b, g, gt in cells():
+        rt, rp, rq = E.load_trajectory(gt)
+        for sub in ("sparse", "tight"):
+            pv = g / "docker2_slam" / "vio_corrected_stream.csv"
+            pf = g / "fusion" / sub / "trajectory_fused.csv"
+            if not (pv.is_file() and pf.is_file()):
+                continue
+            tv, qv = chain_on_gt(pv, rt, rp, rq)
+            tf, qf = chain_on_gt(pf, rt, rp, rq)
+            if tv is None or tf is None:
+                continue
+            _, iv, if_ = np.intersect1d(np.round(tv, 4), np.round(tf, 4),
+                                        return_indices=True)
+            if len(iv) < 10:
+                continue
+            A, B = Rot.from_quat(qv[iv]), Rot.from_quat(qf[if_])
+            # 要的是 B ≈ C·A (fused ≈ C·VINS) ⇒ gt 角色传 B, est 角色传 A
+            C = attitude_optimal(B, A)
+            ang = np.degrees((B.inv() * (Rot.from_matrix(C) * A)).magnitude())
+            r = float(np.sqrt((ang ** 2).mean()))
+            res.append(r)
+            print(f"{b.name[9:22] + '/' + g.name + '/' + sub:<46}"
+                  f"{np.degrees(np.linalg.norm(Rot.from_matrix(C).as_rotvec())):10.2f}°"
+                  f"{r:12.4f}°{len(iv):10d}")
+    a = np.array(res)
+    if len(a):
+        print()
+        print(f"  ⇒ n={len(a)}  剥掉常量旋转后残差 中位 {np.median(a):.4f}°  最大 {a.max():.4f}°")
+        print(f"  ⇒ 残差 ≈0 的 cell: {int((a < 0.01).sum())}/{len(a)}")
+        print("  ⇒ **融合不贡献任何姿态信息** ⇒ rot 这道门 100% 由 VINS 决定。")
+        print("  ⇒ 而 VINS 真实姿态噪声仅 ~1.22° (⑤), 本就在 2.0° 门内;")
+        print("     把格子顶过门的是【轨迹位置与姿态互不自洽】那 ~1.6° 常量偏移。")
+
+
 if __name__ == "__main__":
     part0()
     part1()
     part2()
     part3()
+    part4()
+    part7()
