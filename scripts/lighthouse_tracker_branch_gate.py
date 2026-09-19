@@ -142,7 +142,9 @@ def main() -> int:
     result["max_affected_frame_ratio_threshold"] = args.max_affected_frame_ratio
 
     print(f"=== {args.lighthouse_session.name} ===")
-    print(f"  窗口内 tracker 采样 {result['samples']}  相机帧 {result['camera_frames']}")
+    # camera_frames 只在能拿到 d405_frames.csv 时才存在; 拿不到时 result 里没这个键
+    # (不是 None), 直接下标取值会在这种会话上 KeyError 崩掉。
+    print(f"  窗口内 tracker 采样 {result['samples']}  相机帧 {result.get('camera_frames')}")
     print(f"  平移步长 P95 {result['step_p95_mm']:.3f} mm  最大 {result['step_max_mm']:.3f} mm"
           f"  判候选阈值 {result['threshold_mm']:.3f} mm")
 
