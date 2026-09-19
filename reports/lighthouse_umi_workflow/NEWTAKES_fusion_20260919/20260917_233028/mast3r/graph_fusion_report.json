@@ -1,0 +1,371 @@
+{
+  "schema": "umi_mast3r_stereo_imu_fusion_v2",
+  "result": "FAIL",
+  "failures": [
+    "imu_stereo_metric_scale_disagreement"
+  ],
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "algorithm": "MASt3R learned visual trajectory + D405 stereo scale check + 400Hz IMU metric scale/attitude",
+  "inputs": {
+    "trajectory": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/trajectory_imu_metric.csv",
+    "stereo_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/stereo_scale_bidirectional_report.json",
+    "additional_stereo_reports": [
+      "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/stereo_scale_long_hops_report.json",
+      "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/stereo_scale_dense10hz_report.json",
+      "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/stereo_scale_multisecond_report.json"
+    ],
+    "imu_scale_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/imu_scale_report.json",
+    "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260917_233030",
+    "imu_calibration": "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+    "vins_spatiotemporal_calibration": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml",
+    "keyframe_dir": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/mast3r_logs/keyframes/dataset",
+    "relative_motion_trajectory": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260917_233028_720p_loop1_720p_arm/slam/vio_corrected_stream.csv",
+    "relative_motion_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260917_233028_720p_loop1_720p_arm/slam/run_acceptance.json",
+    "external_ground_truth_used": false
+  },
+  "time_alignment": {
+    "estimate_td": 0,
+    "td_s": -0.009109323,
+    "policy": "Docker2 formal fixed td applied exactly once; replay shift is zero"
+  },
+  "camera_extrinsics": {
+    "vins_body_T_left_ir": [
+      [
+        0.999978007689,
+        -0.006162851996,
+        0.002450182166,
+        -0.013558924583
+      ],
+      [
+        0.002275800784,
+        -0.028145157096,
+        -0.999601255932,
+        -0.023797818217
+      ],
+      [
+        0.006229355357,
+        0.999584848518,
+        -0.028130512695,
+        -0.00960802493
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "effective_body_T_trajectory_camera": [
+      [
+        0.999978007689,
+        -0.006162851996,
+        0.002450182166,
+        -0.013558924583
+      ],
+      [
+        0.002275800784,
+        -0.028145157096,
+        -0.999601255932,
+        -0.023797818217
+      ],
+      [
+        0.006229355357,
+        0.999584848518,
+        -0.028130512695,
+        -0.00960802493
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "trajectory_observation_frame": "infrared_left_camera_i",
+    "policy": "trajectory camera is the calibrated left IR camera"
+  },
+  "imu": {
+    "calibration_id": "imu_runtime_accel_calibrated_raw_gyro_20260816",
+    "runtime_axis_rotation": [
+      [
+        0.99980212,
+        -0.01423891,
+        -0.01389161
+      ],
+      [
+        -0.01423891,
+        -0.02458715,
+        -0.99959628
+      ],
+      [
+        0.01389161,
+        0.99959628,
+        -0.02478503
+      ]
+    ],
+    "samples": 24001,
+    "median_rate_hz": 400.21235256736884
+  },
+  "stereo_scale_m_per_mast3r_unit": 0.48840688026644935,
+  "minimum_stereo_sample_hop": 1,
+  "learned_stereo_policy": {
+    "minimum_confidence": 0.0,
+    "translation_only": false
+  },
+  "metric_scale_consistency": {
+    "imu_scale_m_per_mast3r_unit": 0.6235737150104563,
+    "stereo_scale_m_per_mast3r_unit": 0.48840688026644935,
+    "joint_scale_m_per_mast3r_unit": 0.5518674594179448,
+    "relative_difference": 0.2431100602260918,
+    "maximum_relative_difference": 0.15,
+    "consistent": false,
+    "selected_scale_m_per_mast3r_unit": 0.5518674594179448,
+    "selection_policy": "equal_weight_log_mean"
+  },
+  "orientation_node_stride": 10,
+  "position_node_stride": 5,
+  "keyframe_only_correction_nodes": false,
+  "position_fusion_selection": {
+    "requested_mode": "keyframe-graph",
+    "selected_mode": "keyframe-graph",
+    "policy": "explicit_cli_selection",
+    "projected_max_scale_disagreement_ratio": null,
+    "visual_position_sigma": {
+      "enabled": true,
+      "requested_sigma_m": 0.02,
+      "selected_sigma_m": 0.02,
+      "weak_visual_sigma_m": 0.04,
+      "position_disagreement_p95_m": 0.04609594831931446,
+      "trigger_disagreement_m": 0.05,
+      "relaxed": false,
+      "reason": "independent_onboard_trajectories_consistent",
+      "external_ground_truth_used": false
+    }
+  },
+  "keyframe_graph": {
+    "source": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/mast3r_logs/keyframes/dataset",
+    "saved_keyframes": 93,
+    "matched_keyframes": 93,
+    "correction_nodes": 437,
+    "max_timestamp_match_error_s": 0.009263753890991211,
+    "keyframe_nodes": 94,
+    "regular_nodes": 361,
+    "maximum_gap_frames": 5
+  },
+  "relative_motion_alignment": {
+    "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+    "rotation": [
+      [
+        0.9992859054509299,
+        0.004693511033204478,
+        0.03749200076411871
+      ],
+      [
+        0.03707937149312465,
+        -0.3126311377404016,
+        -0.9491506160377379
+      ],
+      [
+        0.00726631796650444,
+        0.9498630125809319,
+        -0.3125819219882788
+      ]
+    ],
+    "translation_m": [
+      -0.0009075041795377561,
+      0.003816774262892623,
+      -0.037279020288670014
+    ],
+    "position_disagreement_median_m": 0.01314059416284044,
+    "position_disagreement_p95_m": 0.04609594831931446,
+    "inlier_position_disagreement_median_m": 0.01095578190724188,
+    "inlier_position_disagreement_p95_m": 0.030440517330650407,
+    "alignment_inliers": 1579,
+    "alignment_outliers": 164,
+    "overlap_samples": 1743,
+    "overlap_ratio": 0.9688715953307393,
+    "source_validation": {
+      "source_result": "PASS",
+      "source_failures": [],
+      "policy": "accepted_passed_relative_odometry"
+    }
+  },
+  "rotation_fusion": {
+    "windows": 180,
+    "before_median_deg": 0.14526286179313475,
+    "before_p95_deg": 0.6079122716237505,
+    "after_median_deg": 0.05534208307370682,
+    "after_p95_deg": 0.27434110841130177,
+    "orientation_correction_requested_max_deg": 1.7497792502467189,
+    "orientation_correction_scale": 1.0,
+    "orientation_correction_median_deg": 0.38872524185232454,
+    "orientation_correction_max_deg": 1.7497792502467189,
+    "orientation_correction_limit_deg": 4.0,
+    "orientation_correction_limit_policy": "stereo_strongly_supports_imu",
+    "stereo_rotation_edges": 2014,
+    "visual_downweighted_nodes": 121,
+    "stereo_visual_before_median_deg": 0.2876139032830115,
+    "stereo_visual_before_p95_deg": 1.460472904926547,
+    "stereo_imu_before_median_deg": 0.22596006711442596,
+    "stereo_imu_before_p95_deg": 0.9417549806569435,
+    "stereo_rotation_after_median_deg": 0.17119765231709463,
+    "stereo_rotation_after_p95_deg": 0.8548262589697029,
+    "optimizer_success": true,
+    "optimizer_status": 2,
+    "optimizer_message": "`ftol` termination condition is satisfied.",
+    "optimizer_nfev": 9,
+    "optimizer_cost": 319.58620990286954,
+    "optimizer_optimality": 0.20099085873307665
+  },
+  "trajectory_frame_alignment": {
+    "method": "robust_stereo_translation_direction_wahba",
+    "accepted": false,
+    "rejection_reason": "insufficient_observability",
+    "edges": 2012,
+    "inliers": 1784,
+    "before_median_deg": 1.438699218709565,
+    "before_p95_deg": 3.8635190462140296,
+    "after_median_deg": 1.438699218709565,
+    "after_p95_deg": 3.8635190462140296,
+    "correction_rotvec_deg": [
+      -0.0,
+      -0.0,
+      0.0
+    ],
+    "correction_requested_deg": 0.22210299402946196,
+    "correction_applied_deg": 0.0,
+    "correction_limit_deg": 2.0,
+    "correction_limit_scale": 1.0,
+    "correction_applied_scale": 0.0,
+    "correction_limited": false,
+    "requested_after_median_deg": 1.4459732654988133,
+    "median_improvement_ratio": -0.005055988558729239,
+    "minimum_median_improvement_ratio": 0.005,
+    "external_ground_truth_used": false
+  },
+  "stereo_translation_fusion": {
+    "mode": "keyframe_graph_visual_stereo_imu_preintegration",
+    "node_policy": "mast3r_keyframes",
+    "anchor_policy": "first_node_only",
+    "visual_position_sigma_m": 0.02,
+    "nodes": 437,
+    "node_stride": 10,
+    "stereo_edges": 2014,
+    "stereo_edge_rmse_before_m": 0.007807635713248387,
+    "stereo_edge_rmse_after_m": 0.0028993963122616795,
+    "position_correction_requested_max_m": 0.02530261965814068,
+    "position_correction_median_m": 0.00738951347638704,
+    "position_correction_p95_m": 0.020039718358188303,
+    "position_correction_max_m": 0.025,
+    "position_correction_limit_m": 0.025,
+    "correction_scale": 0.9880399870752784,
+    "correction_cap_mode": "per-node",
+    "correction_interpolation_mode": "linear",
+    "correction_clipped_frames": 19,
+    "gravity_prior_mps2": [
+      -0.010810543125830168,
+      9.156772884036235,
+      3.51052385048671
+    ],
+    "gravity_solution_mps2": [
+      0.09228870730454664,
+      9.184633695995794,
+      3.4777681362932262
+    ],
+    "accel_bias_solution_mps2": [
+      0.0814878808694331,
+      0.026589699804834575,
+      0.06979228830238253
+    ],
+    "static_gravity_samples": 3793,
+    "robust_edge_inliers": 2006,
+    "stereo_prior_weight_median": 0.6113123746659526,
+    "stereo_prior_weight_p10": 0.28138033568474935,
+    "local_stereo_scale_state": {
+      "observations": 2014,
+      "global_scale_m_per_mast3r_unit": 0.48840688026644935,
+      "radius_frames": 45.0,
+      "downweighted_queries": 0,
+      "visual_prior_weight_min": 0.5169592797161928,
+      "visual_prior_weight_median": 1.0,
+      "local_scale_log_deviation_p95": 0.060304394136099,
+      "local_scale_relative_span_p95": 0.1726031733928254,
+      "edge_reference_scale_log_deviation_p95": 0.060304394136099
+    },
+    "robust_imu_position_inliers": 436,
+    "robust_imu_velocity_inliers": 436,
+    "relative_motion_edges": 424,
+    "relative_motion_sigma_m": 0.008,
+    "relative_motion_initial_disagreement_p95_m": 0.003848965841076915,
+    "initial_robust_relative_motion_inliers": 424,
+    "relative_motion_rmse_before_m": 0.001876101591698632,
+    "relative_motion_rmse_after_m": 0.0012710618552381032,
+    "robust_relative_motion_inliers": 424,
+    "linear_system_rows": 12591,
+    "linear_system_unknowns": 2628
+  },
+  "full_rate_imu_position_refinement": {
+    "mode": "full_rate_imu_acceleration_robust_position_refinement",
+    "frames": 1799,
+    "imu_rate_hz": 400.21235256736884,
+    "visual_downweighted_frames": 54,
+    "acceleration_residual_before_p95_mps2": 1.7071246252029104,
+    "acceleration_residual_after_p95_mps2": 0.20275399994581164,
+    "acceleration_residual_before_max_mps2": 5.92217188018075,
+    "acceleration_residual_after_max_mps2": 0.4314844586119617,
+    "correction_requested_max_m": 0.003252649724586984,
+    "correction_median_m": 0.00022831945157034052,
+    "correction_p95_m": 0.0008613978456920711,
+    "correction_max_m": 0.003252649724586984,
+    "correction_limit_m": 0.02,
+    "correction_scale": 1.0,
+    "robust_dynamic_inliers": 1797,
+    "visual_sigma_base_m": 0.0015,
+    "visual_activation_gain": 5.0,
+    "dynamic_sigma_mps2": 0.75
+  },
+  "accelerometer_consistency_before": {
+    "windows": 180,
+    "gravity_mps2": [
+      0.029627505054903178,
+      9.121852233461825,
+      3.510322341380202
+    ],
+    "gravity_norm_mps2": 9.774018052907476,
+    "equation_rmse": 0.009575112885080601,
+    "rank": 546,
+    "unknowns": 546,
+    "condition_number": 14.882183290563356
+  },
+  "accelerometer_consistency_after_position": {
+    "windows": 180,
+    "gravity_mps2": [
+      0.02967011006754039,
+      9.121895356253301,
+      3.5103181175077083
+    ],
+    "gravity_norm_mps2": 9.774056910616483,
+    "equation_rmse": 0.009655755519828618,
+    "rank": 546,
+    "unknowns": 546,
+    "condition_number": 14.882183290563356
+  },
+  "inertial_position_rmse_regression_ratio": 0.008422107991402417,
+  "maximum_inertial_position_rmse_regression_ratio": 0.01,
+  "accelerometer_consistency": {
+    "windows": 180,
+    "gravity_mps2": [
+      0.029670110067540376,
+      9.121895356253301,
+      3.5103181175077083
+    ],
+    "gravity_norm_mps2": 9.774056910616483,
+    "equation_rmse": 0.009655755519828614,
+    "rank": 546,
+    "unknowns": 546,
+    "condition_number": 14.882183290563356
+  },
+  "failed_output_written_for_diagnostics": false,
+  "output": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/NEWTAKES_fusion_20260919/20260917_233028/mast3r/trajectory_graph.csv"
+}
