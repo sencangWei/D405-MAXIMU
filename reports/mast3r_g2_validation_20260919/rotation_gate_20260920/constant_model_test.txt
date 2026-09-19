@@ -1,0 +1,70 @@
+8 个 cell
+
+=== ① 真实数据的姿态摆幅（决定常量能不能被 mean 平均掉）===
+  cell                                                姿态摆幅中位     p90
+  20260914_validation_v10_batch/group1/fusion_current          34.3    67.0
+  20260914_validation_v10_batch/group2/fusion_current          16.5    53.5
+  20260914_validation_v11_holdout_batch3/group2/fusion_current          26.2    59.0
+  20260915_batch5_four_videos/group1/fusion_current          21.6    56.4
+  20260915_batch5_four_videos/group2/fusion_current          19.1    63.0
+  20260915_batch5_four_videos/group3/fusion_current          29.2    59.9
+  20260915_batch5_four_videos/group4/fusion_current          26.6    73.0
+  20260915_collective_batch4/group1/fusion_current          14.7    93.9
+
+=== ② 合成：完美位置 + 恒常量体轴偏移 C（用真实姿态分布）===
+
+  --- 20260914_validation_v10_batch/group1/fusion_current ---
+    真实: 门 1.87  漂移 1.18  常量 1.46
+      |C|(°)       门      漂移      常量   比对
+         1.0    1.06    0.33    1.00
+         1.5    1.59    0.49    1.51
+         2.0    2.11    0.66    2.01
+         2.5    2.64    0.82    2.51
+         3.0    3.17    0.99    3.01
+         4.0    4.23    1.32    4.02
+
+  --- 20260914_validation_v10_batch/group2/fusion_current ---
+    真实: 门 3.20  漂移 1.18  常量 2.98
+      |C|(°)       门      漂移      常量   比对
+         1.0    1.06    0.26    1.02
+         1.5    1.59    0.40    1.54
+         2.0    2.11    0.53    2.05
+         2.5    2.64    0.66    2.56
+         3.0    3.17    0.79    3.07
+         4.0    4.23    1.06    4.09
+
+  --- 20260914_validation_v11_holdout_batch3/group2/fusion_current ---
+    真实: 门 1.89  漂移 1.22  常量 1.44
+      |C|(°)       门      漂移      常量   比对
+         1.0    1.06    0.26    1.02
+         1.5    1.59    0.39    1.54
+         2.0    2.11    0.52    2.05
+         2.5    2.64    0.65    2.56
+         3.0    3.17    0.78    3.07
+         4.0    4.23    1.04    4.10
+
+  --- 20260915_batch5_four_videos/group1/fusion_current ---
+    真实: 门 1.76  漂移 1.04  常量 1.41
+      |C|(°)       门      漂移      常量   比对
+         1.0    1.06    0.26    1.02
+         1.5    1.59    0.39    1.54
+         2.0    2.11    0.52    2.05
+         2.5    2.64    0.65    2.56
+         3.0    3.17    0.78    3.07
+         4.0    4.23    1.05    4.10
+
+=== ③ 对照：随时间**漂移**的姿态误差（同样幅度）===
+
+  --- 20260914_validation_v10_batch/group1/fusion_current ---
+       幅度(°)       门      漂移      常量
+         1.0    0.61    0.61    0.06
+         2.0    1.22    1.22    0.11
+         3.0    1.83    1.82    0.17
+         4.0    2.44    2.43    0.22
+
+  --- 20260914_validation_v10_batch/group2/fusion_current ---
+       幅度(°)       门      漂移      常量
+         1.0    0.61    0.61    0.04
+         2.0    1.22    1.22    0.08
+         3.0    1.83    1.83    0.11
+         4.0    2.44    2.44    0.15

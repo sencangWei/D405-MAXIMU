@@ -1,0 +1,35 @@
+8 个 cell
+
+cell                                              门  oracle后    C_x    C_y    C_z    |C|
+------------------------------------------------------------------------------------------
+20260914_validation_v10_batch/group1/fusion_current   1.87     1.50   0.24   0.92  -0.60   1.12
+20260914_validation_v10_batch/group2/fusion_current   3.20     1.44   1.48   2.08  -1.30   2.86
+20260914_validation_v11_holdout_batch3/group2/fusion_current   1.89     1.15   0.58   0.64  -1.22   1.49
+20260915_batch5_four_videos/group1/fusion_current   1.76     0.94   0.76   0.78  -1.01   1.48
+20260915_batch5_four_videos/group2/fusion_current   2.35     1.31   0.65   1.48  -1.09   1.96
+20260915_batch5_four_videos/group3/fusion_current   2.83     1.83   1.35   1.67  -0.20   2.15
+20260915_batch5_four_videos/group4/fusion_current   2.41     2.25  -0.73   0.43  -0.20   0.87
+20260915_collective_batch4/group1/fusion_current   3.09     2.79  -0.55   1.21   0.06   1.33
+
+  分量均值 [ 0.47  1.15 -0.69]  标准差 [0.75 0.53 0.5 ]
+  |C| 均值 1.66°
+  C_i 两两夹角：中位 1.46°  p90 2.11°
+
+=== 留一跨 take 迁移 ===
+cell                                              基线   oracle      迁移后      迁移/可消
+------------------------------------------------------------------------------------
+20260914_validation_v10_batch/group1/fusion_current    1.87     1.50     1.55        86%
+20260914_validation_v10_batch/group2/fusion_current    3.20     1.44     2.23        55%
+20260914_validation_v11_holdout_batch3/group2/fusion_current    1.89     1.15     1.43        62%
+20260915_batch5_four_videos/group1/fusion_current    1.76     0.94     1.14        76%
+20260915_batch5_four_videos/group2/fusion_current    2.35     1.31     1.45        86%
+20260915_batch5_four_videos/group3/fusion_current    2.83     1.83     2.24        59%
+20260915_batch5_four_videos/group4/fusion_current    2.41     2.25     2.82      -253%
+20260915_collective_batch4/group1/fusion_current    3.09     2.79     3.15       -18%
+
+  迁移能吃掉 oracle 可消量的 >50% 的 cell：6/8
+
+=== 全局单一常量 C（所有 cell 的 oracle C 的均值，|C|=1.42°）===
+  基线中位 2.38°  全局 C 后中位 1.81°  oracle 中位 1.47°
+  改善的 cell：7/8  中位改善 0.59°  （oracle 中位改善 0.77°）
+  用全局 C 后仍 >2.0° 门的 cell：4/8   （基线 5/8）
