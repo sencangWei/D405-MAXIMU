@@ -404,3 +404,56 @@ take 的**前端配置不是同一份**:
 
 **声明**: 本报告不引用任何外部真值;Lighthouse 仅用于评估,不参与算法。
 `slam_supervision: false` / `external_ground_truth_used: false`
+
+
+---
+
+# 10. 订正: "以前从未出现" —— 时刻线用错了口径 (2026-09-19)
+
+## 10.1 融合算法的真实起点 = 2026-09-07 傍晚
+
+`scripts/` 是 09-19 才入 git 的(`e419c7c7`), **git 历史查不到时间**。用文件 birth:
+
+| 文件 | birth |
+|---|---|
+| `scripts/align_mast3r_scale_with_imu.py` | **2026-09-07 17:39** |
+| `scripts/fuse_mast3r_stereo_imu.py` | **2026-09-07 20:01** |
+| `scripts/fuse_docker2_mast3r_complementary.py` | 2026-09-12 06:03 |
+
+冒烟产物: `mast3r_slam_algorithm_smoke_20260907_v7/imu_scale_report.json` **09-07 17:40**;
+`mast3r_stereo_imu_fusion_20260907_v1/fusion_report.json` **09-07 20:02**。
+
+⇒ **融合算法时期 = 09-07 起**(不是 9/8,也不是 09-13)。
+
+## 10.2 订正: 先前那张表用的是 take 的【录制】日期, 不是【跑融合】的日期
+
+09-08 那些 take 其实都是 **09-13 才跑融合**的。改正后, 尺度门在融合算法时期
+(带 `metric_scale_consistency` 的记录自 **09-08 16:44** 起)的完整越门史:
+
+| 跑融合的时间 | 相对差 | 位置 | 是否生产路径 |
+|---|---|---|---|
+| 09-08 21:21 | 12.36% | `20260908_211146_docker2_vs_mast3r` | 否 |
+| 09-10 15:25 | **14.62%** | `slam_three_way_20260910_v2/group_b_tracker_jump` | 否 |
+| 09-11 03:06 | **14.98%** | `slam_new_extrinsic_20260911/group_b_post_jump` | 否 |
+| **09-12 17:24** | **23.30% ❌** | `20260912_034624_evaluation/all_slam_comparison` | 否 |
+| 09-13 20:15 | 23.57% ❌ | `mast3r_fusion_regression_13/baseline_current` | 否 |
+| 09-15 17:42 | 19.22% ❌ | `mast3r_d405_finetune_20260915/slam_ab` | 否 |
+| 09-17 16:37 | 15.40% ❌ | `20260916_fusion_v11_hybrid_ab_v1/group2` | 否(被 stereo 策略放行) |
+| 09-19 12:03/12:26/12:46 | 24.31 / 22.51 / 21.23% ❌ | `NEWTAKES_fusion_20260919` | **是(首次)** |
+
+- **第一次越门 = 09-12 17:24(23.30%),距融合算法诞生 5 天。**
+- **越门之前已连续擦边**: 09-08 的 12.36%、09-10 的 14.62%、**09-11 的 14.98%(距门限 0.02 pp)**。
+- 门限 15% **切在一条连续尾部里面**: 14.98%(过)与 15.40%(不过)之间没有任何结构性差别。
+
+## 10.3 订正后的结论
+
+**"以前没出现过" 的准确版本 = 以前没在【生产/验收路径】上出现过。**
+融合算法自己的历史里, 它在**第 5 天**就撞了门, 而且擦边从**第 2 天**就有。
+前 6 次全部落在实验/回归/评估目录(`slam_three_way_*`、`slam_new_extrinsic_*`、
+`mast3r_fusion_regression_13`、`slam_ab`、`hybrid_ab_v1`), 第一次落在生产意图目录
+就是 09-19 的 `NEWTAKES_fusion_20260919`(3/4 越门)。
+
+---
+
+**声明**: 本报告不引用任何外部真值;Lighthouse 仅用于评估,不参与算法。
+`slam_supervision: false` / `external_ground_truth_used: false`
