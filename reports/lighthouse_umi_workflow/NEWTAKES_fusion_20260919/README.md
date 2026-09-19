@@ -112,6 +112,47 @@ PASS 663 / FAIL 23, 其中失败原因分布:
 **数值条件很好, 尺度却错 26%。** 又是"**自洽性门对尺度失明**"这个模式 ——
 与 VINS 验收门那条是同一个坑(见 `mast3r_g2_validation_20260919/README.md` §17)。
 
+## 评测已备好(跑出产物即可直接评)
+
+四条 take 的 Lighthouse 真值(`lighthouse_body_ground_truth.csv`)现在**全部就位**:
+
+| take | GT 位置 | 状态 |
+|---|---|---|
+| 20260917_233028 | `20260917_233028_720p_loop1_720p_arm/` | 20260918 那批已生成, 复用 |
+| 20260917_235329 | `20260917_235329_720p_loop1_720p_arm_defaultcfg/` | 同上, 复用 |
+| 20260918_002714 | `THIRDCHAIN_newtakes_20260918/20260918_002714/` | **本次新生成** |
+| 20260918_003403 | `THIRDCHAIN_newtakes_20260918/20260918_003403/` | **本次新生成** |
+
+两条新生成的都是 `result=PASS`、`timestamp_overlap_ratio=1.0`、
+`tracker_query_offset_ms=13.371`,与 take1 那条**完全一致**。
+
+生成命令(标定沿用 take1 provenance 记录的那一份, sha256 `382517ec…`):
+
+```
+python3 scripts/apply_lighthouse_aprilgrid_calibration.py \
+  --query-times <该 take 的 vio_corrected_stream.csv> \
+  --tracker reports/lighthouse_umi_sessions/<会话>/tracker.csv \
+  --d405-frames <录音目录>/d405_frames.csv \
+  --calibration reports/lighthouse_extrinsic_time_recheck_20260911_round4/independent_calibration/lighthouse_d405_aprilgrid_calibration.json \
+  --body-camera-config .../formal_runtime_calibration_installed/vins_config.yaml \
+  --target body --output <...>/lighthouse_body_ground_truth.csv --report <...>/lighthouse_ground_truth_provenance.json
+```
+
+> 核对过: 融合工作流用的 `formal_runtime_calibration/vins_config.yaml`(`87338c34…`)与 GT 用的
+> `formal_runtime_calibration_installed/vins_config.yaml`(`3f47e90f…`)**sha256 不同, 但差异只有
+> 20 行 `loop_*` 门控键**(前者是后者的超集), **外参部分逐字节相同** ⇒ 估计与真值没有坐标系不一致。
+
+评测(`scripts/evaluate_slam_ground_truth.py`)直接:
+
+```
+--estimate <take>/trajectory_fused.csv --ground-truth <上面的 GT>
+--output <...>/precision.json --report-md <...>/precision.md
+```
+
+⚠ **评测前先跑 `lighthouse_tracker_branch_gate.py`** —— 这四条用的是 v11 代标定
+(跳变率 1.092 次/米),真值本身被切段。**精度数字只支持"融合 vs VINS"的相对比较,
+不能当绝对精度上报。**
+
 ## 待办 / 待用户定夺
 
 1. 等其余三条跑完, 看是否同样撞 `imu_stereo_metric_scale_disagreement`。

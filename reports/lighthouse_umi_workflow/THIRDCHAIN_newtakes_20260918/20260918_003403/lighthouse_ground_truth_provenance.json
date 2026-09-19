@@ -1,0 +1,62 @@
+{
+  "schema": "lighthouse_aprilgrid_ground_truth_provenance_v1",
+  "result": "PASS",
+  "target": "body",
+  "target_transform_source": "tracker_T_d405_left_camera * inverse(body_T_cam0)",
+  "samples_written": 1741,
+  "query_samples": 1741,
+  "timestamp_overlap_ratio": 1.0,
+  "query_columns_used": [
+    "t_sec"
+  ],
+  "pose_columns_from_query_used": [],
+  "slam_supervision": false,
+  "clock_mapping": {
+    "camera_input_domain": "d405_global_time_unix_epoch_s",
+    "alignment_domain": "host_monotonic_s",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260918_003403/d405_frames.csv",
+    "epoch_minus_monotonic_s": 1789617150.3070035,
+    "mapping_samples": 1800,
+    "mapping_span_us": 0.95367431640625
+  },
+  "tracker_query_offset_ms": 13.371281046649964,
+  "offset_semantics": "interpolate Tracker at mapped camera timestamp + tracker_query_offset_ms",
+  "tracker_T_target": [
+    [
+      0.9963181054678767,
+      -0.0851222971598964,
+      0.010218964932137389,
+      0.009741950743472314
+    ],
+    [
+      0.08491006098165038,
+      0.9961945755022997,
+      0.0196633996481056,
+      -0.000540152126040673
+    ],
+    [
+      -0.011853871180327068,
+      -0.018723308148310542,
+      0.9997544315833733,
+      0.03334296056709893
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "inputs": {
+    "query_timestamps": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/THIRDCHAIN_newtakes_20260918/20260918_003403/slam/vio_corrected_stream.csv",
+    "tracker": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260918_003358_720p_loop1/tracker.csv",
+    "calibration": "/home/robot/ego_vio_humble/reports/lighthouse_extrinsic_time_recheck_20260911_round4/independent_calibration/lighthouse_d405_aprilgrid_calibration.json",
+    "body_camera_config": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration_installed/vins_config.yaml",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260918_003403/d405_frames.csv"
+  },
+  "sha256": {
+    "calibration": "382517ecf9255aa24bdd54b72b383632dc580ffd5a47c6d77aa7dee1dab76617",
+    "body_camera_config": "3f47e90f838aff2e4770eecccc5bebe29b29fd07833576ab8568cf6bd693db36"
+  },
+  "output": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/THIRDCHAIN_newtakes_20260918/20260918_003403/lighthouse_body_ground_truth.csv"
+}
