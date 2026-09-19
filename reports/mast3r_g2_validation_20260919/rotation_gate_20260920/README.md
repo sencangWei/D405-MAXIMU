@@ -178,6 +178,25 @@ Umeyama 的旋转自由度在几何上近乎退化），姿态导出的则稳定
 但 yaw 这一份**原理上不可修**（重力破缺后只剩绕重力轴的转动不可观测），
 它构成一道 ~0.9–1.5° 的地板，与 §三 的「漂移列恒为 1.04–1.42°」吻合。
 
+### ATE 花在时间上的哪里：**没有局部病灶**（否定结果）
+
+既然目标变成了「fused ATE ≲ 4mm」，自然要问这 3–9mm 花在哪一段。
+`ate_time_localization.py` 普查 8 个 fused cell 的误差²时间分布：
+
+| 指标 | 中位 | 均匀时应为 |
+|---|---|---|
+| 前 10% 时间占误差² | **7%** | 10% |
+| 前 25% 时间占误差² | **23%** | 25% |
+| 前半占 | 59% | 50% |
+| Gini | 0.511 | 0（越均匀越小） |
+
+峰值时刻分散在 **+6.1 / 15.0 / 15.6 / 16.9 / 18.6 / 36.2 / 36.3 / 36.4 s**，
+**没有共同位置**；只有 2/8 个 cell 的「前 25%」占比超过 50%。
+
+⇒ **误差不是集中在开头**，「开头关键帧空洞」那条线索**不泛化**——与既有记录
+（补空洞使段间互差减半、但整体指标全部变差）一致。想压 ATE 只能靠
+**全局**手段（更长的回路 / 更好的前端），不能靠修某一段。
+
 ## 五、真姿态误差 1.20° 已经是这类 VIO 的地板
 
 | 来源 | 姿态不确定度 |
@@ -293,6 +312,7 @@ GT 这一侧有一个**具体的、已被证实的结构暴露**：
 | `constant_model_test.py` / `.txt` | 恒常量 vs 漂移两个模型对三列的预测 |
 | **`rotation_error_decomposition.py` / `.txt`** | **★ 门 vs 姿态口径的分解 + yaw/tilt 拆分（§四）** |
 | **`contamination_falsification.py` / `.txt`** | **★ 证伪检验：门随 ATE 变、姿态口径不随（§四，最硬的一条）** |
+| **`ate_time_localization.py` / `.txt`** | **★ ATE 的时间分布 —— 无局部病灶（§四，否定结果）** |
 | **`alignment_bootstrap.py` / `.txt`** | **★ 真实数据上分段解对齐旋转，量 `R_a` 与 `R_q` 的不确定度（§四）** |
 | **`constant_by_estimator.py` / `.txt`** | **★ 两个独立估计器解出的常量互比 + 交叉迁移（§二·7）** |
 | **`gravity_degeneracy.py` / `.txt`** | **★ 加速度计分辨常量归属的否定结果（§二·6）** |
@@ -307,6 +327,7 @@ python3 alignment_conditioning.py        # 秒级
 python3 constant_model_test.py           # 秒级
 python3 rotation_error_decomposition.py  # 数十秒 ★三稿主结果
 python3 contamination_falsification.py   # 分钟级 ★证伪检验（16 cell × pose_errors）
+python3 ate_time_localization.py         # 秒级 ★ATE 时间分布
 python3 alignment_bootstrap.py           # 分钟级（每 cell 66 次对齐）
 python3 internal_offset_sweep.py         # 分钟级
 python3 constant_transfer.py             # 分钟级（每 cell 一次 Nelder-Mead）
