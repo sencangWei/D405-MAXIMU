@@ -19,6 +19,31 @@ usage() {
     echo "  $0 compare <D405会话目录> <Docker2轨迹.csv> <Lighthouse-body真值.csv> <输出目录> [color|infrared_left]"
 }
 
+# 09-14 的稀疏/密运动关键帧两个候选各用一份前端配置：sparse 用 offline.yaml，
+# tight 用 offline_motion_kf_tight.yaml（多出 motion_keyframe_translation: 0.15 /
+# motion_keyframe_rotation_deg: 5.0）。这两个键缺失时 tracker.py 的
+# `limit > 0.0` 守卫恒假，运动关键帧机制**静默消失**——不报错、不告警，
+# 前端产物与 09-14 从此不可复现。所以这里按输出目录名把配置选择还原回去；
+# MAST3R_SLAM_CONFIG 显式给了就尊重它。
+resolve_candidate_config() {
+    local output="$1"
+    if [[ -n "${MAST3R_SLAM_CONFIG:-}" ]]; then
+        CONFIG="$MAST3R_SLAM_CONFIG"
+        return
+    fi
+    case "$(basename "$output")" in
+        tight) CONFIG="$ROOT_DIR/config/mast3r_slam_d405_offline_motion_kf_tight.yaml" ;;
+        *)     CONFIG="$ROOT_DIR/config/mast3r_slam_d405_offline.yaml" ;;
+    esac
+}
+
+warn_if_motion_keyframes_disabled() {
+    grep -q 'motion_keyframe_translation' "$CONFIG" && return 0
+    echo "警告: $CONFIG 不含 motion_keyframe_*，MASt3R 前端的运动关键帧会被静默关闭" >&2
+    echo "      (tracker.py 的 'limit > 0.0' 守卫恒假)。tight 候选需要" >&2
+    echo "      config/mast3r_slam_d405_offline_motion_kf_tight.yaml。" >&2
+}
+
 check_installation() {
     [[ -x "$PYTHON" ]] || { echo "MASt3R Python环境不存在: $PYTHON" >&2; exit 2; }
     [[ -f "$CONFIG" ]] || { echo "MASt3R配置不存在: $CONFIG" >&2; exit 2; }
@@ -177,11 +202,13 @@ case "$command" in
         ;;
     fusion)
         [[ $# -eq 5 ]] || { usage; exit 2; }
-        check_installation
         session="$(realpath "$2")"
         vins_trajectory="$(realpath "$3")"
         vins_report="$(realpath "$4")"
         output="$(realpath -m "$5")"
+        resolve_candidate_config "$output"
+        warn_if_motion_keyframes_disabled
+        check_installation
         mast3r_output="$output/mast3r"
         mkdir -p "$output"
 

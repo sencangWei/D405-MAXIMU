@@ -1,0 +1,76 @@
+扫描 8 个 fusion_current/tight cell
+
+cell                                                 门指标     纯漂移      常量失配      常量可消
+--------------------------------------------------------------------------------------
+20260914_validation_v10_batch/group1/fusion_current    1.87    1.18      1.46       20%
+20260914_validation_v10_batch/group2/fusion_current    3.20    1.18      2.98       55%
+20260914_validation_v11_holdout_batch3/group2/fusion_current    1.89    1.22      1.44       39%
+20260915_batch5_four_videos/group1/fusion_current    1.76    1.04      1.41       46%
+20260915_batch5_four_videos/group2/fusion_current    2.35    1.09      2.09       44%
+20260915_batch5_four_videos/group3/fusion_current    2.83    1.36      2.48       35%
+20260915_batch5_four_videos/group4/fusion_current    2.41    1.42      1.95        7%
+20260915_collective_batch4/group1/fusion_current    3.09    1.34      2.78       10%
+=== ① 度量地板自测 ===
+  随机刚体变换0: 门指标 0.0000°
+  随机刚体变换1: 门指标 0.0000°
+  随机刚体变换2: 门指标 0.0000°
+  加噪 0.5mm: 门 0.261°  纯漂移 0.261°  常量失配 0.007°
+  加噪 1.0mm: 门 0.513°  纯漂移 0.513°  常量失配 0.015°
+  加噪 2.0mm: 门 1.040°  纯漂移 1.040°  常量失配 0.038°
+
+=== ④ 时间偏移扫描 (trajectory_fused.csv) ===
+    τ(ms)      门指标      纯漂移      常量失配  ATE_T(mm)
+    -40.0     2.00     1.32      1.50       4.90
+    -38.0     1.98     1.30      1.49       4.75
+    -36.0     1.97     1.29      1.49       4.60
+    -34.0     1.96     1.27      1.49       4.45
+    -32.0     1.95     1.26      1.49       4.30
+    -30.0     1.94     1.24      1.48       4.16
+    -28.0     1.93     1.23      1.48       4.02
+    -26.0     1.92     1.22      1.48       3.89
+    -24.0     1.91     1.21      1.48       3.76
+    -22.0     1.90     1.20      1.48       3.63
+    -20.0     1.89     1.19      1.47       3.51
+    -18.0     1.89     1.18      1.47       3.40
+    -16.0     1.88     1.18      1.47       3.29
+    -14.0     1.88     1.17      1.47       3.19
+    -12.0     1.88     1.17      1.47       3.10
+    -10.0     1.87     1.17      1.47       3.02
+     -8.0     1.87     1.17      1.46       2.94
+     -6.0     1.87     1.17      1.46       2.88
+     -4.0     1.87     1.17      1.46       2.83
+     -2.0     1.87     1.17      1.46       2.79
+      0.0     1.87     1.18      1.46       2.76
+      2.0     1.88     1.18      1.46       2.74
+      4.0     1.88     1.19      1.46       2.74
+      6.0     1.88     1.19      1.46       2.75
+      8.0     1.89     1.20      1.46       2.77
+     10.0     1.90     1.21      1.46       2.81
+     12.0     1.90     1.22      1.46       2.85
+     14.0     1.91     1.24      1.46       2.91
+     16.0     1.92     1.25      1.46       2.98
+     18.0     1.93     1.26      1.46       3.06
+     20.0     1.94     1.28      1.46       3.14
+     22.0     1.95     1.30      1.46       3.24
+     24.0     1.96     1.31      1.46       3.34
+     26.0     1.97     1.33      1.46       3.45
+     28.0     1.99     1.35      1.46       3.57
+     30.0     2.00     1.37      1.46       3.69
+     32.0     2.02     1.39      1.46       3.82
+     34.0     2.03     1.41      1.46       3.95
+     36.0     2.05     1.43      1.46       4.09
+     38.0     2.06     1.46      1.46       4.23
+     40.0     2.08     1.48      1.46       4.38
+
+=== ⑦ 数据解 相机-IMU 外参 vs 配置（10 个 take）===
+  take                                               Δx     Δy     Δz    |Δ|     残差
+  20260914_validation_v10_batch/group1           失败 'str' object has no attribute 'open'
+  20260914_validation_v10_batch/group2           失败 'str' object has no attribute 'open'
+  20260914_validation_v10_holdout_batch2/group1  失败 'str' object has no attribute 'open'
+  20260914_validation_v11_holdout_batch3/group1  失败 'str' object has no attribute 'open'
+  20260914_validation_v11_holdout_batch3/group2  失败 'str' object has no attribute 'open'
+  20260915_batch5_four_videos/group1             失败 'str' object has no attribute 'open'
+  20260915_batch5_four_videos/group2             失败 'str' object has no attribute 'open'
+  20260915_batch5_four_videos/group3             失败 'str' object has no attribute 'open'
+  20260915_batch5_four_videos/group4             失败 'str' object has no attribute 'open'
+  20260915_collective_batch4/group1              失败 'str' object has no attribute 'open'
