@@ -25,6 +25,10 @@
 | `density_natural_experiment.py` | ★ §12：**天然对照** —— 同一 session 的 `tight`(77–244 kf) vs `sparse`(27–101 kf)，关键帧密度差 **5×**。 |
 | `lw_gate.py` | ★ §13：`lw` 的**机理**（注入有没有打在鼓包上）+ **可预测性**（分臂 + 杠杆点 + 阈值规则实战），落 `lw_gate_rows.json`。 |
 | `band_weight_factorial.py` | ★ §14：`[8/9]` 的**幅度假设**判决 —— `lw × --smoothing-s` 3×3 因子，落 `band_weight_rows.json`。 |
+| `imu_rot_w/run_frontend.sh` | ★ §16.1：**只跑前端 `[1/8]`**（复用现成 `dataset/`，只换 `--config`）。已证与生产**逐位等价**。 |
+| `imu_rot_w/run_tail.sh` | ★ §16.2：把某个前端输出走完 `[2/8]→[9/9]`（参数逐行抄自工作流）。已证与生产**位数相同**。⚠ 须先 `source /opt/ros/humble/setup.bash`。 |
+| `imu_rot_w/imu_rot_stage_a.py` | ★ §17：前端 `imu_rotation_constraint_weight` A/B 判读（基准 `w=0.6`，逐帧差 `Δ` + Sim(3) 对齐），落 `imu_rot_stage_a_rows.json`。 |
+| `imu_rot_w/*.yaml` | ★ §17：6 个 weight 变体 + 2 个 no-IMU 变体，**只差那一行**（已 diff 核对）。 |
 
 ---
 
@@ -905,3 +909,317 @@ lw=1.0  s=200: +4.22     ← 幅度 12×，方向【正确】，而 MAX 从 14.7
   `dataset_full.txt` → `trajectory_frames.csv`。**目前没有任何调用者。**
 * 生产配置**不在** MASt3R-SLAM 仓库里，在 `/home/robot/ego_vio_humble/config/`（25 个 d405 yaml），
   生效的 `local_opt` 全取 `REPO/config/base.yaml` 的值。
+
+---
+
+## 16. 双 harness 的**逐位等价**验证 + 配置指纹的**正确读法**
+
+本节是后面所有前端实验（§17–§18）的**前提**：只有复现器与生产**逐位相同**，
+逐帧差 `Δ` 才能干净归给配置。两条都不是「看起来对」，而是**哈希/位数级别**的。
+
+### 16.1 前端 harness（`imu_rot_w/run_frontend.sh`）
+
+复用现成 `dataset/`，只换 `--config`。用现役 `w=0.6` 跑一遍 `v10_batch/g1/tight`：
+
+| 产物 | 生产（09-14 14:14） | 复现 | |
+|---|---|---|---|
+| `mast3r_logs/dataset_full.txt` | `84ac52ccb93f879874199606e9226832` | 同 | ✅ **md5 相同** |
+| `trajectory_frames.csv` | `a700b8f8bb850022e9b551c40f23895b` | 同 | ✅ **md5 相同** |
+| 配置回显 `w/gate/mkf_r/mkf_t` | `0.6/0.5/5.0/0.15` | 同 | ✅ |
+| `Motion keyframe` 打印次数 | 73 | 73 | ✅ |
+
+⇒ **① 复现器与生产前端等价；② 再次确认前端确定性（重跑逐位相同）；③ 盘上生产产物确证是 `w=0.6`。**
+
+### 16.2 尾链 harness（`imu_rot_w/run_tail.sh`）—— ⚠ **本节已在 09-21 就地更正**
+
+`[2/8]`–`[6/8]` 参数逐行抄自 `mast3r_slam_precision_workflow.sh:217-278`；
+`[7/8]`–`[9/9]` 逐行抄自 `rerun_one_v2.sh:42-89`。
+
+⚠⚠ **更正**：本节原先写「喂与生产相同的输入 ⇒ 所有位数相同（2.6231/4.2707/13.4607/
+0.99885/1.7643）」并给出「生产(09-20)」一列 —— **那一列其实是 `run_all_v2.log`，
+也就是本次 harness 自己的产物，属循环论证。** 逐级 md5 核对后的真实关系是：
+
+| 级别 | 与产线是否逐字节相同 | 证据（md5 前 14） |
+|---|---|---|
+| `[1/8]` 前端 `trajectory_frames.csv` | ✅ | `a700b8f8bb850022`（= 产线 `fusion/tight/mast3r/`） |
+| `[2/8]` `trajectory_stereo_bidirectional.csv` | ✅ | `ced004f6019fcf` |
+| `[6/8]` `trajectory_imu_metric.csv` | ✅ | `fa62201ebabbbc` |
+| `[7/8]` `trajectory_graph.csv` | ✅ **09-14 / 09-20 现役 / 本次三方相同** | `310e0997060c34` |
+| `[8/9]`+`[9/9]` `trajectory_fused.csv` | ❌ **故意不同** | 见下 |
+
+`[8/9]`/`[9/9]` 的**参数是本次自己按 §13/§14 的 A/B 判决选的**
+（`--docker2-local-weight 0 --docker2-scale-weight 0.25 --smoothing-s 8`），
+产线两条臂用的是**另一套**（09-14 `lw 0.35`+adaptive / 09-20 `lw 0.25`+adaptive）。
+后果（`v10_batch/g1/tight`，逐帧比）：
+
+| 族 | 与本次 fused 的 Δp 中位 | precision max |
+|---|---|---|
+| 本次 `run_tail.sh` | — | **13.461** |
+| 09-14 产线 `fusion/tight/` | **0.281mm** | （无 precision.json） |
+| 09-20 现役 `fusion_current/tight/` | 0.971mm | **13.737** |
+
+⇒ ★ **harness 等价性只在 `[1/8]`–`[7/8]` 成立**（而且那里是**逐字节**成立，比原先的说法更强）。
+**`trajectory_fused.csv` 及其 ATE 数字不是产线数字**，引用时必须注明是哪个族。
+（§18.6 的前端 vs 融合对照**同族**，所以那条比较仍然成立；且「序反转」在**三个族里都成立**。）
+
+耗时 **16.3 min/格**（其中 `[2/8]`–`[5/8]` 四步双目各约 3 min）。
+
+⚠ **`[2/8]`–`[6/8]` 需要 `rosbag2_py`/`rclpy` 去读 session 的 db3（厂内标定话题）**，
+它们**不在** MASt3R venv 里，在 `/opt/ros/humble`（同为 python3.10）。
+⇒ 尾链脚本必须先 `source /opt/ros/humble/setup.bash`，否则 `read_static_strings` 直接
+`ModuleNotFoundError`、`--calib` 之前的标定读不到。**生产那次 shell 必然 source 过。**
+
+### 16.3 配置指纹：**读 `mast3r.log` 第 2 行，不是 manifest**
+
+* `run_manifest.json` 的 `config` / `config_sha256` 键**是后加的**：全盘 25 份 manifest 里
+  **只有 1 份有**（`v11b3/g2`，09-18 23:17 写的）；其余 **24 份没有**（旧版 heredoc，09-14/09-15/09-18 12:41）。
+  ⇒ **想从 manifest 反查前端配置，在这批产物上是查不到的。**
+* **可靠入口**：`main.py` 启动即打印**完整合并配置 dict**（含 `inherit: config/base.yaml` 之后的继承），
+  就在 `mast3r.log` 第 2 行。逐格扫下来：**25 次前端跑全部 `imu_rotation_constraint_weight: 0.6`、
+  `gate_deg: 0.5`**；其中 13 次带 `motion_keyframe_translation: 0.15 / rotation_deg: 5.0`（tight 配置），
+  12 次这两个键为 `None`（sparse 配置 `mast3r_slam_d405_offline.yaml` 里没有它们
+  ⇒ `tracker.py:81` `cfg.get(...,0.0)` 兜成 0.0 ⇒ 运动关键帧静默关闭，见
+  [`mast3r-frontend-config-silent-disable-20260920`]）。
+* ⇒ **这个权重从未被变过**，是一个**真正没检验过的自由度**（这正是下面去扫它的理由）。
+
+---
+
+## 17. ★★ `imu_rotation_constraint_weight` **上界否掉**（第 9 个死族）
+
+### 17.1 机理（`tracker.py:479-493`，逐行核对）
+
+```python
+prior_weight   = cfg["imu_rotation_constraint_weight"]      # 现役 0.6
+prior_gate_deg = cfg["imu_rotation_constraint_gate_deg"]    # 现役 0.5
+disagreement_deg = angle(T_WCf, rotation_prior_pose)
+if prior_weight > 0.0 and disagreement_deg > prior_gate_deg:
+    gated_weight = prior_weight * (1.0 - prior_gate_deg / max(disagreement_deg, 1e-6))
+    T_WCf  = blend_sim3_rotation(T_WCf, rotation_prior_pose, gated_weight)
+    T_CkCf = T_WCk.inv() * T_WCf        # ★ 跟踪增量被重算 ⇒ 平移分量跟着被「旋转」
+```
+
+* 只在「视觉当帧 vs **IMU 增量预报**」分歧 > 0.5° 时激活 ⇒ 只在激烈动作段。
+* `gated_weight = w·(1 − 0.5/θ)`：θ=2° → 0.75w；θ=10° → 0.95w。
+* **`T_CkCf` 被重算** ⇒ 航向扰动直接变成**前进位移的横向偏转**（与「87% 误差垂直于航向」同形）。
+* `w = 0.0` ⇒ 整块跳过 ⇒ 干净对照。
+
+### 17.2 ★ 先量「门到底开不开」——这一步就足以否掉它
+
+`rotation_prior_pose = frame.T_WC`（`tracker.py:237`），而 `frame.T_WC` 来自
+`main.py:444  T_WC = apply_rotation_prior(T_WC, dataset.get_rotation_prior(i))`，
+其中 `apply_rotation_prior = T_WC * Sim3(q)`（`main.py:38-44`）——**右乘**。
+
+⚠ **读法坑**：`imu_rotation_priors.csv` 里是**逐帧增量旋转**（IMU 传播），
+**不是绝对世界姿态**。把它当绝对姿态直接和 `trajectory_frames.csv` 的 `Q` 比，
+会算出一个**假的 21° 中位分歧**（我第一次就这么读的）。正确算法是
+`ΔQ_pred[i] = Q_vis[i-1] ⊗ ΔQ_imu[i]`，再与 `Q_vis[i]` 比。
+
+实测（生产 6 格，逐帧）：
+
+| cell/arm | 中位 | p95 | **max** | >0.5° 的帧 |
+|---|---|---|---|---|
+| v10_batch/g1 **tight** | 0.011° | 0.19° | **0.45°** | **0 / 1798** |
+| v10_batch/g1 sparse | 0.024° | 0.25° | 0.87° | 0.4% |
+| v11b3/g2 tight / sparse | ~0.07° | ~0.3° | 0.87° / 1.05° | 1% |
+| batch5/g3 tight | 0.073° | 0.37° | 1.77° | 3% |
+| batch5/g3 **sparse** | 0.094° | 0.56° | **5.04°** | **7%** |
+
+### 17.3 上界（算术，不需要实验）
+
+旋转扰动 ≤ `gated_weight × θ ≤ 1.0 × θ`；而 `T_CkCf` 的有效力臂是**关键帧间平移**
+（`motion_keyframe_translation: 0.15` ≈ 34 mm）。典型 `0.3° × 34mm ≈ 0.2 mm`；
+**全语料最坏单帧**（batch5/g3/sparse，θ=5.04°）也不到 2 mm。
+
+⇒ 对上 §13/§14 定死的尺子（**鼓包上要移动 ≥3 mm 才值得评估**），
+**这条旋钮低 1–2 个数量级**。
+
+### 17.4 实测确认（3 格 × 2 臂 × {0.6, 0.3, 0.0}，前端只跑 `[1/8]`）
+
+| cell/arm | w | \|Δ\|@峰 | ΔMAX | proj@峰 | Δrot° |
+|---|---|---|---|---|---|
+| v10_batch/g1 tight | 0.3 / 0.0 | **0.00** / **0.00** | +0.00 / +0.00 | −0.00 / −0.00 | 0.000 |
+| v10_batch/g1 sparse | 0.3 / 0.0 | **0.00** / 0.00 | +0.00 / +0.01 | +0.00 / +0.00 | 0.000 |
+| batch5/g3 tight | 0.3 / 0.0 | 0.27 / 0.24 | +0.04 / +0.03 | −0.19 / −0.15 | 0.000 |
+| batch5/g3 sparse | 0.3 / 0.0 | **0.44** / **0.59** | −0.40 / −0.54 | +0.16 / +0.20 | 0.000 |
+| v11b3/g2 tight | 0.3 / 0.0 | 0.00 / 0.01 | −0.00 / −0.00 | +0.00 / +0.00 | 0.000 |
+| v11b3/g2 sparse | 0.3 / 0.0 | 0.00 / 0.00 | +0.00 / +0.00 | −0.00 / −0.00 | 0.000 |
+
+汇总（`imu_rot_stage_a.py` 末段）：
+
+```
+  tight w=w0.3  |Δ|@峰 中位  0.00mm（最大 0.27）  proj@峰 中位 −0.00mm  ΔMAX 中位 +0.00mm  ❌ <3mm
+  tight w=w0.0  |Δ|@峰 中位  0.01mm（最大 0.24）  proj@峰 中位 −0.00mm  ΔMAX 中位 +0.00mm  ❌ <3mm
+ sparse w=w0.3  |Δ|@峰 中位  0.00mm（最大 0.44）  proj@峰 中位 +0.00mm  ΔMAX 中位 +0.00mm  ❌ <3mm
+ sparse w=w0.0  |Δ|@峰 中位  0.00mm（最大 0.59）  proj@峰 中位 +0.00mm  ΔMAX 中位 +0.00mm  ❌ <3mm
+```
+
+* **4 个 cell/arm 精确到 0.00mm**：它们的 `disagreement` **从没越过 0.5° 门**
+  ⇒ 混合**一次都没执行**，逐帧差为 **0**。这是上界的逐位验证。
+* **只有 batch5/g3 会动**（全场门触发最多：tight 3% / sparse 7%），也只动 **0.24–0.59 mm**
+  ⇒ 对 3mm 判据**差 5–7 倍**。
+* `Δrot° = 0.000`（中位）：混合只碰个位数百分比的帧，**中位旋转一点没动**。
+* 方向也不一致（batch5/g3 tight 的 `proj@峰` 是 **负**的、sparse 是正的；`ΔMAX` 一个变差一个改善）
+  ⇒ 即便放大也没靶向，与 §13.3/§14.3 两处独立到达的同一结论合流。
+
+⚠ **一个必须如实记下的细节（不能用中位数盖过去）**：全帧最大位移
+`mag_max` 在 **batch5/g3 tight 是 3.92mm(w=0.3) / 3.89mm(w=0.0)** —— **≥3mm**。
+但同一个 cell 的 **鼓包帧** `|Δ|@峰` 只有 **0.27 / 0.24mm**。
+⇒ 这个旋钮**确实有** ≥3mm 的局部效果，**只是没打在鼓包上**（在别处）。
+「中位 0.00mm」是**六格合起来**的中位，单独看 batch5/g3 不能得出「完全无效果」。
+（`kfoff` 臂的 `形状max` 3.85mm 是同一个现象的另一个侧写，见 §18.4。）
+
+⇒ **第 9 个死族**（前 8：尺度模式、`--relative-motion-sigma-m`、末端平滑、时移、
+两个修正上限、关键帧密度、`lw` 族）。**这次是被「上界 + 实测」双重否掉的。**
+
+### 17.5 ★ 同一份代码指出了**真正的** IMU 杠杆在哪
+
+`main.py:443-444` 的 `apply_rotation_prior` 是**每帧无条件**执行的
+（IMU 增量当上一帧的预测，作为该帧跟踪的**初值**），**gate 只管「约束」那半边**；
+而且 `rotation_prior_pose` **还驱动运动关键帧触发**
+（`tracker.py:236` 取它、`:519` 传给 `motion_keyframe_trigger`）。
+⇒ 该扫的是 **`imu_rotation_prior: True/False`**（见 §18），**不是** weight。
+
+⚠ **干净「无 IMU」臂必须同时设 `imu_rotation_prior: False` 且 `imu_rotation_constraint_weight: 0.0`**：
+只关前者会让 `rotation_prior_pose` 退化成**上一帧位姿**（零旋转增量预测），
+于是混合变成「把估计往『这一帧没转』拉」——那不是「无 IMU」，是**另一个错误臂**。
+
+产物：`imu_rot_w/imu_rot_stage_a.py`(+`imu_rot_stage_a_rows.json`)、
+`imu_rot_w/out/<batch>/<group>/<arm>/{w0.6,w0.3,w0.0,noimu}/`。
+配置：`imu_rot_w/{tight,sparse}_{w0.6,w0.3,w0.0,noimu}.yaml`（**只差那一行**，已 diff 核对）。
+
+---
+
+## 18. ★★ `imu_rotation_prior` 是**真杠杆**，但**只在 tight 臂上**，且方向是**掷硬币**
+
+§17.5 从代码推出该扫 `imu_rotation_prior`（每帧无条件当**初值**，且**还驱动运动关键帧**）。
+本节是它的 Stage A 判决（`[1/8]` 前端，3 格 × 2 臂，24/24 跑完）。
+
+### 18.1 ★ 先看结构：这个臂**改变了关键帧布点**（不是猜测，是实测）
+
+`rotation_prior_pose = frame.T_WC`（`tracker.py:237`）在 `main.py:443-444` **已被 prior 混合过**
+⇒ prior 一旦关掉，`motion_keyframe_trigger`（`tracker.py:521-523`）的判据输入也跟着变。
+`grep -c 'Motion keyframe'` 实测：
+
+| cell | tight 基准 w0.6 | tight noimu | sparse（两臂） |
+|---|---|---|---|
+| v10_batch/g1 | 73 | **67** | **0** |
+| batch5/g3 | 151 | **134** | **0** |
+| v11b3/g2 | 134 | **118** | **0** |
+
+⇒ ①先验**确实**改了关键帧布点（每格 −6 / −17 / −16）；
+②**sparse 臂的运动关键帧恒为 0** —— 该配置**没有** `motion_keyframe_*` 三个键，
+`tracker.py:81-83` 的 `cfg.get(...,0.0)` 兜成 0.0、守卫是 `limit > 0.0` ⇒ **静默全关**
+（同 [[mast3r-frontend-config-silent-disable-20260920]] 的坑型）。
+
+### 18.2 完整读数（`imu_rot_stage_a.py`，24/24；`形状` = 先去掉变体间全局 Sim(3) 后的残差）
+
+| cell | arm | ΔMAX | proj@峰 | 形状@峰 | 形状max | 形状p95 | 原始max | 原始p95 | Δrot° |
+|---|---|---|---|---|---|---|---|---|---|
+| v10_batch/g1 | tight | +0.27 | −0.25 | 1.19 | 4.57 | 2.54 | 9.52 | 7.38 | **0.358** |
+| v10_batch/g1 | sparse | −0.11 | +0.08 | 0.18 | 0.53 | 0.19 | 0.55 | 0.19 | 0.000 |
+| batch5/g3 | tight | **+1.08** | **+4.29** | 2.69 | **16.57** | 10.06 | **26.07** | 22.70 | **2.213** |
+| batch5/g3 | sparse | −0.47 | +0.18 | 0.50 | 1.36 | 0.29 | 1.36 | 0.29 | 0.000 |
+| v11b3/g2 | tight | **−3.12** | **+7.47** | 5.37 | **24.85** | 8.20 | 19.57 | 16.75 | **0.286** |
+| v11b3/g2 | sparse | +0.02 | −0.07 | 0.13 | 0.64 | 0.24 | 0.65 | 0.24 | 0.000 |
+
+（`Δrot° = 0.000` 的 3 行 = **相对基准毫无旋转变化**。）
+
+### 18.3 ★★ 判决
+
+1. **`imu_rotation_priors.csv` 两臂 md5 相同**（`e55ccaaec1e01ec8ad60171f88a1e9bd`），
+   4 个 noimu 日志全部回显 `prior=False w=0.0` ⇒ **配置确实生效**，不是没吃进去。
+2. **只在 tight 臂上动，sparse 臂全场 ≤0.55mm**（形状 ≤1.36mm）⇒ **不是先验有用没用的问题，
+   是「有没有运动关键帧」的问题**：sparse 臂里 prior 只当每帧初值、被优化收敛掉。
+3. **tight 臂上它动了 ≥3mm，够上判据**：形状@峰 1.19 / 2.69 / 5.37mm，
+   形状max 4.57 / **16.57** / **24.85mm**，原始max 9.52 / 26.07 / 19.57mm
+   ⇒ 这是**第 10 族里第一个真正推动鼓包的杠杆**（不是又一个「差一个数量级」）。
+4. ⚠ **但方向是掷硬币**：`ΔMAX` = **+0.27 / +1.08 / −3.12**
+   ⇒ 3 格中 **1 格改善、2 格变差**；`proj@峰` = −0.25 / +4.29 / +7.47
+   ⇒ 2 格把基准的峰帧往真值推、1 格推反。
+   **n=3 不足以定方向**，且与 §13 的 `lw` 结案**同型**
+   （「确实打在鼓包上、但方向由运行时观测不到的东西决定」）。
+5. ★ **必须记下的一处不一致**：batch5/g3 tight 的 `proj@峰 = +4.29`（峰帧**改善**）
+   而 `ΔMAX = +1.08`（整体**变差**）⇒ 鼓包**换了位置/换了形状**，
+   `MAX` 是全帧最大值、峰不在同一帧 ⇒ 单看 `proj@峰` 会误判。
+   这正是 §18.1 关键帧布点被改动的直接后果。
+
+### 18.4 第 3 臂：`tight_kfoff`（prior=True 保持不变，只关运动关键帧）
+
+§18.3 的第 2/3 条把效果**指向关键帧重排**，但 noimu 臂同时动了**两件事**
+（①每帧初值不再用先验；②关键帧布点变了）。要分开它们，只需一个**纯配置**臂：
+
+`imu_rot_w/tight_kfoff.yaml` = `tight_w0.6.yaml` 逐行相同，**只**把
+`motion_keyframe_translation / _rotation_deg` 从 `0.15 / 5.0` 改成 `0.0 / 0.0`
+（`tracker.py:95-99`：两个 limit 都必须 `> 0.0` ⇒ 置 0 即全关；已 diff 核对只差这两行）。
+
+判读规则（**预先定死**）：`kfoff ≈ base` ⇒ 效果来自**先验本身**（①）；
+`kfoff ≈ noimu` ⇒ 效果来自**关键帧重排**（②）。
+
+**结果：`kfoff ≈ sparse`，而且不是「近似」——是逐位相同。**
+
+| cell | tight base(w0.6) | tight noimu | **tight kfoff** | sparse base(w0.6) |
+|---|---|---|---|---|
+| v10_batch/g1 | 29.09 | 29.36 (+0.27) | **33.50 (+4.41)** | **33.50** |
+| batch5/g3 | 26.64 | 27.72 (+1.08) | **45.08 (+18.44)** | **45.08** |
+| v11b3/g2 | 28.94 | 25.82 (−3.12) | **25.56 (−3.38)** | **25.56** |
+
+⇒ **`kfoff` 三格的 MAX 与 `sparse` 臂完全相同**（45.08 / 25.56 到小数第二位）。
+进一步：`kfoff` 的 `mast3r_logs/dataset_full.txt` 与 `sparse` 的（**重跑版与生产版**）
+**md5 逐位相同** —— `6fef6afb53a63527` / `76fe4cdfe994afc5` / `3421eed96e77bea6`。
+
+⇒ **判读规则给出答案②：noimu 的效果来自「关键帧重排」，不是先验本身。**
+`kfoff`（先验**没动**、只关触发器）把 `noimu` 的小扰动**放大成满强度**，
+连方向都同型（batch5/g3 变差、v11b3/g2 改善）。
+
+### 18.5 ★★★ 由 18.4 直接得到的一个结构性事实：**`tight` 与 `sparse` 只差那两个键**
+
+既然「tight + `motion_keyframe_*=0`」逐位等于 sparse，那么这两套配置之间
+那一整块 `stereo_*` 键（sparse 有、tight 没有）**在行为上是惰性的**
+（布尔全 False；其余是只在布尔打开时才会被读的参数）。
+
+⇒ **验证 grid 里的「tight / sparse 两臂」不是两个独立设计，而是同一个旋钮的开与关。**
+凡是从「tight vs sparse」得出的结论，**都是关于运动关键帧触发器的结论**。
+这条同时回填 §18.1 的第二个观察（sparse 臂 `Motion keyframe` 恒为 0：
+sparse 根本没有那两个键 ⇒ `cfg.get(...,0.0)` ⇒ 守卫 `>0.0` 不成立 ⇒ 静默全关）。
+
+### 18.6 ⚠ 前端 `[1/8]` 的 18mm 差异，在融合后还剩多少
+
+把上面三格的前端 MAX 与融合读数并排。⚠ **融合数字必须注明族**（见 §16.2 更正）：
+下表三族都给，`本次` = 本目录 `run_tail.sh`（`lw=0/sw=0.25`），
+`09-14 产线` = `fusion/`，`09-20 现役` = `fusion_current/`。
+
+| cell | arm | 前端 `[1/8]` MAX | 本次 max | 09-14 产线 max | 09-20 现役 max |
+|---|---|---|---|---|---|
+| v10_batch/g1 | tight | 29.09 | 13.461 | 13.16 | 13.737 |
+| v10_batch/g1 | sparse | 33.50 | 12.581 | 12.31 | 12.960 |
+| v11b3/g2 | tight | 28.94 | 10.571 | 10.32 | **9.794 PASS** |
+| v11b3/g2 | sparse | 25.56 | 9.638 | 9.86 | 8.326 |
+| batch5/g3 | 两臂 | — | 见下 | 20.11 / 22.07 | 20.370 / 22.301 |
+
+三条读数：
+
+1. ★ **序反转 —— 而且三个族都成立**：v10/g1 上前端 **tight 更好**（29.09 < 33.50），
+   而融合后 **tight 更差**：本次 13.461 > 12.581、09-14 13.16 > 12.31、09-20 13.74 > 12.96。
+   ⇒ **前端 `[1/8]` 的精度不预测融合后精度**，尾链会重排。
+2. **压缩**：v11b3/g2 前端差 3.38mm → 融合后差 0.93mm（本次族；≈3.6×）。
+3. ★★ **`kfoff` 判决（同 harness）**：v11b3/g2 `kfoff` 融合后 **5.155 / 9.638 / 100.000% / 2.017**
+   —— 与**同族的 sparse 行逐位相同**（因为 `[1/8]` 输入本来就逐字节相同）。
+   即整条 8 级链上第二次确认 **`kfoff` ≡ `sparse`**。
+   batch5/g3：前端 **+18.44mm**（26.64 vs 45.08）→ 融合后 **20.826** vs 同 harness 基准 **19.271**
+   （+1.555mm，**≈12× 压缩**）。⚠ **但另外四项全部改善**：
+   rmse 7.662 → **5.770**、p95 14.036 → **11.198**、w10 77.567% → **92.140%**、rot 2.477 → **2.193**。
+   ⇒ 前端那 18mm 不是「被压小」，是**被重排**了（`max` 变差而其余全好）。
+
+⇒ 这是「§17 的 weight、§18 的 noimu、§12 的关键帧密度」这些**前端杠杆在门上全部像死掉**
+的最简解释：**前端差异不经过 `[2/8]`–`[9/9]` 传导**（前端差 3–18mm 只映射成融合后 0.9–2mm）。
+
+⚠ **本节只能算「嫌疑」，不算判决** —— 上面每族只有 2–3 个 cell。
+
+⚠ **本节口径**：全程是**前端 `[1/8]` 轨迹**（MASt3R 单位，需 Sim(3) 对齐），
+**不是融合链**，绝对 ATE 不可对门限读（[[mast3r-chain-topology]]）；
+本实验只用**逐帧差**与**形状差**。`ΔMAX` 是拿**基准的峰帧**做参照，不是各臂自己的峰帧。
+
+产物：`imu_rot_w/{imu_rot_stage_a.py,imu_rot_stage_a_rows.json}`、
+`imu_rot_w/out/<batch>/<group>/tight/{w0.6,w0.3,w0.0,noimu,kfoff}/`、
+`imu_rot_w/tight_kfoff.yaml`（与 `tight_w0.6.yaml` 逐行相同，只差那两行，已 diff 核对）、
+`imu_rot_w/sweep_kfoff.sh`。

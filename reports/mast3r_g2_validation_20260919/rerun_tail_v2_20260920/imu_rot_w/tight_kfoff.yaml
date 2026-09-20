@@ -1,0 +1,30 @@
+inherit: "config/base.yaml"
+
+# ★ 判定臂（第 3 臂）：prior 保持 True、weight 保持 0.6（= 现役），
+#   只把运动关键帧触发器关掉（tracker.py:95-99 两个 limit 必须 > 0.0 ⇒ 置 0 即全关）。
+#
+# 为什么需要这一臂：noimu 臂同时动了两件事 —— ①每帧初值不再用 IMU 先验
+#   ②`rotation_prior_pose = frame.T_WC`（tracker.py:237）被 prior 改过，
+#   而它同时喂 `motion_keyframe_trigger`（tracker.py:521-523）⇒ 关键帧布点变了
+#   （实测 73→67 / 151→134 / 134→118）。本臂把②单独摘出来：
+#     kfoff ≈ base  ⇒ 效果来自先验本身（①）
+#     kfoff ≈ noimu ⇒ 效果来自关键帧重排（②）
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  imu_rotation_prior: True
+  imu_rotation_constraint_weight: 0.6
+  imu_rotation_constraint_gate_deg: 0.5
+  motion_keyframe_translation: 0.0
+  motion_keyframe_rotation_deg: 0.0
+
+retrieval:
+  confirmation_frames: 2
+  confirmation_immediate_frame_gap: 150
+  confirmation_frame_id_radius: 60
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 24

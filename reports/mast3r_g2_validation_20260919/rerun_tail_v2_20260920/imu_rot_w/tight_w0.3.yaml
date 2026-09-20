@@ -1,0 +1,24 @@
+inherit: "config/base.yaml"
+
+# Add keyframes after about 34 mm of internally estimated translation or 5 deg
+# of onboard-IMU rotation. This remains motion-driven: stationary frames are not
+# densified, and no external reference trajectory is consumed.
+use_calib: False
+single_thread: True
+dataset:
+  subsample: 1
+
+tracking:
+  imu_rotation_prior: True
+  imu_rotation_constraint_weight: 0.3
+  imu_rotation_constraint_gate_deg: 0.5
+  motion_keyframe_translation: 0.15
+  motion_keyframe_rotation_deg: 5.0
+
+retrieval:
+  confirmation_frames: 2
+  confirmation_immediate_frame_gap: 150
+  confirmation_frame_id_radius: 60
+  density_window: 10
+  dense_min_keyframes: 10
+  dense_max_mean_frame_gap: 24
