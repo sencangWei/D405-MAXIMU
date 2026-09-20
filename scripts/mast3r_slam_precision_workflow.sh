@@ -314,9 +314,9 @@ case "$command" in
             --body-t-camera-yaml "$VINS_CONFIG" \
             --scale-horizon-s 1 \
             --smoothing-s 8 \
-            --docker2-local-weight 0.25 \
-            --docker2-scale-weight 0.475 \
-            --adaptive-local-weight \
+            --docker2-local-weight 0 \
+            --docker2-scale-weight 0 \
+            --auto-docker2-scale-weight \
             --graph-report "$mast3r_output/graph_fusion_report.json" \
             --roughness-threshold-mm 9 \
             --adaptive-weight-strength 0.45 \
