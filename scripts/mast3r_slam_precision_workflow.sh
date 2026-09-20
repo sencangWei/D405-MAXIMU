@@ -306,6 +306,15 @@ case "$command" in
             --output "$mast3r_output/trajectory_graph.csv" \
             --report "$mast3r_output/graph_fusion_report.json"
 
+        # 三个参数由 2026-09-20 的多组对照定死（证据见
+        # reports/mast3r_g2_validation_20260919/fusion_param_ab_20260920/）：
+        #   --docker2-local-weight 0   17 组 A/B：0.35 逐 cell 3胜14负，门 2.44° vs 2.03°
+        #                              （且 [7/8] 的 VINS 验收不过时脚本会自行归零）
+        #   --docker2-scale-weight .25 17 组扫描：0.15–0.475 是平台，中位 ATE 5.26→5.03
+        #                              （--auto 那道闸要求两链尺度分歧≥2%，本台架恒 0.44% ⇒ 恒选 0）
+        #   去掉 --use-docker2-orientation-for-lever-arm
+        #                              19/19 组改善旋转门，中位 −0.085°，ATE 不动；
+        #                              该开关会把 MASt3R 姿态整个换成 VINS 姿态。
         echo "[8/9] VINS姿态互补、自动尺度门控与异常平移隔离"
         "$PYTHON" "$ROOT_DIR/scripts/fuse_docker2_mast3r_complementary.py" \
             --mast3r "$mast3r_output/trajectory_graph.csv" \
@@ -315,12 +324,10 @@ case "$command" in
             --scale-horizon-s 1 \
             --smoothing-s 8 \
             --docker2-local-weight 0 \
-            --docker2-scale-weight 0 \
-            --auto-docker2-scale-weight \
+            --docker2-scale-weight 0.25 \
             --graph-report "$mast3r_output/graph_fusion_report.json" \
             --roughness-threshold-mm 9 \
             --adaptive-weight-strength 0.45 \
-            --use-docker2-orientation-for-lever-arm \
             --output "$output/trajectory_fused_unsmoothed.csv" \
             --report "$output/fusion_report.json"
 

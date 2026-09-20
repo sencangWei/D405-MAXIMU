@@ -179,6 +179,139 @@ body_positions = positions - body_rotations.apply(body_t_camera[:3, 3])
 
 ---
 
+## 八、★★ 09-20 晚：用户提问引出的第二次判决（推翻 §一）
+
+用户问「**[8/9] 以前不是这样的啊？之前没遇到过啊**」。查盘上全部 **1016 份**
+`fusion_report.json` 的历时轨迹 ⇒ **用户是对的**。
+
+### 8.1 09-14 跑的是**两个候选**，参数根本不同
+
+| 臂 | `local_weight` | adaptive | `smoothing_s` | 启动器 |
+|---|---|---|---|---|
+| `sparse` | 0 | 否 | 8 | `mast3r_slam_precision_workflow.sh` |
+| `tight` | **0.35** | **是** | **15** | `mast3r_slam_adaptive_precision_workflow.sh` |
+
+逐 cell：`20260914_validation_v10_batch` 与 `_holdout_batch2` 的 tight **全是
+0.35/ada/smooth15**，报告记着 `injected_correction_max_mm = 6.89mm`
+（中位 1.86 / p95 3.28）⇒ **当年 tight 臂真在融合**。
+`v11_holdout_batch3`（09-14 晚）起两臂才都变 0。
+
+**选谁有记录**：`fusion/selection_report.json`
+（schema `umi_mast3r_fusion_candidate_selection_v1`）。
+v10b/g1 选 tight、g2 选 sparse；holdout_b2/g2 先 sparse，
+`fusion_v11_reselected/` 把 `minimum_tight_stereo_improvement_ratio`
+从 0.1 放宽到 **0.0** 又改选 tight。
+
+### 8.2 直接实验：用 09-14 原始输入重跑
+
+| cell | `lw.35 ada s15 sw.475` | `lw=0` | 报告 inj_max ↔ 重跑 |
+|---|---|---|---|
+| v10b/g1 | **0.236 mm** ★复现 | 2.069 mm ✗ | 6.89 ↔ 6.85 |
+| v10b/g2 | **1.171 mm** ★ | 3.552 mm ✗ | 9.00（被裁） |
+
+**lw=0 明确不是 09-14 tight 的配置。**
+
+### 8.3 它是**被启动器重写 + 单元测试钉死**的，不是数据判决
+
+* `mast3r_slam_adaptive_precision_workflow.sh`（**09-15 15:45**）被重写：不再自己带
+  融合参数，两臂都交给 `mast3r_slam_precision_workflow.sh`（内含 lw=0）⇒ 都变 0。
+* `tests/test_mast3r_adaptive_workflow.py:20`：
+  `assert "--docker2-local-weight 0.35" not in script` ⇒ **明令禁止它回来**。
+
+**没有任何记录写过「因为 A/B 更差所以关掉」。**
+
+### 8.4 ⚠ 更正 §一：`graph_vs_fusion.py` 的两处缺陷
+
+(a) 只看了 `tight` 一条臂；(b) 拿 09-14 的 `fused` 去比 **09-20** 的
+`fusion_current/tight/mast3r/trajectory_graph.csv`（**比错了对象**，
+其中 2 个 cell 的 graph 还因 cap mode 变过）。那个「0.187mm 直通」是
+`camera_to_body_with_body_orientation_prior` 重建出的 ~2mm 偏差造成的**假象**。
+改为比**同一臂自己的** graph（`graph_vs_fusion_v2.py`）。
+
+### 8.5 ★ 又一个机制：VINS 验收不过 ⇒ `lw` 被**静默归零**
+
+`fuse_docker2_mast3r_complementary.py:508`
+```python
+local_weight = (args.docker2_local_weight
+                if position_policy["local_translation_allowed"] else 0.0)
+```
+所以 `--docker2-local-weight` 是个**被运行时门控的旋钮**。本语料 10 个 cell 的验收
+是 PASS（lw 生效），`holdout_b2/g1` 是 `corrected_trajectory_jump`（lw 强制 0）。
+
+---
+
+## 九、判决实验 1：`lw=0.35` vs `lw=0`（**多组对照，不是一组**）
+
+`lw35_vs_lw0_ab.py`：**同一个 graph，只动融合参数**（把前端/图优化的差异完全排除），
+两条臂都跑 ⇒ 17 组有效 × 4 套配置。
+
+| 配置 | 中位 ATE | 中位门 | 门过 | vs D 胜负 |
+|---|---|---|---|---|
+| **A** 09-14 tight 配方 `lw.35 s15 sw.475` | 5.78 | 2.44 | 6/18 | 3胜 **14负** |
+| **B** 现役复原 `lw0 s8 auto(=sw0)` | 5.26 | 2.03 | 8/18 | 5/12 |
+| **C** `lw.35 s15 sw0` | 5.25 | 2.45 | 6/18 | 6/11 |
+| **D** `lw0 s15 sw.475` | **4.99** | **2.03** | **8/18** | 基准 |
+
+* **A vs D 隔离 `lw`**（其余全同）：5.78 vs 4.99，门 2.44 vs 2.03，**3胜14负**。
+* **C vs B 隔离 `lw`**（sw=0）：ATE **5.25 vs 5.26 打平**，但**门 2.45 vs 2.03**。
+  ⇒ lw 即使不伤 ATE 也伤门。
+* 实测 `injected_correction_max_mm`：A/C 注 **9.00mm**、B/D 注 **0.00** ✓ 机制吻合。
+
+**⇒ 09-14 的 tight 臂当年确实在融合，而那次融合是负贡献。把 lw 关掉是对的。**
+
+## 十、判决实验 1b：`sw` 是**真杠杆**（我上一轮判错了）
+
+`sw_sweep_lw0.py`：`lw=0` 固定，17 组。
+
+| `sw` | 0 | 0.15 | 0.25 | 0.35 | **0.475** | 0.65 |
+|---|---|---|---|---|---|---|
+| 中位 ATE | 5.26 | 5.05 | 5.03 | 5.01 | **4.99** | 5.64 |
+| 中位门 | 2.03 | 2.03 | 2.03 | 2.03 | 2.03 | 2.03 |
+| 门过 | 8/18 | 8/18 | 8/18 | 8/18 | 8/18 | 8/18 |
+| vs sw=0 | — | 12/5 | 12/5 | 12/5 | **12/5** | 10/7 |
+
+⇒ **0.15–0.475 是平台，稳定改善 ~0.25mm，门完全不动。**
+§一 把它当「效应量 0.56mm、胜负 4:4、不足以当结论」是**样本太少下的误判**。
+
+**顺带说明 09-18 那次改动「好坏捆绑」**：`sw 0.475` 对，`lw 0.25` 错。
+
+`--auto-docker2-scale-weight` 在本语料**结构性恒选 0**（条件 2 要求两链尺度
+分歧 ≥2%，实测只差 0.44%）⇒ 写死 0.25 不是「绕过安全闸」，是恢复设计意图。
+
+---
+
+## 十一、姿态杠杆：去掉 `--use-docker2-orientation-for-lever-arm`
+
+该开关让 `camera_to_body_with_body_orientation_prior` 把 `mast3r_rotations`
+**重绑成对齐后的 VINS 姿态** ⇒ MASt3R 视觉姿态被整个丢弃。
+
+`attitude_lever_ab_v2.py`，**19 组**（同一 graph，只切该开关，lw=0/sw=0.25）：
+
+```
+门rot 改善: 19/19   中位 −0.085°     ATE_T 中位变化 +0.016mm
+门rot 中位:  去掉开关 1.911°  vs  保留 1.993°
+```
+
+`rotation_gate_20260920/attitude_ab.txt` 在旧的 `lw=0.25 sw=0.475` 下是
+**18/18、中位 −0.088°** ⇒ **结论跨配置稳定**。且有 cell 从超标翻到达标
+（`batch5/g2 sparse` 2.04→1.96）。
+
+**⇒ 该开关是纯净损失，已删。** 这也让「用深度学习的轨迹形状修轨迹」真正生效
+（此前输出姿态恒等于 VINS 姿态）。
+
+### 已落地（`scripts/mast3r_slam_precision_workflow.sh` [8/9]）
+
+```diff
+  --docker2-local-weight 0
+- --docker2-scale-weight 0
+- --auto-docker2-scale-weight
++ --docker2-scale-weight 0.25
+  ...
+- --use-docker2-orientation-for-lever-arm
+```
+
+---
+
 ## 文件
 
 | 文件 | 作用 |
@@ -192,6 +325,11 @@ body_positions = positions - body_rotations.apply(body_t_camera[:3, 3])
 | `restore_0914_config.py` | 三套配置对照：现役 / 09-14 复原 / 扫描最优 |
 | `error_axis_split.py` | 误差按轨迹主平面拆垂直/面内 |
 | `scale_share_of_ate.py` | 残余尺度误差占 ATE 多少（中位 4%，不是杠杆） |
+| `local_weight_history.py` | 盘上 **1016 份** `fusion_report.json` 的历时参数指纹 |
+| `graph_vs_fusion_v2.py` | ★ 修正版：比**同一臂自己的** graph（§8.4） |
+| `lw35_vs_lw0_ab.py` | ★ 判决实验 1：17 组 × 4 配置，固定 graph 只动融合参数 |
+| `sw_sweep_lw0.py` | ★ 判决实验 1b：`lw=0` 下扫 `sw`（17 组 × 6 值） |
+| `attitude_lever_ab_v2.py` | ★ 姿态杠杆在新配置下复验（19 组） |
 
 ### 两个踩过的坑（都写进注释了）
 
