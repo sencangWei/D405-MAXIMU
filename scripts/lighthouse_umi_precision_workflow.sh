@@ -114,6 +114,12 @@ print(f"  rate={j.get('replay_rate')}  raw max_step={raw * 1000:.2f}mm  coverage
 if raw < 0.1 and coverage >= 0.90:
     print("  物种=回放压力型（步长小、覆盖高）=> 降速重跑可能有效: VINS_RATE=0.25 重跑本条",
           file=sys.stderr)
+    # ⚠ 证据强度：1.0×→0.5× 是大效应（raw 40.74→14.73mm，同 capture 唯一 A/B，可信）；
+    #   0.5×→0.25× 只有单跑对照，而回放**本身不确定**（同配置两遍 raw_max 10.37 vs 19.35mm）
+    #   => 「0.25× 更好」**未经证实**。所以是「可能有效」，不是「一定更好」；
+    #   重跑后必须自己比 corrected 步长，别默认降速就赢。
+    print("     ⚠ 0.25× 的收益未经证实（回放本身不可复现）；重跑后请自行比 corrected 步长",
+          file=sys.stderr)
 else:
     print("  物种=发散型（步长/覆盖已越界）=> **与回放速率无关，降速重试无意义**",
           file=sys.stderr)
