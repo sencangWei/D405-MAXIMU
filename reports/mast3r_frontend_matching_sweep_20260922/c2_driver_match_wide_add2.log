@@ -1,0 +1,23 @@
+===== [20260914_validation_v11_holdout_batch3/group2] arm=match_wide -> /home/robot/ego_vio_humble/reports/mast3r_frontend_matching_sweep_20260922/c2_match_wide_20260914_validation_v11_holdout_batch3_group2.log
+----- [20260914_validation_v11_holdout_batch3/group2] rc=0
+cell=20260914_validation_v11_holdout_batch3/group2 arm=match_wide  session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_202348  vins=docker2_slam
+[fusion] rc=0 用时 1184s
+  对照       max=  9.638 p95= 8.506 rmse= 5.155 w10=100.0 rot=2.017  FAIL  est=trajectory_fused.csv
+  本臂       max=  8.935 p95= 7.751 rmse= 5.042 w10=100.0 rot=2.078  FAIL  est=trajectory_fused.csv
+    Δate_translation_max_m          -0.702 mm  (改善)
+    Δate_translation_p95_m          -0.755 mm  (改善)
+    Δate_translation_rmse_m         -0.113 mm  (改善)
+    Δate_rotation_rmse_deg          +0.061 °   (变差)
+✅ 20260914_validation_v11_holdout_batch3/group2/match_wide 完成
+===== [20260915_batch5_four_videos/group2] arm=match_wide -> /home/robot/ego_vio_humble/reports/mast3r_frontend_matching_sweep_20260922/c2_match_wide_20260915_batch5_four_videos_group2.log
+----- [20260915_batch5_four_videos/group2] rc=0
+cell=20260915_batch5_four_videos/group2 arm=match_wide  session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_123605  vins=docker2_slam
+[fusion] rc=0 用时 1173s
+  对照       max= 11.846 p95= 7.800 rmse= 3.861 w10= 99.1 rot=1.957  FAIL  est=trajectory_fused.csv
+  本臂       max= 12.435 p95= 8.193 rmse= 4.001 w10= 98.7 rot=1.969  FAIL  est=trajectory_fused.csv
+    Δate_translation_max_m          +0.589 mm  (变差)
+    Δate_translation_p95_m          +0.393 mm  (变差)
+    Δate_translation_rmse_m         +0.140 mm  (变差)
+    Δate_rotation_rmse_deg          +0.012 °   (变差)
+✅ 20260915_batch5_four_videos/group2/match_wide 完成
+[DONE] C2 arm=match_wide 完成
