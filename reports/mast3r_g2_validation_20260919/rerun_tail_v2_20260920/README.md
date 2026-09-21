@@ -2628,3 +2628,105 @@ tracker 会话的单调时窗若短于相机窗，末端那一段 query 时刻**
    之前的「§33 现役 22 格拒 4」统计里被当成「真值干净」用了 —— 那 4 格里
    `holdout_b2/g2` 的 sparse+tight **两格其实真值也不可用**（双重缺陷）。
    不影响 §33 关于「门是代码翻转不是数据翻转」的逐位证据（那是同一 take 的两代门报告对比）。
+
+## §35 `[9/9]` 质量门降级为诊断 —— 改动、验证与一道新查出的同族硬门（09-21）
+
+用户拍板执行 §33.6/§34.5 的建议③。**只改调用点，不动门本身。**
+
+### §35.1 改了什么（`scripts/mast3r_slam_precision_workflow.sh`，+16 行）
+
+```bash
+set +e
+"$PYTHON" "$ROOT_DIR/scripts/assess_mast3r_fusion_input_quality.py" ... 
+quality_status=$?
+set -e
+if [[ "$quality_status" -eq 3 ]]; then
+    echo "  ⚠ [9/9] 质量门 REJECT —— 仅诊断，不阻断（详见 $output/input_quality_report.json）"
+elif [[ "$quality_status" -ne 0 ]]; then
+    echo "  ❌ [9/9] 质量门异常退出 rc=$quality_status" >&2
+    exit "$quality_status"
+fi
+```
+
+三条设计约束，逐条对应一个理由：
+
+1. **改调用点而非改门** —— `rc=3 = REJECT` 是门的契约，`rerun_one_v2.sh` 等 A/B 台架要用它；
+   且 `tests/test_assess_mast3r_fusion_input_quality.py` 直接调 `assess()`、**不断言退出码**（已核实）。
+2. **只容忍 `rc=3`，其他非零码仍中止** —— 否则会把「报告文件不存在」这类**真故障**
+   伪装成「门说不合格」，把零产物换成**错误产物**（更坏）。
+3. **沿用脚本既有的 `set +e` / `status=$?` / `set -e` 写法**（`mast3r_slam_precision_workflow.sh:359-381`），
+   不引入新风格。
+
+⚠ **未动**：`scripts/mast3r_slam_adaptive_precision_workflow.sh:177`（09-14 的编排脚本，已弃用）
+保持原样 —— 那是**09-14 基线**本身，改了就无法再作为对照。
+
+### §35.2 三用例矩阵（把产线那 14 行**逐字抽出**成 harness 跑，不是重写）
+
+| 用例 | 输入 | 期望 | 实测 |
+|---|---|---|---|
+| A | `group1/fusion_v3/sparse`（已知过门）rc=0 | 照常走完、无警告 | ✅ 退出码 0、`__BLOCK_DONE__`、无警告 |
+| B | `group2/fusion_v3/sparse`（已知 REJECT）rc=3 | **不中止** + 打警告 | ✅ 退出码 0、`⚠ 质量门 REJECT —— 仅诊断，不阻断` |
+| C | `--graph-report` 指向不存在的文件 | **仍中止** | ✅ 退出码 1、`❌ 质量门异常退出 rc=1` |
+
+⇒ **用例 A 同时是「无回归」的直接证据**：rc=0 时新代码只多走两个恒假的 `if` 分支，
+`if [[ 0 -eq 3 ]]` 假、`elif [[ 0 -ne 0 ]]` 假 ⇒ 后续平滑调用**逐字节未变**，
+**过门格的数值不可能改变**。
+
+### §35.3 端到端：真产线 `fusion)` 跑此前零产物的那一格
+
+`holdout_b2/g2/sparse`（§33 里 `rc=3` 中止、连 `trajectory_fused.csv` 都没有的那一格），
+用**真产线脚本**、真 session、真 VINS 产物（`docker2_slam_rate0p5`，§33.5）跑完整 `fusion)`：
+
+```
+[1/8] … [2/8] … [3/8] … [4/8] … [5/8] … [6/8] … [7/8] 全部完成
+  ⚠ [9/9] 质量门 REJECT —— 仅诊断，不阻断
+融合后处理完成: .../fusion_gate_diag/sparse/trajectory_fused.csv
+### fusion) rc=0 ###            ← 此前这里是 rc=3 中止
+```
+
+原始日志 `gate_diag_e2e_run.txt`；耗时约 22 分钟（[1/8] 前端 ~5 分钟，抽帧 **1796 帧**
+与 09-14 参考跑**逐位相同**）。**既有产物零改动**（写在新目录 `fusion_gate_diag/`，
+`find -newermt` 为空）。
+
+**★★ 决定性对账：降级后的产线产物 = §34.1 的手工旁路产物，逐字节相同**
+
+```
+sha256  fusion_gate_diag/sparse/trajectory_fused.csv            4de134b2650e86e6…d15ae66
+sha256  fusion_v3/sparse/gate_bypass_diagnostic/trajectory_fused.csv  4de134b2650e86e6…d15ae66
+```
+
+门报告亦然（`result=REJECT` / `reason=primary_shape_not_independently_supported` / `assessed` 段逐位相同）。
+官方评测对新产物复现 §34.1 同一组数字：
+**rmse 6.326 / p95 11.769 / max 18.440 / w10 90.168% / rot 1.611 ⇒ FAIL**。
+
+⇒ **降级只改变「是否中止」，不改变产物一个字节。** 该格仍然诚实地 FAIL ——
+因为卡它的是官方 10mm 精度门（和 §34.2 的 GT 窗截断），不是这道诊断门。
+
+### §35.4 ★ 新查出：`[7/8]` 是**结构完全相同的第二道硬门**（未触发，列给用户）
+
+查这轮改动时顺手核了 `[7/8]` 的退出码，发现它与 `[9/9]` 同族、且**更宽**：
+
+```python
+# scripts/fuse_mast3r_stereo_imu.py:2997
+return 0 if report["result"] == "PASS" else 3
+```
+
+而 `result` 由**约 10 条失败项任一命中**决定（`failures.append(...)`，
+含 `imu_stereo_metric_scale_disagreement`、`position_correction_too_large`、
+`gravity_norm_out_of_range`、`inertial_system_rank_deficient` …）。
+且 `write_trajectory` 仅在 `not failures or --write-failed-output` 时才执行
+（`--write-failed-output` 默认关，报告字段 `failed_output_written_for_diagnostics: false`）
+⇒ **任一失败 = `rc=3` + `set -e` 中止 + 零产物**，与 §33 那道门**同一物种、同一后果**。
+
+**但本语料上从未触发**：普查 65 份 `graph_fusion_report.json`，**65/65 `result=PASS`**、零 `failures`
+（与记忆里「15% 硬门 0/23」同向）。
+⇒ **当前不是活跃阻断**，所以**未擅动**；列在这里是因为它与 ③ 同族，
+用户若要「产线不被质量门零产物阻断」这个性质**全局成立**，这里还得看一眼。
+
+### §35.5 本次仍未动（等用户）
+
+- `[7/8]` 逃生舱：`fuse_mast3r_stereo_imu.py:112-119` 要求
+  `watchdog_failures == ["raw_trajectory_jump"]`（**精确列表相等**）⇒ 实际发生的
+  `corrected_trajectory_jump` 不触发 ⇒ `raise ValueError` ⇒ 中止。**原样保留。**
+- 0.5× 回放全链自动重试（`test_vins_auto_loop.py --rate` 有该能力，全链无重试）。**原样保留。**
+- `scripts/mast3r_slam_adaptive_precision_workflow.sh`（09-14 基线）。**原样保留。**

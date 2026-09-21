@@ -331,11 +331,27 @@ case "$command" in
             --output "$output/trajectory_fused_unsmoothed.csv" \
             --report "$output/fusion_report.json"
 
+        # [9/9] 质量门 = **诊断，不阻断**（2026-09-21 定，证据见
+        # reports/mast3r_g2_validation_20260919/rerun_tail_v2_20260920/README.md §33/§34）。
+        # 该门以 rc=3 表示 REJECT；此前无 || 兜底，`set -e` 会在这里中止整条 fusion)，
+        # 连 trajectory_fused.csv 都不产出。A/B 判决（§34.1）：被它拦下的 4 格补齐后
+        # **4/4 FAIL**（max 16.4–20.8mm）⇒ 门**没毁掉任何合格结果**，代价只是零产物。
+        # 09-11 Codex 定的策略本就是「尺度冲突只作诊断」，只是此前只接进了 compare)。
+        # 只容忍 rc=3；其他非零码（崩溃/文件缺失）仍按 set -e 中止，不掩盖真故障。
         echo "[9/9] 独立双目/视觉惯性质量门控与零相位平滑"
+        set +e
         "$PYTHON" "$ROOT_DIR/scripts/assess_mast3r_fusion_input_quality.py" \
             --graph-report "$mast3r_output/graph_fusion_report.json" \
             --fusion-report "$output/fusion_report.json" \
             --output "$output/input_quality_report.json"
+        quality_status=$?
+        set -e
+        if [[ "$quality_status" -eq 3 ]]; then
+            echo "  ⚠ [9/9] 质量门 REJECT —— 仅诊断，不阻断（详见 $output/input_quality_report.json）"
+        elif [[ "$quality_status" -ne 0 ]]; then
+            echo "  ❌ [9/9] 质量门异常退出 rc=$quality_status" >&2
+            exit "$quality_status"
+        fi
 
         "$PYTHON" "$ROOT_DIR/scripts/smooth_pose_trajectory.py" \
             --input "$output/trajectory_fused_unsmoothed.csv" \
