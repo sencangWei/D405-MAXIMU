@@ -27,7 +27,7 @@ HERE = Path(__file__).parent
 
 
 def main():
-    cells = [l.split("/") for l in Path("/tmp/cells22.txt").read_text().split()
+    cells = [l.split("/") for l in (HERE / ".." / "cells22.txt").resolve().read_text().split()
              if l.count("/") == 2]
     rows = []
     for batch, group, arm in cells:

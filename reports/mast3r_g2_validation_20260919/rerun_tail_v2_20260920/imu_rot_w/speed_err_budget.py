@@ -27,7 +27,7 @@ EDGES = [0, 20, 50, 120, 240, 1e9]
 
 
 def main():
-    cells = [l.split("/") for l in Path("/tmp/cells22.txt").read_text().split()
+    cells = [l.split("/") for l in (HERE / ".." / "cells22.txt").resolve().read_text().split()
              if l.count("/") == 2]
     out, acc = {}, {i: [] for i in range(len(EDGES) - 1)}
     peak_bucket = []

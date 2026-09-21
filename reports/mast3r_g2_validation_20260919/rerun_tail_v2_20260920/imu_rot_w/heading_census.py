@@ -104,7 +104,7 @@ def main():
     if "--Tmax" in a:
         Tmax = float(a[a.index("--Tmax") + 1])
     a = [x for x in a if not x.startswith("--") and x.lstrip("-").replace(".", "").isdigit() is False]
-    cells = [l.split("/") for l in Path("/tmp/cells22.txt").read_text().split()
+    cells = [l.split("/") for l in (HERE / ".." / "cells22.txt").resolve().read_text().split()
              if l.count("/") == 2]
     if len(a) >= 3:
         cells = [a[:3]]
