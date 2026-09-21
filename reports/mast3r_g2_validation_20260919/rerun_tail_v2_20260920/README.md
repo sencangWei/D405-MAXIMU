@@ -2730,3 +2730,211 @@ return 0 if report["result"] == "PASS" else 3
   `corrected_trajectory_jump` 不触发 ⇒ `raise ValueError` ⇒ 中止。**原样保留。**
 - 0.5× 回放全链自动重试（`test_vins_auto_loop.py --rate` 有该能力，全链无重试）。**原样保留。**
 - `scripts/mast3r_slam_adaptive_precision_workflow.sh`（09-14 基线）。**原样保留。**
+
+---
+
+## §36 产线兜底两项落地（③④ 尺度门降级、② 回放失败可诊断）+ 前端 `matching` 调参面首扫（09-22）
+
+用户拍板：② 回放速率、③④ 尺度不一致降级为诊断、前端先扫 `matching` 调参面。
+**明确不做**：① `[7/8]` 逃生舱放宽；③' 其余 11 条 failures 也降级；
+`--metric-scale-mode` 改 `stereo`。
+
+### §36.1 ③④ `[7/8]` 尺度门降级为**可选**诊断 —— 已落地并推送 `6ae2c187`
+
+**开关形状** `--scale-disagreement-policy {fail,diagnose}`，默认 `fail`（与
+`--metric-scale-mode` / `--position-mode` 的 `choices=` 房风格一致）。
+不用自由字符串 `--tolerate-failure` —— 那会**放开全部 12 条**（治理漏洞）。
+
+- 默认 `fail` ⇒ `blocking is failures` ⇒ **行为与产物逐字节不变**
+- `diagnose` 只把 `imu_stereo_metric_scale_disagreement` 摘出**阻断集**，
+  **不改尺度估计**（仍取 `joint` 对数均值，`:2497-2501`）。
+  ⚠ `--metric-scale-mode stereo` **不是替代品** —— 它换尺度（`:2502-2504`）。
+- 新键 `blocking_failures` / `tolerated_failures` / `scale_disagreement_policy`
+  **仅当 `policy != fail` 时才写** ⇒ 默认路径报告 JSON 逐字节不变
+  （初版计划自相矛盾：一边说逐字节不变、一边无条件加新键，已改掉）
+- `failed_output_written_for_diagnostics` 与 `write_trajectory` 守卫改用 `blocking`
+  （否则容忍态会「写了轨迹却报 false」）
+- 派生抽成模块级纯函数 `blocking_failures(failures, policy)`，让契约可被单测钉住
+
+启动器 `scripts/mast3r_slam_precision_workflow.sh` 的 `fusion)` 的 `[7/8]` 加
+`--scale-disagreement-policy diagnose`（**不动 `compare)`**，它早已是 `stereo`）。
+
+**验证（合成触发）**：`--max-scale-disagreement-ratio 0.05` 只喂 `consistent`
+（`:2495,2772`）、**不影响选中的尺度**（`:2497-2512` 不看 `consistent`）
+⇒ 能把门翻过来而轨迹一个字节不变。用现役最大格
+`holdout_b2/g1/fusion_v3/sparse`（rd **0.09279**）：
+
+| 用例 | rc | result | 轨迹 | failures | blocking | tolerated |
+|---|---|---|---|---|---|---|
+| 默认 + rd0.05 | 3 | FAIL | 无 | `[scale_disagreement]` | 键不存在 | 键不存在 |
+| `diagnose` + rd0.05 | 0 | PASS | 有 | `[scale_disagreement]` 保留 | `[]` | 恰 1 条 |
+| 默认 + rd0.15 | 0 | PASS | 有 | `[]` | 键不存在 | 键不存在 |
+
+- 默认路径**逐字节对账**：`holdout_b2/g1` 与 `g2` **两格**归一化后与盘上
+  `fusion_v3/sparse/mast3r/graph_fusion_report.json` 完全相同
+- **只放开一条**：真实 `visual_gyro_rotation_inconsistent` 报告
+  （`mast3r_fusion_regression_13/baseline_current/d405_20260908_222453`）
+  带 `diagnose` 仍 **rc=3 / 无轨迹 / `blocking` 仍含该名**
+- `pytest tests/test_mast3r_stereo_imu_fusion.py` 54 passed
+
+> ⚠ 这是**产线保险**，不是精度。现役 22 格语料 `fusion_v2`(18)+`fusion_v3`(4)
+> **22/22 PASS**，`relative_difference` 最大 **0.0928** < 门限 0.15
+> ⇒ 对现役语料**零影响**。它的价值是：这道门若真被撞上，
+> 以前是**零产物**，现在是**有产物 + 诊断**。
+
+### §36.2 ② 回放速率：默认不变 + 失败物种判别；**0.25× 升级阶梯被实验否决**
+
+`run_slam()` 的 `--rate 0.5` → `--rate "${VINS_RATE:-0.5}"`（**默认行为不变**，
+只给运维一个逃生阀），并用脚本既有的 rc 感知写法包住调用，
+**只在 rc==3（验收 FAIL）时**调 `vins_failure_diagnosis`；
+rc==4（INFRASTRUCTURE 预检失败）换速率修不了 ⇒ 照旧中止。
+
+**物种判别分界**（两个分支都在**真实报告**上验过）：
+
+| 物种 | 判据 | 处置 | 实例 |
+|---|---|---|---|
+| 回放压力型 | `max_raw_step < 0.1m` 且 `coverage >= 0.90` | 降速可能有效 | `holdout_b2/g1@1.0×` 40.74mm/0.9590 |
+| 发散型 | 其余 | **与速率无关，别重试** | `collective_b4/g3@0.5×` 4358.87mm/0.5587 |
+
+**同一条 take（`holdout_b2/g1`）的速率阶梯实测**：
+
+| rate | result | coverage | raw 样本 | raw max | **corr max** | 修正是否起作用 |
+|---|---|---|---|---|---|---|
+| 1.0× | FAIL | 0.9590 | 1685 | 40.74mm | 40.74mm | **否（==raw）** |
+| 0.5× | PASS | 0.9926 | 1742 | 14.73mm | **10.38mm** | 是 |
+| 0.25× | PASS | 0.9897 | 1740 | **9.71mm** | 14.37mm | 是 |
+
+⇒ **0.25× 阶梯作废**：raw 步长确实单调变好（40.74→14.73→9.71mm），
+但**修正后**步长在 0.25× 反而**变差**（14.37 > 10.38mm）、覆盖率也略低。
+而下游融合消费的正是**修正后**轨迹（`--relative-motion-trajectory`）
+⇒ 0.25× 对它更差，且**无 docker2 证据**支持「比 0.5× 更慢更好」（§前置事实 17）。
+
+**1.0× 的病灶是丢帧**（不是修正过冲）：raw 样本少 57 个、单帧步长 2.8×、
+覆盖率 −3.4pp，且 corrected 步长**与 raw 逐位相同**（修正完全没工作）。
+⇒ 「1.0× 先跑省时间」与「把 fused ATE 压到 ≲4mm」**方向相反**，不做。
+
+实验跑法落 `reports/replay_rate_monotonicity_20260922/run_rate.sh`。
+★ 产物写**格外的临时目录** —— 写进 `<cell>/docker2_slam_rate0p25/` 会被
+`vins_dir.py` 的 `sorted("docker2_slam_*")` glob 选中，一旦 PASS 就**静默顶替**
+0.5× 那份，改变该格的语义（`rate0p25` < `rate0p5` 字典序在前）。
+
+---
+
+### §36.3 前端 `[1/8]` `matching` 调参面首扫：**第 14 个被封死的族**（09-22）
+
+**为什么扫它**：`matching:`（`max_iter 10 / dist_thresh 1e-1 / radius 3 / dilation_max 5`）
+是前端对应引擎的核心参数，**从未扫过**（尺度门默认路径零覆盖 ⇒ 没人碰过它）；
+且它是**纯 in-repo** 的改动面 —— 写在 `config/mast3r_slam_d405_offline_match_*.yaml`
+里就能推 `sencang`，**不动工具链、不用重编 CUDA**。
+
+**四臂**（每臂 = 逐字复制 `config/mast3r_slam_d405_offline.yaml` + 只加一个 `matching:` 键。
+必须复制而非 `inherit`，因 `inherit:` 是 **CWD 相对**而 CWD=`$TOOL_DIR`）：
+
+| 臂 | 覆盖 | 假设 |
+|---|---|---|
+| `match_wide` | `dilation_max: 9` | 快动下投影搜索范围不够 |
+| `match_iter` | `max_iter: 20` | 收敛迭代不够 |
+| `match_radius` | `radius: 5` | 像素搜索半径太小 |
+| `match_tight3d` | `dist_thresh: 3e-2` | 10cm 的 3D 门太松、放进错配 |
+
+#### §36.3.1 C1 前端单跑（3 格 × 5 臂 = 15 次，`frontend_arm.sh`）
+
+**对照 = 盘上 `fusion/sparse/mast3r/trajectory_frames.csv`**（09-15 那份前端；见下 §36.3.3）。
+
+| 臂 | `v11b3/g2` | `b5/g4` | `cb4/g1` | 过 ≥8mm 判据 |
+|---|---|---|---|---|
+| `prod`（控制臂，生产 config 重跑） | **0.00** | **0.00** | **0.00** | — |
+| `match_wide` | 6.64 | **18.38** | 7.86 | 1/3 |
+| `match_iter` | 7.66 | **14.15** | **9.63** | 2/3 |
+| `match_radius` | 4.63 | 7.84 | 3.19 | 0/3 |
+| `match_tight3d` | 崩 | 崩 | 崩 | — |
+
+表内 = `compare_frontend.py` 的**全局 max**（相似对齐后逐帧残差，mm；单位换算用该格
+`[6/8]` 的 `selected_scale_m_per_mast3r_unit`）。判据（计划）：**前端位移须 ≥8–26mm**
+才可能传到 fused ATE。良态度量 `gap_*`（相邻段质心间距变化）同量级：
+`match_wide` 2.37/2.54/1.02、`match_iter` 2.17/2.72/3.17、`match_radius` 0.15/0.38/0.45 mm。
+⇒ **`match_radius` 几乎没动前端**（gap ≤0.45mm）；幸存臂 = `match_wide` / `match_iter`。
+
+★ **`prod` 控制臂在三格上都与对照逐字节相同**（`cmp` 逐格复核，见 `run_c1.sh` 的 `[CHECK]`）
+⇒ 脚手架可信、前端对配置是确定性的。
+
+★ **`match_tight3d` 三格全崩**，判据明确：
+`IndexError: index 512 is out of bounds for dimension 0 with size 512`
+（`frame.py:302` ← `frame.py:241` 的 `buffer=512` 硬顶）。机理：3D 门收紧到 3cm 后匹配
+几乎全被拒 ⇒ **每帧都新建关键帧** ⇒ 撞 512 容量上限（FPS 从正常跌到 0.85）。
+对照：`prod`/`wide`/`radius` 的关键帧都是 43、`iter` 是 47，离 512 极远
+⇒ **这不是「调参调坏了」，是工具链在该参数域没有容量保护**。前两格 rc=1，第三格枚举中手动终止（rc=143）。
+
+#### §36.3.2 C2 全链对照（2 幸存臂 × 2 格 = 4 次，`run_c2.sh`）
+
+逐字走现役 `fusion)` 子命令（前端→`[2/8]`…`[7/8]`→`[8/9]`→`[9/9]`→eval），
+只用 `MAST3R_SLAM_CONFIG` 换前端配置。**对照 = 盘上 `fusion_v2/sparse`**（现役世代）。
+**下面只报融合链**（`estimate=trajectory_fused.csv`）：
+
+| 臂 | 格 | 对照 max | 本臂 max | **Δmax** | Δp95 | Δrmse | Δrot |
+|---|---|---|---|---|---|---|---|
+| `match_wide` | `b5/g4` | 12.222 | 12.391 | **+0.168** | +0.253 | −0.080 | −0.089° |
+| `match_wide` | `cb4/g1` | 18.427 | 18.788 | **+0.361** | +0.136 | +0.048 | +0.009° |
+| `match_iter` | `b5/g4` | 12.222 | 12.720 | **+0.497** | +0.213 | +0.103 | +0.096° |
+| `match_iter` | `cb4/g1` | 18.427 | 22.759 | **+4.332** | −0.206 | +0.472 | −0.073° |
+
+⇒ **8 项里 6 项变差、2 项改善**（两处改善都是 ≤0.08mm 量级），
+**没有任何臂在任何一格里改善 `ate_translation_max`**（那是当下唯一卡门的量，§31/§33）。
+
+**两重控制臂都对上了**：
+1. C2 那一跑的**前端产物**与 C1 同臂产物**逐字节相同**
+   （`md5 5b726de368b2` / `2ccdf1118762`）⇒ C2 确实换了臂、且管线确定性。
+2. `fusion_v2/sparse/mast3r/` 只有 `graph_*`（见 §36.3.3）⇒ C2 与对照共用同一条前端输入。
+
+#### §36.3.3 为什么前端位移**传到了** fused，却压不下 ATE
+
+先纠正一个直觉：**不是「传不过去」**。b5/g4 上 `match_wide` 的 fused 与对照**逐帧**差：
+
+```
+max 5.217mm   p95 4.973   mean 1.969   （十分位 mean: 0.57 0.64 0.76 0.90 1.08 1.56 2.45 3.26 3.65 4.81）
+```
+
+⇒ 前端 18.38mm 的改动**确实穿透到了 fused**，形态是**尾部单调累积**（≈0.28×），
+但 `ate_translation_max` 只动了 **+0.168mm** —— 全局刚体对齐把这种平滑累积**吸收**掉了。
+
+真正的原因在**误差峰的归属**（`fused_error_profile.py`，其复现值与官方
+`precision.json` **逐位吻合**：12.222/6.762/4.512 与 18.427/11.050/5.700）：
+
+| 格 | 臂 | 最差帧 idx | 前10%样本贡献平方误差 |
+|---|---|---|---|
+| `b5/g4` | 对照 | **293** | 30.8% |
+| `b5/g4` | `match_wide` | **552** | 32.4% |
+| `b5/g4` | `match_iter` | **552** | — |
+| `cb4/g1` | 对照 | **1095** | 51.1% |
+| `cb4/g1` | `match_wide` | **1095** | 51.5% |
+| `cb4/g1` | `match_iter` | **1095** | — |
+
+★ **`cb4/g1` 上两个臂的误差峰都还在同一帧 idx 1095**、集中度 51.1%→51.5% 几乎不动，
+量级只往上走（18.427→18.788→**22.759**）⇒ **臂完全没碰到那个绑定误差块，只放大了它**。
+`b5/g4` 上两个臂把峰**挪到了 idx 552**（不是 prod 的 293），但量级一样
+（12.222→12.391/12.720）⇒ **搬家，不是消除**。
+
+⇒ **判决：`matching` 调参面只能「移动或放大」绑定误差，不能消除它。第 14 个封死的族**
+（前 13 族见 [[mast3r-rerun-tail-v2-20260920]] 的 §8/§9/§12/§25 等）。
+**推论：计划的「前端位移 ≥8–26mm」判据本身被否** —— b5/g4 的 `match_wide`
+满足判据（18.38mm）却只换来 +0.168mm，而该格误差峰还换了地方。
+
+★ 这条结论**正面支持** §31/§25.2 的既有判断：卡门的是**局部偏移块**，
+平滑/累积型的扰动既传不过去、也改不动它 ⇒ **后处理与前端参数面都够不着**；
+要么去改**那个块本身**的成因，要么换评价口径。
+
+#### §36.3.4 复现方式与两个操作坑
+
+产物与脚本全在 `reports/mast3r_frontend_matching_sweep_20260922/`：
+`frontend_arm.sh`（C1 单跑）、`compare_frontend.py`（C1 判据 + `--json-out`）、
+`run_c1.sh`、`run_c2.sh` / `run_c2_all.sh`（C2 全链）、`fused_error_profile.py`（§36.3.3）、
+`c1_*_k10.json`、`c2_*.log`。C2 产物落 `<cell>/frontend_matching_c2_20260922/<arm>/sparse/`
+（**不碰** `fusion_v2` 对照）。
+
+两个坑（都让整条**静默零产物**，值得记住）：
+
+1. **`| sed "s/^/[$cell] /"`** —— `$cell` 含 `/`（`20260915_batch5_four_videos/group4`），
+   `/` 提前终止 `s` 命令 ⇒ sed 当场报错退出 ⇒ 上游 `run_c2.sh` 写 stdout 时吃 **SIGPIPE
+   整条死掉**，日志里只剩 `sed: "s"的未知选项`。改用**每格各写一份日志文件**。
+2. **`> "$OUT/../fusion.log"`** —— bash **不预归一化**路径，OS 逐段解析，而 `sparse`
+   此刻还不存在 ⇒ `..` 直接 ENOENT，全链 **0s 挂掉**（rc=1）。先 `mkdir -p "$OUT"`。
