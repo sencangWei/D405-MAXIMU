@@ -333,6 +333,24 @@ def scale_consistency(
     }
 
 
+TOLERABLE_FAILURE_BY_POLICY = {
+    # 尺度不一致降级为诊断（2026-09-22）。依据：09-11 Codex 明说的「尺度由双红外
+    # 负责、IMU 只修姿态、冲突只作诊断」，此前只接进了 compare)
+    # （--metric-scale-mode stereo）。**只摘这一个名字**，其余失败一律照旧阻断，
+    # 且**不改尺度估计**（仍取 joint 对数均值）。见 README §33/§35。
+    "fail": (),
+    "diagnose": ("imu_stereo_metric_scale_disagreement",),
+}
+
+
+def blocking_failures(failures: list, policy: str) -> list:
+    """按策略摘掉可容忍的失败名，得到真正的阻断集。默认策略下恒等于 failures。"""
+    if policy not in TOLERABLE_FAILURE_BY_POLICY:
+        raise ValueError(f"unknown scale disagreement policy: {policy}")
+    tolerated = set(TOLERABLE_FAILURE_BY_POLICY[policy])
+    return [name for name in failures if name not in tolerated]
+
+
 def select_position_mode(
     requested_mode: str, metric_scale_quality: dict | None
 ) -> tuple[str, str]:
@@ -2773,9 +2791,11 @@ def run(args: argparse.Namespace) -> dict:
         and args.metric_scale_mode != "stereo"
     ):
         failures.append("imu_stereo_metric_scale_disagreement")
+    # 默认 "fail" ⇒ blocking is failures ⇒ 行为与产物逐字节不变。
+    blocking = blocking_failures(failures, args.scale_disagreement_policy)
     report = {
         "schema": "umi_mast3r_stereo_imu_fusion_v2",
-        "result": "PASS" if not failures else "FAIL",
+        "result": "PASS" if not blocking else "FAIL",
         "failures": failures,
         "slam_supervision": False,
         "external_ground_truth_used": False,
@@ -2860,15 +2880,22 @@ def run(args: argparse.Namespace) -> dict:
         ),
         "accelerometer_consistency": acceleration_quality,
         "failed_output_written_for_diagnostics": bool(
-            failures and args.write_failed_output
+            blocking and args.write_failed_output
         ),
         "output": str(args.output.resolve()),
     }
+    if args.scale_disagreement_policy != "fail":
+        # 新键**只在非默认策略下写** ⇒ 默认路径的报告 JSON 逐字节不变。
+        report["scale_disagreement_policy"] = args.scale_disagreement_policy
+        report["blocking_failures"] = blocking
+        report["tolerated_failures"] = [
+            name for name in failures if name not in set(blocking)
+        ]
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    if not failures or args.write_failed_output:
+    if not blocking or args.write_failed_output:
         write_trajectory(
             args.output, rows, refined_positions, refined_rotations
         )
@@ -2952,6 +2979,16 @@ def main() -> int:
         default="full",
     )
     parser.add_argument("--max-scale-disagreement-ratio", type=float, default=0.15)
+    parser.add_argument(
+        "--scale-disagreement-policy",
+        choices=("fail", "diagnose"),
+        default="fail",
+        help=(
+            "fail (default) keeps imu_stereo_metric_scale_disagreement blocking; "
+            "diagnose drops only that one name from the blocking set while keeping "
+            "the joint log-mean scale and recording it in tolerated_failures"
+        ),
+    )
     parser.add_argument(
         "--write-failed-output",
         action="store_true",

@@ -277,6 +277,15 @@ case "$command" in
             --report "$mast3r_output/imu_scale_report.json"
 
         echo "[7/8] 多段双目/IMU关键帧图联合优化"
+        # --scale-disagreement-policy diagnose（2026-09-22，用户拍板 ③④）：
+        # 尺度不一致（|IMU − 双目| / 中点 > 15%）**不再让整条 fusion) 零产物中止**，
+        # 只降级为诊断（报告里 failures 仍原样保留该名，新增 tolerated_failures）。
+        # 依据：09-11 Codex 对用户明说的「尺度由双红外负责、IMU 只修姿态、
+        # 冲突保留在报告里作为诊断」——那条策略此前只接进了 compare)
+        # （--metric-scale-mode stereo）；现役产线 22 格实测 rd 最大 0.0928 < 0.15
+        # ⇒ 本改动对现役语料零影响。**尺度估计仍是 joint 对数均值，未改。**
+        # 其余 11 条 failures（含 visual_gyro_rotation_inconsistent，盘上真实触发 7 次）
+        # **一律照旧阻断**；见 reports/.../rerun_tail_v2_20260920/README.md §33/§35。
         "$PYTHON" "$ROOT_DIR/scripts/fuse_mast3r_stereo_imu.py" \
             --session "$session" \
             --trajectory "$mast3r_output/trajectory_imu_metric.csv" \
@@ -302,6 +311,7 @@ case "$command" in
             --full-rate-imu-position-refinement \
             --full-rate-max-correction-mm 20 \
             --metric-scale-mode joint \
+            --scale-disagreement-policy diagnose \
             --position-mode keyframe-graph \
             --output "$mast3r_output/trajectory_graph.csv" \
             --report "$mast3r_output/graph_fusion_report.json"
