@@ -1,0 +1,20 @@
+{
+  "schema": "umi_mast3r_fusion_input_quality_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "reason": null,
+  "stereo_edge_rmse_after_m": 0.0035115078331458176,
+  "maximum_stereo_edge_rmse_m": 0.004,
+  "input_disagreement_p95_m": 0.12494954372600071,
+  "maximum_input_disagreement_p95_m": 0.025,
+  "metric_scale_relative_difference": 0.02255367811887832,
+  "maximum_metric_scale_relative_difference": 0.12,
+  "full_rate_imu_requested_correction_m": 0.004775471242095285,
+  "maximum_full_rate_imu_requested_correction_m": 0.01,
+  "policy": "reject when independent D405/stereo and visual-inertial geometry both fail, or when stereo/IMU metric scale and full-rate inertial shape correction independently exceed their consistency limits",
+  "inputs": {
+    "graph_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260914_validation_v10_holdout_batch2/group2/fusion/tight/mast3r/graph_fusion_report.json",
+    "fusion_report": "/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260914_validation_v10_holdout_batch2/group2/fusion_v11_reselected/tight/fusion_report.json"
+  }
+}

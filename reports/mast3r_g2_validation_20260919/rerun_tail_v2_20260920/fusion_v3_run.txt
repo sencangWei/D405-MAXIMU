@@ -1,0 +1,34 @@
+########## holdout_batch2/group1/sparse ##########
+cell=20260914_validation_v10_holdout_batch2/group1/sparse  session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024
+  VINS=docker2_slam_rate0p5
+[7/8] 多段双目/IMU关键帧图联合优化
+[8/9] VINS姿态互补 (lw 0 / sw 0.25 / 无 adaptive / 无姿态开关)
+[9/9] 质量门 + 平滑（★ 不带 || true，与工作流 set -e 一致）
+[eval] 官方评测器
+  rmse 7.785  p95 14.833  max 28.664  w10 87.894%  rot 1.274  => FAIL ['ate_translation_p95_over_limit', 'ate_translation_max_over_limit', 'within_10mm_ratio_below_limit']
+✅ 20260914_validation_v10_holdout_batch2/group1/sparse 完成
+########## holdout_batch2/group2/sparse ##########
+cell=20260914_validation_v10_holdout_batch2/group2/sparse  session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175248
+  VINS=docker2_slam_rate0p5
+[7/8] 多段双目/IMU关键帧图联合优化
+[8/9] VINS姿态互补 (lw 0 / sw 0.25 / 无 adaptive / 无姿态开关)
+[9/9] 质量门 + 平滑（★ 不带 || true，与工作流 set -e 一致）
+❌ [9/9] 质量门 rc=3（生产路径 set -e 会在这里中止）
+########## holdout_batch2/group1/tight ##########
+cell=20260914_validation_v10_holdout_batch2/group1/tight  session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024
+  VINS=docker2_slam_rate0p5
+[7/8] 多段双目/IMU关键帧图联合优化
+[8/9] VINS姿态互补 (lw 0 / sw 0.25 / 无 adaptive / 无姿态开关)
+[9/9] 质量门 + 平滑（★ 不带 || true，与工作流 set -e 一致）
+[eval] 官方评测器
+  rmse 7.327  p95 11.866  max 29.802  w10 89.443%  rot 1.157  => FAIL ['ate_translation_p95_over_limit', 'ate_translation_max_over_limit', 'within_10mm_ratio_below_limit']
+✅ 20260914_validation_v10_holdout_batch2/group1/tight 完成
+########## holdout_batch2/group2/tight ##########
+cell=20260914_validation_v10_holdout_batch2/group2/tight  session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175248
+  VINS=docker2_slam_rate0p5
+[7/8] 多段双目/IMU关键帧图联合优化
+[8/9] VINS姿态互补 (lw 0 / sw 0.25 / 无 adaptive / 无姿态开关)
+[9/9] 质量门 + 平滑（★ 不带 || true，与工作流 set -e 一致）
+❌ [9/9] 质量门 rc=3（生产路径 set -e 会在这里中止）
+
+[exited with code 0]

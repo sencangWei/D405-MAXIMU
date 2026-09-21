@@ -2343,3 +2343,149 @@ collective_batch4/group2               15.48/5.80/F 15.48/5.80/F    (无)     15
   这条是**真实的相对 09-14 的损失**，值得单独处置，且需要用户拍板（涉及产线开门策略）。
 - **精度上的下一步**：按 §32.4.5，两条链都指向 **`[1/8]` 前端短窗对应 / 局部加速度方向约束**。
   这是唯一还有量级的杠杆（§29.3 的尺子：前端要动 ~8–26mm 才够）。
+
+---
+
+## §33 ★★★ 「跑不通」的根因找到了，**不是精度、不是参数、不是前端** —— 是 `[9/9]` 质量门在 09-15→09-19 之间加严（09-21）
+
+> 这一节回答的是用户那句「先把算法真正跑通」里的**「跑不通」**。
+> 结论先行：**「跑不通」是三道闸，其中两道与精度完全无关**；精度问题（§31/§32）是第四层，
+> 排在它们后面。三道闸里**只有一道是相对 09-14 的真实损失**（`[9/9]` 加严），
+> 另两道是**台架**问题（已修）与**真值**问题（不可用）。
+
+### §33.1 三道闸，一次说清
+
+| # | 闸 | 在哪 | 相对 09-14 | 后果 |
+|---|---|---|---|---|
+| 1 | `[7/8]` `validate_relative_motion_report` 要求 VINS 验收 PASS，逃生舱只认 `["raw_trajectory_jump"]` | `fuse_mast3r_stereo_imu.py:95-130` | 同 | `docker2_slam/` 里那两条是 `corrected_trajectory_jump` + coverage 0.959<0.98 + `product_usable=False` ⇒ **逃生舱不触发** |
+| 2 | 台架写死 `docker2_slam/`（09-14 实际用 `docker2_slam_rate0p5/`） | `rerun_one_v2.sh` ← `vins_dir.py` | 台架错，已修 | 修复（18:36:44）**晚于** `fusion_v2` 那次运行（18:32:59）⇒ **4 格从未重跑** |
+| 3 | **`[9/9]` `assess_mast3r_fusion_input_quality.py` 加严：新增两条按 `lw` 互斥的臂** | 该脚本 `assessed` 段 | **★ 真实损失** | 现役参数下 **22 格中 4 格 `rc=3` 中止 ⇒ 零产物** |
+
+⚠ **闸 3 会真的中止产线**：脚本结尾是 `return 0 if report["result"]=="PASS" else 3`，
+产线 `mast3r_slam_precision_workflow.sh:335` 调用它时**没有 `|| true`**，而脚本第 2 行是
+`set -euo pipefail` ⇒ 非零退出即整条停。
+（这条与 [[mast3r-g1-vs-g2-sweep-20260919]] 里记的「`[9/9]` 质量门不阻断」**相反**，那条记载是错的，
+已在 09-21 更正。）
+
+⚠ **但「09-14 有兜底」这个说法只对尺度门成立，对 `[9/9]` 不成立**。09-14 的编排脚本
+`mast3r_slam_adaptive_precision_workflow.sh:177` 的 `[4/4]` 门**也在 `set -e` 区里**
+（`set +e` 只包住第 23/45 行两处**候选调用**）。所以 09-14 的 `[9/9]` 同样是硬中止，
+它只是**从未触发**——因为旧代码里没有那两条臂（见 §33.2）。
+
+### §33.2 那两条新臂（代码级，逐字）
+
+```python
+unobservable_onboard_branch = (
+    input_disagreement >= max_severe_input_disagreement_p95_m   # 50mm
+    and position_branch_weight > 0.0 )                          # ← lw > 0
+primary_shape_not_independently_supported = (
+    input_disagreement >= max_severe_input_disagreement_p95_m   # 50mm
+    and position_branch_weight == 0.0                           # ← lw == 0
+    and stereo_rmse >= 0.875 * max_stereo_edge_rmse_m )         # 0.875×4.0 = 3.5mm
+```
+
+- `position_branch_weight` 读的是 `fusion_report["fusion"]["effective_local_weight_max"]`
+  ⇒ **就是 `--docker2-local-weight`（lw）**，**不是** `--docker2-scale-weight`。
+- **两臂按 `lw` 互斥、并按 `lw` 合起来覆盖全部取值** ⇒ 只要分歧 ≥50mm，
+  **无论 lw 取 0 还是非 0 都会被拒**，只是理由不同（`..._branch_unobservable` vs
+  `primary_shape_not_independently_supported`）。
+- **09-14 的旧门只有两条臂**：`severe_shape_disagreement`（要求 stereo ≥4.0mm **且** 分歧 ≥25mm）
+  与 `metric_and_inertial_estimates_conflict`。新门多出的就是上面这两条。
+- 硬指纹：旧报告的 `policy` 串里**根本没有**这两条臂的文字，且**没有**
+  `maximum_severe_input_disagreement_p95_m` / `position_branch_used` /
+  `position_branch_weight_max` / `primary_shape_independently_supported` 四个键。
+  ⇒ 按 `policy` 串即可判定一份报告出自哪代代码（本节所有计数都这么做）。
+
+### §33.3 逐位证据：**指标数值一字未变，只有代码变了**
+
+`20260914_validation_v10_holdout_batch2/group2/sparse` 同一个 take、同一条链：
+
+| 字段 | 09-14 报告（旧门） | 现役 `fusion_v3`（新门） |
+|---|---|---|
+| `input_disagreement_p95_m` | 0.1244613 | 0.1242063 |
+| `stereo_edge_rmse_after_m` | **0.0036623580** | **0.0036623580**（逐位相同）|
+| `metric_scale_relative_difference` | 0.0752903 | 0.0752904 |
+| `full_rate_imu_requested_correction_m` | **0.007664695683837181** | **0.007664695683837181**（逐位相同）|
+| `result` | **PASS** | **REJECT** |
+
+⇒ 融合本身跑出来的东西没有任何变化，**判决完全由门代码翻转**。
+这条 take 的第三条判据只超了一点点：`stereo 3.6624 ≥ 3.5`（**+4.6%**）；
+`group2/tight` 更险：`stereo 3.5115 ≥ 3.5`（**+0.3%**）。**刀刃就在 0.875×max 上。**
+
+### §33.4 ★ 现役产线参数下的精确账：**22 格中 4 格**，不是 9 格
+
+先更正我自己上一版（§33.4 的来源）：我先前报的「18 格里 9 格翻 REJECT、理由全是
+`independent_onboard_trajectory_branch_unobservable`」**测的是 `fusion_current` 族**
+（09-20 01:34，lw=0.25 + adaptive + sw=0.475），**不是现役产线参数**。两者要分开算：
+
+| 参数集 | 族 | 格数 | 被门拒 | 理由 |
+|---|---|---|---|---|
+| 09-14（lw 0/0.35，sw 0/0.85）| `fusion/` | 22 | **0** | 旧代码无这两条臂（**22/22 PASS**）|
+| **现役产线（lw=0，sw=0.25）** | `fusion_v2`+`fusion_v3` | **22** | **4** | 全部 arm B |
+| 09-20 01:34（lw=0.25 + adaptive，sw=0.475）| `fusion_current` | 18 | 9 | 全部 arm A |
+
+**现役参数下被拒的正是这 4 格**（真值均干净）：
+
+| cell | 分歧 p95 | stereo edge | arm B 第三条 | 判决 |
+|---|---|---|---|---|
+| `batch5_four_videos/group3/sparse` | 80.61mm | 3.9337 | ≥3.5 ✔ | REJECT |
+| `batch5_four_videos/group3/tight` | 77.74mm | 3.6722 | ≥3.5 ✔ | REJECT |
+| `v10_holdout_batch2/group2/sparse` | 124.21mm | 3.6624 | ≥3.5 ✔ | REJECT |
+| `v10_holdout_batch2/group2/tight` | 124.47mm | 3.5115 | ≥3.5 ✔ | REJECT |
+
+**反直觉的两条，必须记住：**
+
+1. **分歧大不等于会被拒。** `collective_batch4/group1` 的分歧 **164.94mm**（是 50mm severe 上限的
+   **3.3 倍**，全表最大）却判 **PASS** —— 因为它的 `stereo_edge_rmse = 3.2094 < 3.5`。
+   ⇒ **arm B 的开关是 stereo edge RMSE，不是分歧。** 只盯 `input_disagreement` 会判错。
+2. **`--docker2-local-weight 0` 是救星，不是元凶。** 两臂按 `lw` 互斥 ⇒ `lw=0` 卸掉 arm A。
+   07-20 那批 lw=0.25 的 9 格里，有 **6 格**（`b5/g2` 52.4mm、`b5/g4` 91.6mm、`c4/g1` 164.9mm，
+   各 sparse+tight）在 `lw=0` 下**转为 PASS**（它们 stereo 都 <3.5）。
+   **同一格直接 A/B**：`collective_batch4/group1` → `fusion_v2`(lw=0) **gate=PASS**，
+   `fusion_current`(lw=0.25) **gate=REJECT**。
+   ⇒ §32 那条「lw=0 对」的判决，**从门的通过率角度独立地又对了一次**；
+   `lw=0` 净救 6 格、**多杀 0 格**（b5/g3 与 holdout_batch2/g2 在 lw>0 下也会被 arm A 拒）。
+
+**这 4 格被拒的代价是「零产物」，不是「精度损失」**：门在平滑与评测之前中止，
+所以 `fusion_v2/fusion_v3` 里这 4 格连 `trajectory_fused.csv` 都没有。
+若要问"若不中止精度够不够"——同格 `fusion_current`（另一套参数）是 max 22.3/20.4mm，
+**反正过不了 10mm 门**。⇒ 门在这里**没有毁掉任何好结果**，它毁掉的是**产物与可观测性**。
+
+### §33.5 `docker2_slam_rate0p5` 兜底 + `vins_dir.py` + `fusion_v3` 重跑
+
+- **闸 1 的真解法在盘上**：`holdout_batch2` 的两条 take，1.0× 回放 FAIL（max 修正步长
+  **40.74mm** > 30mm 限，coverage 0.959<0.98），而 **0.5× 回放 PASS**
+  （max 修正步长 **10.38mm**，约 **4× 改善**，`product_usable=True`）。
+  `test_vins_auto_loop.py` 有 `--rate`（默认 1.0），但**全链无自动重试** ⇒ 09-14 是**手工**选的目录。
+- **`vins_dir.py` 已把这个规则写死**（docstring：*那不是产品路径被阻断，是测试台架选错了目录*），
+  但它的 mtime **18:36:44** 晚于 `fusion_v2` 的运行 **18:32:59** ⇒ **那 4 格从未重跑**。
+- 已用 `OUT_SUBDIR=fusion_v3`（`rerun_one_v2.sh` 新增的环境变量，保留 A/B 证据）重跑
+  （原始输出 `fusion_v3_run.txt`，产物落 `<group>/fusion_v3/`）：
+  - `holdout_batch2/g1/sparse` **跑通** rmse 7.785 / p95 14.833 / max 28.664 / rot 1.274 ⇒ FAIL
+  - `holdout_batch2/g1/tight` **跑通** rmse 7.327 / p95 11.866 / max 29.802 / rot 1.157 ⇒ FAIL
+  - `holdout_batch2/g2/sparse`、`/tight` **仍在 `[9/9]` rc=3 中止**
+- ⚠ **`holdout_batch2` 目前没有任何一格同时「过门」且「真值干净」**：
+  `g1` 过门但真值被 tracker 分支门 REJECT（63.6% 帧），`g2` 真值干净但门中止。
+  ⇒ 这一批**现在拿不出一个可用的 ATE**，与精度无关。
+
+### §33.6 判定与待拍板
+
+1. **「跑不通」的账已经算清**：闸 1（逃生舱太窄）＋闸 2（台架，已修但未重跑）＋闸 3（门加严）。
+   三道闸**都不在精度链上**。§31/§32 追的精度缺口是**第四层**，排在它们后面。
+2. **相对 09-14 的真实损失只有闸 3**，而且是**加严**造成的：
+   `policy` 串与四个新键可作硬指纹。⚠ 该脚本在 09-19 之前**不被 git 跟踪**
+   （`e419c7c7` 是 `scripts/` 首次进 git 的提交，两条臂在那时已在树里；09-14 的报告缺键、旧串，
+   证明当时没有）⇒ 「查 git 历史」永远查不到这两臂是哪天进的，
+   与 [[mast3r-frontend-config-silent-disable-20260920]] 里启动器那个坑同一性质。
+   **但这两臂不是静默回归**：`~/.codex/sessions/**/rollout-*.jsonl` 定位到
+   **09-15 15:12:32** 的首个 patch，当天**当面告知过用户**，并引用了用户
+   「数据本身有问题就舍弃」的指示，测试里还写死了该 cell 的实测四数
+   （0.00393/80.5/0.043/0.0174）。
+   ⇒ **有后果的不是「加严」本身，是「加严后不给兜底、`rc=3` 直接中止整条」这个实现方式。**
+3. **待用户拍板（涉及产线开门策略，我不擅动）**：这三条闸要不要各给一个兜底 ——
+   ① `[7/8]` 逃生舱是否接纳 `corrected_trajectory_jump`；
+   ② 0.5× 回放要不要做成全链自动重试；
+   ③ `[9/9]` 的两条新臂是**保留为硬门**、还是**降级为诊断**（09-11 Codex 定的
+   「冲突只作诊断」策略只接进了 `compare)`，从未接进 `fusion)`，见
+   [[codex-gate-blindspot-history]]）。
+4. **精度上的下一步不变**：仍指向 `[1/8]` 前端短窗对应 / 局部加速度方向约束（§32.4.5）。

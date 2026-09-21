@@ -8,8 +8,10 @@
 #         端到端验证必须保留这个行为，否则验不出「生产路径会不会被阻断」。
 #
 # 参数来源：scripts/mast3r_slam_precision_workflow.sh:279-345（逐行抄，不改）。
-# 产物落 <group>/fusion_v2/<subset>/，不碰任何旧产物。
-# 用法: rerun_one_v2.sh <batch> <group> <subset>
+# 产物落 <group>/${OUT_SUBDIR:-fusion_v2}/<subset>/，不碰任何旧产物。
+#   ★ OUT_SUBDIR：`vins_dir` 修复（18:36）前失败的那几格产物在 fusion_v2/，
+#     修复后重跑落 fusion_v3/，两处并排即为「台架选错目录 ⇒ 零产物」的 A/B 证据。
+# 用法: OUT_SUBDIR=fusion_v3 rerun_one_v2.sh <batch> <group> <subset>
 set -uo pipefail
 BATCH="$1"; GROUP="$2"; SUB="$3"
 ROOT=/home/robot/ego_vio_humble
@@ -20,7 +22,7 @@ IMU_CALIBRATION="$ROOT/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yam
 
 G="$WF/$BATCH/$GROUP"
 SRC="$G/fusion/$SUB/mast3r"
-OUT="$G/fusion_v2/$SUB"
+OUT="$G/${OUT_SUBDIR:-fusion_v2}/$SUB"
 mkdir -p "$OUT/mast3r"
 
 SES=$($PY -c "import json,sys;from pathlib import Path;print(Path(json.load(open('$G/lighthouse_ground_truth_provenance.json'))['clock_mapping']['d405_frames']).parent)")
