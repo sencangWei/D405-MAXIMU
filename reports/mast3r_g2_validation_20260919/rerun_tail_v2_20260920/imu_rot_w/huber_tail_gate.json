@@ -1,0 +1,206 @@
+{
+ "cell": [
+  "20260914_validation_v10_batch",
+  "group1",
+  "sparse"
+ ],
+ "ref": "w0.6",
+ "var": "h030",
+ "metrics": {
+  "samples": {
+   "ref": 1743,
+   "var": 1743,
+   "delta": 0
+  },
+  "ate_translation_rmse_m": {
+   "ref": 0.0032254561616506003,
+   "var": 0.00320068174334801,
+   "delta": -2.477441830259046e-05
+  },
+  "ate_translation_mean_m": {
+   "ref": 0.0029824399772039223,
+   "var": 0.002962066614038435,
+   "delta": -2.0373363165487445e-05
+  },
+  "ate_translation_min_m": {
+   "ref": 0.00023414605495211948,
+   "var": 0.00018878391752474513,
+   "delta": -4.536213742737435e-05
+  },
+  "ate_translation_median_m": {
+   "ref": 0.0030250967233500193,
+   "var": 0.0029674743776653685,
+   "delta": -5.762234568465084e-05
+  },
+  "ate_translation_p95_m": {
+   "ref": 0.005026757961141911,
+   "var": 0.0049530444945495465,
+   "delta": -7.371346659236413e-05
+  },
+  "ate_translation_max_m": {
+   "ref": 0.012581118275009531,
+   "var": 0.012510120050241609,
+   "delta": -7.099822476792222e-05
+  },
+  "ate_translation_within_5mm_ratio": {
+   "ref": 0.9460699942627654,
+   "var": 0.9529546758462422,
+   "delta": 0.0068846815834767705
+  },
+  "ate_translation_within_10mm_ratio": {
+   "ref": 0.9988525530694206,
+   "var": 0.9988525530694206,
+   "delta": 0.0
+  },
+  "ate_translation_within_20mm_ratio": {
+   "ref": 1.0,
+   "var": 1.0,
+   "delta": 0.0
+  },
+  "ate_rotation_rmse_deg": {
+   "ref": 1.9105436620582739,
+   "var": 1.9121451654051662,
+   "delta": 0.0016015033468923523
+  },
+  "attitude_aligned_ate_translation_rmse_m": {
+   "ref": 0.006291051099170761,
+   "var": 0.006291656491744635,
+   "delta": 6.053925738743263e-07
+  },
+  "attitude_aligned_ate_rotation_rmse_deg": {
+   "ref": 0.9581913305351347,
+   "var": 0.9540056192578813,
+   "delta": -0.004185711277253423
+  },
+  "position_vs_attitude_alignment_rotation_deg": {
+   "ref": 1.6528841388512112,
+   "var": 1.6571516079201716,
+   "delta": 0.004267469068960361
+  },
+  "rpe_delta_samples": {
+   "ref": 30,
+   "var": 30,
+   "delta": 0
+  },
+  "rpe_translation_rmse_m": {
+   "ref": 0.0036157279044359,
+   "var": 0.003619488175042651,
+   "delta": 3.7602706067512044e-06
+  },
+  "rpe_rotation_rmse_deg": {
+   "ref": 0.5268239845912446,
+   "var": 0.5272526970696226,
+   "delta": 0.00042871247837805715
+  },
+  "ground_truth_path_length_m": {
+   "ref": 3.2984354620382006,
+   "var": 3.2984354620382006,
+   "delta": 0.0
+  },
+  "endpoint_drift_m": {
+   "ref": 0.0043996101408320335,
+   "var": 0.004383271529769444,
+   "delta": -1.6338611062589707e-05
+  },
+  "endpoint_drift_percent_of_path": {
+   "ref": 0.13338475745447465,
+   "var": 0.13288941318442202,
+   "delta": -0.0004953442700526278
+  },
+  "z_rmse_m": {
+   "ref": 0.001290067264992401,
+   "var": 0.0012769532910017214,
+   "delta": -1.3113973990679702e-05
+  },
+  "z_p95_abs_m": {
+   "ref": 0.002400903224906436,
+   "var": 0.0023470514933034785,
+   "delta": -5.385173160295763e-05
+  },
+  "sim3_diagnostic_scale_gt_per_estimate": {
+   "ref": 1.0063921525488309,
+   "var": 1.0060900217345807,
+   "delta": -0.00030213081425012334
+  },
+  "sim3_diagnostic_ate_rmse_m": {
+   "ref": 0.002971915361145482,
+   "var": 0.0029693847784614535,
+   "delta": -2.5305826840283513e-06
+  },
+  "sim3_diagnostic_ate_p95_m": {
+   "ref": 0.005208866494261539,
+   "var": 0.005208575618693612,
+   "delta": -2.9087556792720126e-07
+  },
+  "max_interpolation_gap_s": {
+   "ref": 0.1,
+   "var": 0.1,
+   "delta": 0.0
+  },
+  "estimate_samples_total": {
+   "ref": 1743,
+   "var": 1743,
+   "delta": 0
+  },
+  "ground_truth_samples_total": {
+   "ref": 1743,
+   "var": 1743,
+   "delta": 0
+  },
+  "timestamp_overlap_samples": {
+   "ref": 1743,
+   "var": 1743,
+   "delta": 0
+  },
+  "timestamp_overlap_ratio": {
+   "ref": 1.0,
+   "var": 1.0,
+   "delta": 0.0
+  }
+ },
+ "result": {
+  "w0.6": "FAIL",
+  "h030": "FAIL"
+ },
+ "failures": {
+  "w0.6": [
+   "ate_translation_max_over_limit"
+  ],
+  "h030": [
+   "ate_translation_max_over_limit"
+  ]
+ },
+ "field": {
+  "note": "两条链按**时间戳**重采样到公共 0.01s 网格后逐点相减；帧索引不可直接配对",
+  "grid_samples": 5807,
+  "sim3_scale_ref_fused": 1.0063921525488313,
+  "sim3_scale_ref_frontend": 0.3061012301718132,
+  "fused_max_mm": {
+   "w0.6": 13.44004741680294,
+   "h030": 13.331299112121608,
+   "delta": -0.1087483046813329
+  },
+  "fused_peak_frame": 469,
+  "fused_field_disp_mm": {
+   "median": 0.08415425466910192,
+   "max": 0.43853545596358323,
+   "argmax": 3966
+  },
+  "frontend_field_disp_mm": {
+   "median": 0.4043029507633985,
+   "max": 4.275738916587219,
+   "argmax": 3663
+  },
+  "proj_at_fused_peak_mm": 0.1090716011553205,
+  "fused_err_mean_mm": {
+   "ref": 2.7302505657436633,
+   "var": 2.7138235460206874,
+   "delta": -0.01642701972297589
+  },
+  "transfer_pointwise_median": 0.1511407606631077,
+  "transfer_at_fused_disp_max": 0.18355579734518748,
+  "transfer_median_ratio_on_bulge": 0.10175046325009968,
+  "bulge_points": 2514,
+  "ratio_max_over_max": 0.10256366549003665
+ }
+}

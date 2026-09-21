@@ -23,6 +23,10 @@ export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH:-}"
 # 逐帧匹配埋点（tracker.py:32 log_match_stats）—— 默认零行为影响，仅在设了路径时写盘。
 # 每跑一个独立文件，避免多次追加进同一 CSV。
 export MAST3R_MATCH_LOG="$OUT/match_log.csv"
+# 白化残差分布埋点（tracker.py:35 log_robust_sample）—— 同样默认零影响。
+# 按列分组统计（pixel/depth 或 ray/dist，见 _column_groups），两组白化尺度差几个数量级，
+# 混在一起会得出错误结论（§28.3）。
+export MAST3R_ROBUST_LOG="$OUT/robust_log.csv"
 S=$SECONDS
 ( cd "$TOOL_DIR" && "$PY" main.py \
     --dataset "$DS" --config "$HERE/${ARM}_${TAG}.yaml" \
