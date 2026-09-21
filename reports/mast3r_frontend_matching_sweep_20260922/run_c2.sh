@@ -6,15 +6,16 @@
 # 产物落 <cell>/frontend_matching_c2_20260922/<arm>/sparse/，**不碰** fusion_v2 对照。
 # 对照 = 盘上现成 <cell>/fusion_v2/sparse。
 #
-# 用法: run_c2.sh <cell相对路径> <arm>
+# 用法: run_c2.sh <cell相对路径> <arm> [输出根名, 默认 frontend_matching_c2_20260922]
 set -uo pipefail
 CELL="$1"; ARM="$2"
+OUTROOT="${3:-frontend_matching_c2_20260922}"
 ROOT=/home/robot/ego_vio_humble
 WF="$ROOT/reports/lighthouse_umi_workflow"
 PY=/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python
 
 G="$WF/$CELL"
-OUT="$G/frontend_matching_c2_20260922/$ARM/sparse"
+OUT="$G/$OUTROOT/$ARM/sparse"
 SES=$(cd "$G" && $PY -c "import json;from pathlib import Path;print(Path(json.load(open('lighthouse_ground_truth_provenance.json'))['clock_mapping']['d405_frames']).parent)")
 VINS_DIR=$($PY -c "
 import sys; sys.path.insert(0,'$ROOT/reports/mast3r_g2_validation_20260919/rerun_tail_v2_20260920')

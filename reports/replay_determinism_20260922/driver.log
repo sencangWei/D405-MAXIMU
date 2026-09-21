@@ -1,0 +1,15 @@
+session=/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024  格内存证=/home/robot/ego_vio_humble/reports/lighthouse_umi_workflow/20260914_validation_v10_holdout_batch2/group1  rate=0.5
+[repeat1] rc=0 用时 152s
+[repeat2] rc=0 用时 134s
+
+=== 两遍之间 ===
+  vio_raw.csv  **不同** ❌  (c842178eb657 vs 70b765388c97)
+  vio_corrected_stream.csv  **不同** ❌  (16ba4d296355 vs 21be645c834b)
+  run_acceptance.json  **不同** ❌  (dcaaa6d70e34 vs dc6eba499492)
+
+=== 与格内存证 docker2_slam/ 比 ===
+  vio_raw.csv  **与格内不同** ❌  (c842178eb657 vs d3c619a5f63b)
+  vio_corrected_stream.csv  **与格内不同** ❌  (16ba4d296355 vs 3e037c1e23f7)
+repeat1     result=PASS cov=0.9909 n=1742 raw_max=  10.37mm corr_max=  12.09mm failures=[]
+repeat2     result=PASS cov=0.9915 n=1742 raw_max=  19.35mm corr_max=  10.96mm failures=[]
+格内存证        result=FAIL cov=0.9590 n=1685 raw_max=  40.74mm corr_max=  40.74mm failures=['runtime watchdog is SLAM_FAILED: corrected_trajectory_jump', 'pose coverage 0.9590 < 0.9800']

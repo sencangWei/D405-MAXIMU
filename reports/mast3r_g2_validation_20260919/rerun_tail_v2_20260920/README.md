@@ -2818,6 +2818,10 @@ rc==4（INFRASTRUCTURE 预检失败）换速率修不了 ⇒ 照旧中止。
 `vins_dir.py` 的 `sorted("docker2_slam_*")` glob 选中，一旦 PASS 就**静默顶替**
 0.5× 那份，改变该格的语义（`rate0p25` < `rate0p5` 字典序在前）。
 
+> ⚠ **§36.2 的补记（见 §36.4）**：那张速率阶梯表是**单跑**对照，而 VINS 回放实测
+> **不确定**（同配置两遍 raw_max 10.37 vs 19.35mm）⇒ 「0.25× 更差」未确立；
+> 成立的只是「无证据显示 0.25× 更好」。阶梯照样不做，但别把该表当反证引用。
+
 ---
 
 ### §36.3 前端 `[1/8]` `matching` 调参面首扫：**第 14 个被封死的族**（09-22）
@@ -2938,3 +2942,59 @@ max 5.217mm   p95 4.973   mean 1.969   （十分位 mean: 0.57 0.64 0.76 0.90 1.
    整条死掉**，日志里只剩 `sed: "s"的未知选项`。改用**每格各写一份日志文件**。
 2. **`> "$OUT/../fusion.log"`** —— bash **不预归一化**路径，OS 逐段解析，而 `sparse`
    此刻还不存在 ⇒ `..` 直接 ENOENT，全链 **0s 挂掉**（rc=1）。先 `mkdir -p "$OUT"`。
+
+---
+
+### §36.4 ★★ VINS 回放**不是确定性的** —— 兼定 C2 的噪声底（09-22）
+
+**这一条影响面比它看起来大**：它决定了哪些 A/B 结论站得住、哪些站不住。
+
+#### 实测：同一条 take、同配置、同速率，连跑两遍
+
+`holdout_b2/g1`（session `d405_720p_rgb_stereo_ir_20260914_175024`，`--rate 0.5`，
+其余参数逐字相同）。脚本 `reports/replay_determinism_20260922/run_determinism.sh`：
+
+| | result | coverage | raw 样本 | **raw max** | **corr max** |
+|---|---|---|---|---|---|
+| repeat1 | PASS | 0.9909 | 1742 | **10.37mm** | 12.09mm |
+| repeat2 | PASS | 0.9915 | 1742 | **19.35mm** | 10.96mm |
+| 该格 `docker2_slam/` 存证 | FAIL | 0.9590 | 1685 | 40.74mm | 40.74mm |
+
+`vio_raw.csv` / `vio_corrected_stream.csv` / `run_acceptance.json` **三份都不同**
+⇒ **raw_max 两遍差 87%**。机理：回放是**实时**的，宿主时序（丢帧、IMU 调度）
+会改变实际喂进去的流，不是纯函数。★ 顺带查实：该格 `docker2_slam/` 里存的
+是 **1.0× 的 FAIL 跑**（`replay_rate: 1.0`、`failures=[corrected_trajectory_jump,
+pose coverage 0.9590<0.98]`），**不是** 0.5× 的 PASS 跑 —— 而 `vins_dir.py`
+要求 PASS ⇒ 该格的台架选目录会跳过它。
+
+#### 对照：MASt3R 融合链**是**确定的
+
+同臂（`match_wide`，`b5/g4`）**整条重跑一遍**（`run_c2.sh ... c2_repeat_check`）：
+
+```
+trajectory_fused.csv           逐字节相同 ✅
+trajectory_fused_unsmoothed.csv 逐字节相同 ✅
+mast3r/trajectory_frames.csv    逐字节相同 ✅
+mast3r/trajectory_graph.csv     逐字节相同 ✅
+precision.json / graph_fusion_report.json  归一化内嵌路径后**逐键相同** ✅
+```
+
+且 C1（前端单跑）与 C2（全链）两次**独立**运行的前端产物也逐字节相同。
+⇒ **`[1/8]`→`[9/9]`+eval 全链确定；只有 VINS 回放注入的那条输入流不定。**
+
+#### 四条后果
+
+1. **工作流 B 的「默认产物与改动前逐字节相同」这条验证，在原理上做不到**
+   —— 不是漏做。B 的默认路径不变改由**可证的 argv 恒等**保证：
+   `VINS_RATE` 未设时 `--rate "${VINS_RATE:-0.5}"` 逐字展开为 `--rate 0.5`，
+   且新增的 rc 捕获/物种判别全在 `python3` 调用**之后**，不参与其输入。
+2. **§36.2 的速率阶梯是单跑对照，被这个噪声底削弱**：0.5× 的 `corr_max`
+   历次观测 = 10.38 / 10.96 / 12.09mm（**散度 ~1.7mm**），raw_max = 10.37 / 14.73 / 19.35mm（**散度 ~9mm**）。
+   ⇒ 「0.25× 的 14.37 更差」**并未被确立**；能确立的只是「**没有任何证据**显示 0.25× 更好」。
+   **阶梯仍然不做**（结论不变，但理由要写准：缺证据，不是有反证）。
+3. **C2（§36.3）的 Δ 表不受影响**：① 融合链本身逐位可复现（上表）；
+   ② 两臂**复用同一份** `docker2_slam/` 的 VINS 轨迹（`run_c2.sh` 只换 `MAST3R_SLAM_CONFIG`）
+   ⇒ Δ 干净地只隔离前端，**不含回放噪声**。§36.3 的判决维持。
+4. **凡拿 VINS 侧数字做跨跑比较的旧结论，都带着这个噪声底。**
+   尤其是任何 ≤1mm 量级的 VINS 差异、以及「某次跑 FAIL 是因为 X」这类单跑归因
+   —— 需要重复跑才能定。这条与既有的 22 臂普查纪律（[[survey-22-arms-before-concluding]]）同向。
