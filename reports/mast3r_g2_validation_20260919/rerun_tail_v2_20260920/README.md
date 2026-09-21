@@ -2451,6 +2451,27 @@ primary_shape_not_independently_supported = (
 若要问"若不中止精度够不够"——同格 `fusion_current`（另一套参数）是 max 22.3/20.4mm，
 **反正过不了 10mm 门**。⇒ 门在这里**没有毁掉任何好结果**，它毁掉的是**产物与可观测性**。
 
+### §33.4b ★ 独立旁证：门自带的测试就是一份行为规格，数字逐格取自真实 cell
+
+`tests/test_assess_mast3r_fusion_input_quality.py`（**此前未被 git 跟踪**，本次一并备份）
+把这四条臂的行为写死，而且**输入数字是从真实 cell 抄来的**：
+
+| 测试名 | 输入 | 期望 | 对应的真实格（实测）|
+|---|---|---|---|
+| `test_rejects_only_when_both_independent_checks_fail` | stereo 0.0042, 分歧 28mm | REJECT | 旧臂 `severe_shape_disagreement` |
+| `test_rejects_unobservable_onboard_branch_even_when_stereo_is_consistent` | stereo **0.0028**, 分歧 **112mm** | REJECT **arm A** | `c4/g1`（stereo 3.21 一致 / 分歧 164.9）|
+| `test_keeps_primary_branch_when_disagreeing_position_branch_is_not_used` | stereo 0.0028, 分歧 **52.6mm**, `lw=0` | **PASS** | **`b5/g2`（实测 52.44）** |
+| `test_rejects_unsupported_primary_shape_when_all_fallback_checks_are_weak` | stereo **0.00393**, 分歧 **80.5mm**, `lw=0` | REJECT **arm B** | **`b5/g3`（实测 3.9337 / 80.61）** |
+
+**这份规格与我上面测出来的 22 格结果逐格吻合**：
+- `b5/g2` 分歧 52.44mm 而 `lw=0` ⇒ 规格说 **PASS**，我测的 `fusion_v2` 正是 **PASS** ✅
+- `b5/g3` stereo 3.9337/分歧 80.61 ⇒ 规格说 **REJECT**，我测的 `fusion_v2/fusion_v3` 正是 **REJECT** ✅
+- §33.4 那条「反直觉：stereo 一致也可能被拒」，作者的测试名**字面就写着**
+  `even_when_stereo_is_consistent` —— 这个特殊性是**已知且刻意**的，不是疏漏。
+
+⇒ **结论闭合：这不是 bug、不是静默回归，是一个有测试背书的策略选择**；
+它的后果（4/22 格零产物）是**设计代价**，要不要接受由用户在 §33.6 拍板。
+
 ### §33.5 `docker2_slam_rate0p5` 兜底 + `vins_dir.py` + `fusion_v3` 重跑
 
 - **闸 1 的真解法在盘上**：`holdout_batch2` 的两条 take，1.0× 回放 FAIL（max 修正步长
