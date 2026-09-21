@@ -52,8 +52,9 @@ def main():
     rows = []
     print(f"前端 C-as-weight A/B（基线 {REF}=floor 1.0，逐字节=上游）\n")
     print(f"{'cell':<44}{'arm':>7}{'tag':>7}{'MAX':>9}{'@帧':>7}{'RMSE':>8}"
-          f"{'ΔMAX':>9}{'ΔRMSE':>9}{'proj@峰':>9}{'|Δ|@峰':>9}{'Δrot°':>8}")
-    print("-" * 122)
+          f"{'p95':>8}{'>10mm':>7}{'ΔMAX':>9}{'ΔRMSE':>9}"
+          f"{'Δp95':>9}{'Δ>10mm':>9}{'proj@峰':>9}{'|Δ|@峰':>9}{'Δrot°':>8}")
+    print("-" * 148)
     for batch, group in CELLS:
         gt_f = ROOT / batch / group / "lighthouse_body_ground_truth.csv"
         if not gt_f.exists():
@@ -82,8 +83,11 @@ def main():
                 evec = (s * (P @ R.T) + tt - gt) * 1000.0
                 err = np.linalg.norm(evec, axis=1)
                 rmse, mx = float(np.sqrt((err ** 2).mean())), float(err.max())
+                p95 = float(np.percentile(err, 95))
+                over10 = float((err > 10.0).mean())
                 if base is None:
                     base = (P, evec, Q)
+                    ref95, ref10 = p95, over10
                     k = int(np.argmax(err))
                 ref[tag] = (mx, rmse)
                 n = min(len(P), len(base[0]), len(base[1]))
@@ -98,10 +102,14 @@ def main():
                 dmx, drm = mx - ref[REF][0], rmse - ref[REF][1]
                 star = "  ★动了" if (tag != REF and mag[k] >= 3.0) else ""
                 print(f"{batch[-30:] + '/' + group:<44}{arm:>7}{tag:>7}{mx:>9.2f}"
-                      f"{k:>7}{rmse:>8.2f}{dmx:>+9.2f}{drm:>+9.2f}"
+                      f"{k:>7}{rmse:>8.2f}{p95:>8.2f}{over10*100:>6.1f}%"
+                      f"{dmx:>+9.2f}{drm:>+9.2f}{p95 - ref95:>+9.2f}"
+                      f"{(over10 - ref10)*100:>+8.1f}%"
                       f"{proj[k]:>+9.2f}{mag[k]:>9.2f}{drot:>8.3f}{star}")
                 rows.append(dict(batch=batch, group=group, arm=arm, tag=tag, mx=mx,
-                                 rmse=rmse, k=k, d_max=dmx, d_rmse=drm,
+                                 rmse=rmse, p95=p95, over10=over10, k=k,
+                                 d_max=dmx, d_rmse=drm,
+                                 d_p95=p95 - ref95, d_over10=over10 - ref10,
                                  proj_peak=float(proj[k]), mag_peak=float(mag[k]),
                                  drot=drot, scale=s))
             print()
@@ -129,9 +137,18 @@ def main():
         if len(g) < 3:
             continue
         d = np.array([r["d_max"] for r in g]); dr = np.array([r["d_rmse"] for r in g])
+        dp = np.array([r["d_p95"] for r in g]); do = np.array([r["d_over10"] for r in g])
+        pp = np.array([r["proj_peak"] for r in g])
         print(f"  {tag:>6}  n={len(g)}  MAX 改善 {int((d < 0).sum())}/{len(g)}"
               f"（中位 {np.median(d):+.2f}mm）   RMSE 改善 {int((dr < 0).sum())}/{len(g)}"
               f"（中位 {np.median(dr):+.2f}mm）")
+        # ★ 场口径（§23.3 的教训）：MAX 是单帧极值、误差一重分配它就换位置，
+        #   所以判这个杠杆要看分布尾部与超标帧占比，不能只看 MAX。
+        print(f"  {'':>6}        p95 改善 {int((dp < 0).sum())}/{len(g)}"
+              f"（中位 {np.median(dp):+.2f}mm）   超标>10mm 帧占比 改善 "
+              f"{int((do < 0).sum())}/{len(g)}（中位 {np.median(do)*100:+.1f}pp）")
+        print(f"  {'':>6}        ★ proj@峰 为正（沿误差**减小**方向）"
+              f" {int((pp > 0).sum())}/{len(g)}   中位 {np.median(pp):+.2f}mm")
 
 
 if __name__ == "__main__":
