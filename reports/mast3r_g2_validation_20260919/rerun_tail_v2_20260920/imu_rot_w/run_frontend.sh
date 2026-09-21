@@ -20,6 +20,9 @@ mkdir -p "$OUT"
 export CUDA_HOME="$CUDA_ROOT"
 export PATH="$CUDA_HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH:-}"
+# 逐帧匹配埋点（tracker.py:32 log_match_stats）—— 默认零行为影响，仅在设了路径时写盘。
+# 每跑一个独立文件，避免多次追加进同一 CSV。
+export MAST3R_MATCH_LOG="$OUT/match_log.csv"
 S=$SECONDS
 ( cd "$TOOL_DIR" && "$PY" main.py \
     --dataset "$DS" --config "$HERE/${ARM}_${TAG}.yaml" \

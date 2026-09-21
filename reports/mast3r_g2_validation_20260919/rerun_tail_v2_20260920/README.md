@@ -1322,3 +1322,97 @@ sparse 根本没有那两个键 ⇒ `cfg.get(...,0.0)` ⇒ 守卫 `>0.0` 不成�
 `lighthouse_body_ground_truth.csv`），门限 = 官方 `evaluate_slam_ground_truth.py`
 （max≤10mm、w10≥0.95、rot≤2.0°）。上游 `[1/8]`–`[7/8]` 三族逐字节相同（§16.2），
 唯一变量确实是 `[8/9]` 的命令行。
+
+---
+
+## 20. ★★ 猎「第三个静默失效的旋钮」：机械穷举配置面（干净否定）+ `C_conf` 门结案
+
+§13–§19 把 `[8/9]` 整族扫死了。剩下的方向只有上游 `[1/8]`。在动它之前，先做一件
+**本工程历史上两次最大突破都不是调参、而是发现旋钮根本没生效**（`use_calib` 循环门控、
+`motion_keyframe_*` 被 `limit > 0.0` 静默关掉）所指向的事：**把配置面穷举一遍**。
+
+### 20.1 机械扫描：配置面**没有新的死键**（干净否定）
+
+把 `config/base.yaml` + `mast3r_slam_d405_offline.yaml` + `..._motion_kf_tight.yaml`
+里的 **65 个键**逐个去 `mast3r_slam/` + `main.py` 里找消费点（排除 `__pycache__`）：
+
+| 类别 | 键 | 判决 |
+|---|---|---|
+| 🔴 全仓零命中 | `use_cuda` | `local_opt` 下的死键，但 **upstream `MASt3R-SLAM-original` 同样如此** ⇒ 不是我们的回归 |
+| ⚠ 看似死键 | `window_size` | `global_opt.py:31` 只**赋值**、无消费点；且上游把它设成 **`1e+6`**（= 故意等效关闭滑窗）⇒ **上游有意为之，不是 bug** |
+| ✅ 其余 63 个 | — | 均有真实消费点 |
+
+★ 顺带确认：**`use_calib`/`motion_keyframe` 两次突破都不是「死键」**，而是**键被读了、
+但守卫条件恒假** ⇒ 纯静态扫描抓不到这一类，真正的猎场是**守卫**。
+
+### 20.2 那整块 `stereo_*`（度量尺度机器）是**配置里明确关掉的**
+
+`mast3r_slam_d405_offline.yaml` 与我们的 `tight/sparse` 变体里，主开关**全是 `False`**：
+
+```
+stereo_pointmap_scale_prior / stereo_fix_pose_scale / stereo_pointmap_depth_anchor /
+stereo_preserve_keyframe_pointmap / stereo_keyframe_pnp / stereo_keyframe_3d_translation_refine
+```
+
+⇒ §18.5 的「`tight_kfoff` ≡ `sparse` 逐位相同」有了**直接解释**：那一块在两边都没开。
+⚠ 这**推翻了「未接线的 stereo 机器」这个猜想** —— 它是显式关闭，不是守卫恒假。
+
+### 20.3 ★★ `C_conf`：第三个「设成结构性空转」的旋钮 —— 且**这族结案**
+
+`C_conf` 在 `[1/8]`/`[7/8]` **共 5 处**被读（`tracker.py:166,167,277,278`、
+`global_opt.py:298,342`），是**匹配置信度门**；`tracking.C_conf` 与 `local_opt.C_conf`
+**都继承 `base.yaml` 的 `0.0`**，而模型构造打印 **`conf_mode=('exp', 1, inf)` ⇒ `C ≥ 1`**
+⇒ `Cf > 0.0` **恒真、一个匹配都拒绝不了**。**和 `motion_keyframe_*` 是同一类。**
+
+#### 实测（`MAST3R_MATCH_LOG` 埋点，逐帧，v10_batch/g1 tight）
+
+★ 先确认：`base0`（**开着埋点**）与 `w0.6` 的 `dataset_full.txt` 与 `trajectory_frames.csv`
+**逐位相同**（`84ac52ccb93f8798` / `a700b8f8bb850022`）⇒ **前端确定性再确认 + 埋点零行为影响**。
+
+| 阈值 | 存活匹配占比（中位） | match_frac 中位 | match_frac 最小 | 重定位 | 判决 |
+|---|---|---|---|---|---|
+| `0.0`（现役） | 1.000 | 0.633 | 0.307 | 0 | 门**恒真** |
+| `1.02` | 0.636 ⇒ **C≤1.02 占 36.4%** | 0.482 | **0.0101** | 1 | 擦到重定位底 |
+| `1.10` | 0.537 ⇒ **C≤1.10 占 46.3%** | 0.410 | **0.0062** | 崩 | 前端**炸了**（RMSE 11.65→**76.54**） |
+| `1.50` | 0 ⇒ **C≤1.50 占 100%** | **0** | 0 | **90** | 从第 23 帧起**再也回不来** |
+
+★ **置信度分布挤在 `[1.0, 1.5]` 这条 0.5 宽的带里**：36% 紧贴地板（`[1.00,1.02]`），
+46% 在 `[1.0,1.10]`，**几乎全部 ≤ 1.5** ⇒ 任何有效阈值都离「打断跟踪」只差一点
+（重定位门槛 `min_match_frac: 0.05`）—— **这是刀刃式旋钮**。
+
+#### 鼓包判据（预先定死：≥3mm）
+
+| 臂 | `|Δ|@峰` | `proj@峰` | `形状|Δ|@峰` | `ΔMAX` | 判决 |
+|---|---|---|---|---|---|
+| `uC102`（C>1.02） | **2.20mm** | **+0.78mm** | 1.48mm | −0.71mm | ❌ 差 3mm 判据（4× 之内） |
+| `uC110` | 1.85mm | +0.04mm | 61.72mm | +92.01mm | ❌ 前端已崩，臂无效 |
+
+⇒ **第 11 个死族**。但——**方向是对的**（`proj@峰 = +0.78mm > 0`，即拒掉垃圾尾部确实
+把鼓包往真值推），**只是硬门只能"整条拒掉"，而代价是 match_frac 直坠重定位底**
+⇒ 硬阈值这条路**幅度上限就在 2mm 量级**。
+
+### 20.4 ★★★ 同一份代码指出真正的缺口：**`C` 从没当过权重**
+
+```
+tracker.py:607-608   sqrt_info_ray  = 1/sigma_ray  * valid * sqrt(Qk)
+tracker.py:652-653   sqrt_info_pixel= 1/sigma_pixel* valid * sqrt(Qk)
+```
+
+⇒ **每个残差只按 `valid`（硬 0/1）× `sqrt(Qk)` 加权；`C`（置信度）从头到尾只做硬门，
+从来没进过权重。** 而 **36% 的匹配坐在 `C ≤ 1.02` 的垃圾尾部上，现在和好匹配等权全速在拉。**
+
+这几行在 **`tracker.py` + `nonlinear_optimizer.py`（纯 Python）**，**不经 CUDA 后端**
+⇒ 改权重**不用重建**（与 §15.1 同一条事实）。
+
+★ 这就是 §20.3 那个 `+0.78mm` 的来源与它 4× 不足的解释：**硬门只能二选一
+（全信任 or 全丢弃，丢弃就崩 match_frac）；`C` 应当按比例**给信息权重**，
+这样同一份偏好不必以匹配数为代价。** 这是 §20 之后唯一被代码直接指出的候选。
+
+产物：`imu_rot_w/{c_conf_stage_a.py,c_conf_stage_a_rows.json}`、
+`imu_rot_w/{tight,sparse}_{tC15,lC15,C15,uC102,uC110}.yaml`（逐个 diff 核对只差目标行）、
+`imu_rot_w/{sweep_c15.sh,sweep_cgate2.sh}`、`run_frontend.sh`（新增 `MAST3R_MATCH_LOG`，每跑独立文件）、
+`out/<…>/{base0,uC102,uC110}/match_log.csv`。
+⚠ `out/` 与 `*.log` 按仓库既有惯例**不进库**（见 `rerun_tail_v2_20260920/.gitignore`）⇒
+上表数字的载体是 `c_conf_stage_a_rows.json`（进库）+ 本节的 CDF 表；**要重算 CDF 就用
+`run_frontend.sh` 重跑**（配置在库、每跑独立 `match_log.csv`，前端对同一输入逐位确定）。
+⚠ 口径：本节全部是 **`[1/8]` 前端轨迹**（MASt3R 单位，Sim(3) 对齐），**不是融合链**。
