@@ -1,0 +1,454 @@
+{
+  "schema": "umi_docker2_run_acceptance_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "failure_scope": "SLAM",
+  "runtime_error": null,
+  "runtime_watchdog": {
+    "schema_version": 2,
+    "state": "SLAM_HEALTHY",
+    "product_usable": true,
+    "elapsed_s": 141.93822281699977,
+    "streams": {
+      "raw": {
+        "samples": 1742,
+        "last_timestamp_s": 1789379486.557152,
+        "age_s": 0.00043453500256873667
+      },
+      "corrected": {
+        "samples": 1739,
+        "last_timestamp_s": 1789379486.557152,
+        "age_s": 0.0
+      }
+    },
+    "raw_corrected_timestamp_skew_s": 0.0,
+    "max_raw_step_m": 0.010374677886208541,
+    "max_raw_step_limit_m": 0.05,
+    "max_corrected_step_m": 0.01208813419182562,
+    "last_allowed_corrected_step_m": 0.03,
+    "thresholds": {
+      "startup_grace_s": 3.0,
+      "stale_timeout_s": 0.5,
+      "max_stream_skew_s": 0.1,
+      "min_samples_healthy": 10,
+      "min_absolute_jump_m": 0.03,
+      "max_raw_step_m": 0.05,
+      "raw_step_multiplier": 3.5
+    },
+    "failures": []
+  },
+  "ros_domain_id": 77,
+  "ros_localhost_only": true,
+  "benchmark_environment": {
+    "schema_version": 1,
+    "result": "PASS",
+    "thresholds": {
+      "max_load_1m_per_cpu": 0.75,
+      "max_cpu_pressure_some_avg10_percent": 10.0,
+      "max_io_pressure_full_avg10_percent": 10.0,
+      "max_memory_pressure_full_avg10_percent": 1.0,
+      "min_memory_available_gib": 8.0,
+      "max_conflicting_processes": 0
+    },
+    "snapshot": {
+      "captured_at_utc": "2026-09-21T22:06:06.727622+00:00",
+      "hostname": "robot-MS-7E19",
+      "kernel_release": "6.8.0-138-generic",
+      "cpu_count": 24,
+      "load_average": {
+        "one_minute": 0.65234375,
+        "five_minutes": 1.54931640625,
+        "fifteen_minutes": 3.88134765625,
+        "one_minute_per_cpu": 0.027180989583333332
+      },
+      "memory_available_gib": 55.32491683959961,
+      "pressure": {
+        "cpu": {
+          "some": {
+            "avg10": 0.2,
+            "avg60": 0.6,
+            "avg300": 1.79,
+            "total": 7637181468.0
+          },
+          "full": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 0.0
+          }
+        },
+        "memory": {
+          "some": {
+            "avg10": 0.01,
+            "avg60": 0.03,
+            "avg300": 0.0,
+            "total": 60925962.0
+          },
+          "full": {
+            "avg10": 0.01,
+            "avg60": 0.03,
+            "avg300": 0.0,
+            "total": 54710699.0
+          }
+        },
+        "io": {
+          "some": {
+            "avg10": 0.09,
+            "avg60": 0.63,
+            "avg300": 0.57,
+            "total": 2215716183.0
+          },
+          "full": {
+            "avg10": 0.08,
+            "avg60": 0.57,
+            "avg300": 0.53,
+            "total": 2121301732.0
+          }
+        }
+      },
+      "conflicting_processes": [],
+      "resource_gated_processes": []
+    },
+    "checks": [
+      {
+        "name": "load_1m_per_cpu",
+        "value": 0.027180989583333332,
+        "operator": "<=",
+        "threshold": 0.75,
+        "result": "PASS"
+      },
+      {
+        "name": "cpu_pressure_some_avg10_percent",
+        "value": 0.2,
+        "operator": "<=",
+        "threshold": 10.0,
+        "result": "PASS"
+      },
+      {
+        "name": "io_pressure_full_avg10_percent",
+        "value": 0.08,
+        "operator": "<=",
+        "threshold": 10.0,
+        "result": "PASS"
+      },
+      {
+        "name": "memory_pressure_full_avg10_percent",
+        "value": 0.01,
+        "operator": "<=",
+        "threshold": 1.0,
+        "result": "PASS"
+      },
+      {
+        "name": "memory_available_gib",
+        "value": 55.32491683959961,
+        "operator": ">=",
+        "threshold": 8.0,
+        "result": "PASS"
+      },
+      {
+        "name": "conflicting_processes",
+        "value": 0,
+        "operator": "<=",
+        "threshold": 0,
+        "result": "PASS"
+      }
+    ],
+    "failures": []
+  },
+  "provenance": {
+    "files": {
+      "runner": {
+        "path": "/home/robot/ego_vio_humble/scripts/test_vins_auto_loop.py",
+        "sha256": "4a174a2076bdd1f0530fefbfa5d881dc231dfbdd3a65468164ded1023d27a996"
+      },
+      "run_config": {
+        "path": "/home/robot/ego_vio_humble/reports/replay_determinism_20260922/repeat1/vins_auto_loop_config.yaml",
+        "sha256": "5dfd24118fbdfc8664d97654cc873aa249c28ea04d2e9f8efa9a04e9f66e0545"
+      },
+      "left_calibration": {
+        "path": "/home/robot/ego_vio_humble/reports/replay_determinism_20260922/repeat1/left.yaml",
+        "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+      },
+      "right_calibration": {
+        "path": "/home/robot/ego_vio_humble/reports/replay_determinism_20260922/repeat1/right.yaml",
+        "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+      },
+      "vins_executable": {
+        "path": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/vins_fusion_ros2_node",
+        "sha256": "5af167654b949e9944d93dc972d431f46b7a4fde4ffa976439ad1f5dcd950a3a"
+      },
+      "loop_executable": {
+        "path": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/loop_fusion/loop_fusion_node",
+        "sha256": "8c48398c6ac6f17d8753652cc1ec11507f1bfbaa0081c74dd00ddb743209464d"
+      },
+      "replay_executable": {
+        "path": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/db3_replay_cpp",
+        "sha256": "41b380578fe28dd6c9a60b85df371925265dd564bcb060d3e0502d43ae283798"
+      },
+      "capture_acceptance": {
+        "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024/acceptance.json",
+        "sha256": "a22606a0d4a3003f1a1c9708adfb8311c59d59cc9ece6feed833ebe58f2dde4d"
+      },
+      "camera_timestamps": {
+        "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024/d405_frames.csv",
+        "sha256": "5d0a4dab51758d7b5c55d201005558061422bdf202d7170f266c6620a8145556"
+      },
+      "imu_samples": {
+        "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024/external_imu/imu.bin",
+        "sha256": "5cc5b9c68e7c64188263c14bb2eed506c7a3fd7d3b5601ef13e254d234f35957"
+      }
+    },
+    "git_revisions": {
+      "ego_vio_humble": "c8e55d2a4d089f91e3b9100fe34ae7705af12b28",
+      "vins_fusion_ros2": "c8e55d2a4d089f91e3b9100fe34ae7705af12b28"
+    },
+    "source_db3_hashed": false,
+    "source_db3_identity": "capture acceptance hash plus immutable manifest"
+  },
+  "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024",
+  "raw_trajectory": "/home/robot/ego_vio_humble/reports/replay_determinism_20260922/repeat1/vio_raw.csv",
+  "corrected_trajectory": "/home/robot/ego_vio_humble/reports/replay_determinism_20260922/repeat1/vio_corrected_stream.csv",
+  "replay_rate": 0.5,
+  "replay_backend": "cpp",
+  "imu_accel_calibration": null,
+  "raw_odometry_samples": 1742,
+  "corrected_odometry_samples": 1739,
+  "camera_frames": 1800,
+  "camera_frame_count_source": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024/d405_frames.csv",
+  "expected_pose_samples_after_skip": 1755,
+  "pose_coverage": 0.9908831908831909,
+  "automatic_loop_accepts": 6,
+  "automatic_loop_rejects": 19699,
+  "automatic_correction_rejects": 0,
+  "automatic_spatial_rejects": 0,
+  "min_loop_spatial_support": 0.0,
+  "max_loop_candidates": 24,
+  "loop_retrieval": {
+    "frames": 1209,
+    "returned": {
+      "min": 2,
+      "max": 24,
+      "mean": 23.790736145574854
+    },
+    "eligible": {
+      "min": 0,
+      "max": 24,
+      "mean": 19.602150537634408
+    },
+    "zero_eligible_frames": 27,
+    "top_score": {
+      "min": 0.0228,
+      "max": 0.3469,
+      "mean": 0.13900440860215052
+    }
+  },
+  "loop_stage_counts": {
+    "pending": 113,
+    "inconsistent": 0,
+    "correction_rejected": 0,
+    "cooldown": 5
+  },
+  "pnp_quality": {
+    "samples": 19829,
+    "finite_samples": 3829,
+    "geometry_pass_samples": 161,
+    "accepted_edges": [
+      {
+        "current": 95,
+        "matched": 1,
+        "inliers": 24,
+        "rmse_px": 1.754,
+        "p95_px": 2.824,
+        "current_hull_fraction": 0.3208,
+        "old_hull_fraction": 0.3194
+      },
+      {
+        "current": 109,
+        "matched": 5,
+        "inliers": 22,
+        "rmse_px": 2.03,
+        "p95_px": 3.35,
+        "current_hull_fraction": 0.2119,
+        "old_hull_fraction": 0.2121
+      },
+      {
+        "current": 121,
+        "matched": 6,
+        "inliers": 22,
+        "rmse_px": 2.412,
+        "p95_px": 3.717,
+        "current_hull_fraction": 0.3262,
+        "old_hull_fraction": 0.33
+      },
+      {
+        "current": 990,
+        "matched": 844,
+        "inliers": 16,
+        "rmse_px": 1.768,
+        "p95_px": 3.212,
+        "current_hull_fraction": 0.2339,
+        "old_hull_fraction": 0.184
+      },
+      {
+        "current": 1134,
+        "matched": 1037,
+        "inliers": 17,
+        "rmse_px": 2.193,
+        "p95_px": 3.638,
+        "current_hull_fraction": 0.3612,
+        "old_hull_fraction": 0.3627
+      },
+      {
+        "current": 1157,
+        "matched": 1060,
+        "inliers": 17,
+        "rmse_px": 2.407,
+        "p95_px": 4.594,
+        "current_hull_fraction": 0.4042,
+        "old_hull_fraction": 0.409
+      }
+    ]
+  },
+  "pose_graph_health": {
+    "optimizations": 5,
+    "usable_optimizations": 5,
+    "rejected_optimizations": 0
+  },
+  "raw_trajectory_diagnostics": {
+    "max_step_m": 0.010374677886208541,
+    "z_span_m": 0.2953626964566319,
+    "endpoint_delta_m": 0.40139125798876035
+  },
+  "corrected_trajectory_diagnostics": {
+    "max_step_m": 0.012088134191825618,
+    "z_span_m": 0.29526185626549806,
+    "endpoint_delta_m": 0.4016056287416678
+  },
+  "z_span_retention_ratio": 0.9996585886019339,
+  "loop_input_drop_events": 0,
+  "estimator_keyframe_queue_drop_events": 0,
+  "failures": [],
+  "health": {
+    "schema_version": 3,
+    "state": "SLAM_HEALTHY",
+    "product_usable": true,
+    "thresholds": {
+      "min_pose_coverage": 0.98,
+      "min_true_elevation_retention": 0.9,
+      "min_absolute_jump_limit_m": 0.03,
+      "max_raw_step_limit_m": 0.05,
+      "raw_step_multiplier": 3.5
+    },
+    "checks": [
+      {
+        "name": "declared_run_result",
+        "result": "PASS",
+        "measured": "PASS",
+        "threshold": "PASS"
+      },
+      {
+        "name": "failure_scope",
+        "result": "PASS",
+        "measured": "SLAM",
+        "threshold": "SLAM"
+      },
+      {
+        "name": "declared_failures_empty",
+        "result": "PASS",
+        "measured": [],
+        "threshold": []
+      },
+      {
+        "name": "runtime_complete",
+        "result": "PASS",
+        "measured": null,
+        "threshold": null
+      },
+      {
+        "name": "runtime_watchdog",
+        "result": "PASS",
+        "measured": "SLAM_HEALTHY",
+        "threshold": "SLAM_HEALTHY"
+      },
+      {
+        "name": "trajectory_sample_counts",
+        "result": "PASS",
+        "measured": {
+          "raw": 1742,
+          "corrected": 1739,
+          "expected": 1755
+        },
+        "threshold": "all positive integers"
+      },
+      {
+        "name": "pose_coverage_consistency",
+        "result": "PASS",
+        "measured": {
+          "reported": 0.9908831908831909,
+          "calculated": 0.9908831908831909
+        },
+        "threshold": {
+          "absolute_tolerance": 1e-12
+        }
+      },
+      {
+        "name": "pose_coverage",
+        "result": "PASS",
+        "measured": 0.9908831908831909,
+        "threshold": {
+          "minimum": 0.98
+        }
+      },
+      {
+        "name": "loop_input_drop_events",
+        "result": "PASS",
+        "measured": 0,
+        "threshold": {
+          "maximum": 0
+        }
+      },
+      {
+        "name": "estimator_keyframe_queue_drop_events",
+        "result": "PASS",
+        "measured": 0,
+        "threshold": {
+          "maximum": 0
+        }
+      },
+      {
+        "name": "pose_graph_rejected_optimizations",
+        "result": "PASS",
+        "measured": 0,
+        "threshold": {
+          "maximum": 0
+        }
+      },
+      {
+        "name": "raw_trajectory_jump",
+        "result": "PASS",
+        "measured": 0.010374677886208541,
+        "threshold": {
+          "maximum_m": 0.05
+        }
+      },
+      {
+        "name": "corrected_trajectory_jump",
+        "result": "PASS",
+        "measured": 0.012088134191825618,
+        "threshold": {
+          "maximum_m": 0.0363113726017299
+        }
+      },
+      {
+        "name": "true_elevation_retention",
+        "result": "PASS",
+        "measured": 0.9996585886019339,
+        "threshold": {
+          "minimum": 0.9
+        }
+      }
+    ],
+    "failures": []
+  }
+}
