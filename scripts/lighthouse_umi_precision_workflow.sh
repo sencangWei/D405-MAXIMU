@@ -66,12 +66,58 @@ run_slam() {
         sleep 5
     done
     session="$(<"$capture_dir/d405_session.txt")"
+    # 基线速率不变（VINS_RATE 未设 => 0.5）。这个出口只是给运维一个逃生阀：
+    # 实测 1.0× 会让回放丢帧（同一条 take 上 raw 单帧步长 14.7mm -> 40.7mm、
+    # 覆盖率 0.993 -> 0.959、修正完全失效），所以**不是**「1.0× 先跑省时间」。
+    set +e
     python3 "$ROOT_DIR/scripts/test_vins_auto_loop.py" "$session" \
         --config "$CONFIG" \
         --imu-shift-ms 0 \
-        --rate 0.5 \
+        --rate "${VINS_RATE:-0.5}" \
         --expect-loop any \
         --out-dir "$output"
+    local slam_status=$?
+    set -e
+    # rc==3 是「VINS 验收 FAIL」（可诊断的 SLAM 质量问题）；
+    # rc==4 是 INFRASTRUCTURE 预检失败（换速率修不了，必须照旧中止）。
+    if (( slam_status == 3 )); then
+        vins_failure_diagnosis "$output"
+    fi
+    return "$slam_status"
+}
+
+# 把 run_acceptance.json 归成两种失败物种并打印明确处置建议。
+# 依据（同一条 take g1 的 A/B）：1.0× max_raw_step 40.74mm / coverage 0.9590 /
+# corrected==raw（修正没工作）vs 0.5× 14.73mm / 0.9926 / 10.38mm（修正有效）
+# => 高步长 + 高覆盖 = **回放压力**（降速可用）；
+#    collective_b4/g3 在 0.5× 就已 4.36m 发散 / coverage 0.559 = **发散**（与速率无关）。
+vins_failure_diagnosis() {
+    local output="$1"
+    python3 - "$output" <<'PY' || true
+import json
+import sys
+from pathlib import Path
+
+report = Path(sys.argv[1]) / "run_acceptance.json"
+if not report.exists():
+    print("VINS 验收 FAIL（无 run_acceptance.json，无法判别物种）", file=sys.stderr)
+    raise SystemExit(0)
+j = json.loads(report.read_text(encoding="utf-8"))
+raw = (j.get("raw_trajectory_diagnostics") or {}).get("max_step_m")
+coverage = j.get("pose_coverage")
+print(f"VINS 验收 FAIL: {j.get('failures')}", file=sys.stderr)
+if raw is None or coverage is None:
+    print("  （缺诊断字段，无法判别物种）", file=sys.stderr)
+    raise SystemExit(0)
+print(f"  rate={j.get('replay_rate')}  raw max_step={raw * 1000:.2f}mm  coverage={coverage:.4f}",
+      file=sys.stderr)
+if raw < 0.1 and coverage >= 0.90:
+    print("  物种=回放压力型（步长小、覆盖高）=> 降速重跑可能有效: VINS_RATE=0.25 重跑本条",
+          file=sys.stderr)
+else:
+    print("  物种=发散型（步长/覆盖已越界）=> **与回放速率无关，降速重试无意义**",
+          file=sys.stderr)
+PY
 }
 
 verify_calibration() {
