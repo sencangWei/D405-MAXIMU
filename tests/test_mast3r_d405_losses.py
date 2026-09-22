@@ -9,7 +9,11 @@ TRAINING_REPO = Path("/home/robot/ego_pipeline/work/toolchains/MASt3R-training")
 sys.path[:0] = [str(TRAINING_REPO), str(TRAINING_REPO / "dust3r")]
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from mast3r_d405_losses import correspondence_motion_errors
+from mast3r_d405_losses import (
+    D405MetricCorrespondenceLoss,
+    correspondence_metric_errors,
+    correspondence_motion_errors,
+)
 
 
 def test_correspondence_motion_error_cancels_common_scene_offset():
@@ -67,3 +71,71 @@ def test_correspondence_motion_error_ignores_invalid_matches():
     )
 
     assert errors.shape == (1,)
+
+
+def test_metric_correspondence_error_exposes_common_scale_error():
+    gt1 = torch.tensor([[[[0.2, 0.0, 1.0]]]])
+    gt2 = torch.tensor([[[[0.2, 0.0, 1.0]]]])
+    coordinates = torch.tensor([[[0, 0]]])
+
+    errors = correspondence_metric_errors(
+        gt1,
+        gt2,
+        gt1 * 0.9,
+        gt2 * 0.9,
+        coordinates,
+        coordinates,
+        torch.tensor([[True]]),
+    )
+
+    expected = torch.linalg.vector_norm(gt1[0, 0, 0] * 0.1)
+    assert errors.shape == (2,)
+    assert torch.allclose(errors, expected.expand_as(errors), atol=1e-7)
+
+
+def test_metric_correspondence_error_is_zero_for_metric_predictions():
+    points = torch.tensor([[[[0.2, -0.1, 0.5]]]])
+    coordinates = torch.tensor([[[0, 0]]])
+
+    errors = correspondence_metric_errors(
+        points,
+        points,
+        points.clone(),
+        points.clone(),
+        coordinates,
+        coordinates,
+        torch.tensor([[True]]),
+    )
+
+    assert torch.allclose(errors, torch.zeros_like(errors), atol=1e-7)
+
+
+def test_metric_correspondence_loss_transforms_world_points_to_camera1():
+    camera1_pose = torch.eye(4).unsqueeze(0)
+    camera1_pose[:, 0, 3] = 1.0
+    camera2_pose = torch.eye(4).unsqueeze(0)
+    camera2_pose[:, 1, 3] = 0.2
+    world_point = torch.tensor([[[[1.0, 0.0, 1.0]]]])
+    camera1_point = torch.tensor([[[[0.0, 0.0, 1.0]]]])
+    coordinates = torch.tensor([[[0, 0]]])
+    gt1 = {
+        "camera_pose": camera1_pose,
+        "pts3d": world_point,
+        "corres": coordinates,
+        "valid_corres": torch.tensor([[True]]),
+    }
+    gt2 = {
+        "camera_pose": camera2_pose,
+        "pts3d": world_point,
+        "corres": coordinates,
+    }
+
+    loss, details = D405MetricCorrespondenceLoss().compute_loss(
+        gt1,
+        gt2,
+        {"pts3d": camera1_point.clone()},
+        {"pts3d_in_other_view": camera1_point.clone()},
+    )
+
+    assert loss.item() == pytest.approx(0.0, abs=1e-7)
+    assert details["metric_correspondence_points"] == 2

@@ -87,6 +87,13 @@ def training_criterion_expression(mode: str, relative_motion_weight: float) -> s
         if relative_motion_weight <= 0:
             raise ValueError("relative motion weight must be positive")
         return f"{base} + {relative_motion_weight:g}*D405RelativeMotionLoss()"
+    if mode == "metric-correspondence":
+        if relative_motion_weight <= 0:
+            raise ValueError("metric correspondence weight must be positive")
+        return (
+            f"{base} + {relative_motion_weight:g}*"
+            "D405MetricCorrespondenceLoss()"
+        )
     raise ValueError(f"unsupported training criterion: {mode}")
 
 
@@ -104,6 +111,8 @@ def validation_criterion_expression(mode: str) -> str:
         )
     if mode == "relative-motion":
         return "D405RelativeMotionLoss()"
+    if mode == "metric-correspondence":
+        return "D405MetricCorrespondenceLoss()"
     raise ValueError(f"unsupported validation criterion: {mode}")
 
 
@@ -138,13 +147,27 @@ def main() -> int:
     parser.add_argument("--high-motion-repeat", type=int, default=3)
     parser.add_argument(
         "--training-criterion",
-        choices=("legacy", "relative-motion"),
+        choices=("legacy", "relative-motion", "metric-correspondence"),
         default="legacy",
     )
     parser.add_argument("--relative-motion-weight", type=float, default=10.0)
     parser.add_argument(
+        "--geometry-loss-weight",
+        type=float,
+        default=None,
+        help=(
+            "neutral auxiliary geometry-loss weight; defaults to the legacy "
+            "--relative-motion-weight value for backward compatibility"
+        ),
+    )
+    parser.add_argument(
         "--validation-criterion",
-        choices=("metric", "relative-motion", "scale-shift-invariant"),
+        choices=(
+            "metric",
+            "relative-motion",
+            "metric-correspondence",
+            "scale-shift-invariant",
+        ),
         default="metric",
         help=(
             "checkpoint selection objective; metric preserves D405 metre scale, "
@@ -154,6 +177,11 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--eval-only", action="store_true")
     args = parser.parse_args()
+    geometry_loss_weight = (
+        args.relative_motion_weight
+        if args.geometry_loss_weight is None
+        else args.geometry_loss_weight
+    )
     if args.high_motion_repeat < 1:
         parser.error("--high-motion-repeat must be positive")
     if args.dry_run and args.eval_only:
@@ -195,7 +223,10 @@ def main() -> int:
     )
     from mast3r.model import AsymmetricMASt3R
     from mast3r_d405_ir_dataset import D405IRStereo, D405IRTemporal
-    from mast3r_d405_losses import D405RelativeMotionLoss
+    from mast3r_d405_losses import (
+        D405MetricCorrespondenceLoss,
+        D405RelativeMotionLoss,
+    )
 
     original_mast3r_class = AsymmetricMASt3R
 
@@ -227,6 +258,7 @@ def main() -> int:
         "D405IRStereo": D405IRStereo,
         "D405IRTemporal": D405IRTemporal,
         "D405RelativeMotionLoss": D405RelativeMotionLoss,
+        "D405MetricCorrespondenceLoss": D405MetricCorrespondenceLoss,
     }.items():
         setattr(dust3r.training, name, value)
 
@@ -269,6 +301,7 @@ def main() -> int:
         "high_motion_repeat": args.high_motion_repeat,
         "training_criterion": args.training_criterion,
         "relative_motion_weight": args.relative_motion_weight,
+        "geometry_loss_weight": geometry_loss_weight,
         "evaluation_only": args.eval_only,
         "validation_criterion": args.validation_criterion,
         "train_dataset": train_dataset,
@@ -307,7 +340,7 @@ def main() -> int:
             "--model", model,
             "--train_criterion",
             training_criterion_expression(
-                args.training_criterion, args.relative_motion_weight
+                args.training_criterion, geometry_loss_weight
             ),
             "--test_criterion",
             validation_criterion_expression(args.validation_criterion),

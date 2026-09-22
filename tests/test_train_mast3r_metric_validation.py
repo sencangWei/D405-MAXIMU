@@ -53,6 +53,19 @@ def test_relative_motion_validation_targets_cross_view_geometry():
     )
 
 
+def test_metric_correspondence_training_adds_metric_point_term():
+    criterion = train.training_criterion_expression("metric-correspondence", 10.0)
+
+    assert criterion.endswith("10*D405MetricCorrespondenceLoss()")
+
+
+def test_metric_correspondence_validation_preserves_metre_scale():
+    assert (
+        train.validation_criterion_expression("metric-correspondence")
+        == "D405MetricCorrespondenceLoss()"
+    )
+
+
 def test_unknown_validation_criterion_is_rejected():
     with pytest.raises(ValueError, match="unsupported validation criterion"):
         train.validation_criterion_expression("unknown")
