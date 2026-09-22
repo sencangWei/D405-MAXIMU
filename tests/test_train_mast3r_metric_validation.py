@@ -59,6 +59,22 @@ def test_metric_correspondence_training_adds_metric_point_term():
     assert criterion.endswith("10*D405MetricCorrespondenceLoss()")
 
 
+def test_metric_relative_training_balances_scale_and_temporal_shape():
+    criterion = train.training_criterion_expression(
+        "metric-relative", 10.0, relative_motion_weight=100.0
+    )
+
+    assert "10*D405MetricCorrespondenceLoss()" in criterion
+    assert criterion.endswith("100*D405RelativeMotionLoss()")
+
+
+def test_metric_relative_training_requires_both_positive_weights():
+    with pytest.raises(ValueError, match="relative motion weight must be positive"):
+        train.training_criterion_expression(
+            "metric-relative", 10.0, relative_motion_weight=0.0
+        )
+
+
 def test_metric_correspondence_validation_preserves_metre_scale():
     assert (
         train.validation_criterion_expression("metric-correspondence")

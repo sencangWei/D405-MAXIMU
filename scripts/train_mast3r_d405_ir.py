@@ -74,7 +74,11 @@ def training_schedule_args(epochs: int, evaluation_only: bool) -> list[str]:
     return ["--epochs", str(epochs)]
 
 
-def training_criterion_expression(mode: str, relative_motion_weight: float) -> str:
+def training_criterion_expression(
+    mode: str,
+    geometry_loss_weight: float,
+    relative_motion_weight: float | None = None,
+) -> str:
     base = (
         "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2) + "
         "0.075*ConfMatchingLoss(MatchingLoss(InfoNCE(mode='proper', "
@@ -84,15 +88,25 @@ def training_criterion_expression(mode: str, relative_motion_weight: float) -> s
     if mode == "legacy":
         return base
     if mode == "relative-motion":
-        if relative_motion_weight <= 0:
+        if geometry_loss_weight <= 0:
             raise ValueError("relative motion weight must be positive")
-        return f"{base} + {relative_motion_weight:g}*D405RelativeMotionLoss()"
+        return f"{base} + {geometry_loss_weight:g}*D405RelativeMotionLoss()"
     if mode == "metric-correspondence":
-        if relative_motion_weight <= 0:
+        if geometry_loss_weight <= 0:
             raise ValueError("metric correspondence weight must be positive")
         return (
-            f"{base} + {relative_motion_weight:g}*"
+            f"{base} + {geometry_loss_weight:g}*"
             "D405MetricCorrespondenceLoss()"
+        )
+    if mode == "metric-relative":
+        if geometry_loss_weight <= 0:
+            raise ValueError("metric correspondence weight must be positive")
+        if relative_motion_weight is None or relative_motion_weight <= 0:
+            raise ValueError("relative motion weight must be positive")
+        return (
+            f"{base} + {geometry_loss_weight:g}*"
+            "D405MetricCorrespondenceLoss() + "
+            f"{relative_motion_weight:g}*D405RelativeMotionLoss()"
         )
     raise ValueError(f"unsupported training criterion: {mode}")
 
@@ -147,7 +161,12 @@ def main() -> int:
     parser.add_argument("--high-motion-repeat", type=int, default=3)
     parser.add_argument(
         "--training-criterion",
-        choices=("legacy", "relative-motion", "metric-correspondence"),
+        choices=(
+            "legacy",
+            "relative-motion",
+            "metric-correspondence",
+            "metric-relative",
+        ),
         default="legacy",
     )
     parser.add_argument("--relative-motion-weight", type=float, default=10.0)
@@ -340,7 +359,9 @@ def main() -> int:
             "--model", model,
             "--train_criterion",
             training_criterion_expression(
-                args.training_criterion, geometry_loss_weight
+                args.training_criterion,
+                geometry_loss_weight,
+                args.relative_motion_weight,
             ),
             "--test_criterion",
             validation_criterion_expression(args.validation_criterion),
