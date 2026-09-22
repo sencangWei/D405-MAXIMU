@@ -74,6 +74,44 @@ def training_schedule_args(epochs: int, evaluation_only: bool) -> list[str]:
     return ["--epochs", str(epochs)]
 
 
+def training_criterion_expression(mode: str, relative_motion_weight: float) -> str:
+    base = (
+        "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2) + "
+        "0.075*ConfMatchingLoss(MatchingLoss(InfoNCE(mode='proper', "
+        "temperature=0.05), negatives_padding=0, blocksize=4096), "
+        "alpha=10.0, confmode='mean')"
+    )
+    if mode == "legacy":
+        return base
+    if mode == "relative-motion":
+        if relative_motion_weight <= 0:
+            raise ValueError("relative motion weight must be positive")
+        return f"{base} + {relative_motion_weight:g}*D405RelativeMotionLoss()"
+    raise ValueError(f"unsupported training criterion: {mode}")
+
+
+def validation_criterion_expression(mode: str) -> str:
+    if mode == "metric":
+        return (
+            "Regr3D(L21, norm_mode='?avg_dis', gt_scale=True, "
+            "sky_loss_value=0)"
+        )
+    if mode == "scale-shift-invariant":
+        return (
+            "Regr3D_ScaleShiftInv(L21, norm_mode='?avg_dis', gt_scale=True, "
+            "sky_loss_value=0) + -1.*MatchingLoss(APLoss(nq='torch', "
+            "fp=torch.float16), negatives_padding=4096)"
+        )
+    if mode == "relative-motion":
+        return "D405RelativeMotionLoss()"
+    raise ValueError(f"unsupported validation criterion: {mode}")
+
+
+def disable_evaluation_checkpoint_writes(training_module) -> None:
+    training_module.misc.save_model = lambda *args, **kwargs: None
+    training_module.save_final_model = lambda *args, **kwargs: None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mast3r-repo", type=Path, default=DEFAULT_TRAIN_REPO)
@@ -98,6 +136,21 @@ def main() -> int:
     )
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--high-motion-repeat", type=int, default=3)
+    parser.add_argument(
+        "--training-criterion",
+        choices=("legacy", "relative-motion"),
+        default="legacy",
+    )
+    parser.add_argument("--relative-motion-weight", type=float, default=10.0)
+    parser.add_argument(
+        "--validation-criterion",
+        choices=("metric", "relative-motion", "scale-shift-invariant"),
+        default="metric",
+        help=(
+            "checkpoint selection objective; metric preserves D405 metre scale, "
+            "while scale-shift-invariant reproduces the legacy MASt3R objective"
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--eval-only", action="store_true")
     args = parser.parse_args()
@@ -142,6 +195,7 @@ def main() -> int:
     )
     from mast3r.model import AsymmetricMASt3R
     from mast3r_d405_ir_dataset import D405IRStereo, D405IRTemporal
+    from mast3r_d405_losses import D405RelativeMotionLoss
 
     original_mast3r_class = AsymmetricMASt3R
 
@@ -172,6 +226,7 @@ def main() -> int:
         "WildRGBD": WildRGBD,
         "D405IRStereo": D405IRStereo,
         "D405IRTemporal": D405IRTemporal,
+        "D405RelativeMotionLoss": D405RelativeMotionLoss,
     }.items():
         setattr(dust3r.training, name, value)
 
@@ -212,7 +267,10 @@ def main() -> int:
         "train_scope": args.train_scope,
         "learning_rate": args.lr,
         "high_motion_repeat": args.high_motion_repeat,
+        "training_criterion": args.training_criterion,
+        "relative_motion_weight": args.relative_motion_weight,
         "evaluation_only": args.eval_only,
+        "validation_criterion": args.validation_criterion,
         "train_dataset": train_dataset,
         "test_dataset": test_dataset,
     }
@@ -248,14 +306,11 @@ def main() -> int:
             "--test_dataset", test_dataset,
             "--model", model,
             "--train_criterion",
-            "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2) + "
-            "0.075*ConfMatchingLoss(MatchingLoss(InfoNCE(mode='proper', "
-            "temperature=0.05), negatives_padding=0, blocksize=4096), "
-            "alpha=10.0, confmode='mean')",
+            training_criterion_expression(
+                args.training_criterion, args.relative_motion_weight
+            ),
             "--test_criterion",
-            "Regr3D_ScaleShiftInv(L21, norm_mode='?avg_dis', gt_scale=True, "
-            "sky_loss_value=0) + -1.*MatchingLoss(APLoss(nq='torch', "
-            "fp=torch.float16), negatives_padding=4096)",
+            validation_criterion_expression(args.validation_criterion),
             "--pretrained", str(checkpoint),
             "--lr", str(args.lr),
             "--min_lr", "1e-7",
@@ -285,7 +340,7 @@ def main() -> int:
             return best_so_far
 
         dust3r.training.misc.load_model = load_model_for_evaluation
-        dust3r.training.misc.save_model = lambda *save_args, **save_kwargs: None
+        disable_evaluation_checkpoint_writes(dust3r.training)
     dust3r.training.train(training_args)
     if args.eval_only:
         run_manifest["status"] = "COMPLETE_EVALUATION"
