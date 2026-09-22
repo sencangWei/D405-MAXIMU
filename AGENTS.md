@@ -54,5 +54,40 @@ RealSense D405(左IR+右IR 真双目 1280×720@30, 原始 db3)+ KT-EX9-2 IMU(400
 - **FFV1 本身已被大样本洗清(勿再怀疑格式)**: 36 轮 A/B(raw/FFV1/ffv1raw 各 12)Fisher 双尾 p=1.000 无显著差异,优率 83/83/75%。坏跑(~8-12%)是 53×43cm 慢回路固有 run-to-run 方差(raw 自己 1/12 发散),**不是 FFV1 编码问题**。唯一有实锤的管线差异是 2026-08-10 A/B 的**采集方法**(旧 db3 管线 vs 新 inline mkv)。
 
 ## 完整记忆位置(接手必读)
-Claude 会话记忆(`/home/robot/.claude/projects/-home-robot----ego-vio-calib-kit/memory/*.md`,共 14 个内容文件)含上述每条的完整调查过程、数据表、验证命令。**接手任何任务前,先 Read 这些文件获取完整背景,再动手**(本文件是浓缩版,细节以原始记忆为准)。文件清单:
+Claude 会话记忆(`/home/robot/.claude/projects/-home-robot----ego-vio-calib-kit/memory/*.md`,
+共 **45 个** .md = 1 个索引 `MEMORY.md` + 44 个内容文件)含上述每条的完整调查过程、数据表、验证命令。
+**接手任何任务前,先 Read `MEMORY.md`(索引,每行一个要点),再按需下钻内容文件;本文件是浓缩版,细节以原始记忆为准。**
+
+## ★ 2026-09-22 交接包(Codex 接手入口,先读这个)
+`reports/codex_handoff_20260922/HANDOFF.md` —— 09 月 MASt3R 深度融合精度工程的完整交接:
+用户逐字意图、现役产线拓扑、**唯一卡点**、**已封死的 14 族杠杆清单(别重跑)**、
+「别引用错的」8 条陷阱、**14 条会静默零产物的操作坑**、下一步三个方向。
+同目录 `memory/` = 45 个记忆文件快照;`transcript_main/` = 用户原话逐字 + 助手回合 + 命令日志。
+
+**证据主体**:`reports/mast3r_g2_validation_20260919/rerun_tail_v2_20260920/README.md`
+(**3027 行**,全部实验按时间追加)。⚠ 它是**追加式**的,早期章节结论可能已被后期推翻,
+**以每节末尾的「★ 更正」为准**。
+
+**09 月这条线的三句话小结**(细节全在交接包):
+1. **09-14「有好结果可复原」前提已被盘上证据否掉** —— 09-14 生产 **0/10 PASS**、
+   `ate_translation_max` 中位 15.41mm,**比现役更差**。别再往 09-14 复原。
+2. 现役产线**已跑通**,22 格语料 22/22 过 VINS 验收;卡住的只有**精度门**
+   (`ate_translation_max`),缺口 = **约 27 帧(0.9s)缓变位置偏移块**。
+3. **14 族精度杠杆已逐族实测封死**,且都被同一堵墙挡住:**只能移动或放大那个块、不能消除它**。
+   误差**与 MASt3R 上游相关(+0.425)、与 VINS 无关(−0.006)**、与误差**同频带**
+   ⇒ 位置域后处理**原理上无解**,22 臂上又是**共模** ⇒ 改单臂权重必然无效。
+
+**09 月这条线的记忆文件**(按主题分组,完整清单见 `MEMORY.md`):
+- 主干全账:`mast3r-rerun-tail-v2-20260920.md`(最大,77KB)
+- 前端:`mast3r-frontend-regression-20260918.md`、`mast3r-frontend-config-silent-disable-20260920.md`、
+  `frontend-match-collapse-falsified-20260920.md`
+- 融合段:`mast3r-fusion-param-generations.md`、`mast3r-chain-topology.md`、
+  `fusion-scale-gate-umeyama-check.md`、`codex-gate-blindspot-history.md`
+- 验收/门:`mast3r-g1-vs-g2-sweep-20260919.md`、`gate-failure-taxonomy-20260919.md`、
+  `rotation-is-the-binding-gate.md`(⚠已被取代)
+- 真值:`lighthouse-tracker-branch-switch.md`、`lighthouse-gt-timing-uncertainty.md`
+- 回放:`vins-replay-nondeterminism-20260922.md`(**回放不可复现**)
+- 方法学:`survey-22-arms-before-concluding.md`(★**落笔前先普查**,单格外推失败率本会话 3/3)
+
+**8 月 VINS 时代的记忆文件**(仍然有效):
 `capture-pipeline-ab-result.md` `d405-hardware-facts.md` `dual-ir-divergence-rootcause.md` `jazzy-handoff-20260816.md` `orb-replay-time-offset.md` `orb-rgbd-inertial-status.md` `recording-format-ffv1-lossless.md` `vins-230503-rootcause.md` `vins-alignment-bug.md` `vins-config-optimal.md` `vins-fork-state.md` `vins-init-guard.md` `vins-process-hygiene.md` `vins-replay-args.md`
