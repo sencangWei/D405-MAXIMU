@@ -212,8 +212,35 @@ def test_relative_motion_loss_weights_only_selected_sample_objective():
     )
 
     assert details["relative_motion_l21_m"] == pytest.approx(2.0)
-    assert details["relative_motion_weighted_l21_m"] == pytest.approx(2.5)
-    assert loss.item() == pytest.approx(2.5)
+    assert details["relative_motion_weighted_l21_m"] == pytest.approx(5.0)
+    assert loss.item() == pytest.approx(5.0)
+
+
+def test_relative_motion_loss_weight_does_not_cancel_for_batch_size_one():
+    camera_pose = torch.eye(4).unsqueeze(0)
+    points = torch.zeros((1, 1, 1, 3))
+    coordinates = torch.zeros((1, 1, 2), dtype=torch.long)
+    gt1 = {
+        "camera_pose": camera_pose,
+        "pts3d": points,
+        "corres": coordinates,
+        "valid_corres": torch.ones((1, 1), dtype=torch.bool),
+        "temporal_loss_weight": torch.tensor([3.0]),
+    }
+    gt2 = {"camera_pose": camera_pose, "pts3d": points, "corres": coordinates}
+    pred2 = points.clone()
+    pred2[0, 0, 0, 0] = 2.0
+
+    loss, details = D405RelativeMotionLoss().compute_loss(
+        gt1,
+        gt2,
+        {"pts3d": points.clone()},
+        {"pts3d_in_other_view": pred2},
+    )
+
+    assert details["relative_motion_l21_m"] == pytest.approx(2.0)
+    assert details["relative_motion_weighted_l21_m"] == pytest.approx(6.0)
+    assert loss.item() == pytest.approx(6.0)
 
 
 def test_metric_correspondence_loss_applies_sample_weight_after_matching():
@@ -241,5 +268,5 @@ def test_metric_correspondence_loss_applies_sample_weight_after_matching():
     )
 
     assert details["metric_correspondence_l21_m"] == pytest.approx(2.0)
-    assert details["metric_correspondence_weighted_l21_m"] == pytest.approx(2.5)
-    assert loss.item() == pytest.approx(2.5)
+    assert details["metric_correspondence_weighted_l21_m"] == pytest.approx(5.0)
+    assert loss.item() == pytest.approx(5.0)

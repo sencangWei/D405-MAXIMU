@@ -49,7 +49,7 @@ def weighted_batch_error_mean(
         if sample_errors.numel() == 0:
             continue
         numerator = numerator + weight * sample_errors.sum()
-        denominator = denominator + weight * sample_errors.numel()
+        denominator = denominator + sample_errors.numel()
     return numerator / denominator, torch.cat(errors)
 
 
