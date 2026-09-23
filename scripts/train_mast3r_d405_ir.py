@@ -41,6 +41,7 @@ def configure_trainable_parameters(model, train_scope: str):
     if train_scope not in {
         "heads-only",
         "descriptors-only",
+        "descriptor-vectors-only",
         "geometry-only",
         "descriptor-confidence-only",
     }:
@@ -53,10 +54,13 @@ def configure_trainable_parameters(model, train_scope: str):
             trainable_module = head.head_local_features
         elif train_scope == "geometry-only":
             trainable_module = head.dpt
-        elif train_scope == "descriptor-confidence-only":
+        elif train_scope in {
+            "descriptor-vectors-only",
+            "descriptor-confidence-only",
+        }:
             if not head.two_confs:
                 raise ValueError(
-                    "descriptor-confidence-only requires an independent descriptor confidence channel"
+                    f"{train_scope} requires an independent descriptor confidence channel"
                 )
             output = head.head_local_features.fc2
             confidence_rows = head.patch_size**2
@@ -64,12 +68,19 @@ def configure_trainable_parameters(model, train_scope: str):
                 raise ValueError("unexpected descriptor head output layout")
             for parameter in (output.weight, output.bias):
                 parameter.requires_grad = True
-                def keep_confidence_rows(gradient, rows=confidence_rows):
+                def keep_selected_rows(
+                    gradient,
+                    rows=confidence_rows,
+                    confidence_only=train_scope == "descriptor-confidence-only",
+                ):
                     masked = gradient.clone()
-                    masked[:-rows].zero_()
+                    if confidence_only:
+                        masked[:-rows].zero_()
+                    else:
+                        masked[-rows:].zero_()
                     return masked
 
-                gradient_handles.append(parameter.register_hook(keep_confidence_rows))
+                gradient_handles.append(parameter.register_hook(keep_selected_rows))
             continue
         else:
             trainable_module = head
@@ -81,7 +92,8 @@ def configure_trainable_parameters(model, train_scope: str):
 
 def training_weight_decay(train_scope: str) -> float:
     """Avoid AdamW updates to masked descriptor rows."""
-    return 0.0 if train_scope == "descriptor-confidence-only" else 0.05
+    masked_scopes = {"descriptor-confidence-only", "descriptor-vectors-only"}
+    return 0.0 if train_scope in masked_scopes else 0.05
 
 
 def training_dataset_expression(
@@ -236,6 +248,7 @@ def main() -> int:
             "decoder-heads",
             "heads-only",
             "descriptors-only",
+            "descriptor-vectors-only",
             "geometry-only",
             "descriptor-confidence-only",
         ),
