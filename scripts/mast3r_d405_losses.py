@@ -9,6 +9,50 @@ from dust3r.losses import MultiLoss
 from dust3r.utils.geometry import geotrf, inv
 
 
+def temporal_loss_weights(
+    gt1: dict,
+    batch_size: int,
+    reference: torch.Tensor,
+) -> torch.Tensor:
+    """Return one positive motion-loss weight per temporal sample."""
+    value = gt1.get("temporal_loss_weight")
+    if value is None:
+        return torch.ones(batch_size, device=reference.device, dtype=reference.dtype)
+    if isinstance(value, torch.Tensor):
+        weights = value.to(device=reference.device, dtype=reference.dtype).reshape(-1)
+    else:
+        weights = torch.as_tensor(
+            value, device=reference.device, dtype=reference.dtype
+        ).reshape(-1)
+    if weights.numel() == 1 and batch_size > 1:
+        weights = weights.expand(batch_size)
+    if weights.numel() != batch_size:
+        raise ValueError("temporal loss weight count does not match batch size")
+    if not torch.all(torch.isfinite(weights) & (weights > 0)):
+        raise ValueError("temporal loss weights must be finite and positive")
+    return weights
+
+
+def weighted_batch_error_mean(
+    error_batches: list[torch.Tensor],
+    sample_weights: torch.Tensor,
+    zero_reference: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Return weighted training loss and concatenated unweighted diagnostics."""
+    errors = [batch for batch in error_batches if batch.numel()]
+    if not errors:
+        zero = zero_reference.sum() * 0.0
+        return zero, zero.new_empty((0,))
+    numerator = zero_reference.sum() * 0.0
+    denominator = zero_reference.new_zeros(())
+    for sample_errors, weight in zip(error_batches, sample_weights):
+        if sample_errors.numel() == 0:
+            continue
+        numerator = numerator + weight * sample_errors.sum()
+        denominator = denominator + weight * sample_errors.numel()
+    return numerator / denominator, torch.cat(errors)
+
+
 def correspondence_motion_errors(
     gt_points1: torch.Tensor,
     gt_points2: torch.Tensor,
@@ -92,23 +136,34 @@ class D405RelativeMotionLoss(MultiLoss):
         in_camera1 = inv(gt1["camera_pose"])
         gt_points1 = geotrf(in_camera1, gt1["pts3d"])
         gt_points2 = geotrf(in_camera1, gt2["pts3d"])
-        errors = correspondence_motion_errors(
-            gt_points1,
-            gt_points2,
-            pred1["pts3d"],
-            pred2["pts3d_in_other_view"],
-            gt1["corres"],
-            gt2["corres"],
-            gt1["valid_corres"],
+        batch_size = pred1["pts3d"].shape[0]
+        sample_weights = temporal_loss_weights(
+            gt1, batch_size, pred1["pts3d"]
+        )
+        error_batches = [
+            correspondence_motion_errors(
+                gt_points1[index : index + 1],
+                gt_points2[index : index + 1],
+                pred1["pts3d"][index : index + 1],
+                pred2["pts3d_in_other_view"][index : index + 1],
+                gt1["corres"][index : index + 1],
+                gt2["corres"][index : index + 1],
+                gt1["valid_corres"][index : index + 1],
+            )
+            for index in range(batch_size)
+        ]
+        loss, errors = weighted_batch_error_mean(
+            error_batches, sample_weights, pred1["pts3d"]
         )
         if errors.numel() == 0:
-            loss = pred1["pts3d"].sum() * 0.0
             p95 = loss.detach()
+            mean = loss.detach()
         else:
-            loss = errors.mean()
+            mean = errors.detach().mean()
             p95 = torch.quantile(errors.detach(), 0.95)
         return loss, {
-            "relative_motion_l21_m": float(loss.detach()),
+            "relative_motion_l21_m": float(mean),
+            "relative_motion_weighted_l21_m": float(loss.detach()),
             "relative_motion_p95_m": float(p95),
             "relative_motion_matches": int(errors.numel()),
         }
@@ -124,23 +179,34 @@ class D405MetricCorrespondenceLoss(MultiLoss):
         in_camera1 = inv(gt1["camera_pose"])
         gt_points1 = geotrf(in_camera1, gt1["pts3d"])
         gt_points2 = geotrf(in_camera1, gt2["pts3d"])
-        errors = correspondence_metric_errors(
-            gt_points1,
-            gt_points2,
-            pred1["pts3d"],
-            pred2["pts3d_in_other_view"],
-            gt1["corres"],
-            gt2["corres"],
-            gt1["valid_corres"],
+        batch_size = pred1["pts3d"].shape[0]
+        sample_weights = temporal_loss_weights(
+            gt1, batch_size, pred1["pts3d"]
+        )
+        error_batches = [
+            correspondence_metric_errors(
+                gt_points1[index : index + 1],
+                gt_points2[index : index + 1],
+                pred1["pts3d"][index : index + 1],
+                pred2["pts3d_in_other_view"][index : index + 1],
+                gt1["corres"][index : index + 1],
+                gt2["corres"][index : index + 1],
+                gt1["valid_corres"][index : index + 1],
+            )
+            for index in range(batch_size)
+        ]
+        loss, errors = weighted_batch_error_mean(
+            error_batches, sample_weights, pred1["pts3d"]
         )
         if errors.numel() == 0:
-            loss = pred1["pts3d"].sum() * 0.0
             p95 = loss.detach()
+            mean = loss.detach()
         else:
-            loss = errors.mean()
+            mean = errors.detach().mean()
             p95 = torch.quantile(errors.detach(), 0.95)
         return loss, {
-            "metric_correspondence_l21_m": float(loss.detach()),
+            "metric_correspondence_l21_m": float(mean),
+            "metric_correspondence_weighted_l21_m": float(loss.detach()),
             "metric_correspondence_p95_m": float(p95),
             "metric_correspondence_points": int(errors.numel()),
         }

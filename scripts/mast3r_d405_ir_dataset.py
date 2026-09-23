@@ -33,6 +33,21 @@ def low_observability_temporal_samples(
     ]
 
 
+def low_observability_sample_weight(
+    sample: dict,
+    maximum_tracked_depth_points: int,
+    minimum_angular_speed_deg_s: float,
+    selected_weight: float,
+) -> float:
+    """Return a motion-loss weight without changing the sample distribution."""
+    if selected_weight <= 0.0:
+        raise ValueError("low observability loss weight must be positive")
+    selected = low_observability_temporal_samples(
+        [sample], maximum_tracked_depth_points, minimum_angular_speed_deg_s
+    )
+    return float(selected_weight if selected else 1.0)
+
+
 def motion_blur_kernel(length: int, angle_deg: float) -> np.ndarray:
     length = max(1, int(length) | 1)
     kernel = np.zeros((length, length), dtype=np.float32)
@@ -144,6 +159,7 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
         split: str,
         high_motion_repeat: int = 3,
         low_observability_repeat: int = 1,
+        low_observability_loss_weight: float = 1.0,
         low_observability_max_tracked_points: int = 160,
         low_observability_min_angular_speed_deg_s: float = 8.0,
         blur_probability: float = 0.35,
@@ -174,6 +190,15 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
             raise ValueError(f"no D405 temporal samples for split {split}")
         self.scenes = scenes
         self.is_metric_scale = True
+        self.low_observability_loss_weight = float(low_observability_loss_weight)
+        self.low_observability_max_tracked_points = int(
+            low_observability_max_tracked_points
+        )
+        self.low_observability_min_angular_speed_deg_s = float(
+            low_observability_min_angular_speed_deg_s
+        )
+        if self.low_observability_loss_weight <= 0.0:
+            raise ValueError("low observability loss weight must be positive")
         self.blur_probability = float(blur_probability) if split == "train" else 0.0
         self.maximum_blur_px = int(maximum_blur_px)
 
@@ -200,6 +225,16 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
             np.eye(4, dtype=np.float32),
             np.asarray(sample["camera_pose_second"], dtype=np.float32),
         ]
+        temporal_loss_weight = (
+            low_observability_sample_weight(
+                sample,
+                self.low_observability_max_tracked_points,
+                self.low_observability_min_angular_speed_deg_s,
+                self.low_observability_loss_weight,
+            )
+            if self.split == "train"
+            else 1.0
+        )
         views = []
         for view_index, (image, depth, pose) in enumerate(zip(images, depths, poses)):
             views.append(
@@ -210,6 +245,7 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
                     "camera_intrinsics": intrinsics.copy(),
                     "dataset": "D405IRTemporal",
                     "label": sample["session_id"],
+                    "temporal_loss_weight": np.float32(temporal_loss_weight),
                     "instance": (
                         f"{sample['first_input_index']}->{sample['second_input_index']}:"
                         f"{view_index}"

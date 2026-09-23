@@ -89,12 +89,14 @@ def test_training_dataset_expression_can_repeat_low_observability_turns(tmp_path
         seed=7,
         high_motion_repeat=1,
         low_observability_repeat=3,
+        low_observability_loss_weight=2.5,
         low_observability_max_tracked_points=160,
         low_observability_min_angular_speed_deg_s=8.0,
     )
 
     assert "high_motion_repeat=1" in expression
     assert "low_observability_repeat=3" in expression
+    assert "low_observability_loss_weight=2.5" in expression
     assert "low_observability_max_tracked_points=160" in expression
     assert "low_observability_min_angular_speed_deg_s=8" in expression
 

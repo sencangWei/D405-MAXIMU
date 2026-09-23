@@ -60,6 +60,7 @@ def training_dataset_expression(
     seed: int,
     high_motion_repeat: int,
     low_observability_repeat: int = 1,
+    low_observability_loss_weight: float = 1.0,
     low_observability_max_tracked_points: int = 160,
     low_observability_min_angular_speed_deg_s: float = 8.0,
 ) -> str:
@@ -67,6 +68,8 @@ def training_dataset_expression(
     if dataset_class == "D405IRTemporal":
         low_observability = (
             f", low_observability_repeat={low_observability_repeat}, "
+            "low_observability_loss_weight="
+            f"{low_observability_loss_weight:g}, "
             "low_observability_max_tracked_points="
             f"{low_observability_max_tracked_points}, "
             "low_observability_min_angular_speed_deg_s="
@@ -173,6 +176,9 @@ def main() -> int:
     parser.add_argument("--high-motion-repeat", type=int, default=3)
     parser.add_argument("--low-observability-repeat", type=int, default=1)
     parser.add_argument(
+        "--low-observability-loss-weight", type=float, default=1.0
+    )
+    parser.add_argument(
         "--low-observability-max-tracked-points", type=int, default=160
     )
     parser.add_argument(
@@ -224,6 +230,8 @@ def main() -> int:
         parser.error("--high-motion-repeat must be positive")
     if args.low_observability_repeat < 1:
         parser.error("--low-observability-repeat must be positive")
+    if args.low_observability_loss_weight <= 0.0:
+        parser.error("--low-observability-loss-weight must be positive")
     if args.low_observability_max_tracked_points <= 0:
         parser.error("--low-observability-max-tracked-points must be positive")
     if args.low_observability_min_angular_speed_deg_s < 0.0:
@@ -321,6 +329,7 @@ def main() -> int:
         args.seed,
         args.high_motion_repeat,
         args.low_observability_repeat,
+        args.low_observability_loss_weight,
         args.low_observability_max_tracked_points,
         args.low_observability_min_angular_speed_deg_s,
     )
@@ -349,6 +358,7 @@ def main() -> int:
         "learning_rate": args.lr,
         "high_motion_repeat": args.high_motion_repeat,
         "low_observability_repeat": args.low_observability_repeat,
+        "low_observability_loss_weight": args.low_observability_loss_weight,
         "low_observability_max_tracked_points": (
             args.low_observability_max_tracked_points
         ),

@@ -11,10 +11,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from mast3r_d405_losses import (
     D405MetricCorrespondenceLoss,
+    D405RelativeMotionLoss,
     correspondence_metric_errors,
     correspondence_motion_errors,
 )
-from mast3r_d405_ir_dataset import low_observability_temporal_samples
+from mast3r_d405_ir_dataset import (
+    low_observability_sample_weight,
+    low_observability_temporal_samples,
+)
 
 
 def test_low_observability_temporal_samples_require_weak_geometry_and_turning():
@@ -42,6 +46,21 @@ def test_low_observability_selection_does_not_depend_on_existing_repetition():
     selected = low_observability_temporal_samples([sample], 160, 8.0)
 
     assert selected == [sample]
+
+
+def test_low_observability_sample_weight_only_selects_weak_turns():
+    weak_turn = {"tracked_depth_points": 120, "angular_speed_deg_s": 12.0}
+    strong_turn = {"tracked_depth_points": 240, "angular_speed_deg_s": 12.0}
+
+    assert low_observability_sample_weight(weak_turn, 160, 8.0, 3.0) == 3.0
+    assert low_observability_sample_weight(strong_turn, 160, 8.0, 3.0) == 1.0
+
+
+def test_low_observability_sample_weight_rejects_nonpositive_weight():
+    sample = {"tracked_depth_points": 120, "angular_speed_deg_s": 12.0}
+
+    with pytest.raises(ValueError, match="loss weight"):
+        low_observability_sample_weight(sample, 160, 8.0, 0.0)
 
 
 def test_correspondence_motion_error_cancels_common_scene_offset():
@@ -167,3 +186,60 @@ def test_metric_correspondence_loss_transforms_world_points_to_camera1():
 
     assert loss.item() == pytest.approx(0.0, abs=1e-7)
     assert details["metric_correspondence_points"] == 2
+
+
+def test_relative_motion_loss_weights_only_selected_sample_objective():
+    camera_pose = torch.eye(4).repeat(2, 1, 1)
+    points = torch.zeros((2, 1, 1, 3))
+    coordinates = torch.zeros((2, 1, 2), dtype=torch.long)
+    gt1 = {
+        "camera_pose": camera_pose,
+        "pts3d": points,
+        "corres": coordinates,
+        "valid_corres": torch.ones((2, 1), dtype=torch.bool),
+        "temporal_loss_weight": torch.tensor([1.0, 3.0]),
+    }
+    gt2 = {"camera_pose": camera_pose, "pts3d": points, "corres": coordinates}
+    pred2 = points.clone()
+    pred2[0, 0, 0, 0] = 1.0
+    pred2[1, 0, 0, 0] = 3.0
+
+    loss, details = D405RelativeMotionLoss().compute_loss(
+        gt1,
+        gt2,
+        {"pts3d": points.clone()},
+        {"pts3d_in_other_view": pred2},
+    )
+
+    assert details["relative_motion_l21_m"] == pytest.approx(2.0)
+    assert details["relative_motion_weighted_l21_m"] == pytest.approx(2.5)
+    assert loss.item() == pytest.approx(2.5)
+
+
+def test_metric_correspondence_loss_applies_sample_weight_after_matching():
+    camera_pose = torch.eye(4).repeat(2, 1, 1)
+    points = torch.zeros((2, 1, 1, 3))
+    coordinates = torch.zeros((2, 1, 2), dtype=torch.long)
+    gt1 = {
+        "camera_pose": camera_pose,
+        "pts3d": points,
+        "corres": coordinates,
+        "valid_corres": torch.ones((2, 1), dtype=torch.bool),
+        "temporal_loss_weight": torch.tensor([1.0, 3.0]),
+    }
+    gt2 = {"camera_pose": camera_pose, "pts3d": points, "corres": coordinates}
+    pred1 = points.clone()
+    pred2 = points.clone()
+    pred1[0, 0, 0, 0] = pred2[0, 0, 0, 0] = 1.0
+    pred1[1, 0, 0, 0] = pred2[1, 0, 0, 0] = 3.0
+
+    loss, details = D405MetricCorrespondenceLoss().compute_loss(
+        gt1,
+        gt2,
+        {"pts3d": pred1},
+        {"pts3d_in_other_view": pred2},
+    )
+
+    assert details["metric_correspondence_l21_m"] == pytest.approx(2.0)
+    assert details["metric_correspondence_weighted_l21_m"] == pytest.approx(2.5)
+    assert loss.item() == pytest.approx(2.5)
