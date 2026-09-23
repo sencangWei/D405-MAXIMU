@@ -114,6 +114,34 @@ def test_stereo_dataset_expression_does_not_receive_temporal_only_arguments(tmp_
     assert "low_observability" not in expression
 
 
+def test_rotation_match_dataset_uses_fixed_crop_and_bounded_matches(tmp_path):
+    expression = train.training_dataset_expression(
+        "D405IRRotationMatches",
+        tmp_path / "manifest.json",
+        seed=7,
+        high_motion_repeat=1,
+    )
+
+    assert "n_corres=512" in expression
+    assert "aug_crop=False" in expression
+    assert "high_motion_repeat" not in expression
+
+
+def test_flow_matching_training_does_not_update_point_geometry_objective():
+    criterion = train.training_criterion_expression("flow-matching", 1.0)
+
+    assert criterion.startswith("0.075*ConfMatchingLoss")
+    assert "Regr3D" not in criterion
+    assert "D405RelativeMotionLoss" not in criterion
+
+
+def test_flow_matching_validation_is_matching_only():
+    criterion = train.validation_criterion_expression("flow-matching")
+
+    assert criterion.startswith("ConfMatchingLoss")
+    assert "Regr3D" not in criterion
+
+
 def test_unknown_validation_criterion_is_rejected():
     with pytest.raises(ValueError, match="unsupported validation criterion"):
         train.validation_criterion_expression("unknown")

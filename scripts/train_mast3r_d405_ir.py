@@ -64,6 +64,12 @@ def training_dataset_expression(
     low_observability_max_tracked_points: int = 160,
     low_observability_min_angular_speed_deg_s: float = 8.0,
 ) -> str:
+    if dataset_class == "D405IRRotationMatches":
+        return (
+            f"{dataset_class}(manifest={str(manifest)!r}, split='train', "
+            "resolution=[(512,384),(512,336),(512,288),(512,256)], "
+            f"n_corres=512, nneg=0.5, aug_crop=False, seed={seed})"
+        )
     low_observability = ""
     if dataset_class == "D405IRTemporal":
         low_observability = (
@@ -94,12 +100,17 @@ def training_criterion_expression(
     geometry_loss_weight: float,
     relative_motion_weight: float | None = None,
 ) -> str:
-    base = (
-        "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2) + "
+    matching = (
         "0.075*ConfMatchingLoss(MatchingLoss(InfoNCE(mode='proper', "
         "temperature=0.05), negatives_padding=0, blocksize=4096), "
         "alpha=10.0, confmode='mean')"
     )
+    base = (
+        "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2) + "
+        f"{matching}"
+    )
+    if mode == "flow-matching":
+        return matching
     if mode == "legacy":
         return base
     if mode == "relative-motion":
@@ -127,6 +138,12 @@ def training_criterion_expression(
 
 
 def validation_criterion_expression(mode: str) -> str:
+    if mode == "flow-matching":
+        return (
+            "ConfMatchingLoss(MatchingLoss(InfoNCE(mode='proper', "
+            "temperature=0.05), negatives_padding=0, blocksize=4096), "
+            "alpha=10.0, confmode='mean')"
+        )
     if mode == "metric":
         return (
             "Regr3D(L21, norm_mode='?avg_dis', gt_scale=True, "
@@ -161,7 +178,11 @@ def main() -> int:
     parser.add_argument("--accum-iter", type=int, default=8)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=20260915)
-    parser.add_argument("--dataset-kind", choices=("stereo", "temporal"), default="stereo")
+    parser.add_argument(
+        "--dataset-kind",
+        choices=("stereo", "temporal", "rotation-matches"),
+        default="stereo",
+    )
     parser.add_argument(
         "--train-scope",
         choices=(
@@ -191,6 +212,7 @@ def main() -> int:
             "relative-motion",
             "metric-correspondence",
             "metric-relative",
+            "flow-matching",
         ),
         default="legacy",
     )
@@ -211,6 +233,7 @@ def main() -> int:
             "relative-motion",
             "metric-correspondence",
             "scale-shift-invariant",
+            "flow-matching",
         ),
         default="metric",
         help=(
@@ -276,7 +299,11 @@ def main() -> int:
         Regr3D_ScaleShiftInv,
     )
     from mast3r.model import AsymmetricMASt3R
-    from mast3r_d405_ir_dataset import D405IRStereo, D405IRTemporal
+    from mast3r_d405_ir_dataset import (
+        D405IRRotationMatches,
+        D405IRStereo,
+        D405IRTemporal,
+    )
     from mast3r_d405_losses import (
         D405MetricCorrespondenceLoss,
         D405RelativeMotionLoss,
@@ -291,8 +318,10 @@ def main() -> int:
 
     mast3r.datasets.D405IRStereo = D405IRStereo
     mast3r.datasets.D405IRTemporal = D405IRTemporal
+    mast3r.datasets.D405IRRotationMatches = D405IRRotationMatches
     dust3r.datasets.D405IRStereo = D405IRStereo
     dust3r.datasets.D405IRTemporal = D405IRTemporal
+    dust3r.datasets.D405IRRotationMatches = D405IRRotationMatches
     for name, value in {
         "AsymmetricMASt3R": training_mast3r_factory,
         "Regr3D": Regr3D,
@@ -311,6 +340,7 @@ def main() -> int:
         "WildRGBD": WildRGBD,
         "D405IRStereo": D405IRStereo,
         "D405IRTemporal": D405IRTemporal,
+        "D405IRRotationMatches": D405IRRotationMatches,
         "D405RelativeMotionLoss": D405RelativeMotionLoss,
         "D405MetricCorrespondenceLoss": D405MetricCorrespondenceLoss,
     }.items():
@@ -322,7 +352,11 @@ def main() -> int:
     # upstream MASt3R still calls torch.load() without an explicit override.
     torch.serialization.add_safe_globals([argparse.Namespace])
     model = frozen_encoder_model(checkpoint_payload["args"].model)
-    dataset_class = "D405IRTemporal" if args.dataset_kind == "temporal" else "D405IRStereo"
+    dataset_class = {
+        "stereo": "D405IRStereo",
+        "temporal": "D405IRTemporal",
+        "rotation-matches": "D405IRRotationMatches",
+    }[args.dataset_kind]
     train_dataset = training_dataset_expression(
         dataset_class,
         manifest,
@@ -333,9 +367,11 @@ def main() -> int:
         args.low_observability_max_tracked_points,
         args.low_observability_min_angular_speed_deg_s,
     )
+    test_correspondences = 512 if args.dataset_kind == "rotation-matches" else 1024
     test_dataset = (
         f"{dataset_class}(manifest={str(manifest)!r}, split='validation', "
-        f"resolution=(512,384), n_corres=1024, nneg=0.5, seed={args.seed + 1})"
+        f"resolution=(512,384), n_corres={test_correspondences}, nneg=0.5, "
+        f"seed={args.seed + 1})"
     )
     created_output = not output.exists()
     output.mkdir(parents=True, exist_ok=True)
@@ -378,7 +414,11 @@ def main() -> int:
         json.dumps(run_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     if args.dry_run:
-        dataset_type = D405IRTemporal if args.dataset_kind == "temporal" else D405IRStereo
+        dataset_type = {
+            "stereo": D405IRStereo,
+            "temporal": D405IRTemporal,
+            "rotation-matches": D405IRRotationMatches,
+        }[args.dataset_kind]
         dataset = dataset_type(
             manifest=str(manifest),
             split="train",

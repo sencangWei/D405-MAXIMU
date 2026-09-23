@@ -253,3 +253,144 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
                 }
             )
         return views
+
+
+def transform_correspondences_between_intrinsics(
+    points: np.ndarray,
+    source_intrinsics: np.ndarray,
+    target_intrinsics: np.ndarray,
+) -> np.ndarray:
+    """Map pixels through the affine resize/crop encoded by two intrinsics."""
+    points = np.asarray(points, dtype=np.float32)
+    source = np.asarray(source_intrinsics, dtype=np.float32)
+    target = np.asarray(target_intrinsics, dtype=np.float32)
+    transformed = points.copy()
+    transformed[:, 0] = (
+        (points[:, 0] - source[0, 2]) * target[0, 0] / source[0, 0]
+        + target[0, 2]
+    )
+    transformed[:, 1] = (
+        (points[:, 1] - source[1, 2]) * target[1, 1] / source[1, 1]
+        + target[1, 2]
+    )
+    return transformed
+
+
+class D405IRRotationMatches(MASt3RBaseStereoViewDataset):
+    """High-turn temporal IR pairs supervised only by robust image matches."""
+
+    def __init__(self, *args, manifest: str, split: str, **kwargs):
+        super().__init__(*args, split=split, **kwargs)
+        payload = json.loads(Path(manifest).read_text(encoding="utf-8"))
+        if payload.get("external_ground_truth_used") is not False:
+            raise ValueError("rotation-match manifest must exclude external ground truth")
+        if payload.get("result") != "READY" or "rotation_matches" not in payload.get(
+            "schema", ""
+        ):
+            raise ValueError("D405 rotation-match manifest is not ready")
+        self.scenes = [
+            sample for sample in payload["samples"] if sample["split"] == split
+        ]
+        if not self.scenes:
+            raise ValueError(f"no D405 rotation-match samples for split {split}")
+        self.is_metric_scale = True
+
+    def _get_views(self, idx, resolution, rng):
+        sample = self.scenes[idx]
+        images = [
+            cv2.imread(sample["first_image"], cv2.IMREAD_GRAYSCALE),
+            cv2.imread(sample["second_image"], cv2.IMREAD_GRAYSCALE),
+        ]
+        depths = [
+            cv2.imread(sample["depth_first"], cv2.IMREAD_UNCHANGED),
+            cv2.imread(sample["depth_second"], cv2.IMREAD_UNCHANGED),
+        ]
+        if any(value is None for value in (*images, *depths)):
+            raise FileNotFoundError(
+                f"incomplete rotation-match sample: {sample['session_id']}/"
+                f"{sample['first_input_index']}->{sample['second_input_index']}"
+            )
+        intrinsics = np.asarray(sample["intrinsics"], dtype=np.float32)
+        poses = [
+            np.eye(4, dtype=np.float32),
+            np.asarray(sample["camera_pose_second"], dtype=np.float32),
+        ]
+        raw_correspondences = [
+            np.asarray(sample["flow_corres_first"], dtype=np.float32),
+            np.asarray(sample["flow_corres_second"], dtype=np.float32),
+        ]
+        views = []
+        for view_index, (image, depth, pose, correspondences) in enumerate(
+            zip(images, depths, poses, raw_correspondences)
+        ):
+            views.append(
+                {
+                    "img": Image.fromarray(image).convert("RGB"),
+                    "depthmap": depth.astype(np.float32) * 0.0001,
+                    "camera_pose": pose.copy(),
+                    "camera_intrinsics": intrinsics.copy(),
+                    "source_intrinsics": intrinsics.copy(),
+                    "flow_corres": correspondences,
+                    "dataset": "D405IRRotationMatches",
+                    "label": sample["session_id"],
+                    "instance": (
+                        f"{sample['first_input_index']}->{sample['second_input_index']}:"
+                        f"{view_index}"
+                    ),
+                }
+            )
+        return views
+
+    def __getitem__(self, idx):
+        views = super().__getitem__(idx)
+        transformed = [
+            transform_correspondences_between_intrinsics(
+                view["flow_corres"],
+                view["source_intrinsics"],
+                view["camera_intrinsics"],
+            )
+            for view in views
+        ]
+        rounded = [np.rint(points).astype(np.int64) for points in transformed]
+        valid = np.ones(len(rounded[0]), dtype=bool)
+        for points, view in zip(rounded, views):
+            height, width = map(int, view["true_shape"])
+            valid &= (
+                (points[:, 0] >= 0)
+                & (points[:, 0] < width)
+                & (points[:, 1] >= 0)
+                & (points[:, 1] < height)
+            )
+        positives_first = rounded[0][valid]
+        positives_second = rounded[1][valid]
+        requested_positive_count = int(self.n_corres * (1.0 - self.nneg))
+        positive_count = min(len(positives_first), requested_positive_count)
+        if positive_count == 0:
+            raise ValueError(
+                "rotation-match sample has no visible transformed correspondences"
+            )
+        choice = self._rng.permutation(len(positives_first))[:positive_count]
+        correspondences = [positives_first[choice], positives_second[choice]]
+        negative_count = self.n_corres - positive_count
+        if negative_count:
+            for view_index, view in enumerate(views):
+                height, width = map(int, view["true_shape"])
+                negatives = np.column_stack(
+                    (
+                        self._rng.integers(0, width, size=negative_count),
+                        self._rng.integers(0, height, size=negative_count),
+                    )
+                ).astype(np.int64)
+                correspondences[view_index] = np.concatenate(
+                    (correspondences[view_index], negatives), axis=0
+                )
+        valid_corres = np.concatenate(
+            (
+                np.ones(positive_count, dtype=bool),
+                np.zeros(negative_count, dtype=bool),
+            )
+        )
+        for view, points in zip(views, correspondences):
+            view["corres"] = points
+            view["valid_corres"] = valid_corres.copy()
+        return views
