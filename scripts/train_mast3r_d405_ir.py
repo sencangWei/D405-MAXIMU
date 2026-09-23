@@ -89,6 +89,7 @@ def training_dataset_expression(
     manifest: Path,
     seed: int,
     high_motion_repeat: int,
+    disable_auto_crop: bool = False,
     low_observability_repeat: int = 1,
     low_observability_loss_weight: float = 1.0,
     low_observability_max_tracked_points: int = 160,
@@ -111,10 +112,11 @@ def training_dataset_expression(
             "low_observability_min_angular_speed_deg_s="
             f"{low_observability_min_angular_speed_deg_s:g}"
         )
+    augmentation_crop = "False" if disable_auto_crop else "'auto'"
     return (
         f"{dataset_class}(manifest={str(manifest)!r}, split='train', "
         "resolution=[(512,384),(512,336),(512,288),(512,256)], "
-        f"n_corres=4096, nneg=0.5, aug_crop='auto', seed={seed}, "
+        f"n_corres=4096, nneg=0.5, aug_crop={augmentation_crop}, seed={seed}, "
         f"high_motion_repeat={high_motion_repeat}{low_observability})"
     )
 
@@ -410,11 +412,16 @@ def main() -> int:
         "temporal": "D405IRTemporal",
         "rotation-matches": "D405IRRotationMatches",
     }[args.dataset_kind]
+    disable_auto_crop = (
+        dataset_class == "D405IRTemporal"
+        and args.training_criterion == "flow-matching"
+    )
     train_dataset = training_dataset_expression(
         dataset_class,
         manifest,
         args.seed,
         args.high_motion_repeat,
+        disable_auto_crop,
         args.low_observability_repeat,
         args.low_observability_loss_weight,
         args.low_observability_max_tracked_points,
@@ -446,6 +453,7 @@ def main() -> int:
         "train_scope": args.train_scope,
         "learning_rate": args.lr,
         "weight_decay": weight_decay,
+        "training_auto_crop": not disable_auto_crop,
         "high_motion_repeat": args.high_motion_repeat,
         "low_observability_repeat": args.low_observability_repeat,
         "low_observability_loss_weight": args.low_observability_loss_weight,

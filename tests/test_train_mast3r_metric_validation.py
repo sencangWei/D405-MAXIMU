@@ -202,6 +202,18 @@ def test_rotation_match_dataset_uses_fixed_crop_and_bounded_matches(tmp_path):
     assert "high_motion_repeat" not in expression
 
 
+def test_temporal_flow_matching_can_preserve_the_full_overlap(tmp_path):
+    expression = train.training_dataset_expression(
+        "D405IRTemporal",
+        tmp_path / "manifest.json",
+        seed=7,
+        high_motion_repeat=1,
+        disable_auto_crop=True,
+    )
+
+    assert "aug_crop=False" in expression
+
+
 def test_flow_matching_training_does_not_update_point_geometry_objective():
     criterion = train.training_criterion_expression("flow-matching", 1.0)
 
