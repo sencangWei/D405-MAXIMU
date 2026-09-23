@@ -1,0 +1,139 @@
+{
+  "schema": "umi_mast3r_d405_ir_training_corpus_v2",
+  "purpose": "lighthouse_free_d405_ir_domain_adaptation_with_batch_holdout",
+  "truth_policy": {
+    "source": "d405_stereo_ir_and_onboard_imu_only",
+    "never_input_to_slam": true,
+    "external_ground_truth_for_training": false,
+    "final_acceptance_requires_new_unseen_captures": true
+  },
+  "cross_validation": {
+    "method": "recording_batch_grouped_holdout",
+    "fold_count": 5,
+    "default_validation_fold": 4,
+    "per_session_parameter_overrides_forbidden": true,
+    "notes": "Sessions captured in the same short batch stay in one fold. Fold 4 holds out the 2026-09-16 and 2026-09-18 batches."
+  },
+  "datasets": [
+    {
+      "id": "d405_20260908_151750",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_151750"
+    },
+    {
+      "id": "d405_20260908_222718",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260908_222718"
+    },
+    {
+      "id": "d405_20260912_034633",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260912_034633"
+    },
+    {
+      "id": "d405_20260913_020724",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260913_020724"
+    },
+    {
+      "id": "d405_20260913_123725",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260913_123725"
+    },
+    {
+      "id": "d405_20260914_135732",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_135732"
+    },
+    {
+      "id": "d405_20260914_135946",
+      "fold": 0,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_135946"
+    },
+    {
+      "id": "d405_20260914_175024",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175024"
+    },
+    {
+      "id": "d405_20260914_175248",
+      "fold": 1,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_175248"
+    },
+    {
+      "id": "d405_20260914_202142",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_202142"
+    },
+    {
+      "id": "d405_20260914_202348",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260914_202348"
+    },
+    {
+      "id": "d405_20260915_001045",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_001045"
+    },
+    {
+      "id": "d405_20260915_001258",
+      "fold": 2,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_001258"
+    },
+    {
+      "id": "d405_20260915_103600",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_103600"
+    },
+    {
+      "id": "d405_20260915_123605",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_123605"
+    },
+    {
+      "id": "d405_20260915_123930",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_123930"
+    },
+    {
+      "id": "d405_20260915_124730",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260915_124730"
+    },
+    {
+      "id": "d405_20260916_115357",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260916_115357"
+    },
+    {
+      "id": "d405_20260916_120107",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260916_120107"
+    },
+    {
+      "id": "d405_20260916_120413",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260916_120413"
+    },
+    {
+      "id": "d405_20260917_233030",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260917_233030"
+    },
+    {
+      "id": "d405_20260917_235337",
+      "fold": 3,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260917_235337"
+    },
+    {
+      "id": "d405_20260918_002714",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260918_002714"
+    },
+    {
+      "id": "d405_20260918_003403",
+      "fold": 4,
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260918_003403"
+    }
+  ]
+}

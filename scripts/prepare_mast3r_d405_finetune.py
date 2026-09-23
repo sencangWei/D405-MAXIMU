@@ -12,6 +12,7 @@ import argparse
 import csv
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import cv2
@@ -191,6 +192,43 @@ def materialize_depth(sample: dict, output: Path) -> tuple[dict | None, str | No
     return result, None
 
 
+def materialize_samples(
+    samples: list[dict], output: Path, workers: int
+) -> tuple[list[dict], list[dict]]:
+    """Materialize stereo depth in input order with bounded parallelism."""
+    if workers < 1:
+        raise ValueError("depth materialization workers must be positive")
+
+    def run(sample: dict) -> tuple[dict, dict | None, str | None]:
+        result, reason = materialize_depth(sample, output)
+        return sample, result, reason
+
+    if workers == 1:
+        results = map(run, samples)
+    else:
+        executor = ThreadPoolExecutor(max_workers=workers)
+        results = executor.map(run, samples)
+
+    accepted = []
+    rejected = []
+    try:
+        for source, result, reason in results:
+            if result is None:
+                rejected.append(
+                    {
+                        "session_id": source["session_id"],
+                        "input_index": source["input_index"],
+                        "reason": reason,
+                    }
+                )
+            else:
+                accepted.append(result)
+    finally:
+        if workers != 1:
+            executor.shutdown()
+    return accepted, rejected
+
+
 def build_manifest(
     corpus_path: Path,
     export_root: Path,
@@ -206,6 +244,7 @@ def build_manifest(
     dense_motion_threshold_deg: float = 0.0,
     dense_motion_radius_frames: int = 0,
     consistency_tolerance_px: float = 1.0,
+    workers: int = 1,
 ) -> dict:
     if every < 1:
         raise ValueError("--every must be at least 1")
@@ -217,7 +256,7 @@ def build_manifest(
     exports = discover_exports(export_root, extra_datasets)
     output.mkdir(parents=True, exist_ok=True)
 
-    samples: list[dict] = []
+    candidate_samples: list[dict] = []
     missing_sessions: list[str] = []
     rejected: list[dict] = []
     source_exports: list[dict] = []
@@ -282,14 +321,15 @@ def build_manifest(
                 "minimum_valid_depth_ratio": minimum_valid_depth_ratio,
                 "consistency_tolerance_px": consistency_tolerance_px,
             }
-            if materialize:
-                sample, reason = materialize_depth(sample, output)
-                if sample is None:
-                    rejected.append(
-                        {"session_id": dataset["id"], "input_index": index, "reason": reason}
-                    )
-                    continue
-            samples.append(sample)
+            candidate_samples.append(sample)
+
+    if materialize:
+        samples, depth_rejections = materialize_samples(
+            candidate_samples, output, workers
+        )
+        rejected.extend(depth_rejections)
+    else:
+        samples = candidate_samples
 
     counts = {
         split: sum(sample["split"] == split for sample in samples)
@@ -361,11 +401,14 @@ def main() -> int:
     parser.add_argument("--materialize-depth", action="store_true")
     parser.add_argument("--dense-motion-threshold-deg", type=float, default=0.0)
     parser.add_argument("--dense-motion-radius-frames", type=int, default=0)
+    parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args()
     if args.dense_motion_radius_frames < 0:
         raise ValueError("dense motion radius must be non-negative")
     if args.consistency_tolerance_px <= 0.0:
         raise ValueError("stereo consistency tolerance must be positive")
+    if args.workers < 1:
+        raise ValueError("workers must be positive")
     report = build_manifest(
         args.corpus.resolve(),
         args.export_root.resolve(),
@@ -381,6 +424,7 @@ def main() -> int:
         args.dense_motion_threshold_deg,
         args.dense_motion_radius_frames,
         args.consistency_tolerance_px,
+        args.workers,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
     return 0
