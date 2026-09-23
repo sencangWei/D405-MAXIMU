@@ -68,6 +68,20 @@ def test_metric_relative_training_balances_scale_and_temporal_shape():
     assert criterion.endswith("100*D405RelativeMotionLoss()")
 
 
+def test_geometry_only_training_omits_frozen_descriptor_matching_loss():
+    criterion = train.training_criterion_expression(
+        "metric-relative",
+        10.0,
+        relative_motion_weight=100.0,
+        include_matching=False,
+    )
+
+    assert "ConfLoss(Regr3D" in criterion
+    assert "ConfMatchingLoss" not in criterion
+    assert "10*D405MetricCorrespondenceLoss()" in criterion
+    assert criterion.endswith("100*D405RelativeMotionLoss()")
+
+
 def test_metric_relative_training_requires_both_positive_weights():
     with pytest.raises(ValueError, match="relative motion weight must be positive"):
         train.training_criterion_expression(

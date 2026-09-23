@@ -99,16 +99,16 @@ def training_criterion_expression(
     mode: str,
     geometry_loss_weight: float,
     relative_motion_weight: float | None = None,
+    include_matching: bool = True,
 ) -> str:
     matching = (
         "0.075*ConfMatchingLoss(MatchingLoss(InfoNCE(mode='proper', "
         "temperature=0.05), negatives_padding=0, blocksize=4096), "
         "alpha=10.0, confmode='mean')"
     )
-    base = (
-        "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2) + "
-        f"{matching}"
-    )
+    base = "ConfLoss(Regr3D(L21, norm_mode='?avg_dis'), alpha=0.2)"
+    if include_matching:
+        base = f"{base} + {matching}"
     if mode == "flow-matching":
         return matching
     if mode == "legacy":
@@ -267,6 +267,7 @@ def main() -> int:
         if args.geometry_loss_weight is None
         else args.geometry_loss_weight
     )
+    include_matching = args.train_scope != "geometry-only"
     if args.high_motion_repeat < 1:
         parser.error("--high-motion-repeat must be positive")
     if args.low_observability_repeat < 1:
@@ -424,6 +425,7 @@ def main() -> int:
         "training_criterion": args.training_criterion,
         "relative_motion_weight": args.relative_motion_weight,
         "geometry_loss_weight": geometry_loss_weight,
+        "descriptor_matching_loss_enabled": include_matching,
         "evaluation_only": args.eval_only,
         "validation_criterion": args.validation_criterion,
         "train_dataset": train_dataset,
@@ -469,6 +471,7 @@ def main() -> int:
                 args.training_criterion,
                 geometry_loss_weight,
                 args.relative_motion_weight,
+                include_matching,
             ),
             "--test_criterion",
             validation_criterion_expression(args.validation_criterion),

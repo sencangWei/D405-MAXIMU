@@ -11,6 +11,7 @@ CUDA_ROOT="$TOOL_DIR/.cuda"
 CHECKPOINT="${MAST3R_SLAM_CHECKPOINT:-$TOOL_DIR/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth}"
 CROP_BOTTOM_PX="${MAST3R_CROP_BOTTOM_PX:-0}"
 MASK_FIXED_SELF="${MAST3R_MASK_FIXED_SELF:-0}"
+REUSE_DATASET_DIR="${MAST3R_REUSE_DATASET_DIR:-}"
 
 usage() {
     echo "用法:"
@@ -71,30 +72,71 @@ run_mast3r() {
     source /opt/ros/humble/setup.bash
     source /home/robot/ros2_ws/install/setup.bash
     set -u
-    local prepare_args=(
-        --session "$session"
-        --output "$output/dataset"
-        --stream "$stream"
-        --start-index "$start_index"
-        --crop-bottom-px "$CROP_BOTTOM_PX"
-    )
-    if [[ "$MASK_FIXED_SELF" == "1" ]]; then
-        prepare_args+=(--mask-fixed-self)
+    if [[ -n "$REUSE_DATASET_DIR" ]]; then
+        [[ "$stream" == "infrared_left" && "$max_frames" -eq 0 && "$start_index" -eq 0 ]] || {
+            echo "复用预处理数据只支持完整 infrared_left 会话" >&2
+            exit 2
+        }
+        local reuse_dataset
+        reuse_dataset="$(realpath "$REUSE_DATASET_DIR")"
+        for required in dataset_manifest.json frames.csv calibration.yaml imu_rotation_priors.csv; do
+            [[ -f "$reuse_dataset/$required" ]] || {
+                echo "复用预处理数据缺少: $reuse_dataset/$required" >&2
+                exit 2
+            }
+        done
+        local reuse_source_session
+        reuse_source_session="$("$PYTHON" - "$reuse_dataset/dataset_manifest.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    manifest = json.load(stream)
+print(manifest.get("source_session", ""))
+PY
+)"
+        [[ -n "$reuse_source_session" ]] || {
+            echo "复用预处理数据未记录 source_session" >&2
+            exit 2
+        }
+        if [[ "$reuse_source_session" != "$(realpath "$session")" ]]; then
+            echo "复用预处理数据与当前会话不匹配:" >&2
+            echo "  dataset: $reuse_source_session" >&2
+            echo "  session: $(realpath "$session")" >&2
+            exit 2
+        fi
+        [[ ! -e "$output/dataset" && ! -L "$output/dataset" ]] || {
+            echo "复用目标已存在: $output/dataset" >&2
+            exit 2
+        }
+        ln -s "$reuse_dataset" "$output/dataset"
+        echo "复用已验证预处理数据: $reuse_dataset"
+    else
+        local prepare_args=(
+            --session "$session"
+            --output "$output/dataset"
+            --stream "$stream"
+            --start-index "$start_index"
+            --crop-bottom-px "$CROP_BOTTOM_PX"
+        )
+        if [[ "$MASK_FIXED_SELF" == "1" ]]; then
+            prepare_args+=(--mask-fixed-self)
+        fi
+        if [[ "$max_frames" -gt 0 ]]; then
+            prepare_args+=(--max-frames "$max_frames")
+        fi
+        if [[ "$stream" == "infrared_left" ]]; then
+            prepare_args+=(--include-stereo-right)
+        fi
+        python3 "$ROOT_DIR/scripts/prepare_mast3r_slam_dataset.py" "${prepare_args[@]}"
+        python3 "$ROOT_DIR/scripts/prepare_mast3r_imu_rotation_priors.py" \
+            --session "$session" \
+            --dataset "$output/dataset" \
+            --stream "$stream" \
+            --vins-config "$VINS_CONFIG" \
+            --imu-calibration "$IMU_CALIBRATION" \
+            --expected-td-s -0.009109323
     fi
-    if [[ "$max_frames" -gt 0 ]]; then
-        prepare_args+=(--max-frames "$max_frames")
-    fi
-    if [[ "$stream" == "infrared_left" ]]; then
-        prepare_args+=(--include-stereo-right)
-    fi
-    python3 "$ROOT_DIR/scripts/prepare_mast3r_slam_dataset.py" "${prepare_args[@]}"
-    python3 "$ROOT_DIR/scripts/prepare_mast3r_imu_rotation_priors.py" \
-        --session "$session" \
-        --dataset "$output/dataset" \
-        --stream "$stream" \
-        --vins-config "$VINS_CONFIG" \
-        --imu-calibration "$IMU_CALIBRATION" \
-        --expected-td-s -0.009109323
 
     export CUDA_HOME="$CUDA_ROOT"
     export PATH="$CUDA_HOME/bin:$PATH"
