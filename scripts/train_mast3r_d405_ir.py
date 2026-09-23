@@ -134,6 +134,19 @@ def training_criterion_expression(
             "D405MetricCorrespondenceLoss() + "
             f"{relative_motion_weight:g}*D405RelativeMotionLoss()"
         )
+    if mode == "window-scale":
+        if geometry_loss_weight <= 0:
+            raise ValueError("window scale weight must be positive")
+        return f"{base} + {geometry_loss_weight:g}*D405WindowScaleLoss()"
+    if mode == "window-scale-relative":
+        if geometry_loss_weight <= 0:
+            raise ValueError("window scale weight must be positive")
+        if relative_motion_weight is None or relative_motion_weight <= 0:
+            raise ValueError("relative motion weight must be positive")
+        return (
+            f"{base} + {geometry_loss_weight:g}*D405WindowScaleLoss() + "
+            f"{relative_motion_weight:g}*D405RelativeMotionLoss()"
+        )
     raise ValueError(f"unsupported training criterion: {mode}")
 
 
@@ -159,6 +172,8 @@ def validation_criterion_expression(mode: str) -> str:
         return "D405RelativeMotionLoss()"
     if mode == "metric-correspondence":
         return "D405MetricCorrespondenceLoss()"
+    if mode == "window-scale":
+        return "D405WindowScaleLoss()"
     raise ValueError(f"unsupported validation criterion: {mode}")
 
 
@@ -213,6 +228,8 @@ def main() -> int:
             "metric-correspondence",
             "metric-relative",
             "flow-matching",
+            "window-scale",
+            "window-scale-relative",
         ),
         default="legacy",
     )
@@ -234,6 +251,7 @@ def main() -> int:
             "metric-correspondence",
             "scale-shift-invariant",
             "flow-matching",
+            "window-scale",
         ),
         default="metric",
         help=(
@@ -307,6 +325,7 @@ def main() -> int:
     from mast3r_d405_losses import (
         D405MetricCorrespondenceLoss,
         D405RelativeMotionLoss,
+        D405WindowScaleLoss,
     )
 
     original_mast3r_class = AsymmetricMASt3R
@@ -343,6 +362,7 @@ def main() -> int:
         "D405IRRotationMatches": D405IRRotationMatches,
         "D405RelativeMotionLoss": D405RelativeMotionLoss,
         "D405MetricCorrespondenceLoss": D405MetricCorrespondenceLoss,
+        "D405WindowScaleLoss": D405WindowScaleLoss,
     }.items():
         setattr(dust3r.training, name, value)
 

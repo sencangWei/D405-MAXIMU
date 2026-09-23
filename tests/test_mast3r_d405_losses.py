@@ -12,8 +12,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from mast3r_d405_losses import (
     D405MetricCorrespondenceLoss,
     D405RelativeMotionLoss,
+    D405WindowScaleLoss,
     correspondence_metric_errors,
     correspondence_motion_errors,
+    window_log_scale_errors,
 )
 from mast3r_d405_ir_dataset import (
     low_observability_sample_weight,
@@ -155,6 +157,71 @@ def test_metric_correspondence_error_is_zero_for_metric_predictions():
     )
 
     assert torch.allclose(errors, torch.zeros_like(errors), atol=1e-7)
+
+
+def test_window_log_scale_error_ignores_shape_preserving_metric_points():
+    points = torch.tensor([[[[0.2, 0.0, 1.0], [0.0, 0.3, 1.2]]]])
+    coordinates = torch.tensor([[[0, 0], [1, 0]]])
+
+    errors = window_log_scale_errors(
+        points,
+        points,
+        points.clone(),
+        points.clone(),
+        coordinates,
+        coordinates,
+        torch.tensor([[True, True]]),
+    )
+
+    assert torch.allclose(errors, torch.zeros_like(errors), atol=1e-7)
+
+
+def test_window_log_scale_error_reports_global_scale_without_pointwise_shape_loss():
+    points = torch.tensor([[[[0.2, 0.0, 1.0], [0.0, 0.3, 1.2]]]])
+    coordinates = torch.tensor([[[0, 0], [1, 0]]])
+
+    errors = window_log_scale_errors(
+        points,
+        points,
+        points * 1.1,
+        points * 1.1,
+        coordinates,
+        coordinates,
+        torch.tensor([[True, True]]),
+    )
+
+    assert errors.item() == pytest.approx(torch.log(torch.tensor(1.1)).item())
+
+
+def test_window_scale_loss_applies_temporal_sample_weight():
+    camera_pose = torch.eye(4).repeat(2, 1, 1)
+    points = torch.tensor([[[[0.0, 0.0, 1.0]]]]).repeat(2, 1, 1, 1)
+    coordinates = torch.zeros((2, 1, 2), dtype=torch.long)
+    gt1 = {
+        "camera_pose": camera_pose,
+        "pts3d": points,
+        "corres": coordinates,
+        "valid_corres": torch.ones((2, 1), dtype=torch.bool),
+        "temporal_loss_weight": torch.tensor([1.0, 3.0]),
+    }
+    gt2 = {"camera_pose": camera_pose, "pts3d": points, "corres": coordinates}
+    pred1 = points.clone()
+    pred2 = points.clone()
+    pred1[0] *= 1.1
+    pred2[0] *= 1.1
+    pred1[1] *= 1.2
+    pred2[1] *= 1.2
+
+    loss, details = D405WindowScaleLoss().compute_loss(
+        gt1,
+        gt2,
+        {"pts3d": pred1},
+        {"pts3d_in_other_view": pred2},
+    )
+
+    expected = (torch.log(torch.tensor(1.1)) + 3 * torch.log(torch.tensor(1.2))) / 2
+    assert loss.item() == pytest.approx(expected.item())
+    assert details["window_scale_samples"] == 2
 
 
 def test_metric_correspondence_loss_transforms_world_points_to_camera1():

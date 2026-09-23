@@ -121,6 +121,65 @@ def correspondence_metric_errors(
     return torch.cat((errors1[valid], errors2[valid]))
 
 
+def window_log_scale_errors(
+    gt_points1: torch.Tensor,
+    gt_points2: torch.Tensor,
+    pred_points1: torch.Tensor,
+    pred_points2: torch.Tensor,
+    correspondence1: torch.Tensor,
+    correspondence2: torch.Tensor,
+    valid_correspondence: torch.Tensor,
+    minimum_range_m: float = 0.05,
+) -> torch.Tensor:
+    """Return one robust global log-scale error per temporal sample."""
+    batch_size, match_count = correspondence1.shape[:2]
+    batch_index = torch.arange(
+        batch_size, device=pred_points1.device
+    )[:, None].expand(batch_size, match_count)
+    x1, y1 = correspondence1.long().unbind(-1)
+    x2, y2 = correspondence2.long().unbind(-1)
+    gt_ranges = torch.cat(
+        (
+            torch.linalg.vector_norm(
+                gt_points1[batch_index, y1, x1], dim=-1
+            ),
+            torch.linalg.vector_norm(
+                gt_points2[batch_index, y2, x2], dim=-1
+            ),
+        ),
+        dim=1,
+    )
+    pred_ranges = torch.cat(
+        (
+            torch.linalg.vector_norm(
+                pred_points1[batch_index, y1, x1], dim=-1
+            ),
+            torch.linalg.vector_norm(
+                pred_points2[batch_index, y2, x2], dim=-1
+            ),
+        ),
+        dim=1,
+    )
+    valid = torch.cat((valid_correspondence.bool(), valid_correspondence.bool()), dim=1)
+    valid &= (
+        torch.isfinite(gt_ranges)
+        & torch.isfinite(pred_ranges)
+        & (gt_ranges >= minimum_range_m)
+        & (pred_ranges >= minimum_range_m)
+    )
+    errors = []
+    for index in range(batch_size):
+        if not valid[index].any():
+            continue
+        log_ratios = torch.log(pred_ranges[index, valid[index]]) - torch.log(
+            gt_ranges[index, valid[index]]
+        )
+        errors.append(torch.abs(log_ratios.mean()))
+    if not errors:
+        return pred_points1.new_empty((0,))
+    return torch.stack(errors)
+
+
 class D405RelativeMotionLoss(MultiLoss):
     """Supervise cross-view rigid motion without scene-depth domination.
 
@@ -209,4 +268,44 @@ class D405MetricCorrespondenceLoss(MultiLoss):
             "metric_correspondence_weighted_l21_m": float(loss.detach()),
             "metric_correspondence_p95_m": float(p95),
             "metric_correspondence_points": int(errors.numel()),
+        }
+
+
+class D405WindowScaleLoss(MultiLoss):
+    """Constrain only temporal-window metric scale, not pointwise shape."""
+
+    def get_name(self):
+        return type(self).__name__
+
+    def compute_loss(self, gt1, gt2, pred1, pred2, **_kwargs):
+        in_camera1 = inv(gt1["camera_pose"])
+        gt_points1 = geotrf(in_camera1, gt1["pts3d"])
+        gt_points2 = geotrf(in_camera1, gt2["pts3d"])
+        batch_size = pred1["pts3d"].shape[0]
+        weights = temporal_loss_weights(gt1, batch_size, pred1["pts3d"])
+        error_batches = [
+            window_log_scale_errors(
+                gt_points1[index : index + 1],
+                gt_points2[index : index + 1],
+                pred1["pts3d"][index : index + 1],
+                pred2["pts3d_in_other_view"][index : index + 1],
+                gt1["corres"][index : index + 1],
+                gt2["corres"][index : index + 1],
+                gt1["valid_corres"][index : index + 1],
+            )
+            for index in range(batch_size)
+        ]
+        loss, errors = weighted_batch_error_mean(
+            error_batches, weights, pred1["pts3d"]
+        )
+        if errors.numel() == 0:
+            mean = p95 = loss.detach()
+        else:
+            mean = errors.detach().mean()
+            p95 = torch.quantile(errors.detach(), 0.95)
+        return loss, {
+            "window_log_scale_error": float(mean),
+            "window_log_scale_weighted_error": float(loss.detach()),
+            "window_log_scale_p95": float(p95),
+            "window_scale_samples": int(errors.numel()),
         }

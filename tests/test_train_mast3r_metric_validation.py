@@ -142,6 +142,27 @@ def test_flow_matching_validation_is_matching_only():
     assert "Regr3D" not in criterion
 
 
+def test_window_scale_training_is_global_scale_only_auxiliary():
+    criterion = train.training_criterion_expression("window-scale", 12.0)
+
+    assert criterion.endswith("12*D405WindowScaleLoss()")
+
+
+def test_window_scale_validation_is_registered():
+    assert train.validation_criterion_expression("window-scale") == (
+        "D405WindowScaleLoss()"
+    )
+
+
+def test_window_scale_relative_training_preserves_motion_objective():
+    criterion = train.training_criterion_expression(
+        "window-scale-relative", 1.0, relative_motion_weight=100.0
+    )
+
+    assert "1*D405WindowScaleLoss()" in criterion
+    assert criterion.endswith("100*D405RelativeMotionLoss()")
+
+
 def test_unknown_validation_criterion_is_rejected():
     with pytest.raises(ValueError, match="unsupported validation criterion"):
         train.validation_criterion_expression("unknown")
