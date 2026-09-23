@@ -59,12 +59,24 @@ def training_dataset_expression(
     manifest: Path,
     seed: int,
     high_motion_repeat: int,
+    low_observability_repeat: int = 1,
+    low_observability_max_tracked_points: int = 160,
+    low_observability_min_angular_speed_deg_s: float = 8.0,
 ) -> str:
+    low_observability = ""
+    if dataset_class == "D405IRTemporal":
+        low_observability = (
+            f", low_observability_repeat={low_observability_repeat}, "
+            "low_observability_max_tracked_points="
+            f"{low_observability_max_tracked_points}, "
+            "low_observability_min_angular_speed_deg_s="
+            f"{low_observability_min_angular_speed_deg_s:g}"
+        )
     return (
         f"{dataset_class}(manifest={str(manifest)!r}, split='train', "
         "resolution=[(512,384),(512,336),(512,288),(512,256)], "
         f"n_corres=4096, nneg=0.5, aug_crop='auto', seed={seed}, "
-        f"high_motion_repeat={high_motion_repeat})"
+        f"high_motion_repeat={high_motion_repeat}{low_observability})"
     )
 
 
@@ -159,6 +171,13 @@ def main() -> int:
     )
     parser.add_argument("--lr", type=float, default=1e-6)
     parser.add_argument("--high-motion-repeat", type=int, default=3)
+    parser.add_argument("--low-observability-repeat", type=int, default=1)
+    parser.add_argument(
+        "--low-observability-max-tracked-points", type=int, default=160
+    )
+    parser.add_argument(
+        "--low-observability-min-angular-speed-deg-s", type=float, default=8.0
+    )
     parser.add_argument(
         "--training-criterion",
         choices=(
@@ -203,6 +222,14 @@ def main() -> int:
     )
     if args.high_motion_repeat < 1:
         parser.error("--high-motion-repeat must be positive")
+    if args.low_observability_repeat < 1:
+        parser.error("--low-observability-repeat must be positive")
+    if args.low_observability_max_tracked_points <= 0:
+        parser.error("--low-observability-max-tracked-points must be positive")
+    if args.low_observability_min_angular_speed_deg_s < 0.0:
+        parser.error(
+            "--low-observability-min-angular-speed-deg-s must be non-negative"
+        )
     if args.dry_run and args.eval_only:
         parser.error("--dry-run and --eval-only are mutually exclusive")
 
@@ -293,6 +320,9 @@ def main() -> int:
         manifest,
         args.seed,
         args.high_motion_repeat,
+        args.low_observability_repeat,
+        args.low_observability_max_tracked_points,
+        args.low_observability_min_angular_speed_deg_s,
     )
     test_dataset = (
         f"{dataset_class}(manifest={str(manifest)!r}, split='validation', "
@@ -318,6 +348,13 @@ def main() -> int:
         "train_scope": args.train_scope,
         "learning_rate": args.lr,
         "high_motion_repeat": args.high_motion_repeat,
+        "low_observability_repeat": args.low_observability_repeat,
+        "low_observability_max_tracked_points": (
+            args.low_observability_max_tracked_points
+        ),
+        "low_observability_min_angular_speed_deg_s": (
+            args.low_observability_min_angular_speed_deg_s
+        ),
         "training_criterion": args.training_criterion,
         "relative_motion_weight": args.relative_motion_weight,
         "geometry_loss_weight": geometry_loss_weight,

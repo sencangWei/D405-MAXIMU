@@ -82,6 +82,36 @@ def test_metric_correspondence_validation_preserves_metre_scale():
     )
 
 
+def test_training_dataset_expression_can_repeat_low_observability_turns(tmp_path):
+    expression = train.training_dataset_expression(
+        "D405IRTemporal",
+        tmp_path / "manifest.json",
+        seed=7,
+        high_motion_repeat=1,
+        low_observability_repeat=3,
+        low_observability_max_tracked_points=160,
+        low_observability_min_angular_speed_deg_s=8.0,
+    )
+
+    assert "high_motion_repeat=1" in expression
+    assert "low_observability_repeat=3" in expression
+    assert "low_observability_max_tracked_points=160" in expression
+    assert "low_observability_min_angular_speed_deg_s=8" in expression
+
+
+def test_stereo_dataset_expression_does_not_receive_temporal_only_arguments(tmp_path):
+    expression = train.training_dataset_expression(
+        "D405IRStereo",
+        tmp_path / "manifest.json",
+        seed=7,
+        high_motion_repeat=1,
+        low_observability_repeat=3,
+    )
+
+    assert "high_motion_repeat=1" in expression
+    assert "low_observability" not in expression
+
+
 def test_unknown_validation_criterion_is_rejected():
     with pytest.raises(ValueError, match="unsupported validation criterion"):
         train.validation_criterion_expression("unknown")

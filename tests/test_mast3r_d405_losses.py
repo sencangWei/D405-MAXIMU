@@ -14,6 +14,34 @@ from mast3r_d405_losses import (
     correspondence_metric_errors,
     correspondence_motion_errors,
 )
+from mast3r_d405_ir_dataset import low_observability_temporal_samples
+
+
+def test_low_observability_temporal_samples_require_weak_geometry_and_turning():
+    samples = [
+        {"tracked_depth_points": 120, "angular_speed_deg_s": 12.0},
+        {"tracked_depth_points": 240, "angular_speed_deg_s": 12.0},
+        {"tracked_depth_points": 120, "angular_speed_deg_s": 4.0},
+    ]
+
+    selected = low_observability_temporal_samples(samples, 160, 8.0)
+
+    assert selected == samples[:1]
+
+
+def test_low_observability_temporal_samples_reject_invalid_thresholds():
+    with pytest.raises(ValueError, match="tracked depth points"):
+        low_observability_temporal_samples([], 0, 8.0)
+    with pytest.raises(ValueError, match="angular speed"):
+        low_observability_temporal_samples([], 160, -1.0)
+
+
+def test_low_observability_selection_does_not_depend_on_existing_repetition():
+    sample = {"tracked_depth_points": 120, "angular_speed_deg_s": 12.0}
+
+    selected = low_observability_temporal_samples([sample], 160, 8.0)
+
+    assert selected == [sample]
 
 
 def test_correspondence_motion_error_cancels_common_scene_offset():

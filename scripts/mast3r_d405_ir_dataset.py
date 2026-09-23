@@ -14,6 +14,25 @@ from mast3r.datasets.base.mast3r_base_stereo_view_dataset import (
 )
 
 
+def low_observability_temporal_samples(
+    scenes: list[dict],
+    maximum_tracked_depth_points: int,
+    minimum_angular_speed_deg_s: float,
+) -> list[dict]:
+    """Select labelled turns whose visual geometry is weak but still valid."""
+    if maximum_tracked_depth_points <= 0:
+        raise ValueError("maximum tracked depth points must be positive")
+    if minimum_angular_speed_deg_s < 0.0:
+        raise ValueError("minimum angular speed must be non-negative")
+    return [
+        sample
+        for sample in scenes
+        if int(sample["tracked_depth_points"]) <= maximum_tracked_depth_points
+        and float(sample["angular_speed_deg_s"])
+        >= minimum_angular_speed_deg_s
+    ]
+
+
 def motion_blur_kernel(length: int, angle_deg: float) -> np.ndarray:
     length = max(1, int(length) | 1)
     kernel = np.zeros((length, length), dtype=np.float32)
@@ -124,6 +143,9 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
         manifest: str,
         split: str,
         high_motion_repeat: int = 3,
+        low_observability_repeat: int = 1,
+        low_observability_max_tracked_points: int = 160,
+        low_observability_min_angular_speed_deg_s: float = 8.0,
         blur_probability: float = 0.35,
         maximum_blur_px: int = 13,
         **kwargs,
@@ -135,9 +157,19 @@ class D405IRTemporal(MASt3RBaseStereoViewDataset):
         if payload.get("result") != "READY" or "temporal" not in payload.get("schema", ""):
             raise ValueError("D405 temporal training manifest is not ready")
         scenes = [sample for sample in payload["samples"] if sample["split"] == split]
+        base_scenes = list(scenes)
         if split == "train" and high_motion_repeat > 1:
             fast = [sample for sample in scenes if sample["motion_bin"] in ("fast", "very_fast")]
             scenes.extend(fast * (high_motion_repeat - 1))
+        if low_observability_repeat < 1:
+            raise ValueError("low observability repeat must be positive")
+        if split == "train" and low_observability_repeat > 1:
+            weak_turns = low_observability_temporal_samples(
+                base_scenes,
+                low_observability_max_tracked_points,
+                low_observability_min_angular_speed_deg_s,
+            )
+            scenes.extend(weak_turns * (low_observability_repeat - 1))
         if not scenes:
             raise ValueError(f"no D405 temporal samples for split {split}")
         self.scenes = scenes
