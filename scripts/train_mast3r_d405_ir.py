@@ -38,20 +38,50 @@ def frozen_encoder_model(model: str) -> str:
 def configure_trainable_parameters(model, train_scope: str):
     if train_scope == "decoder-heads":
         return model
-    if train_scope not in {"heads-only", "descriptors-only", "geometry-only"}:
+    if train_scope not in {
+        "heads-only",
+        "descriptors-only",
+        "geometry-only",
+        "descriptor-confidence-only",
+    }:
         raise ValueError(f"unsupported train scope: {train_scope}")
     for parameter in model.parameters():
         parameter.requires_grad = False
+    gradient_handles = []
     for head in (model.downstream_head1, model.downstream_head2):
         if train_scope == "descriptors-only":
             trainable_module = head.head_local_features
         elif train_scope == "geometry-only":
             trainable_module = head.dpt
+        elif train_scope == "descriptor-confidence-only":
+            if not head.two_confs:
+                raise ValueError(
+                    "descriptor-confidence-only requires an independent descriptor confidence channel"
+                )
+            output = head.head_local_features.fc2
+            confidence_rows = head.patch_size**2
+            if output.out_features != (head.local_feat_dim + 1) * confidence_rows:
+                raise ValueError("unexpected descriptor head output layout")
+            for parameter in (output.weight, output.bias):
+                parameter.requires_grad = True
+                def keep_confidence_rows(gradient, rows=confidence_rows):
+                    masked = gradient.clone()
+                    masked[:-rows].zero_()
+                    return masked
+
+                gradient_handles.append(parameter.register_hook(keep_confidence_rows))
+            continue
         else:
             trainable_module = head
         for parameter in trainable_module.parameters():
             parameter.requires_grad = True
+    model._d405_gradient_mask_handles = gradient_handles
     return model
+
+
+def training_weight_decay(train_scope: str) -> float:
+    """Avoid AdamW updates to masked descriptor rows."""
+    return 0.0 if train_scope == "descriptor-confidence-only" else 0.05
 
 
 def training_dataset_expression(
@@ -205,6 +235,7 @@ def main() -> int:
             "heads-only",
             "descriptors-only",
             "geometry-only",
+            "descriptor-confidence-only",
         ),
         default="decoder-heads",
     )
@@ -268,6 +299,7 @@ def main() -> int:
         else args.geometry_loss_weight
     )
     include_matching = args.train_scope != "geometry-only"
+    weight_decay = training_weight_decay(args.train_scope)
     if args.high_motion_repeat < 1:
         parser.error("--high-motion-repeat must be positive")
     if args.low_observability_repeat < 1:
@@ -413,6 +445,7 @@ def main() -> int:
         "dataset_kind": args.dataset_kind,
         "train_scope": args.train_scope,
         "learning_rate": args.lr,
+        "weight_decay": weight_decay,
         "high_motion_repeat": args.high_motion_repeat,
         "low_observability_repeat": args.low_observability_repeat,
         "low_observability_loss_weight": args.low_observability_loss_weight,
@@ -477,6 +510,7 @@ def main() -> int:
             validation_criterion_expression(args.validation_criterion),
             "--pretrained", str(checkpoint),
             "--lr", str(args.lr),
+            "--weight_decay", str(weight_decay),
             "--min_lr", "1e-7",
             "--warmup_epochs", "1",
             "--batch_size", str(args.batch_size),

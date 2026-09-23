@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+import torch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,6 +81,66 @@ def test_geometry_only_training_omits_frozen_descriptor_matching_loss():
     assert "ConfMatchingLoss" not in criterion
     assert "10*D405MetricCorrespondenceLoss()" in criterion
     assert criterion.endswith("100*D405RelativeMotionLoss()")
+
+
+def test_descriptor_confidence_only_masks_every_other_output_row():
+    class LocalFeatures(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.fc2 = torch.nn.Linear(3, 5 * 4)
+
+    class Head(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.local_feat_dim = 4
+            self.patch_size = 2
+            self.two_confs = True
+            self.head_local_features = LocalFeatures()
+
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.encoder = torch.nn.Linear(3, 3)
+            self.downstream_head1 = Head()
+            self.downstream_head2 = Head()
+
+    model = train.configure_trainable_parameters(Model(), "descriptor-confidence-only")
+    loss = sum(
+        head.head_local_features.fc2.weight.sum()
+        + head.head_local_features.fc2.bias.sum()
+        for head in (model.downstream_head1, model.downstream_head2)
+    )
+    loss.backward()
+
+    assert not model.encoder.weight.requires_grad
+    for head in (model.downstream_head1, model.downstream_head2):
+        weight = head.head_local_features.fc2.weight
+        bias = head.head_local_features.fc2.bias
+        assert weight.requires_grad and bias.requires_grad
+        assert torch.count_nonzero(weight.grad[:16]) == 0
+        assert torch.count_nonzero(bias.grad[:16]) == 0
+        assert torch.all(weight.grad[16:] == 1)
+        assert torch.all(bias.grad[16:] == 1)
+
+
+def test_descriptor_confidence_only_requires_independent_confidence_channel():
+    class Head:
+        two_confs = False
+
+    class Model:
+        downstream_head1 = Head()
+        downstream_head2 = Head()
+
+        def parameters(self):
+            return []
+
+    with pytest.raises(ValueError, match="independent descriptor confidence"):
+        train.configure_trainable_parameters(Model(), "descriptor-confidence-only")
+
+
+def test_descriptor_confidence_only_disables_weight_decay_for_masked_rows():
+    assert train.training_weight_decay("descriptor-confidence-only") == 0.0
+    assert train.training_weight_decay("geometry-only") == 0.05
 
 
 def test_metric_relative_training_requires_both_positive_weights():
