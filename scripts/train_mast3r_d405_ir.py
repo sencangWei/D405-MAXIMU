@@ -226,6 +226,10 @@ def disable_evaluation_checkpoint_writes(training_module) -> None:
     training_module.save_final_model = lambda *args, **kwargs: None
 
 
+def disable_optimizer_checkpoint_writes(training_module) -> None:
+    training_module.misc.save_model = lambda *args, **kwargs: None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mast3r-repo", type=Path, default=DEFAULT_TRAIN_REPO)
@@ -307,6 +311,7 @@ def main() -> int:
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--eval-only", action="store_true")
+    parser.add_argument("--final-only-checkpoint", action="store_true")
     args = parser.parse_args()
     geometry_loss_weight = (
         args.relative_motion_weight
@@ -329,6 +334,8 @@ def main() -> int:
         )
     if args.dry_run and args.eval_only:
         parser.error("--dry-run and --eval-only are mutually exclusive")
+    if args.eval_only and args.final_only_checkpoint:
+        parser.error("--eval-only and --final-only-checkpoint are mutually exclusive")
 
     repo = args.mast3r_repo.resolve()
     manifest = args.manifest.resolve()
@@ -485,6 +492,8 @@ def main() -> int:
         "train_dataset": train_dataset,
         "test_dataset": test_dataset,
     }
+    if args.final_only_checkpoint:
+        run_manifest["checkpoint_policy"] = "final_only_no_optimizer_state"
     run_manifest_path = output / "run_manifest.json"
     run_manifest_path.write_text(
         json.dumps(run_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -560,6 +569,8 @@ def main() -> int:
 
         dust3r.training.misc.load_model = load_model_for_evaluation
         disable_evaluation_checkpoint_writes(dust3r.training)
+    elif args.final_only_checkpoint:
+        disable_optimizer_checkpoint_writes(dust3r.training)
     dust3r.training.train(training_args)
     if args.eval_only:
         run_manifest["status"] = "COMPLETE_EVALUATION"

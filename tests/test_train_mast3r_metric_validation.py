@@ -331,3 +331,20 @@ def test_evaluation_disables_periodic_and_final_checkpoint_writes():
     Training.save_final_model()
 
     assert calls == []
+
+
+def test_final_only_training_skips_optimizer_checkpoints_but_saves_model():
+    calls = []
+
+    class Misc:
+        save_model = lambda *args, **kwargs: calls.append("optimizer")
+
+    class Training:
+        misc = Misc()
+        save_final_model = lambda *args, **kwargs: calls.append("final")
+
+    train.disable_optimizer_checkpoint_writes(Training)
+    Training.misc.save_model()
+    Training.save_final_model()
+
+    assert calls == ["final"]
