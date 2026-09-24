@@ -42,9 +42,9 @@ CAMERA_BYTES_PER_SECOND = 1280 * 720 * 4 * 30
 STAGING_HEADROOM = 1.15
 EXPECTED_SLAM_BINARY_SHA256 = {
     str((ROOT / "build/vins_fusion_ros2/vins_fusion_ros2_node").resolve()):
-        "948b2ad4f60959c2566f77f7b73afa41f6109491365531df26938be9fa6ae05c",
+        "5af167654b949e9944d93dc972d431f46b7a4fde4ffa976439ad1f5dcd950a3a",
     str((ROOT / "build/vins_fusion_ros2/loop_fusion/loop_fusion_node").resolve()):
-        "fbb5ec250a28efd43ff6557943a51ed1bfa122e6c6c1695fa78bf8e1ab18b2b6",
+        "8c48398c6ac6f17d8753652cc1ec11507f1bfbaa0081c74dd00ddb743209464d",
     str((ROOT / "build/vins_fusion_ros2/db3_replay_cpp").resolve()):
         "41b380578fe28dd6c9a60b85df371925265dd564bcb060d3e0502d43ae283798",
 }
@@ -127,6 +127,7 @@ def check_imu_port() -> dict[str, object]:
 
 
 def run_tracker_check(output: Path, duration_s: float) -> dict[str, object]:
+    output.parent.mkdir(parents=True, exist_ok=True)
     csv_path = output.with_name(output.stem + "_tracker.csv")
     report_path = output.with_name(output.stem + "_tracker.json")
     runtime_config = output.with_name(output.stem + "_libsurvive_runtime.json")
