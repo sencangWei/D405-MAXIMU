@@ -1549,6 +1549,37 @@ def robust_scale(observations: list[dict], min_observations: int) -> tuple[float
     }
 
 
+def trajectory_step_continuity(positions: np.ndarray, scale: float) -> dict:
+    """Catch isolated frame jumps hidden by stereo-pair rejection."""
+    points = np.asarray(positions, dtype=float)
+    if (
+        points.ndim != 2
+        or points.shape[1] != 3
+        or len(points) < 2
+        or not np.isfinite(points).all()
+        or not np.isfinite(scale)
+        or scale <= 0.0
+    ):
+        return {"result": "FAIL", "reason": "invalid_trajectory", "jump_count": 0}
+    steps = np.linalg.norm(np.diff(points, axis=0), axis=1) * scale
+    local_median = np.asarray(
+        [
+            np.median(steps[max(0, index - 15) : index + 16])
+            for index in range(len(steps))
+        ]
+    )
+    jumps = steps > np.maximum(0.030, 5.0 * local_median)
+    return {
+        "result": "FAIL" if jumps.any() else "PASS",
+        "reason": "isolated_position_step_jump" if jumps.any() else None,
+        "jump_count": int(jumps.sum()),
+        "first_jump_index": int(np.flatnonzero(jumps)[0]) if jumps.any() else None,
+        "max_step_m": float(steps.max()),
+        "absolute_step_limit_m": 0.030,
+        "local_median_multiplier": 5.0,
+    }
+
+
 def write_scaled_trajectory(
     output: Path,
     rows: list[dict],
@@ -1715,16 +1746,25 @@ def run(args: argparse.Namespace) -> dict:
     except ValueError as error:
         report["failures"] = [str(error)]
     else:
+        continuity = trajectory_step_continuity(positions, scale)
         report.update(
             {
-                "result": "PASS",
-                "failures": [],
                 "scale_m_per_mast3r_unit": scale,
                 "quality": quality,
-                "output": str(args.output.resolve()),
+                "trajectory_continuity": continuity,
             }
         )
-        write_scaled_trajectory(args.output, rows, positions, scale)
+        if continuity["result"] == "FAIL":
+            report["failures"] = [continuity["reason"]]
+        else:
+            report.update(
+                {
+                    "result": "PASS",
+                    "failures": [],
+                    "output": str(args.output.resolve()),
+                }
+            )
+            write_scaled_trajectory(args.output, rows, positions, scale)
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
