@@ -309,6 +309,8 @@ case "$command" in
         "$PYTHON" "$ROOT_DIR/scripts/align_mast3r_scale_with_imu.py" \
             --session "$session" \
             --trajectory "$mast3r_output/trajectory_frames.csv" \
+            --orientation-trajectory "$vins_trajectory" \
+            --stereo-scale-report "$mast3r_output/stereo_scale_bidirectional_report.json" \
             --stream infrared_left \
             --body-t-camera-yaml "$VINS_CONFIG" \
             --imu-calibration "$IMU_CALIBRATION" \

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Recover MASt3R-SLAM's metric scale from the UMI's own calibrated IMU.
+"""Recover MASt3R-SLAM's metric scale from the UMI's calibrated IMU.
 
-This is an offline visual-inertial initialization. It never reads Docker2,
-robot/TCP, or Lighthouse trajectories. Lighthouse remains scoring-only.
+This offline initialization may use the UMI VIO orientation; it never uses
+robot/TCP or Lighthouse trajectories. Lighthouse remains scoring-only.
 """
 
 from __future__ import annotations
@@ -100,6 +100,82 @@ def load_body_t_camera(path: Path, key: str = "body_T_cam0") -> np.ndarray:
     if matrix is None or matrix.shape != (4, 4):
         raise ValueError(f"missing 4x4 {key} in {path}")
     return matrix
+
+
+def select_scale_attitude(
+    visual_times: np.ndarray,
+    visual_camera_quaternions: np.ndarray,
+    body_t_camera: np.ndarray,
+    reference_times: np.ndarray | None = None,
+    reference_body_quaternions: np.ndarray | None = None,
+) -> tuple[np.ndarray, Rotation, dict]:
+    visual_body = Rotation.from_quat(visual_camera_quaternions) * Rotation.from_matrix(
+        body_t_camera[:3, :3]
+    ).inv()
+    if reference_times is None:
+        return np.ones(len(visual_times), dtype=bool), visual_body, {"source": "mast3r"}
+    if reference_body_quaternions is None or np.any(np.diff(reference_times) <= 0):
+        raise ValueError("invalid onboard orientation trajectory")
+    overlap = (visual_times >= reference_times[0]) & (
+        visual_times <= reference_times[-1]
+    )
+    if np.count_nonzero(overlap) < 6:
+        raise ValueError("insufficient onboard orientation overlap")
+    reference_body = Slerp(
+        reference_times, Rotation.from_quat(reference_body_quaternions)
+    )(visual_times[overlap])
+    world_alignment = (visual_body[overlap] * reference_body.inv()).mean()
+    aligned_body = world_alignment * reference_body
+    difference_deg = np.rad2deg(
+        (visual_body[overlap].inv() * aligned_body).magnitude()
+    )
+    return overlap, aligned_body, {
+        "source": "onboard_orientation_trajectory",
+        "overlap_ratio": float(np.mean(overlap)),
+        "visual_orientation_difference_p95_deg": float(
+            np.percentile(difference_deg, 95)
+        ),
+    }
+
+
+def choose_attitude_scale(legacy: dict, onboard: dict, stereo: dict) -> tuple[str, dict]:
+    stereo_scale = stereo.get("scale_m_per_mast3r_unit")
+    if (
+        stereo.get("result") != "PASS"
+        or not isinstance(stereo_scale, (int, float))
+        or not np.isfinite(stereo_scale)
+        or stereo_scale <= 0
+    ):
+        raise ValueError("attitude selection needs a validated stereo scale")
+
+    def discrepancy(result: dict) -> float:
+        scale = result["scale"]
+        if (
+            not np.isfinite(scale)
+            or scale <= 0
+            or not 7 <= result["gravity_norm"] <= 12
+            or result["rank"] < result["unknowns"]
+        ):
+            return float("inf")
+        return float(abs(np.log(scale / stereo_scale)))
+
+    differences = {
+        "mast3r": discrepancy(legacy),
+        "onboard_orientation_trajectory": discrepancy(onboard),
+    }
+    source = min(differences, key=differences.get)
+    if not np.isfinite(differences[source]):
+        raise ValueError("neither IMU attitude candidate has a valid scale")
+    return source, {
+        "policy": "smallest_log_scale_difference_to_validated_onboard_stereo",
+        "stereo_scale": float(stereo_scale),
+        "mast3r_scale": float(legacy["scale"]),
+        "onboard_scale": float(onboard["scale"]),
+        "log_scale_differences": {
+            key: value if np.isfinite(value) else None
+            for key, value in differences.items()
+        },
+    }
 
 
 def integrate_specific_force(
@@ -270,6 +346,8 @@ def main() -> int:
     parser.add_argument("--stream", choices=("color", "infrared_left"), default="color")
     parser.add_argument("--body-t-camera-yaml", type=Path, required=True)
     parser.add_argument("--imu-calibration", type=Path, required=True)
+    parser.add_argument("--orientation-trajectory", type=Path)
+    parser.add_argument("--stereo-scale-report", type=Path)
     parser.add_argument("--td-s", type=float, required=True)
     parser.add_argument("--node-stride", type=int, default=10)
     parser.add_argument("--max-hop", type=int, default=1)
@@ -280,6 +358,8 @@ def main() -> int:
         parser.error("--node-stride must be at least 2")
     if args.max_hop < 1:
         parser.error("--max-hop must be at least 1")
+    if args.stereo_scale_report is not None and args.orientation_trajectory is None:
+        parser.error("--stereo-scale-report requires --orientation-trajectory")
 
     times, positions, quaternions = load_trajectory(args.trajectory)
     mono_times = camera_epoch_to_monotonic(
@@ -289,13 +369,21 @@ def main() -> int:
         args.session / "external_imu" / "imu.bin", args.imu_calibration
     )
     body_t_camera = load_body_t_camera(args.body_t_camera_yaml)
-    camera_rotations = Rotation.from_quat(quaternions)
-    body_rotations = camera_rotations * Rotation.from_matrix(
-        body_t_camera[:3, :3]
-    ).inv()
+    reference_times = reference_quaternions = None
+    if args.orientation_trajectory is not None:
+        reference_times, _, reference_quaternions = load_trajectory(
+            args.orientation_trajectory
+        )
+    overlap, body_rotations, attitude = select_scale_attitude(
+        times,
+        quaternions,
+        body_t_camera,
+        reference_times,
+        reference_quaternions,
+    )
     result = solve_visual_inertial_scale(
-        mono_times,
-        positions,
+        mono_times[overlap],
+        positions[overlap],
         body_rotations,
         imu_times,
         accel,
@@ -304,6 +392,25 @@ def main() -> int:
         args.node_stride,
         args.max_hop,
     )
+    if args.stereo_scale_report is not None:
+        _, legacy_rotations, _ = select_scale_attitude(
+            times, quaternions, body_t_camera
+        )
+        legacy_result = solve_visual_inertial_scale(
+            mono_times[overlap],
+            positions[overlap],
+            legacy_rotations[overlap],
+            imu_times,
+            accel,
+            body_t_camera[:3, 3],
+            args.td_s,
+            args.node_stride,
+            args.max_hop,
+        )
+        stereo = json.loads(args.stereo_scale_report.read_text(encoding="utf-8"))
+        source, selection = choose_attitude_scale(legacy_result, result, stereo)
+        result = legacy_result if source == "mast3r" else result
+        attitude.update({"source": source, "selection": selection})
     failures = []
     if not 0.05 <= result["scale"] <= 20.0:
         failures.append("scale_out_of_range")
@@ -318,7 +425,22 @@ def main() -> int:
             "failures": failures,
             "slam_supervision": False,
             "external_ground_truth_used": False,
-            "inputs": "MASt3R camera poses + onboard calibrated 400Hz IMU only",
+            "inputs": "MASt3R camera poses + onboard calibrated 400Hz IMU"
+            + (
+                " + onboard orientation trajectory"
+                if args.orientation_trajectory
+                else " only"
+            ),
+            "attitude": attitude,
+            "orientation_trajectory": (
+                str(args.orientation_trajectory.resolve())
+                if args.orientation_trajectory is not None else None
+            ),
+            "stereo_scale_report": (
+                str(args.stereo_scale_report.resolve())
+                if args.stereo_scale_report is not None
+                else None
+            ),
             "td_s": args.td_s,
             "node_stride": args.node_stride,
             "max_hop": args.max_hop,
