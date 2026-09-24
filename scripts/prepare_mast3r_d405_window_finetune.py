@@ -63,6 +63,27 @@ def connected_components(samples: list[dict]) -> list[list[dict]]:
     return list(grouped.values())
 
 
+def rejected_source_sample_ids(
+    grouped: dict[str, list[dict]], component_reports: list[dict]
+) -> set[int]:
+    rejected = {
+        (report["session_id"], report["first_input_index"], report["last_input_index"])
+        for report in component_reports
+        if not report["accepted_for_long_windows"]
+    }
+    sample_ids = set()
+    for session_id, session_samples in grouped.items():
+        for component in connected_components(session_samples):
+            nodes = [
+                int(sample[key])
+                for sample in component
+                for key in ("first_input_index", "second_input_index")
+            ]
+            if (session_id, min(nodes), max(nodes)) in rejected:
+                sample_ids.update(id(sample) for sample in component)
+    return sample_ids
+
+
 def solve_component_positions(
     samples: list[dict], priors: list[dict[str, str]], iterations: int = 4
 ) -> tuple[dict[int, np.ndarray], dict]:
@@ -331,6 +352,7 @@ def build_window_manifest(
     maximum_pairs_per_session: int = 400,
     include_source_pairs: bool = True,
     maximum_component_edge_residual_p95_m: float = 0.005,
+    exclude_rejected_source_components: bool = False,
 ) -> dict:
     source = load_json(source_manifest_path)
     if source.get("external_ground_truth_used") is not False:
@@ -370,7 +392,16 @@ def build_window_manifest(
             component_reports.append({"session_id": session_id, **report})
     if not long_samples:
         raise ValueError("no robust long-window samples")
-    samples = list(source["samples"]) if include_source_pairs else []
+    rejected_ids = (
+        rejected_source_sample_ids(grouped, component_reports)
+        if include_source_pairs and exclude_rejected_source_components
+        else set()
+    )
+    samples = (
+        [sample for sample in source["samples"] if id(sample) not in rejected_ids]
+        if include_source_pairs
+        else []
+    )
     samples.extend(long_samples)
     counts = {
         split: sum(sample["split"] == split for sample in samples)
@@ -410,6 +441,8 @@ def build_window_manifest(
         "component_reports": component_reports,
         "samples": samples,
     }
+    if exclude_rejected_source_components:
+        result["excluded_rejected_source_pairs"] = len(rejected_ids)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
@@ -430,6 +463,7 @@ def main() -> int:
         "--maximum-component-edge-residual-p95-m", type=float, default=0.005
     )
     parser.add_argument("--long-window-only", action="store_true")
+    parser.add_argument("--exclude-rejected-source-components", action="store_true")
     args = parser.parse_args()
     if not 0.0 < args.minimum_duration_s <= args.maximum_duration_s:
         raise ValueError("window duration bounds are invalid")
@@ -448,6 +482,7 @@ def main() -> int:
         args.maximum_pairs_per_session,
         not args.long_window_only,
         args.maximum_component_edge_residual_p95_m,
+        args.exclude_rejected_source_components,
     )
     print(
         json.dumps(

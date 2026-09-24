@@ -40,7 +40,8 @@ def compose_camera_rotation(
         delta = Rotation.from_quat(
             [float(row[name]) for name in ("qx", "qy", "qz", "qw")]
         )
-        camera_j_from_camera_i = delta * camera_j_from_camera_i
+        # Each delta is expressed in the preceding camera frame.
+        camera_j_from_camera_i = camera_j_from_camera_i * delta
     return camera_j_from_camera_i
 
 

@@ -104,3 +104,22 @@ def test_long_window_pair_limit_samples_whole_session():
     assert len(result) == 3
     assert result[0]["first_input_index"] == 0
     assert result[-1]["second_input_index"] == 60
+
+
+def test_rejected_component_filter_only_excludes_reported_bad_edges():
+    good = [temporal_edge(0, 3, 0.1), temporal_edge(3, 6, 0.1)]
+    bad = [temporal_edge(20, 23, 0.1), temporal_edge(23, 26, 0.1)]
+    isolated = [temporal_edge(40, 43, 0.1)]
+    samples = good + bad + isolated
+    reports = [
+        {
+            "session_id": "session",
+            "first_input_index": 20,
+            "last_input_index": 26,
+            "accepted_for_long_windows": False,
+        }
+    ]
+
+    rejected = window.rejected_source_sample_ids({"session": samples}, reports)
+
+    assert rejected == {id(sample) for sample in bad}
