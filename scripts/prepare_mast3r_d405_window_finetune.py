@@ -171,6 +171,39 @@ def solve_component_positions(
     }
 
 
+def outlier_source_sample_ids(
+    grouped: dict[str, list[dict]],
+    priors_by_session: dict[str, list[dict[str, str]]],
+    maximum_edge_residual_m: float,
+) -> set[int]:
+    sample_ids = set()
+    for session_id, session_samples in grouped.items():
+        priors = priors_by_session[session_id]
+        for component in connected_components(session_samples):
+            if len(component) < 3:
+                continue
+            try:
+                positions, _ = solve_component_positions(component, priors)
+            except ValueError:
+                continue
+            anchor = min(positions)
+            anchor_to_node = {anchor: Rotation.identity()}
+            for sample in component:
+                first = int(sample["first_input_index"])
+                second = int(sample["second_input_index"])
+                if first not in anchor_to_node:
+                    anchor_to_node[first] = compose_camera_rotation(
+                        priors, anchor, first
+                    )
+                delta = anchor_to_node[first].apply(
+                    np.asarray(sample["camera_pose_second"], dtype=float)[:3, 3]
+                )
+                residual = np.linalg.norm(positions[second] - positions[first] - delta)
+                if residual > maximum_edge_residual_m:
+                    sample_ids.add(id(sample))
+    return sample_ids
+
+
 def endpoint_metadata(samples: list[dict]) -> dict[int, dict]:
     result = {}
     for sample in samples:
@@ -353,6 +386,7 @@ def build_window_manifest(
     include_source_pairs: bool = True,
     maximum_component_edge_residual_p95_m: float = 0.005,
     exclude_rejected_source_components: bool = False,
+    exclude_outlier_source_edges: bool = False,
 ) -> dict:
     source = load_json(source_manifest_path)
     if source.get("external_ground_truth_used") is not False:
@@ -370,6 +404,7 @@ def build_window_manifest(
 
     long_samples = []
     component_reports = []
+    priors_by_session = {}
     for session_id, session_samples in grouped.items():
         priors = list(
             csv.DictReader(
@@ -378,6 +413,7 @@ def build_window_manifest(
                 )
             )
         )
+        priors_by_session[session_id] = priors
         session_long, reports = build_long_window_samples(
             session_samples,
             priors,
@@ -397,8 +433,16 @@ def build_window_manifest(
         if include_source_pairs and exclude_rejected_source_components
         else set()
     )
+    outlier_ids = (
+        outlier_source_sample_ids(
+            grouped, priors_by_session, maximum_component_edge_residual_p95_m
+        )
+        if include_source_pairs and exclude_outlier_source_edges
+        else set()
+    )
+    excluded_ids = rejected_ids | outlier_ids
     samples = (
-        [sample for sample in source["samples"] if id(sample) not in rejected_ids]
+        [sample for sample in source["samples"] if id(sample) not in excluded_ids]
         if include_source_pairs
         else []
     )
@@ -443,6 +487,8 @@ def build_window_manifest(
     }
     if exclude_rejected_source_components:
         result["excluded_rejected_source_pairs"] = len(rejected_ids)
+    if exclude_outlier_source_edges:
+        result["excluded_outlier_source_pairs"] = len(outlier_ids - rejected_ids)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
@@ -464,6 +510,7 @@ def main() -> int:
     )
     parser.add_argument("--long-window-only", action="store_true")
     parser.add_argument("--exclude-rejected-source-components", action="store_true")
+    parser.add_argument("--exclude-outlier-source-edges", action="store_true")
     args = parser.parse_args()
     if not 0.0 < args.minimum_duration_s <= args.maximum_duration_s:
         raise ValueError("window duration bounds are invalid")
@@ -483,6 +530,7 @@ def main() -> int:
         not args.long_window_only,
         args.maximum_component_edge_residual_p95_m,
         args.exclude_rejected_source_components,
+        args.exclude_outlier_source_edges,
     )
     print(
         json.dumps(

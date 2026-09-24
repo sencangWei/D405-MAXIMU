@@ -123,3 +123,18 @@ def test_rejected_component_filter_only_excludes_reported_bad_edges():
     rejected = window.rejected_source_sample_ids({"session": samples}, reports)
 
     assert rejected == {id(sample) for sample in bad}
+
+
+def test_edge_residual_filter_finds_outlier_inside_accepted_component():
+    good = [temporal_edge(first, first + 3, 0.1) for first in range(0, 60, 3)]
+    good += [
+        temporal_edge(first, first + 6, 0.2, translation=0.02)
+        for first in range(0, 57, 3)
+    ]
+    bad = temporal_edge(9, 18, 0.3, translation=0.09)
+
+    outliers = window.outlier_source_sample_ids(
+        {"session": good + [bad]}, {"session": identity_priors(61)}, 0.005
+    )
+
+    assert outliers == {id(bad)}
