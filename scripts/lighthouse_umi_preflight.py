@@ -24,11 +24,11 @@ DOCKER2_CONFIG = Path(
 DOCKER2_CONFIG_SHA256 = "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331"
 FROZEN_LIGHTHOUSE_CONFIG = (
     ROOT
-    / "reports/lighthouse_recalibration_world_v11_20260916_consensus/"
-    "libsurvive_config_frozen_v11.json"
+    / "reports/lighthouse_recalibration_world_v12_20260924_consensus/"
+    "libsurvive_config_frozen_v12.json"
 )
 FROZEN_LIGHTHOUSE_CONFIG_SHA256 = (
-    "13c3b7efae550da06a41c183664107996f8cdb36efafc299c4582d8f32f41f58"
+    "63bd7d886bf6f8b46735a5f38047af8902d1f79b60a6feb57b3e3233e5bc6e99"
 )
 TRACKER_SERIAL = "LHR-A2A59C7D"
 D405_SERIAL = "260322279785"

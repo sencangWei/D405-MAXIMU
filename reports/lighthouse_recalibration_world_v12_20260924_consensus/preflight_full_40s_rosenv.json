@@ -1,0 +1,255 @@
+{
+  "schema": "lighthouse_umi_preflight_v1",
+  "status": "PASS",
+  "mode": "full",
+  "created_at": "2026-09-24T17:23:18.432892+08:00",
+  "checks": [
+    {
+      "name": "docker2_formal_config_frozen",
+      "status": "PASS",
+      "details": {
+        "passed": true,
+        "path": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml",
+        "sha256": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "expected_sha256": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "missing_contract_lines": [],
+        "replay_imu_shift_ms": 0
+      }
+    },
+    {
+      "name": "docker2_camera_calibrations",
+      "status": "PASS",
+      "details": [
+        {
+          "path": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/left.yaml",
+          "exists": true,
+          "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+        },
+        {
+          "path": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/right.yaml",
+          "exists": true,
+          "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+        }
+      ]
+    },
+    {
+      "name": "lighthouse_coordinate_frame_frozen",
+      "status": "PASS",
+      "details": {
+        "frozen": "/home/robot/ego_vio_humble/reports/lighthouse_recalibration_world_v12_20260924_consensus/libsurvive_config_frozen_v12.json",
+        "frozen_sha256": "63bd7d886bf6f8b46735a5f38047af8902d1f79b60a6feb57b3e3233e5bc6e99",
+        "expected_sha256": "63bd7d886bf6f8b46735a5f38047af8902d1f79b60a6feb57b3e3233e5bc6e99",
+        "runtime_policy": "copy frozen config per Tracker process; pass with -c; never use mutable ~/.config/libsurvive/config.json"
+      }
+    },
+    {
+      "name": "required_executables",
+      "status": "PASS",
+      "details": [
+        {
+          "path": "/home/robot/.local/bin/vive_pose_stream",
+          "resolved": "/home/robot/.local/bin/vive_pose_stream",
+          "exists": true,
+          "executable": true,
+          "sha256": "5ed771371377a174463c1dc559d585771b7593e7f99012f2ecce1a1419d4caee",
+          "expected_sha256": null,
+          "matches_expected": true
+        },
+        {
+          "path": "/home/robot/ego_vio_humble/capture_d405_720p_rgb_stereo_ir.sh",
+          "resolved": "/home/robot/ego_vio_humble/capture_d405_720p_rgb_stereo_ir.sh",
+          "exists": true,
+          "executable": true,
+          "sha256": "7f25fc68055f3a5892b53470eb0f97aa0fd4df977da07de5bf2f1d68ce21634e",
+          "expected_sha256": null,
+          "matches_expected": true
+        },
+        {
+          "path": "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/vins_fusion_ros2/vins_fusion_ros2_node",
+          "resolved": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/vins_fusion_ros2_node",
+          "exists": true,
+          "executable": true,
+          "sha256": "5af167654b949e9944d93dc972d431f46b7a4fde4ffa976439ad1f5dcd950a3a",
+          "expected_sha256": "5af167654b949e9944d93dc972d431f46b7a4fde4ffa976439ad1f5dcd950a3a",
+          "matches_expected": true
+        },
+        {
+          "path": "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/vins_fusion_ros2/loop_fusion_node",
+          "resolved": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/loop_fusion/loop_fusion_node",
+          "exists": true,
+          "executable": true,
+          "sha256": "8c48398c6ac6f17d8753652cc1ec11507f1bfbaa0081c74dd00ddb743209464d",
+          "expected_sha256": "8c48398c6ac6f17d8753652cc1ec11507f1bfbaa0081c74dd00ddb743209464d",
+          "matches_expected": true
+        },
+        {
+          "path": "/home/robot/ego_vio_humble/install/vins_fusion_ros2/lib/vins_fusion_ros2/db3_replay_cpp",
+          "resolved": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/db3_replay_cpp",
+          "exists": true,
+          "executable": true,
+          "sha256": "41b380578fe28dd6c9a60b85df371925265dd564bcb060d3e0502d43ae283798",
+          "expected_sha256": "41b380578fe28dd6c9a60b85df371925265dd564bcb060d3e0502d43ae283798",
+          "matches_expected": true
+        }
+      ]
+    },
+    {
+      "name": "python_runtime",
+      "status": "PASS",
+      "details": {
+        "cv2": {
+          "ok": true,
+          "version": "4.11.0"
+        },
+        "numpy": {
+          "ok": true,
+          "version": "2.2.6"
+        },
+        "scipy": {
+          "ok": true,
+          "version": "1.14.1"
+        },
+        "yaml": {
+          "ok": true,
+          "version": "6.0.3"
+        },
+        "rclpy": {
+          "ok": true,
+          "version": null
+        },
+        "pyrealsense2": {
+          "ok": true,
+          "version": "2.58.2"
+        }
+      }
+    },
+    {
+      "name": "watchman_dongle",
+      "status": "PASS",
+      "details": {
+        "usb_id": "28de:2101",
+        "found": true
+      }
+    },
+    {
+      "name": "lighthouse_live_pose",
+      "status": "PASS",
+      "details": {
+        "passed": true,
+        "expected_serial": "LHR-A2A59C7D",
+        "csv": "/home/robot/ego_vio_humble/reports/lighthouse_recalibration_world_v12_20260924_consensus/preflight_full_40s_rosenv_tracker.csv",
+        "report": "/home/robot/ego_vio_humble/reports/lighthouse_recalibration_world_v12_20260924_consensus/preflight_full_40s_rosenv_tracker.json",
+        "runtime_config": "/home/robot/ego_vio_humble/reports/lighthouse_recalibration_world_v12_20260924_consensus/preflight_full_40s_rosenv_libsurvive_runtime.json",
+        "runtime_config_sha256": "f05527a403de787c36f9d3dd638b6c96a9fe59674ae4321220f713f6264556c9",
+        "measurement": {
+          "status": "PASS",
+          "failures": [],
+          "warnings": [],
+          "metrics": {
+            "sample_count": 559,
+            "serials": [
+              "LHR-A2A59C7D"
+            ],
+            "duration_s": 4.004551468,
+            "rate_hz": 139.34144796462883,
+            "interval_ms": {
+              "median": 7.9507265,
+              "p95": 10.05872655,
+              "max": 12.06499,
+              "over_25ms_count": 0,
+              "over_100ms_count": 0
+            },
+            "device_timestamp_regressions": 0,
+            "host_monotonic_timestamp_regressions": 0,
+            "host_realtime_timestamp_regressions": 0,
+            "realtime_minus_monotonic_span_us": 0.633,
+            "motion_continuity": {
+              "max_translation_speed_m_s": 0.001370878735909799,
+              "max_translation_step_mm": 0.006724587199232307,
+              "translation_pose_jump_count": 0,
+              "max_angular_speed_deg_s": 3.737784341669564,
+              "max_angular_step_deg": 0.01577686268457593,
+              "angular_pose_jump_count": 0,
+              "invalid_quaternion_count": 0
+            }
+          },
+          "lighthouse_configuration": {
+            "status": "PASS",
+            "failures": [],
+            "thresholds": {
+              "max_pose_translation_change_mm": 0.1,
+              "max_pose_rotation_change_deg": 0.05,
+              "max_accel_direction_change_deg": 0.5
+            },
+            "lighthouses": [
+              {
+                "index": 0,
+                "id_before": "2640831677",
+                "id_after": "2640831677",
+                "position_set_before": true,
+                "position_set_after": true,
+                "translation_change_mm": 1.3921508308687767e-05,
+                "rotation_change_deg": 1.7075472925031877e-06,
+                "accel_direction_change_deg": 1.2074182697257333e-06
+              },
+              {
+                "index": 1,
+                "id_before": "1850292303",
+                "id_after": "1850292303",
+                "position_set_before": true,
+                "position_set_after": true,
+                "translation_change_mm": 1.0330787444327818e-05,
+                "rotation_change_deg": 0.0,
+                "accel_direction_change_deg": 0.0
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "capture_storage",
+      "status": "PASS",
+      "details": {
+        "capture_duration_s": 40.0,
+        "disk_free_bytes": 1467541942272,
+        "disk_required_bytes": 21474836480,
+        "shm_free_bytes": 6017994752,
+        "shm_required_bytes": 5087232000
+      }
+    },
+    {
+      "name": "no_stale_slam_processes",
+      "status": "PASS",
+      "details": {
+        "vins_fusion_ros2_node": [],
+        "loop_fusion_node": [],
+        "db3_replay_cpp": []
+      }
+    },
+    {
+      "name": "d405_identity",
+      "status": "PASS",
+      "details": {
+        "passed": true,
+        "expected": "260322279785",
+        "found": [
+          "260322279785"
+        ]
+      }
+    },
+    {
+      "name": "external_imu_identity",
+      "status": "PASS",
+      "details": {
+        "passed": true,
+        "path": "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_c48df736b505f011adda8d1272aab386-if00-port0",
+        "resolved": "/dev/ttyUSB0",
+        "readable": true
+      }
+    }
+  ],
+  "failures": [],
+  "deferred_until_umi_arrives": [],
+  "safety_mode": "bench_no_motion"
+}
