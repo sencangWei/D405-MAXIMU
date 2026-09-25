@@ -1549,8 +1549,10 @@ def robust_scale(observations: list[dict], min_observations: int) -> tuple[float
     }
 
 
-def trajectory_step_continuity(positions: np.ndarray, scale: float) -> dict:
-    """Catch isolated frame jumps hidden by stereo-pair rejection."""
+def trajectory_step_continuity(
+    positions: np.ndarray, scale: float, times: np.ndarray | None = None
+) -> dict:
+    """Catch isolated frame jumps without mistaking missing frames for one step."""
     points = np.asarray(positions, dtype=float)
     if (
         points.ndim != 2
@@ -1561,20 +1563,37 @@ def trajectory_step_continuity(positions: np.ndarray, scale: float) -> dict:
         or scale <= 0.0
     ):
         return {"result": "FAIL", "reason": "invalid_trajectory", "jump_count": 0}
+    if times is None:
+        intervals = np.ones(len(points) - 1)
+    else:
+        stamps = np.asarray(times, dtype=float)
+        if (
+            stamps.shape != (len(points),)
+            or not np.isfinite(stamps).all()
+            or not (np.diff(stamps) > 0).all()
+        ):
+            return {"result": "FAIL", "reason": "invalid_timestamps", "jump_count": 0}
+        intervals = np.diff(stamps)
+    nominal_interval = float(np.median(intervals))
+    gaps = intervals > 1.5 * nominal_interval
     steps = np.linalg.norm(np.diff(points, axis=0), axis=1) * scale
+    equivalent_steps = steps * nominal_interval / intervals
     local_median = np.asarray(
         [
-            np.median(steps[max(0, index - 15) : index + 16])
+            np.median(equivalent_steps[max(0, index - 15) : index + 16])
             for index in range(len(steps))
         ]
     )
-    jumps = steps > np.maximum(0.030, 5.0 * local_median)
+    jumps = (~gaps) & (equivalent_steps > np.maximum(0.030, 5.0 * local_median))
     return {
         "result": "FAIL" if jumps.any() else "PASS",
         "reason": "isolated_position_step_jump" if jumps.any() else None,
         "jump_count": int(jumps.sum()),
         "first_jump_index": int(np.flatnonzero(jumps)[0]) if jumps.any() else None,
         "max_step_m": float(steps.max()),
+        "max_contiguous_step_m": float(steps[~gaps].max()) if (~gaps).any() else None,
+        "unverified_gap_count": int(gaps.sum()),
+        "max_gap_s": float(intervals[gaps].max()) if gaps.any() else 0.0,
         "absolute_step_limit_m": 0.030,
         "local_median_multiplier": 5.0,
     }
@@ -1746,7 +1765,7 @@ def run(args: argparse.Namespace) -> dict:
     except ValueError as error:
         report["failures"] = [str(error)]
     else:
-        continuity = trajectory_step_continuity(positions, scale)
+        continuity = trajectory_step_continuity(positions, scale, times)
         report.update(
             {
                 "scale_m_per_mast3r_unit": scale,

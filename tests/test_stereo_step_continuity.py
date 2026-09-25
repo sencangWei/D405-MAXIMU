@@ -37,3 +37,29 @@ def test_rejects_nonfinite_positions():
 
     assert quality["result"] == "FAIL"
     assert quality["reason"] == "invalid_trajectory"
+
+
+def test_long_observation_gap_is_reported_not_misread_as_one_frame_jump():
+    times = np.arange(90, dtype=float) / 30.0
+    times[50:] += 22.0 / 30.0
+    positions = np.column_stack((times * 0.20, np.zeros(90), np.zeros(90)))
+
+    quality = stereo.trajectory_step_continuity(positions, 1.0, times)
+
+    assert quality["result"] == "PASS"
+    assert quality["unverified_gap_count"] == 1
+    assert quality["max_step_m"] > 0.14
+    assert quality["max_contiguous_step_m"] < 0.01
+
+
+def test_real_jump_next_to_observation_gap_is_still_rejected():
+    times = np.arange(90, dtype=float) / 30.0
+    times[50:] += 22.0 / 30.0
+    positions = np.column_stack((times * 0.20, np.zeros(90), np.zeros(90)))
+    positions[55, 1] = 0.055
+
+    quality = stereo.trajectory_step_continuity(positions, 1.0, times)
+
+    assert quality["result"] == "FAIL"
+    assert quality["jump_count"] == 2
+    assert quality["unverified_gap_count"] == 1
