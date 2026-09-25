@@ -196,16 +196,28 @@ def load_mast3r_keyframe_indices(
     if len(timestamps) < 2:
         raise ValueError("MASt3R keyframe directory has fewer than two timestamps")
     relative_times = np.asarray(trajectory_times, dtype=float) - trajectory_times[0]
+    nominal_interval = float(np.median(np.diff(relative_times)))
     matched = []
     errors = []
+    missing_pose_errors = []
+    missing_pose_gaps = []
     for timestamp in sorted(timestamps):
         right = int(np.searchsorted(relative_times, timestamp, side="left"))
         candidates = [min(right, len(relative_times) - 1)]
         if right > 0:
             candidates.append(right - 1)
         index = min(candidates, key=lambda item: abs(relative_times[item] - timestamp))
+        error = abs(relative_times[index] - timestamp)
+        if error > 0.020 and 0 < right < len(relative_times):
+            gap = relative_times[right] - relative_times[right - 1]
+            if gap > 1.5 * nominal_interval:
+                missing_pose_errors.append(error)
+                missing_pose_gaps.append(gap)
+                continue
         matched.append(index)
-        errors.append(abs(relative_times[index] - timestamp))
+        errors.append(error)
+    if len(matched) < 2:
+        raise ValueError("fewer than two keyframes have trajectory poses")
     max_error = float(max(errors))
     if max_error > 0.020:
         raise ValueError(
@@ -218,6 +230,13 @@ def load_mast3r_keyframe_indices(
         "source": str(keyframe_dir.resolve()),
         "saved_keyframes": int(len(timestamps)),
         "matched_keyframes": int(len(set(matched))),
+        "skipped_missing_pose_keyframes": len(missing_pose_errors),
+        "max_skipped_timestamp_match_error_s": (
+            float(max(missing_pose_errors)) if missing_pose_errors else 0.0
+        ),
+        "max_missing_pose_gap_s": (
+            float(max(missing_pose_gaps)) if missing_pose_gaps else 0.0
+        ),
         "correction_nodes": int(len(correction_nodes)),
         "max_timestamp_match_error_s": max_error,
     }

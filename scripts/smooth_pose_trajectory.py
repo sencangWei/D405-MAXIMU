@@ -36,7 +36,7 @@ def smooth_positions(
 
 def gaussian_smooth_positions(
     times: np.ndarray, positions: np.ndarray, sigma_s: float
-) -> tuple[np.ndarray, float]:
+) -> tuple[np.ndarray, float, int]:
     times = np.asarray(times, dtype=float)
     positions = np.asarray(positions, dtype=float)
     if times.ndim != 1 or len(times) != len(positions):
@@ -46,16 +46,21 @@ def gaussian_smooth_positions(
     if sigma_s <= 0.0:
         raise ValueError("Gaussian sigma must be positive")
     intervals = np.diff(times)
-    if np.any(intervals <= 0.0):
+    if len(intervals) == 0 or np.any(intervals <= 0.0):
         raise ValueError("trajectory timestamps must be strictly increasing")
     median_interval_s = float(np.median(intervals))
-    if float(np.max(np.abs(intervals - median_interval_s))) > 0.25 * median_interval_s:
+    gaps = intervals > 1.5 * median_interval_s
+    if float(np.max(np.abs(intervals[~gaps] - median_interval_s))) > 0.25 * median_interval_s:
         raise ValueError("Gaussian smoothing requires near-uniform timestamps")
     sigma_samples = sigma_s / median_interval_s
-    return (
-        gaussian_filter1d(positions, sigma_samples, axis=0, mode="nearest"),
-        sigma_samples,
-    )
+    filtered = positions.copy()
+    starts = np.r_[0, np.flatnonzero(gaps) + 1]
+    stops = np.r_[starts[1:], len(positions)]
+    for start, stop in zip(starts, stops):
+        filtered[start:stop] = gaussian_filter1d(
+            positions[start:stop], sigma_samples, axis=0, mode="nearest"
+        )
+    return filtered, sigma_samples, int(gaps.sum())
 
 
 def run(
@@ -86,13 +91,14 @@ def run(
             "polynomial_order": polynomial_order,
         }
     elif method == "gaussian":
-        filtered, sigma_samples = gaussian_smooth_positions(
+        filtered, sigma_samples, temporal_gap_count = gaussian_smooth_positions(
             times, positions, gaussian_sigma_s
         )
         settings = {
             "method": method,
             "sigma_s": gaussian_sigma_s,
             "sigma_samples": sigma_samples,
+            "temporal_gap_count": temporal_gap_count,
         }
     else:
         raise ValueError(f"unsupported smoothing method: {method}")

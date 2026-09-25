@@ -927,6 +927,27 @@ def test_load_mast3r_keyframes_matches_relative_trajectory_time(tmp_path):
     assert quality["max_timestamp_match_error_s"] < 0.002
 
 
+def test_keyframe_inside_missing_visual_pose_gap_is_reported_not_misassigned(tmp_path):
+    for timestamp in ("0.0", "0.066", "0.100", "0.199"):
+        (tmp_path / f"{timestamp}.png").touch()
+    times = np.array([100.0, 100.033, 100.066, 100.166, 100.199])
+
+    indices, quality = fusion.load_mast3r_keyframe_indices(tmp_path, times)
+
+    np.testing.assert_array_equal(indices, [0, 2, 4])
+    assert quality["skipped_missing_pose_keyframes"] == 1
+    assert quality["max_missing_pose_gap_s"] == pytest.approx(0.100)
+
+
+def test_keyframe_outside_trajectory_still_fails_timestamp_check(tmp_path):
+    for timestamp in ("0.0", "0.066", "0.300"):
+        (tmp_path / f"{timestamp}.png").touch()
+    times = np.array([100.0, 100.033, 100.066, 100.099])
+
+    with pytest.raises(ValueError, match="do not match trajectory"):
+        fusion.load_mast3r_keyframe_indices(tmp_path, times)
+
+
 def test_keyframe_correction_nodes_are_densified_by_position_stride():
     nodes, quality = fusion.densify_correction_nodes(
         np.array([0, 20, 95]), sample_count=96, stride=30
