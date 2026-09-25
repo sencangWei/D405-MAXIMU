@@ -4,7 +4,7 @@
 Use the five 2026-09-24 recordings to improve the MASt3R + stereo + IMU/VIO post-processing pipeline without robot/Lighthouse supervision in the estimator. Treat these five as development data, not proof of out-of-sample 10 mm accuracy.
 
 ## Current phase
-Phase 3 — five-take window-factor and attitude-gauge experiments rejected by internal sensor/guard A/B; isolated learned-depth weight also rejected. Production code restored. Diagnostic traces on two bad and one good take now separate learned pointmap metric factor, tracker-relative pose, and keyframe anchoring: the bad metric distortion is already within same-keyframe tracking; no single pointmap-scale or match-count threshold discriminates the bad takes from the good control. Next intervention needs a residual-level front-end hypothesis and cross-take A/B before product promotion.
+Phase 3 — opt-in camera-local VINS translation factor fixes take1's **online** local metric scale but global graph re-optimization undoes it. A post-solve hard keyframe anchor failed with nonfinite final quaternion and was removed. The current isolated candidate adds metric position/scale residuals directly to the calibrated CUDA graph normal equations, with legacy interface unchanged. Check take1 finite output, internal stereo ratio, and full-rate continuity first; reject before other takes if any fail. Only if it passes should it run on all five, with Lighthouse used strictly for scoring after candidate freeze.
 
 ## Phases
 1. Audit recording, tracker GT, VINS, MASt3R, stereo, graph and final score status across all five; reproduce take1/take3 first failures. Done.
