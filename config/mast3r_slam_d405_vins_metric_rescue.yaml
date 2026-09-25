@@ -1,0 +1,10 @@
+inherit: /home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml
+
+# Opt-in only after the baseline's D405 dense-stereo local-scale gate fails.
+# Never replace a baseline that passes its independent onboard checks.
+tracking:
+  stereo_pointmap_scale_prior: true
+  vins_translation_prior_sigma_m: 0.004
+  vins_translation_prior_normalize_visual: true
+  vins_backend_position_sigma_m: 0.004
+  vins_backend_log_scale_sigma: 0.05

@@ -17,6 +17,7 @@ usage() {
     echo "用法:"
     echo "  $0 run <D405会话目录> <输出目录> [color|infrared_left] [最大帧数] [起始帧索引]"
     echo "  $0 fusion <D405会话目录> <VINS轨迹.csv> <VINS验收报告.json> <输出目录>"
+    echo "  $0 fusion-guarded <D405会话目录> <VINS轨迹.csv> <VINS验收报告.json> <新输出目录>"
     echo "  $0 compare <D405会话目录> <Docker2轨迹.csv> <Lighthouse-body真值.csv> <输出目录> [color|infrared_left]"
 }
 
@@ -241,6 +242,47 @@ case "$command" in
         [[ $# -ge 3 ]] || { usage; exit 2; }
         check_installation
         run_mast3r "$(realpath "$2")" "$(realpath -m "$3")" "${4:-color}" "${5:-0}" "${6:-0}"
+        ;;
+    fusion-guarded)
+        [[ $# -eq 5 ]] || { usage; exit 2; }
+        session="$(realpath "$2")"
+        vins_trajectory="$(realpath "$3")"
+        vins_report="$(realpath "$4")"
+        output="$(realpath -m "$5")"
+        [[ ! -e "$output" && ! -L "$output" ]] || {
+            echo "拒绝覆盖已有输出目录: $output" >&2
+            exit 2
+        }
+        mkdir -p "$output"
+        baseline_status=0
+        MAST3R_SLAM_CONFIG="$ROOT_DIR/config/mast3r_slam_d405_offline.yaml" \
+            bash "$ROOT_DIR/scripts/mast3r_slam_precision_workflow.sh" fusion \
+            "$session" "$vins_trajectory" "$vins_report" "$output/baseline" \
+            || baseline_status=$?
+        choice="$("$PYTHON" "$ROOT_DIR/scripts/select_mast3r_metric_rescue.py" \
+            --baseline-dir "$output/baseline" --probe)"
+        if [[ "$choice" == "rescue" ]]; then
+            [[ "$baseline_status" -ne 0 ]] || {
+                echo "基线已完成但局部尺度报告失败，拒绝隐式替换" >&2
+                exit 3
+            }
+            "$PYTHON" "$ROOT_DIR/scripts/prepare_mast3r_vins_camera_priors.py" \
+                --dataset "$output/baseline/mast3r/dataset" \
+                --vins "$vins_trajectory" --vins-config "$VINS_CONFIG" \
+                --output "$output/vins_camera_priors.csv"
+            MAST3R_SLAM_CONFIG="$ROOT_DIR/config/mast3r_slam_d405_vins_metric_rescue.yaml" \
+            MAST3R_REUSE_DATASET_DIR="$output/baseline/mast3r/dataset" \
+            MAST3R_VINS_CAMERA_POSES="$output/vins_camera_priors.csv" \
+                bash "$ROOT_DIR/scripts/mast3r_slam_precision_workflow.sh" fusion \
+                "$session" "$vins_trajectory" "$vins_report" "$output/rescue"
+        elif [[ "$baseline_status" -ne 0 ]]; then
+            echo "基线运行失败 rc=$baseline_status，未启用救援候选" >&2
+            exit "$baseline_status"
+        fi
+        "$PYTHON" "$ROOT_DIR/scripts/select_mast3r_metric_rescue.py" \
+            --baseline-dir "$output/baseline" --rescue-dir "$output/rescue" \
+            --output "$output/trajectory_fused.csv" \
+            --report "$output/selection_report.json"
         ;;
     fusion)
         [[ $# -eq 5 ]] || { usage; exit 2; }
