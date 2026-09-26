@@ -1,0 +1,127 @@
+{
+  "result": "DIAGNOSTIC_ONLY",
+  "samples": 1181,
+  "total_camera_samples": 1199,
+  "elapsed_origin": "first camera frame",
+  "alignment": "Same SE3 fitted to fourway and applied to no_gate",
+  "external_fit": false,
+  "time_fit": false,
+  "scale_fit": false,
+  "supervision": false,
+  "modes": {
+    "fourway": {
+      "position_mm": {
+        "mean": 4.104003616438104,
+        "median": 2.8587764748005826,
+        "rmse": 6.006604640436937,
+        "p95": 9.960118886368129,
+        "max": 55.531762070509835,
+        "fraction_below_10": 0.9534292972057579
+      },
+      "peak_camera_elapsed_s": 19.758988618850708,
+      "peak_optical_age_ms": 546.5688937110826,
+      "peak_camera_angle_from_initial_deg": 38.77530847942849,
+      "peak_last_optical_axis_groups": 4,
+      "peak_origin_residual_mm": 56.67530747934695,
+      "peak_orientation_lever_component_mm": 1.1855877494025981,
+      "subsets": {
+        "optical_age_le_20ms": {
+          "samples": 1023,
+          "position_mm": {
+            "mean": 3.449744489795632,
+            "median": 2.6294493446488554,
+            "rmse": 4.225941670158055,
+            "p95": 8.886230330866349,
+            "max": 14.927771420179937,
+            "fraction_below_10": 0.9716520039100685
+          }
+        },
+        "optical_age_gt_20ms": {
+          "samples": 158,
+          "position_mm": {
+            "mean": 8.340124417420693,
+            "median": 6.376984357955318,
+            "rmse": 12.411795653510119,
+            "p95": 27.556901671732867,
+            "max": 55.531762070509835,
+            "fraction_below_10": 0.8354430379746836
+          }
+        },
+        "angle_le_10deg": {
+          "samples": 424,
+          "position_mm": {
+            "mean": 2.0179756534405096,
+            "median": 1.6208774343833139,
+            "rmse": 2.2927813588551533,
+            "p95": 4.533225079510916,
+            "max": 12.108850169584708,
+            "fraction_below_10": 0.9976415094339622
+          }
+        },
+        "angle_gt_10deg": {
+          "samples": 757,
+          "position_mm": {
+            "mean": 5.272399727813243,
+            "median": 4.197401147586682,
+            "rmse": 7.303638153923062,
+            "p95": 11.087933952263006,
+            "max": 55.531762070509835,
+            "fraction_below_10": 0.9286657859973579
+          }
+        }
+      }
+    },
+    "no_gate": {
+      "position_mm": {
+        "mean": 6.1969508986349275,
+        "median": 5.766050667658999,
+        "rmse": 7.042300705604279,
+        "p95": 12.662022416078816,
+        "max": 17.759718145635993,
+        "fraction_below_10": 0.8467400508044031
+      },
+      "peak_camera_elapsed_s": 38.226770639419556,
+      "peak_optical_age_ms": 1.7249142983928323,
+      "peak_camera_angle_from_initial_deg": 7.547162733402621,
+      "peak_last_optical_axis_groups": 3,
+      "peak_origin_residual_mm": 17.7950436294419,
+      "peak_orientation_lever_component_mm": 0.6528711323541884,
+      "subsets": {
+        "optical_age_le_20ms": {
+          "samples": 1181,
+          "position_mm": {
+            "mean": 6.1969508986349275,
+            "median": 5.766050667658999,
+            "rmse": 7.042300705604279,
+            "p95": 12.662022416078816,
+            "max": 17.759718145635993,
+            "fraction_below_10": 0.8467400508044031
+          }
+        },
+        "angle_le_10deg": {
+          "samples": 424,
+          "position_mm": {
+            "mean": 5.32392739303012,
+            "median": 4.772447991548825,
+            "rmse": 5.923104046429424,
+            "p95": 9.349236004275587,
+            "max": 17.759718145635993,
+            "fraction_below_10": 0.9528301886792453
+          }
+        },
+        "angle_gt_10deg": {
+          "samples": 757,
+          "position_mm": {
+            "mean": 6.685936323174477,
+            "median": 6.6269573548936584,
+            "rmse": 7.597473385326462,
+            "p95": 12.930390709378772,
+            "max": 15.191191086279524,
+            "fraction_below_10": 0.7873183619550859
+          }
+        }
+      }
+    }
+  },
+  "fourway_max_10mm_acceptance": "FAIL"
+}

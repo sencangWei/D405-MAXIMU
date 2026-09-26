@@ -1,0 +1,475 @@
+{
+  "result": "DIAGNOSTIC_ONLY",
+  "board_samples": 1199,
+  "common_samples": 1181,
+  "clock_mapping": {
+    "matched_callbacks": 8775,
+    "record_to_host_offset_s": 577577.2624880329,
+    "absolute_residual_p99_us": 316.3422131910924
+  },
+  "camera_clock_mapping": {
+    "camera_input_domain": "d405_global_time_unix_epoch_s",
+    "alignment_domain": "host_monotonic_s",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_040620/d405_frames.csv",
+    "epoch_minus_monotonic_s": 1789875603.8109343,
+    "mapping_samples": 1199,
+    "mapping_span_us": 0.95367431640625
+  },
+  "frozen_handeye": "/home/robot/ego_vio_humble/reports/lighthouse_extrinsic_time_recheck_20260911_round4/independent_calibration/lighthouse_d405_aprilgrid_calibration.json",
+  "frozen_handeye_sha256": "382517ecf9255aa24bdd54b72b383632dc580ffd5a47c6d77aa7dee1dab76617",
+  "tracker_query_offset_ms": 13.371281046649964,
+  "scale_fit": false,
+  "external_fit": false,
+  "time_offset_fit": false,
+  "alignment": "SE3 on all common samples; first-half alignment also evaluated on second half",
+  "limits": [
+    "Single independent capture",
+    "Frozen hand-eye calibration has material uncertainty",
+    "Board metric poses depend on measured print size and camera calibration",
+    "No absolute surveyed Lighthouse-position accuracy claim"
+  ],
+  "modes": {
+    "live_formal": {
+      "position_mm": {
+        "mean": 26.442378334576617,
+        "median": 14.242078443211842,
+        "rmse": 39.80460205457379,
+        "p95": 79.49077272083296,
+        "max": 172.2654157512901,
+        "fraction_below_10": 0.4038950042337002
+      },
+      "orientation_deg": {
+        "mean": 5.464067859783003,
+        "median": 3.52952759971564,
+        "rmse": 7.063748538946668,
+        "p95": 13.195530354938256,
+        "max": 47.27059132808261,
+        "fraction_below_10": 0.8966977138018628
+      },
+      "first_half_alignment_second_half_position_mm": {
+        "mean": 39.22201940034167,
+        "median": 33.20224162337046,
+        "rmse": 48.98650199269062,
+        "p95": 96.80709911260458,
+        "max": 164.05842734134185,
+        "fraction_below_10": 0.08305084745762711
+      },
+      "peak_elapsed_s": 22.56045174598694
+    },
+    "formal_fourway": {
+      "position_mm": {
+        "mean": 47.02994635212366,
+        "median": 35.80221401146223,
+        "rmse": 72.2999377395434,
+        "p95": 111.99939524522748,
+        "max": 695.9583295644048,
+        "fraction_below_10": 0.2760372565622354
+      },
+      "orientation_deg": {
+        "mean": 178.28830622037896,
+        "median": 178.93882434475094,
+        "rmse": 178.3077797192995,
+        "p95": 179.8937341441032,
+        "max": 179.99982865260398,
+        "fraction_below_10": 0.0
+      },
+      "first_half_alignment_second_half_position_mm": {
+        "mean": 71.76373714878167,
+        "median": 71.67500301351245,
+        "rmse": 80.04138296051008,
+        "p95": 113.87114995339347,
+        "max": 263.07065981389286,
+        "fraction_below_10": 0.006779661016949152
+      },
+      "peak_elapsed_s": 19.1601619720459
+    },
+    "joint_candidate_fourway": {
+      "position_mm": {
+        "mean": 4.104003616438105,
+        "median": 2.858776474800583,
+        "rmse": 6.006604640436937,
+        "p95": 9.960118886368129,
+        "max": 55.531762070509835,
+        "fraction_below_10": 0.9534292972057579
+      },
+      "orientation_deg": {
+        "mean": 2.4546883819250023,
+        "median": 2.034044835857164,
+        "rmse": 2.657464240039679,
+        "p95": 5.286142114812015,
+        "max": 5.800609999356844,
+        "fraction_below_10": 1.0
+      },
+      "first_half_alignment_second_half_position_mm": {
+        "mean": 6.617066198810915,
+        "median": 5.866288920983495,
+        "rmse": 7.516505235300929,
+        "p95": 13.71411331378174,
+        "max": 16.51735525362897,
+        "fraction_below_10": 0.8016949152542373
+      },
+      "peak_elapsed_s": 19.1601619720459
+    }
+  },
+  "input_sha256": {
+    "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260927_040615_lighthouse_orientation_control/lighthouse_raw.rec": "4187de920e162b679e2a19dafd056915317512f0b810cace1e188ac70316f62f",
+    "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260927_040615_lighthouse_orientation_control/tracker.csv": "033cbe0d0e9bbd93651b86e4435b8c6e6cca5544f80fc82cb80807316b6fab75",
+    "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260927_040615_lighthouse_orientation_control/board_validation/aprilgrid_camera_poses.csv": "1db6169599fb40ce0f5f17c9d3724a1192760a92cad697ead47407366fb149fa",
+    "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_040620/d405_frames.csv": "742db46c296cab457ed11e6378e97ed0908cef8254b4b718280b0a3875305de0",
+    "/home/robot/ego_vio_humble/config/aprilgrid_6x6_35mm.yaml": "c88214b0ada61d9aee8e275e6eae093c64d9ff5cbc23b56732a9014d45b19cf1"
+  },
+  "independent_gyro_timing": {
+    "live_formal": {
+      "tracker_query_offset_ms": -1.577844887155536,
+      "correlation": -0.14198598776631463,
+      "overlap_duration_s": 39.43197519262321,
+      "imu_rate_hz": 400.1856983863146,
+      "tracker_rate_hz": 126.4124858459983,
+      "tracker_speed_clip_deg_s": 199.3047096870944,
+      "tracker_speed_clipped_samples": 298,
+      "tracker_speed_clipped_ratio": 0.033894449499545044,
+      "search_range_ms": 30.0,
+      "single_capture_signal_gate_pass": false
+    },
+    "formal_fourway": {
+      "tracker_query_offset_ms": 7.358912822992928,
+      "correlation": -0.07484866666357823,
+      "overlap_duration_s": 39.20517388219014,
+      "imu_rate_hz": 400.1856983863146,
+      "tracker_rate_hz": 125.7545269339261,
+      "tracker_speed_clip_deg_s": 136.82636153433302,
+      "tracker_speed_clipped_samples": 314,
+      "tracker_speed_clipped_ratio": 0.03583656699383703,
+      "search_range_ms": 30.0,
+      "single_capture_signal_gate_pass": false
+    },
+    "joint_candidate_fourway": {
+      "tracker_query_offset_ms": 4.679431856028675,
+      "correlation": 0.7149366699472337,
+      "overlap_duration_s": 39.20517388219014,
+      "imu_rate_hz": 400.1856983863146,
+      "tracker_rate_hz": 125.7545269339261,
+      "tracker_speed_clip_deg_s": 52.99223603653237,
+      "tracker_speed_clipped_samples": 93,
+      "tracker_speed_clipped_ratio": 0.01061401506505364,
+      "search_range_ms": 30.0,
+      "single_capture_signal_gate_pass": false
+    },
+    "board_camera": {
+      "tracker_query_offset_ms": -1.8704619244901517,
+      "correlation": 0.9790621155450103,
+      "overlap_duration_s": 39.753520474536344,
+      "imu_rate_hz": 400.1856983863146,
+      "tracker_rate_hz": 30.000028610256777,
+      "tracker_speed_clip_deg_s": 52.99223603653237,
+      "tracker_speed_clipped_samples": 0,
+      "tracker_speed_clipped_ratio": 0.0,
+      "search_range_ms": 30.0,
+      "single_capture_signal_gate_pass": true
+    }
+  },
+  "raw_vs_filtered_diagnostic": {
+    "samples": 973,
+    "modes": {
+      "raw_optical": {
+        "position_mm": {
+          "mean": 4.165712988412923,
+          "median": 2.5411879407572555,
+          "rmse": 5.559139002275554,
+          "p95": 13.44453045455865,
+          "max": 17.073433405217607,
+          "fraction_below_10": 0.8972250770811921
+        },
+        "peak_elapsed_s": 28.993903636932373
+      },
+      "filtered": {
+        "position_mm": {
+          "mean": 3.277004347000599,
+          "median": 2.7098303761836378,
+          "rmse": 4.089582422146126,
+          "p95": 8.409372104096436,
+          "max": 15.831723640046778,
+          "fraction_below_10": 0.9784172661870504
+        },
+        "peak_elapsed_s": 37.09455394744873
+      }
+    },
+    "raw_to_final_z_subtract_m": -0.113739259541,
+    "alignment": "same SE3 fitted to filtered samples for both streams",
+    "tracker_query_offset_ms": 13.371281046649964
+  },
+  "candidate_peak_optical_bracket": {
+    "peak_elapsed_s": 19.1601619720459,
+    "previous_optical_elapsed_s": 18.626964359427802,
+    "next_optical_elapsed_s": 19.184854359366,
+    "optical_interval_ms": 557.8899999381974,
+    "query_age_since_last_optical_ms": 546.5688937110826,
+    "ungated_solutions_inside_gap": [
+      {
+        "elapsed_s": 18.644940359401517,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.64894535939675,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.66103235934861,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.668820359394886,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.681344359414652,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.688821359421127,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.700858359457925,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.708938359399326,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.72086135938298,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.72890835942235,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.740980359376408,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.748978359391913,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.760860359412618,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.768823359394446,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.781083359383047,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.788846359355375,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.80683135939762,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.818853359436616,
+        "station_axis_groups": 2,
+        "station_count": 1
+      },
+      {
+        "elapsed_s": 18.828838359448127,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.838834359426983,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.848851359449327,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.856846359441988,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.866830359445885,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.87883335945662,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.88883235945832,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.90085835941136,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.908833359368145,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.920837359386496,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.926850359421223,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.940840359427966,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.94885035941843,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.95897835935466,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.964840359403752,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.980851359432563,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 18.984927359386347,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.00498435937334,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.01503435941413,
+        "station_axis_groups": 2,
+        "station_count": 1
+      },
+      {
+        "elapsed_s": 19.02884435944725,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.03699135943316,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.04685335943941,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.0568893593736,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.064966359408572,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.077012359397486,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.0848703593947,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.095049359370023,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.10485035937745,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.117101359413937,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.125001359381713,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.136837359401397,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.142841359367594,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.15702235943172,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.1648483594181,
+        "station_axis_groups": 3,
+        "station_count": 2
+      },
+      {
+        "elapsed_s": 19.173003359348513,
+        "station_axis_groups": 3,
+        "station_count": 2
+      }
+    ]
+  }
+}
