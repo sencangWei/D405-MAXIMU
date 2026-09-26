@@ -46,6 +46,18 @@ Single-station outputs have fewer samples and larger gaps; smoothness does not p
 
 ## Conclusion and next boundary
 
+### Follow-up: actual optical fit residuals
+
+Diagnostic output `residual_replay.tluBUa/` uses the built-in `--mpfit-record-reprojection-error 1`, recording `WM0 RA sensor axis angular_residual_rad lighthouse`. Original capture unchanged; every replay uses private configuration copies and recomputes poses. Both-station run additionally logs verbose solver statistics. Three replays exited 0.
+
+| Constraints enabled | LH0 abs angular residual median / P95 deg | LH1 abs angular residual median / P95 deg |
+| --- | --- | --- |
+| Both | 0.198 / 0.539 | 0.408 / 0.703 |
+| LH0 only | 0.011 / 0.047 | — |
+| LH1 only | — | 0.008 / 0.030 |
+
+Dual-station residuals are already large in early low-motion observations, not just isolated movement spikes. Each individual station fits much more closely, while their combined constraints conflict under the current fixed world/model. Single-station constraints are weaker and sample subsets differ: this does not prove which physical station moved, guarantee single-station accuracy, or identify relative world calibration as the sole possible cause. Prioritize relative station geometry, identity/channel/disambiguation and alternative pose solutions before changing hand-eye or SLAM. The frozen file is libsurvive's custom format despite its `.json` suffix; ordinary `json.loads` is invalid. Existing config parser must be used.
+
 Strong evidence of Tracker dynamic-reference inconsistency, independently corroborated by board/UMI observations, reproducible in raw-observation recomputation. This is not a MASt3R/VINS output defect. It is not evidence that the user moved a station, nor proof of reflection, occlusion, or a particular libsurvive code bug.
 
 Next: inspect dual-station measurement consistency, pose-solution ambiguity, and optical visibility/inlier residuals around the recorded events using these saved observations. Do not recollect the same motion, fit away discontinuities with hand-eye calibration, or use this rejected reference to tune SLAM to 10 mm.

@@ -1,0 +1,9 @@
+# Findings
+
+Frozen v13 was accepted on restart/static jitter and one dynamic continuity test, not optical residual consistency or absolute accuracy. It has two fixed station IDs 2640831677/1850292303; source broader calibration has 8 scenes/276 measurements and deterministic duplicate candidates.
+
+Latest diagnostic: both-station optical P95 .539/.703 deg vs individual .047/.030 deg. Severe online and raw-recomputed jumps; single station ablations smooth but orientations disagree ~174deg. Conflicting constraints could be geometry, identity/disambiguation, model or initialization. No physical station movement proven. Default wrapper unconditionally passes --disable-calibrate, so recalibration must explicitly verify calibration actually enabled rather than replaying fixed poses.
+
+Existing raw source: reports/lighthouse_recalibration_v13_20260926.MOdFGn/coverage_round2/lighthouse_raw.rec; diagnostic raw: reports/lighthouse_umi_sessions/20260926_170502_raw_optical_diagnostic_v13/lighthouse_raw.rec. Earlier hand-eye captures have board/IMU but no raw optical recording; cannot replay those through libsurvive. Need seek other same-layout raw recordings, or use independent non-overlapping raw calibration segments and clearly report validation gap.
+
+Candidate recomputation genuinely enabled calibration by invoking .bin directly. Four scenes/124 measurements. Current raw candidate optical P95 .065/.057deg, short max2.738mm/.788deg vs baseline72.048mm/29.409deg. Earlier raw candidate fails92.613mm/22.130deg where baseline7.636mm/1.630deg. Do not activate. Device CONFIG identical. Early/late candidates relative6.319mm/.1405deg. Full serialized config equals early relative geometry, not last refined solver text; needs source/filter-state investigation before any library fix. Full report reports/lighthouse_world_repair_20260926.mI7gAT/README.md.
