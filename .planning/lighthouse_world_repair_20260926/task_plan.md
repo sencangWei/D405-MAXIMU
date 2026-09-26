@@ -14,6 +14,9 @@ Identify/fix conflicting two-station optical constraints, without SLAM supervisi
 ## Success criteria
 Both station optical P95 residuals decrease toward individual-station fits; reject large position/rotation jumps rather than interpolate them away. Two independent captures required before recommending activation. Continuity is not absolute accuracy; no claimed 10 mm accuracy without independent validation. Only use same-station-layout records.
 
+## Approved next diagnostic slice
+User approved four-step remedy; current slice is offline conflict localization, not deployment. Audit station ID/channel mapping and coordinate/quaternion boundaries from raw records and current source. Compare diagnostic/fresh residuals by station, axis, sensor and time, and align against raw optical counts using record time (not asynchronous CSV host time). Require reproducible identity/geometry/branch evidence before a production code change. Preserve complete raw observations; no deletion or GT interpolation.
+
 ## Constraints
 Frozen v13 master read-only; private configs for every libsurvive process. No further USB/live stream without a fresh operator-ready cue; authorized capture completed. No production writes, hand-eye/time changes or SLAM processing. Do not use camera/robot trajectories to fit Tracker world poses. Never bulk-stage reports, never force-push.
 

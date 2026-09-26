@@ -1,0 +1,226 @@
+libsurvive version  (backend Eigen)
+Config file is /home/robot/ego_vio_humble/reports/lighthouse_dual_conflict_20260926/fresh_candidate/runtime.json
+Recording to '/home/robot/ego_vio_humble/reports/lighthouse_dual_conflict_20260926/fresh_candidate/recomputed.rec' Compression: 0
+Available Posers:
+	*MPFIT
+	 KalmanOnly
+	 BaryCentricSVD
+	 Dummy
+Totals 4 Posers.
+Using 'MPFIT' for poser
+Available Disambiguators:
+	*StateBased
+Totals 1 Disambiguators.
+Using 'StateBased' for disambiguator
+Not running global solver since disable-calibrate is specfied
+Using playback file '/home/robot/ego_vio_humble/reports/lighthouse_world_repair_live_20260926.jBBJoQ/lighthouse_raw.rec' with timefactor of 0.000000 until -1.000000
+Loaded drivers: GlobalSceneSolver, Playback
+Tracker config for [0;31mWM0[0m (16 state count)
+Adding tracked object [0;31mWM0[0m from [0;32mreplay[0m
+Found WM0 in playback file...
+OOTX not set for LH 0; attaching ootx decoder using device WM0
+OOTX not set for LH 1; attaching ootx decoder using device WM0
+Detected LH gen 2 system.
+Setting min report time for [0;31mWM0[0m to 4.000000 ms
+Playback thread played back  60.00s in   0.84s real-time... ( 71.29x)
+Driver reported -1
+Button events processed: 0
+Playback thread played back  65.01s in   1.02s real-time
+MPFIT stats for WM0:
+	meas failures     0
+	total iterations  19146
+	avg iterations    2.993433
+	total fevals      31896
+	avg fevals        4.986867
+	total runs        6396
+	avg error         2358.3158657629
+	avg orig error    3771.1504020228
+	noisy meas cnt          0 /   212362 (0.00%)
+	dropped lh cnt          0 /    12792 (0.00%)
+	Status  MP_OK_CHI 0
+	Status  MP_OK_PAR 6394
+	Status MP_OK_BOTH 2
+	Status  MP_OK_DIR 0
+	Status MP_MAXITER 0
+	Status    MP_FTOL 0
+	Status    MP_XTOL 0
+	Status    MP_GTOL 0
+	Status MP_OK_NORM 0
+MPFIT overall stats:
+	meas failures     0
+	total iterations  19146
+	avg iterations    2.993433
+	total fevals      31896
+	avg fevals        4.986867
+	total runs        6396
+	avg error         2358.3158657629
+	avg orig error    3771.1504020228
+	noisy meas cnt          0 /   212362 (0.00%)
+	dropped lh cnt          0 /    12792 (0.00%)
+	Status  MP_OK_CHI 0
+	Status  MP_OK_PAR 6394
+	Status MP_OK_BOTH 2
+	Status  MP_OK_DIR 0
+	Status MP_MAXITER 0
+	Status    MP_FTOL 0
+	Status    MP_XTOL 0
+	Status    MP_GTOL 0
+	Status MP_OK_NORM 0
+	seed runs         1 / 6396
+	error failures    0
+StateBased Disambiguator statistics:
+	sync_time_error         0
+	confidence_resets       0
+	drop_sweeps             0
+	sweep_hit_count         0
+	sync_count[0]           0
+	drop_syncs[0]           0
+	sync_count[1]           0
+	drop_syncs[1]           0
+Disconnecting device [0;31mWM0[0m at 65.0069130
+Statistics for WM0 (driver replay)
+	Extent hits                    0
+	Naive hits                     0
+	Extent misses                  0
+	Extent min                0.0000
+	Extent max                0.0000
+	LH  0
+		Syncs:                 3228
+		Skipped Syncs:            0
+		Sync resets:              0
+		Bad Syncs:                0
+		Hits:                 34421
+		Drops:                    0
+		Rejected Data:            5 (0.015%)
+	LH  1
+		Syncs:                 3213
+		Skipped Syncs:            0
+		Sync resets:              0
+		Bad Syncs:                0
+		Hits:                 50473
+		Drops:                    0
+		Rejected Data:            0 (0.000%)
+IMU WM0 tracker statistics:
+	state_cnt                          16   15
+	IMU Correction                   (+9.964191e-01   +9.999726e-01   +9.974857e-01) +1.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	Acc Bias                         +9.279135e-03   +8.710227e-04   -2.344277e-03
+	Gyro Bias                        -1.145422e-02   +2.164699e-03   +1.454418e-02
+	avg hz                           127.969368
+	late imu                         0
+	late light                       0
+	joint model                         -nan avg cnt        0 dropped
+	lightcap model                   13.1818182 avg cnt      569 dropped
+	Dropped poses                    16 of 8103 (0.20%)
+	Mean reported variance           +7.352814e-08   +2.076745e-07   +8.876346e-08   +1.368917e-05   +1.210014e-05   +1.094399e-05   +1.213684e-05   +1.935351e-05   +1.050626e-05   +1.393434e-05   +1.405700e-05   +1.356431e-05   +1.176595e-02   +1.184424e-02   +1.141087e-02   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	Mean dropped variance            +1.452490e-09   +3.540588e-09   +1.704053e-09   +3.684269e-07   +1.884834e-07   +1.711053e-07   +1.079264e-05   +1.693085e-05   +1.165926e-05   +4.479444e-03   +4.199533e-03   +1.626626e-03   +2.190318e-02   +2.544660e-02   +2.244254e-02   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	Obs error                        7.435058e+02 (   6396 integrations, 101.211hz) +4.586956e-11   +1.758283e-10   +6.801985e-11   +4.669927e-09   +5.017536e-09   +1.195800e-08   +1.228770e-10
+	IMU error                        1.756804e-03 (  15807 integrations, 250.131hz) +5.843563e-08   +4.587700e-08   +1.958086e-08   +2.575411e-08   +7.258844e-08   +5.164884e-08
+	IMU acc avg norm                 +9.925819e-01 +1.007474e+00 (  15807)
+	Stationary IMU acc avg norm      +9.918052e-01 +1.008263e+00 (  11826)
+	No light IMU count                      0
+	Lightcap error                   6.912664e-04 (   5808 integrations,  91.906hz) +1.095276e-08
+ 
+	gyro bias                        -1.145422e-02   +2.164699e-03   +1.454418e-02
+	Lightcap R                       +1.000000e-02
+	Gyro R                           +1.000000e-03   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +1.000000e-03   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +1.000000e-03   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +3.046170e-05   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +3.046170e-05   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +3.046170e-05
+	Observation R                    +1.000000e-07   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +1.000000e-07   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +1.000000e-07   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +1.000000e-07   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +1.000000e-06   +0.000000e+00   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +1.000000e-06   +0.000000e+00
+	                                 +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +1.000000e-06
+	Observed state variance          +1.226644e-03   +3.996992e-03   +1.204044e-03   +8.444990e-03   +1.813633e-03   +1.807071e-03   +5.232359e-04   +5.118153e-02   +7.428784e-02   +4.760215e-02   +5.208778e+00   +4.418821e+00   +4.496668e+00   +1.282306e+02   +1.835098e+02   +2.181539e+02   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00   +0.000000e+00
+	imu Kalman statistics:
+		failures                              0   0.000%
+		avg bestnorm                     0.0105459 / 0.0000000 / 0.0000000
+		avg orignorm                     0.0233944 / 0.0000000
+		avg step                            -nan
+		iterations                            0 (0.00)
+		runs                              15807
+		fevals                            15807 /  15807
+		exit reasons                    
+		    invalid_jac                       0
+		    maxerr                            0
+		    maxiter                           0
+		    xtol                              0
+		    step                              0
+		    mtol                              0
+	lightcap Kalman statistics:
+		failures                              0   0.000%
+		avg bestnorm                     0.0006912 / 0.0006911 / 0.0000001
+		avg orignorm                     0.0006913 / 0.0006913
+		avg step                         0.7487319
+		iterations                         5520 (0.95)
+		runs                               5808
+		fevals                            12715 /   8568
+		exit reasons                    
+		    invalid_jac                       0
+		    maxerr                            0
+		    maxiter                           0
+		    xtol                           2760
+		    step                              0
+		    mtol                           3048
+	obs Kalman statistics:
+		failures                              0   0.000%
+		avg bestnorm                     0.2582114 / 0.2177186 / 0.0132000
+		avg orignorm                     743.5057809 / 743.5057809
+		avg step                         0.5216678
+		iterations                        21537 (3.37)
+		runs                               6396
+		fevals                            52389 /  21945
+		exit reasons                    
+		    invalid_jac                       0
+		    maxerr                            0
+		    maxiter                           1
+		    xtol                           5984
+		    step                              3
+		    mtol                            408
+	zvu Kalman statistics:
+		failures                              0   0.000%
+		avg bestnorm                     0.0000295 / 0.0000000 / 0.0000000
+		avg orignorm                     0.0021054 / 0.0000000
+		avg step                            -nan
+		iterations                            0 (0.00)
+		runs                              11826
+		fevals                            11826 /  11826
+		exit reasons                    
+		    invalid_jac                       0
+		    maxerr                            0
+		    maxiter                           0
+		    xtol                              0
+		    step                              0
+		    mtol                              0
+ 
+Callback statistics:
+	new_object           cnt:       1 avg time: 0.0021457ms max time: 0.0021458ms cnt over 1ms:     0(0.0000000%)
+	disconnect           cnt:       1 avg time: 0.0040531ms max time: 0.0040531ms cnt over 1ms:     0(0.0000000%)
+	printf               cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	log                  cnt:     203 avg time: 0.0004933ms max time: 0.0109673ms cnt over 1ms:     0(0.0000000%)
+	report_error         cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	config               cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	gen_detected         cnt:       1 avg time: 0.0529284ms max time: 0.0529289ms cnt over 1ms:     0(0.0000000%)
+	ootx_received        cnt:       2 avg time: 0.5810232ms max time: 0.6060600ms cnt over 1ms:     0(0.0000000%)
+	lightcap             cnt:       2 avg time: 0.0020265ms max time: 0.0040531ms cnt over 1ms:     0(0.0000000%)
+	light                cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	light_pulse          cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	angle                cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	sync                 cnt:    6441 avg time: 0.0922268ms max time: 1.5099049ms cnt over 1ms:     2(0.0003105%)
+	sweep                cnt:   78453 avg time: 0.0006665ms max time: 0.3011227ms cnt over 1ms:     0(0.0000000%)
+	sweep_angle          cnt:   78453 avg time: 0.0003637ms max time: 0.1599789ms cnt over 1ms:     0(0.0000000%)
+	raw_imu              cnt:   16065 avg time: 0.0126821ms max time: 0.8780956ms cnt over 1ms:     0(0.0000000%)
+	imu                  cnt:   16065 avg time: 0.0115604ms max time: 0.8771420ms cnt over 1ms:     0(0.0000000%)
+	button               cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	imupose              cnt:    8087 avg time: 0.0014810ms max time: 0.2870560ms cnt over 1ms:     0(0.0000000%)
+	pose                 cnt:    8087 avg time: 0.0014454ms max time: 0.2870560ms cnt over 1ms:     0(0.0000000%)
+	velocity             cnt:    8036 avg time: 0.0007612ms max time: 0.0081062ms cnt over 1ms:     0(0.0000000%)
+	external_pose        cnt:    6396 avg time: 0.0020559ms max time: 0.0441074ms cnt over 1ms:     0(0.0000000%)
+	external_velocity    cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
+	raw_lighthouse_pose  cnt:       2 avg time: 0.3420097ms max time: 0.4119873ms cnt over 1ms:     0(0.0000000%)
+	lighthouse_pose      cnt:       2 avg time: 0.0014305ms max time: 0.0019073ms cnt over 1ms:     0(0.0000000%)
+	datalog              cnt:       0 avg time: 0.0000000ms max time: 0.0000000ms cnt over 1ms:     0(0.0000000%)
