@@ -168,6 +168,7 @@ def capture(
     wall_timeout_s: float | None = None,
     config: Path | None = None,
     lighthouse_gen: int | None = None,
+    raw_record: Path | None = None,
 ) -> dict[str, object] | None:
     if config is not None and not config.is_file():
         raise ValueError(f"Lighthouse config does not exist: {config}")
@@ -176,6 +177,11 @@ def capture(
     config_before = config.read_text(encoding="utf-8") if config is not None else None
     if lighthouse_gen not in (None, 1, 2):
         raise ValueError(f"unsupported Lighthouse generation: {lighthouse_gen}")
+    if raw_record is not None:
+        raw_record = raw_record.resolve()
+        if raw_record.exists():
+            raise FileExistsError(f"refusing to overwrite Lighthouse raw record: {raw_record}")
+        raw_record.parent.mkdir(parents=True, exist_ok=True)
     output.parent.mkdir(parents=True, exist_ok=True)
     log_path = output.with_suffix(".log")
     if wall_timeout_s is None:
@@ -188,6 +194,8 @@ def capture(
             command.extend(["-c", str(config)])
         if lighthouse_gen is not None:
             command.extend(["--lighthouse-gen", str(lighthouse_gen)])
+        if raw_record is not None:
+            command.extend(["--record", str(raw_record)])
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=log_file, text=True, bufsize=1
         )
@@ -663,6 +671,7 @@ def main() -> int:
     record_parser.add_argument("--report", type=Path, required=True)
     record_parser.add_argument("--config", type=Path)
     record_parser.add_argument("--lighthouse-gen", type=int, choices=(1, 2))
+    record_parser.add_argument("--raw-record", type=Path, help="save original libsurvive optical/IMU events for offline replay")
 
     restart_parser = subparsers.add_parser("restart")
     restart_parser.add_argument("--runs", type=int, default=10)
@@ -696,6 +705,7 @@ def main() -> int:
             args.warmup,
             config=args.config,
             lighthouse_gen=args.lighthouse_gen,
+            raw_record=args.raw_record,
         )
         report = attach_lighthouse_audit(stream_integrity(args.output), lighthouse_audit)
     elif args.command == "overlap":

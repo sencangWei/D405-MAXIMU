@@ -83,6 +83,10 @@ fi
 # storage setup.  The camera/IMU warmup still leaves enough time for Tracker to
 # become ready before the formal capture window, while avoiding a fixed timer
 # expiring when D405 startup is delayed by I/O pressure.
+tracker_extra_args=()
+if [[ "${LIGHTHOUSE_RAW_RECORD:-0}" == 1 ]]; then
+    tracker_extra_args=(--raw-record "$OUT_DIR/lighthouse_raw.rec")
+fi
 python3 "$ROOT_DIR/scripts/lighthouse_reference_check.py" record \
     --warmup 0 \
     --duration "$TRACKER_DURATION_S" \
@@ -90,6 +94,7 @@ python3 "$ROOT_DIR/scripts/lighthouse_reference_check.py" record \
     --report "$OUT_DIR/tracker_integrity.json" \
     --config "$LIGHTHOUSE_RUNTIME_CONFIG" \
     --lighthouse-gen 2 \
+    "${tracker_extra_args[@]}" \
     >"$OUT_DIR/tracker_stdout.log" 2>&1 &
 TRACKER_PID="$!"
 
