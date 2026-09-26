@@ -45,17 +45,17 @@ def test_joint_capture_enforces_tracker_geometry_and_time_overlap() -> None:
         'install -m 0644 "$FROZEN_LIGHTHOUSE_CONFIG" "$LIGHTHOUSE_RUNTIME_CONFIG"'
         in text
     )
-    assert "libsurvive_config_frozen_v12.json" in text
-    assert "63bd7d886bf6f8b46735a5f38047af8902d1f79b60a6feb57b3e3233e5bc6e99" in text
+    assert "libsurvive_config_frozen_v13.json" in text
+    assert "8b2f50ed5bf51ee4366d155dd99983a7a2791b1de4b7995d375d5036b94668d0" in text
     assert '"Lighthouse generation forced to 2"' in text
 
 
-def test_preflight_uses_same_consensus_lighthouse_world_v12() -> None:
+def test_preflight_uses_same_consensus_lighthouse_world_v13() -> None:
     text = PREFLIGHT_SCRIPT.read_text(encoding="utf-8")
 
-    assert "lighthouse_recalibration_world_v12_20260924_consensus" in text
-    assert "libsurvive_config_frozen_v12.json" in text
-    assert "63bd7d886bf6f8b46735a5f38047af8902d1f79b60a6feb57b3e3233e5bc6e99" in text
+    assert "lighthouse_recalibration_world_v13_20260926_consensus" in text
+    assert "libsurvive_config_frozen_v13.json" in text
+    assert "8b2f50ed5bf51ee4366d155dd99983a7a2791b1de4b7995d375d5036b94668d0" in text
 
 
 def test_d405_quality_failure_preserves_moved_session_for_diagnostics() -> None:
