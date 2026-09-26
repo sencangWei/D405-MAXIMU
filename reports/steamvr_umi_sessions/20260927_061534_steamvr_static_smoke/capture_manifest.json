@@ -1,0 +1,82 @@
+{
+  "schema": "d405_steamvr_capture_v1",
+  "reference_backend": "steamvr_official",
+  "reference_pose_frame": "steamvr_standing_tracker",
+  "serial": "LHR-A2A59C7D",
+  "slam_supervision": false,
+  "extrinsic": "NOT_VALIDATED",
+  "time_offset": "NOT_ESTIMATED",
+  "duration_requested_s": 10.0,
+  "d405_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_061546",
+  "tracker_integrity": {
+    "status": "FAIL",
+    "result": "FAIL",
+    "failures": [
+      "good_pose_max_gap_gt_30ms"
+    ],
+    "provenance": {
+      "adapter": "steamvr_trace_adapter.py",
+      "raw_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_061534_steamvr_static_smoke/tracker_openvr_raw.csv",
+      "output_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_061534_steamvr_static_smoke/tracker.csv",
+      "serial": "LHR-A2A59C7D",
+      "name_alias": "WM0",
+      "source": "steamvr_official",
+      "timestamp_source": "host_query_midpoint_not_sensor",
+      "pose_frame": "steamvr_standing_tracker",
+      "caveat": "OpenVR exposes host query timing here, not tracker sensor hardware time; device_time_s is intentionally empty.",
+      "raw_columns": [
+        "sequence",
+        "query_monotonic_begin_ns",
+        "query_monotonic_end_ns",
+        "host_realtime_ns",
+        "index",
+        "connected",
+        "pose_valid",
+        "tracking_result",
+        "m00",
+        "m01",
+        "m02",
+        "px",
+        "m10",
+        "m11",
+        "m12",
+        "py",
+        "m20",
+        "m21",
+        "m22",
+        "pz",
+        "vx",
+        "vy",
+        "vz",
+        "wx",
+        "wy",
+        "wz"
+      ]
+    },
+    "hashes": {
+      "input_sha256": "bd15b22b8862be0600dfbc9205dfddbe5427fcad1fe478f1adaaa194c2867b42",
+      "output_sha256": null
+    },
+    "validation": {
+      "input_rows": 5705,
+      "exported_rows": 5705,
+      "rejected_counts": {},
+      "sample_good_fraction": 1.0,
+      "max_rotation_orthogonality_error": 1.30383649987742e-07,
+      "max_rotation_det_error": 1.673038027005802e-07,
+      "good_pose_max_gap_ns": 453773640,
+      "sequence_strictly_increasing": true,
+      "query_midpoint_strictly_increasing": true,
+      "query_begin_le_end": true,
+      "clock_pair_drift_ns": 6594,
+      "thresholds": {
+        "sample_good_fraction_min": 0.999,
+        "good_pose_max_gap_ns_max": 30000000,
+        "clock_pair_drift_ns_max": 1000000,
+        "rotation_tolerance": 0.001
+      }
+    }
+  },
+  "status": "FAIL_CAPTURE",
+  "error": "Camera recorder returned 2; data retained"
+}

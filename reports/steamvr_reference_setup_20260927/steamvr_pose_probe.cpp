@@ -1,6 +1,7 @@
 #include "openvr.h"
 #include <chrono>
 #include <cmath>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -8,6 +9,8 @@
 
 // Connection probe only. Query timestamps are NOT sensor acquisition timestamps.
 // Standing universe, zero additional future prediction; no compositor dependency.
+volatile std::sig_atomic_t stop_requested = 0;
+void request_stop(int) { stop_requested = 1; }
 int main(int argc, char **argv) {
     if (argc != 3) {
         std::fprintf(stderr, "Usage: %s LHR-SERIAL seconds\n", argv[0]);
@@ -15,7 +18,10 @@ int main(int argc, char **argv) {
     }
     char *end = nullptr;
     const double seconds = std::strtod(argv[2], &end);
-    if (*end || !std::isfinite(seconds) || seconds < 1 || seconds > 120) return 2;
+    if (*end || !std::isfinite(seconds) || seconds < 1 || seconds > 600) return 2;
+    std::signal(SIGTERM, request_stop);
+    std::signal(SIGINT, request_stop);
+    std::setvbuf(stdout, nullptr, _IOLBF, 0);
     vr::EVRInitError error = vr::VRInitError_None;
     auto *system = vr::VR_Init(&error, vr::VRApplication_Background);
     if (!system || error != vr::VRInitError_None) {
@@ -46,9 +52,12 @@ int main(int argc, char **argv) {
     const auto start = Clock::now();
     auto next = start;
     unsigned count = 0, good = 0;
-    while (std::chrono::duration<double>(Clock::now() - start).count() < seconds) {
+    while (!stop_requested && std::chrono::duration<double>(Clock::now() - start).count() < seconds) {
         vr::TrackedDevicePose_t poses[vr::k_unMaxTrackedDeviceCount] = {};
         const auto before = Clock::now();
+        const double wake_late_ms = std::chrono::duration<double, std::milli>(before - next).count();
+        if (wake_late_ms > 30)
+            std::fprintf(stderr, "query=%u wake_late_ms=%.3f\n", count, wake_late_ms);
         const auto wall = std::chrono::system_clock::now();
         system->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseStanding, 0.f,
                                                poses, vr::k_unMaxTrackedDeviceCount);
@@ -65,6 +74,9 @@ int main(int argc, char **argv) {
         for (float v : pose.vVelocity.v) std::printf(",%.9g", double(v));
         for (float v : pose.vAngularVelocity.v) std::printf(",%.9g", double(v));
         std::putchar('\n');
+        const double output_ms = std::chrono::duration<double, std::milli>(Clock::now() - after).count();
+        if (output_ms > 20)
+            std::fprintf(stderr, "query=%u output_ms=%.3f\n", count - 1, output_ms);
         next += std::chrono::nanoseconds(8333333); // 120 Hz queries, not a sensor-rate claim.
         std::this_thread::sleep_until(next);
     }

@@ -1,0 +1,17 @@
+{
+  "status": "PASS_THREE_STATIC_WINDOWS_ONLY",
+  "operator_confirmed_stationary_and_charging": true,
+  "thresholds": {"good_fraction_min": 0.999, "steady_position_p95_mm_max": 1, "all_states_position_max_mm_max": 3, "centroid_shift_mm_max": 3},
+  "takes": [
+    {"take": 1, "samples": 7200, "good_samples": 7200, "steady_p95_mm": 0.25147548740718473, "all_states_max_mm": 0.49934745848756945, "first_last_5s_shift_mm": 0.10371788661597152, "orientation_p95_deg": 0.029928791740429336, "orientation_max_deg": 0.05041952327091057, "query_rate_hz": 119.99995410097601, "max_query_interval_ms": 11.860088, "timestamp_regressions": 0},
+    {"take": 2, "samples": 7200, "good_samples": 7200, "steady_p95_mm": 0.25558598498928864, "all_states_max_mm": 0.48304218260362275, "first_last_5s_shift_mm": 0.04904003916131486, "orientation_p95_deg": 0.03018659002138271, "orientation_max_deg": 0.051710607444556696, "query_rate_hz": 119.99989971548871, "max_query_interval_ms": 11.366821, "timestamp_regressions": 0},
+    {"take": 3, "samples": 7200, "good_samples": 7200, "steady_p95_mm": 0.23081205647404487, "all_states_max_mm": 0.4575213332581999, "first_last_5s_shift_mm": 0.025125413078124662, "orientation_p95_deg": 0.027571801921721362, "orientation_max_deg": 0.0487769533635167, "query_rate_hz": 119.99901453655515, "max_query_interval_ms": 10.947189, "timestamp_regressions": 0}
+  ],
+  "between_take_centroid_offsets_mm_from_take1": [0, 0.03766944945485558, 0.0232889549829537],
+  "position_reference": "componentwise median of valid Running_OK samples after first 5s, independently for each take; maximum retains ALL states including first 5s",
+  "first_last_shift_reference": "mean position of first and last 5s within same take",
+  "sensor_update_rate": "UNKNOWN; reported rate is host query rate",
+  "precision_absolute_dynamic": "NOT_VALIDATED",
+  "time_offset": "NOT_ESTIMATED",
+  "tracker_to_d405_extrinsic": "NOT_VALIDATED_FOR_STEAMVR"
+}

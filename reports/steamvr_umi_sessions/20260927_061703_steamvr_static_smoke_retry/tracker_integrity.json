@@ -1,0 +1,69 @@
+{
+  "failures": [
+    "good_pose_max_gap_gt_30ms"
+  ],
+  "hashes": {
+    "input_sha256": "3b81844398c345b3da7d15acf588d2e5313a041b61b79029bbb14c782ed48942",
+    "output_sha256": null
+  },
+  "provenance": {
+    "adapter": "steamvr_trace_adapter.py",
+    "caveat": "OpenVR exposes host query timing here, not tracker sensor hardware time; device_time_s is intentionally empty.",
+    "name_alias": "WM0",
+    "output_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_061703_steamvr_static_smoke_retry/tracker.csv",
+    "pose_frame": "steamvr_standing_tracker",
+    "raw_columns": [
+      "sequence",
+      "query_monotonic_begin_ns",
+      "query_monotonic_end_ns",
+      "host_realtime_ns",
+      "index",
+      "connected",
+      "pose_valid",
+      "tracking_result",
+      "m00",
+      "m01",
+      "m02",
+      "px",
+      "m10",
+      "m11",
+      "m12",
+      "py",
+      "m20",
+      "m21",
+      "m22",
+      "pz",
+      "vx",
+      "vy",
+      "vz",
+      "wx",
+      "wy",
+      "wz"
+    ],
+    "raw_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_061703_steamvr_static_smoke_retry/tracker_openvr_raw.csv",
+    "serial": "LHR-A2A59C7D",
+    "source": "steamvr_official",
+    "timestamp_source": "host_query_midpoint_not_sensor"
+  },
+  "result": "FAIL",
+  "status": "FAIL",
+  "validation": {
+    "clock_pair_drift_ns": 16881,
+    "exported_rows": 5126,
+    "good_pose_max_gap_ns": 87293928,
+    "input_rows": 5126,
+    "max_rotation_det_error": 1.7287643483410164e-07,
+    "max_rotation_orthogonality_error": 1.316888496027957e-07,
+    "query_begin_le_end": true,
+    "query_midpoint_strictly_increasing": true,
+    "rejected_counts": {},
+    "sample_good_fraction": 1.0,
+    "sequence_strictly_increasing": true,
+    "thresholds": {
+      "clock_pair_drift_ns_max": 1000000,
+      "good_pose_max_gap_ns_max": 30000000,
+      "rotation_tolerance": 0.001,
+      "sample_good_fraction_min": 0.999
+    }
+  }
+}

@@ -57,8 +57,12 @@ exit 1 for failed init, absent physical target, output error, or failed validity
 
 ## First operator-confirmed 30-second stationary test
 
-FAIL_STATIC_STABILITY against frozen P95 <=1 mm, max <=3 mm, centroid shift
-<=3 mm, valid-running fraction >=99.9% thresholds. 3599/3600 were connected,
+CORRECTION: the operator subsequently reported touching the device at the
+excursion. Verdict is INVALID_STATIC_TEST_OPERATOR_CONTACT, not a hardware
+stability failure. The stationary precondition was interrupted; do not use
+this window to accept or reject the reference. Preserve the original metrics:
+frozen P95 <=1 mm, max <=3 mm, centroid shift <=3 mm, valid-running fraction
+>=99.9% thresholds. 3599/3600 were connected,
 valid and Running_OK. After 5 seconds P95 0.8268 mm, maximum 4.8766 mm;
 first/last 5-second centroid shift 0.2230 mm. Whole-window P95 0.7215 mm.
 The one non-running sample is retained: state 101 (Calibrating_OutOfRange),
@@ -69,8 +73,22 @@ See static_30s.csv and static_summary.json. No explicit optical cause was
 reported in vrserver's contemporaneous log. Do not assert physical base
 movement, reflection, or operator movement from these values alone.
 
-Next: repeat stationary coverage check; then independent fixed-board motion
-validation and SteamVR-local-frame/UMI clock calibration.
+## Three untouched, charging stationary retries
+
+All 3 x 60-second windows passed the same frozen static thresholds. Each had
+7200/7200 connected+valid+Running_OK rows and no timestamp regressions.
+P95 = 0.2515 / 0.2556 / 0.2308 mm; maxima including startup/all states =
+0.4993 / 0.4830 / 0.4575 mm. First/last 5s centroid shift =
+0.1037 / 0.0490 / 0.0251 mm. Between-take centroid offsets from take 1 =
+0 / 0.0377 / 0.0233 mm. All samples retained without smoothing or spike repair.
+See static_retry_take1/2/3.csv and static_retries_summary.json.
+
+The probe now line-buffers output and gracefully closes on SIGTERM/SIGINT,
+for readiness/cleanup of synchronous camera capture; maximum duration 600s.
+Existing static recordings were collected before this I/O-only change.
+
+Next: independent fixed-board motion validation and SteamVR-local-frame/UMI
+clock calibration. Static success does not prove workspace-wide/dynamic accuracy.
 Do not use SLAM residuals to tune the reference and do not claim 10 mm accuracy
 from this connection check.
 
@@ -78,3 +96,74 @@ Official API semantics:
 https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetDeviceToAbsoluteTrackingPose
 Official no-HMD configuration guidance:
 https://github.com/ValveSoftware/driver_hydra#using-the-hydra-driver
+
+## Synchronous D405 + IMU + official Tracker acquisition
+
+New entry point (no libsurvive reader, no SLAM supervision):
+
+```bash
+cd /home/robot/ego_vio_humble
+rtk proxy python3 scripts/capture_steamvr_with_d405.py \
+  --duration 40 --label steamvr_aprilgrid --preview --guided
+```
+
+Wait for `正式采集开始：40 秒` before moving. Keep the original 6x6,35.2mm
+AprilGrid fixed, UMI/Tracker rigidly attached and both bases visible. Move with
+translation and multiple rotation axes as the guided preview requests.
+The existing independent board calibration pipeline consumes the adapted
+tracker.csv using host_monotonic time. Solve a NEW official-backend tracker_T_body
+and independent IMU/Tracker query offset; old libsurvive transforms/td are not
+accepted as replacements. A second motion take is needed for held-out dynamic
+validation before using the transform as SLAM evaluation ground truth.
+No extrinsic or time offset has been estimated from tonight's static data.
+
+The wrapper preserves complete official raw traces and records explicitly
+which camera-exposure interval plus bracketing queries is checked. Every
+in-window invalid state/gap remains subject to the unchanged adapter gates.
+Startup and post-recording DB3 analysis are not calibration acquisition.
+Device timestamps are NOT fabricated from host query timestamps.
+
+Live checks:
+- 06:15:34 first smoke FAIL: camera frame timeout after ~9s, raw retained.
+  The physical/software cause has not been identified; retries do not prove
+  that this camera fault is fixed.
+- 06:17:03 camera retry PASS with 449 frames. Whole-trace Tracker gate initially
+  failed because of startup/post-processing gaps; within exposure interval
+  max gap12.95ms, no invalid states.
+- 06:19:03 fresh15s complete capture PASS: 449 matched camera sets, zero drops;
+  IMU400.044Hz,1793/1793 normal Tracker queries,max gap10.333ms;
+  every camera exposure bracketed. Status PASS_CAPTURE_ONLY_NOT_CALIBRATED.
+  Evidence reports/steamvr_umi_sessions/20260927_061903_steamvr_static_smoke_verified.
+- 06:20:22 40s confirmation FAIL: camera1199sets PASS, IMU399.986Hz;
+  one in-acquisition Tracker query gap119.857ms. Every returned pose was normal.
+  No threshold relaxation or interpolated repair applied.
+- 06:23:23 instrumented40s confirmation PASS:1199sets, IMU400.009Hz;
+  4792/4792 normal Tracker queries,max gap9.811ms,100% camera exposure coverage.
+  Post-recording stdout writes sometimes blocked20–82ms. This establishes a
+  write-path risk, not proof that every earlier gap had that same cause.
+- Tracker stdout is now RAM-staged in a private mkstemp file, exclusively
+  copied to its durable raw artifact and SHA256-compared before removing the
+  exact temporary copy. Interrupted captures also preserve partial raw data.
+  This reduces disk-write coupling, but cannot guarantee OS scheduling latency.
+- 06:26:33 final RAM-staged40s complete capture PASS:1199camera sets,
+  IMU399.985Hz,4793/4793 normal Tracker queries,max gap9.876ms;
+  100% exposure coverage, raw copy SHA256-verified. Probe diagnostics had
+  no >20ms output stalls in this take. Review found no remaining code blocker.
+  Evidence reports/steamvr_umi_sessions/20260927_062633_steamvr_ram_staged_validation.
+- Targeted Python regression suite23 PASS; bundled C++ probe compile passes
+  -Wall -Wextra -Werror. Old-reader contention guard reviewed/fixed.
+
+After a NEW moving board capture passes, the existing offline solver command is:
+
+```bash
+rtk proxy bash scripts/calibrate_lighthouse_aprilgrid_session.sh \
+  /home/robot/umi_ego_vio_data_device2_c48df736/recordings/ACTUAL_NEW_D405_SESSION \
+  /home/robot/ego_vio_humble/reports/steamvr_umi_sessions/ACTUAL_NEW_CAPTURE/tracker.csv \
+  /home/robot/ego_vio_humble/reports/steamvr_umi_sessions/ACTUAL_NEW_CAPTURE/official_board_candidate
+```
+
+Use the paths from the NEW capture_manifest.json, not tonight's stationary
+smokes. Keep that manifest with the candidate for backend/frame provenance;
+the legacy solver's frozen_manifest schema alone does not establish official
+backend identity or held-out dynamic accuracy. Do not install this candidate
+as evaluation GT until a separate motion take passes independent validation.

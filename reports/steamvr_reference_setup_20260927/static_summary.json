@@ -1,6 +1,7 @@
 {
-  "status": "FAIL_STATIC_STABILITY",
+  "status": "INVALID_STATIC_TEST_OPERATOR_CONTACT",
   "operator_confirmed_stationary": true,
+  "operator_later_reported_contact_at_excursion": true,
   "samples": 3600,
   "good_samples": 3599,
   "good_fraction": 0.9997222222222222,
@@ -45,10 +46,11 @@
   },
   "position_reference": "componentwise median separately in each stated interval; all-state maximum uses steady valid-running median",
   "orientation_reference": "mean rotation separately in each stated interval",
-  "failed_check": "steady_position_max_mm",
+  "numerical_threshold_exceeded": "steady_position_max_mm",
+  "acceptance_verdict": "INVALID: stationary precondition was interrupted; not evidence of base-station or tracker precision failure",
   "raw_samples_retained": true,
   "precision_absolute_dynamic": "NOT_VALIDATED",
   "time_alignment": "NOT_VALIDATED",
   "extrinsic": "NOT_VALIDATED_FOR_STEAMVR",
-  "root_cause": "Transient reference-output excursion and one optical/tracking out-of-range state observed. Physical occlusion/reflection/coverage cause not established. No basis to assert base station moved."
+  "root_cause": "Operator subsequently confirmed touching the device during the excursion. Full-window stationary acceptance is invalid; rerun after placement confirmation. Exact contact interval was not independently instrumented."
 }

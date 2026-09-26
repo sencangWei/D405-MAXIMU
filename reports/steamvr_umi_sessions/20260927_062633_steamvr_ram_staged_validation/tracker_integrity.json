@@ -1,0 +1,67 @@
+{
+  "failures": [],
+  "hashes": {
+    "input_sha256": "1e5f6e7672ec65158a79a506c73a184402805a62b217dd44c053b3daa20f3659",
+    "output_sha256": "ce7df7a36d9803821f097c8ab2aee63b84a4419f7dddfd2455e93fd4fcf2988e"
+  },
+  "provenance": {
+    "adapter": "steamvr_trace_adapter.py",
+    "caveat": "OpenVR exposes host query timing here, not tracker sensor hardware time; device_time_s is intentionally empty.",
+    "name_alias": "WM0",
+    "output_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_062633_steamvr_ram_staged_validation/tracker.csv",
+    "pose_frame": "steamvr_standing_tracker",
+    "raw_columns": [
+      "sequence",
+      "query_monotonic_begin_ns",
+      "query_monotonic_end_ns",
+      "host_realtime_ns",
+      "index",
+      "connected",
+      "pose_valid",
+      "tracking_result",
+      "m00",
+      "m01",
+      "m02",
+      "px",
+      "m10",
+      "m11",
+      "m12",
+      "py",
+      "m20",
+      "m21",
+      "m22",
+      "pz",
+      "vx",
+      "vy",
+      "vz",
+      "wx",
+      "wy",
+      "wz"
+    ],
+    "raw_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_062633_steamvr_ram_staged_validation/tracker_camera_window_raw.csv",
+    "serial": "LHR-A2A59C7D",
+    "source": "steamvr_official",
+    "timestamp_source": "host_query_midpoint_not_sensor"
+  },
+  "result": "PASS",
+  "status": "PASS",
+  "validation": {
+    "clock_pair_drift_ns": 7254,
+    "exported_rows": 4793,
+    "good_pose_max_gap_ns": 9875888,
+    "input_rows": 4793,
+    "max_rotation_det_error": 1.704238087318899e-07,
+    "max_rotation_orthogonality_error": 1.309756202383383e-07,
+    "query_begin_le_end": true,
+    "query_midpoint_strictly_increasing": true,
+    "rejected_counts": {},
+    "sample_good_fraction": 1.0,
+    "sequence_strictly_increasing": true,
+    "thresholds": {
+      "clock_pair_drift_ns_max": 1000000,
+      "good_pose_max_gap_ns_max": 30000000,
+      "rotation_tolerance": 0.001,
+      "sample_good_fraction_min": 0.999
+    }
+  }
+}
