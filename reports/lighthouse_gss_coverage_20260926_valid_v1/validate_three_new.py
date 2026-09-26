@@ -62,9 +62,9 @@ def validate_replay(report, record, config, gate):
                 raise RuntimeError(f'{record}: an accepted solve lacks four-way support')
 
 
-def replay(task):
+def replay(task, source=None):
     take, world, gate = task
-    source = ROOT / f'reports/lighthouse_gate_check_{take}/lighthouse_raw.rec'
+    source = source or ROOT / f'reports/lighthouse_gate_check_{take}/lighthouse_raw.rec'
     target = OUT / f'{take}_{world}_{gate}'
     target.mkdir(parents=True, exist_ok=False)
     config = target / 'runtime.json'
