@@ -27,13 +27,19 @@ Sources: raw solver observations `survive_kalman_tracker.c:1165–1177`; final c
 
 ## Correction to prior single-station conclusion
 
+### Constraint-support association
+
+Each contiguous RA block is attributed to the following raw optical observation. For the diagnostic fresh-world replay, flagged solves have median19unique angular measurements and3station-axis combinations, versus29and4for other solves. Both median station counts are2: seeing two stations is not the same as having all four station-axis constraints. Baseline flagged/other medians20/29; fresh flagged/other18.5/31(two flagged samples only). Association does not prove causality or excuse the persistent signed bias. It motivates checking observability/conditioning before allowing a weak optical solve to override the Tracker's inertial prediction; merely discarding such updates is not an absolute-accuracy fix.
+
+`cn_add_diag` third argument is a multiplicative scale(`libs/cnmatrix/include/cnmatrix/cn_matrix.h:313`), NOT a matrix offset. Therefore the previously unverified offset interpretation of calls with5/1 is unsupported and must not motivate a covariance patch.
+
 Complete existing single-LH0 recording contains3flagged final callbacks(214.288/25.077/100.445mm) omitted by asynchronous CSV; single-LH1 recording0. Recorded POSE is final output, not raw solver. Prior statement that both single-station outputs are continuous was too strong. Neither station is certified as an accurate fallback. Their earlier~174deg solution disagreement is an ambiguity clue, not a measured station mounting rotation.
 
 ## Reproduction
 
 `audit_optics.py` streams records, records input hashes/config payload hashes/channel-ID evidence, groups signed optical residuals by station/axis/sensor/2s bin, and separately audits raw/final callbacks. It does not fit, replace or delete poses. `optical_audit.json` covers seven source/recomputed records; original raw files intact. Device CONFIG payload hashes match across all seven.
 
-`python3 -m pytest -q reports/lighthouse_dual_conflict_20260926/test_audit_optics.py`:5passed. Tests: channel/index distinction, quaternion sign, separate streams, long-gap exclusion, same-time discontinuity preservation. Syntax compile required before commit.
+`python3 -m pytest -q reports/lighthouse_dual_conflict_20260926/test_audit_optics.py`:6passed. Tests: channel/index distinction, quaternion sign, separate streams, long-gap exclusion, same-time discontinuity preservation and per-solve support attribution. Syntax compile passed.
 
 ## Next boundary
 

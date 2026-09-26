@@ -21,6 +21,7 @@ def audit(path):
     configs, residuals, bins, sensors = set(), defaultdict(list), defaultdict(list), defaultdict(list)
     angles, qnorms, jumps = defaultdict(list), [], []
     previous = {}
+    pending_measurements, coverage = [], defaultdict(list)
     invalid = 0
     with path.open() as stream:
         for line in stream:
@@ -51,6 +52,7 @@ def audit(path):
                 residuals[(lh, axis)].append(value)
                 sensors[(lh, axis, sensor)].append(value)
                 bins[(int(t // 2), lh)].append(value)
+                pending_measurements.append((lh, axis, sensor))
             elif (parts[1] == "WM0" and op == "POSE") or (parts[1] == "WM0-raw-obs" and op == "EXTERNAL_POSE"):
                 name = parts[1]
                 p = np.array(parts[3:6], dtype=float)
@@ -61,6 +63,7 @@ def audit(path):
                     continue
                 qnorms.append(norm)
                 q /= norm
+                flagged = False
                 if name in previous:
                     old_t, old_p, old_q = previous[name]
                     dt = t - old_t
@@ -69,15 +72,26 @@ def audit(path):
                     # Distinct observations may share a record timestamp. Keep
                     # their discontinuities, but never infer a physical velocity.
                     if 0 <= dt <= 0.020 and (distance > 20 or angle > 10):
+                        flagged = True
                         jumps.append({"stream": name, "record_time_s": t, "record_dt_ms": dt * 1000,
                                       "position_step_mm": distance, "rotation_step_deg": angle})
                 previous[name] = (t, p, q)
+                if name == "WM0-raw-obs":
+                    coverage["flagged" if flagged else "other"].append([
+                        len(pending_measurements), len(set(pending_measurements)),
+                        len({(lh, axis) for lh, axis, _ in pending_measurements}),
+                        len({lh for lh, _, _ in pending_measurements})])
+                    pending_measurements.clear()
     return {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "event_counts": dict(events), "optical_channels": dict(channels),
             "channel_station_ids": {k: sorted(v) for k, v in identities.items()},
             "wm0_config_payload_hashes": sorted(configs), "invalid_values": invalid,
             "quaternion_norm_range": [min(qnorms), max(qnorms)] if qnorms else None,
             "recorded_pose_jumps": jumps,
+            "solve_support_columns": ["measurements", "unique_measurements", "station_axes", "stations"],
+            "solve_support_by_discontinuity": {k: {"n": len(v), "median": np.median(v, axis=0).tolist(),
+                                                     "min": np.min(v, axis=0).tolist()}
+                                               for k, v in coverage.items()},
             "residual_by_station_axis": {f"{lh}/{axis}": distribution(v) for (lh, axis), v in sorted(residuals.items())},
             "residual_by_station_axis_sensor": {f"{lh}/{axis}/{sensor}": distribution(v)
                                                   for (lh, axis, sensor), v in sorted(sensors.items())},

@@ -42,3 +42,15 @@ def test_same_record_time_does_not_hide_discontinuity(tmp_path):
     jumps = audit(path)["recorded_pose_jumps"]
     assert len(jumps) == 1
     assert jumps[0]["record_dt_ms"] == 0
+
+
+def test_support_is_attributed_to_one_optical_solve(tmp_path):
+    path = tmp_path / "sample.rec"
+    path.write_text("1 WM0 RA 9 0 0.01 0\n"
+                    "1 WM0-raw-obs EXTERNAL_POSE 0 0 0 1 0 0 0\n"
+                    "1.008 WM0 RA 8 1 0.01 1\n"
+                    "1.008 WM0 RA 9 1 0.01 1\n"
+                    "1.008 WM0-raw-obs EXTERNAL_POSE 0.1 0 0 1 0 0 0\n")
+    support = audit(path)["solve_support_by_discontinuity"]
+    assert support["other"]["median"] == [1, 1, 1, 1]
+    assert support["flagged"]["median"] == [2, 2, 1, 1]
