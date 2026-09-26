@@ -1,0 +1,174 @@
+diff --git a/src/poser_mpfit.c b/src/poser_mpfit.c
+index 0f7b68d..e27e301 100644
+--- a/src/poser_mpfit.c
++++ b/src/poser_mpfit.c
+@@ -20,6 +20,7 @@
+ #include "survive_recording.h"
+ #include "survive_reproject.h"
+ #include "survive_reproject_gen2.h"
++#include "optical_partial_support.h"
+ 
+ #ifndef _WIN32
+ //#define DEBUG_NAN
+@@ -34,6 +35,12 @@ STATIC_CONFIG_ITEM(USE_JACOBIAN_FUNCTION, "use-jacobian-function", 'i',
+ STATIC_CONFIG_ITEM(SENSOR_VARIANCE_PER_SEC, "sensor-variance-per-sec", 'f',
+ 				   "Variance per second to add to the sensor input -- discounts older data", 0.0)
+ STATIC_CONFIG_ITEM(SENSOR_VARIANCE, "sensor-variance", 'f', "Base variance for each sensor input", 1.0e-4)
++STATIC_CONFIG_ITEM(MIN_LIGHTHOUSE_COUNT, "min-lighthouse-count", 'i',
++				   "Minimum known lighthouses with the required axes before solving", 0)
++STATIC_CONFIG_ITEM(MIN_MEASUREMENTS_PER_LIGHTHOUSE_AXIS, "min-measurements-per-lighthouse-axis", 'i',
++				   "Minimum measurements per sweep axis for a lighthouse to count toward the solve gate", 1)
++STATIC_CONFIG_ITEM(PARTIAL_OBSERVATION_COV_SCALE, "mpfit-partial-observation-cov-scale", 'f',
++				   "Opt-in covariance inflation for initialized two-station three-axis updates (0 disables)", 0.)
+ 
+ STATIC_CONFIG_ITEM(DISABLE_LIGHTHOUSE, "disable-lighthouse", 'i', "Disable given lighthouse from tracking", -1)
+ STATIC_CONFIG_ITEM(RUN_EVERY_N_SYNCS, "syncs-per-run", 'i', "Number of sync pulses before running optimizer", 1)
+@@ -75,6 +82,10 @@ typedef struct MPFITData {
+ 	int use_jacobian_function_obj;
+ 	int use_jacobian_function_lh;
+ 	int required_meas;
++	int min_lighthouse_count;
++	int min_measurements_per_lighthouse_axis;
++	FLT partial_observation_cov_scale;
++	survive_long_timecode last_full_observation;
+   int syncs_per_run;
+ 
+   int syncs_per_run_cnt;
+@@ -134,6 +145,8 @@ struct async_optimizer_user {
+ 	PoserDataLight pdl;
+ 	bool canPossiblySolveLHS;
+ 	bool worldEstablished;
++	bool full_observation;
++	bool partial_observation;
+ 	size_t meas_for_lhs_axis[NUM_GEN2_LIGHTHOUSES * 2];
+ 	struct variance_measure meas_variance[NUM_GEN2_LIGHTHOUSES * 2];
+ 
+@@ -231,31 +244,56 @@ static size_t construct_input_from_scene(const MPFITData *d, survive_long_timeco
+ 	return rtn;
+ }
+ 
+-static bool invalid_starting_condition(MPFITData *d, size_t meas_size, const size_t *meas_for_lhs_axis) {
++static bool invalid_starting_condition(MPFITData *d, size_t meas_size, const size_t *meas_for_lhs_axis,
++									  struct async_optimizer_user *user) {
+ 	static int failure_count = 500;
+ 	struct SurviveObject *so = d->opt.so;
+ 
+ 	size_t meas_size_known_lh = 0;
+ 	size_t axis_known_lh = 0;
++	size_t lighthouses_with_required_axes = 0;
++	size_t supported_lighthouses = 0, strong_axes = 0;
+ 	if (meas_for_lhs_axis) {
+ 		for (uint8_t lh = 0; lh < so->ctx->activeLighthouses; lh++) {
+ 			if (so->ctx->bsd[lh].PositionSet) {
+ 				meas_size_known_lh += meas_for_lhs_axis[2 * lh] + meas_for_lhs_axis[2 * lh + 1];
+-				for (int axis = 0; axis < 2; axis++)
+-					axis_known_lh += meas_for_lhs_axis[2 * lh + axis] > 0;
++				bool has_required_axes = true;
++				for (int axis = 0; axis < 2; axis++) {
++					size_t axis_measurements = meas_for_lhs_axis[2 * lh + axis];
++					axis_known_lh += axis_measurements > 0;
++					has_required_axes &= axis_measurements >= d->min_measurements_per_lighthouse_axis;
++				}
++				lighthouses_with_required_axes += has_required_axes;
++				supported_lighthouses += meas_for_lhs_axis[2 * lh] + meas_for_lhs_axis[2 * lh + 1] > 0;
++				for (int axis = 0; axis < 2; axis++) {
++					strong_axes += meas_for_lhs_axis[2 * lh + axis] >=
++						(d->min_measurements_per_lighthouse_axis > 3 ? d->min_measurements_per_lighthouse_axis : 3);
++				}
+ 			}
+ 		}
+ 	} else {
+ 		meas_size_known_lh = meas_size;
+ 	}
+ 
+-	if (meas_size_known_lh < d->required_meas || axis_known_lh < 2) {
++	survive_long_timecode timecode = user->pdl.hdr.timecode;
++	user->full_observation = lighthouses_with_required_axes >= 2;
++	bool partial_supported = !user->canPossiblySolveLHS && survive_optical_partial_supported(d->min_lighthouse_count,
++		lighthouses_with_required_axes, supported_lighthouses, strong_axes,
++		so->tracker && so->tracker->model.t > 0 && so->tracker->stats.obs_count >= 16,
++		d->partial_observation_cov_scale) && d->last_full_observation > 0 &&
++		timecode >= d->last_full_observation &&
++		(timecode - d->last_full_observation) / (FLT)so->timebase_hz >= .020 &&
++		(timecode - d->last_full_observation) / (FLT)so->timebase_hz <= 1.;
++	user->partial_observation = partial_supported;
++	if (meas_size_known_lh < d->required_meas || axis_known_lh < 2 ||
++		(lighthouses_with_required_axes < d->min_lighthouse_count && !partial_supported)) {
+ 		if (failure_count++ == 500) {
+ 			SurviveContext *ctx = so->ctx;
+ 			SV_INFO("Can't solve for position with just %u measurements", (unsigned int)meas_size_known_lh);
+ 			failure_count = 0;
+ 		}
+-		if (meas_size_known_lh < d->required_meas || axis_known_lh < 2) {
++		if (meas_size_known_lh < d->required_meas || axis_known_lh < 2 ||
++			lighthouses_with_required_axes < d->min_lighthouse_count) {
+ 			d->stats.meas_failures++;
+ 		}
+ 		return true;
+@@ -349,10 +387,6 @@ static int setup_optimizer(struct async_optimizer_user *user, survive_optimizer
+ 
+ 	size_t meas_size = construct_input_from_scene(d, pdl->hdr.timecode, scene, meas_for_lhs_axis, mpfitctx, user);
+ 
+-	if (worldEstablished && invalid_starting_condition(d, meas_size, meas_for_lhs_axis)) {
+-		return -1;
+-	}
+-
+ 	bool canPossiblySolveLHS = false;
+ 	bool bestObjForCal = true;
+ 	for (int obj_id = 0; obj_id < so->ctx->objs_ct; obj_id++) {
+@@ -451,6 +485,8 @@ static int setup_optimizer(struct async_optimizer_user *user, survive_optimizer
+ 
+ 	user->worldEstablished = worldEstablished;
+ 	user->canPossiblySolveLHS = canPossiblySolveLHS;
++	if (worldEstablished && invalid_starting_condition(d, meas_size, meas_for_lhs_axis, user))
++		return -1;
+ 
+ 	if (!worldEstablished && !canPossiblySolveLHS) {
+ 		return -1;
+@@ -579,6 +615,18 @@ static FLT handle_optimizer_results(survive_optimizer *mpfitctx, int res, const
+ 		}
+ 
+ 		FLT penalty = 1. / pow(2, sensor_ct / 3.) + 1. / pow(2, axis_count * 5);
++		if (user_data->partial_observation) {
++			/* Preserve the full correlated covariance, including weak directions.
++			 * Missing sweep axes may have model bias beyond local solver variance. */
++			if (!R || R->rows < 7 || R->cols < 7)
++				return -1;
++			cnScale(R, R, d->partial_observation_cov_scale);
++			survive_recording_write_to_output(ctx->recptr, "%s PARTIAL_SUPPORT %d %d %d %.9f\n",
++				so->codename, axis_count, get_lh_count(meas_for_lhs_axis), sensor_ct,
++				d->partial_observation_cov_scale);
++		}
++		if (!canPossiblySolveLHS && user_data->full_observation)
++			d->last_full_observation = pdl->hdr.timecode;
+ 		*out = *soLocation;
+ 		rtn = result->bestnorm; // + penalty;
+ 
+@@ -1102,6 +1150,10 @@ int PoserMPFIT(SurviveObject *so, PoserData *pd) {
+ 
+ 		d->syncs_to_setup = 16;
+ 		d->required_meas = survive_configi(ctx, "required-meas", SC_GET, 8);
++		d->min_lighthouse_count = survive_configi(ctx, "min-lighthouse-count", SC_GET, 0);
++		d->min_measurements_per_lighthouse_axis =
++			survive_configi(ctx, "min-measurements-per-lighthouse-axis", SC_GET, 1);
++		d->partial_observation_cov_scale = survive_configf(ctx, PARTIAL_OBSERVATION_COV_SCALE_TAG, SC_GET, 0.);
+ 		d->syncs_per_run = survive_configi(ctx, "syncs-per-run", SC_GET, 1);
+ 		d->sensor_time_window = survive_configi(ctx, "time-window", SC_GET, SurviveSensorActivations_default_tolerance);
+ 		d->use_jacobian_function_obj = survive_configi(ctx, "use-jacobian-function", SC_GET, 1);
+diff --git a/src/optical_partial_support.h b/src/optical_partial_support.h
+new file mode 100644
+--- /dev/null
++++ b/src/optical_partial_support.h
+@@ -0,0 +1,12 @@
++#ifndef SURVIVE_OPTICAL_PARTIAL_SUPPORT_H
++#define SURVIVE_OPTICAL_PARTIAL_SUPPORT_H
++#include <math.h>
++
++/* An opt-in fallback, never an initialization or single-station solve. */
++static inline int survive_optical_partial_supported(int required_stations, int full_stations,
++	int supported_stations, int strong_axes, int initialized, double covariance_scale) {
++	return isfinite(covariance_scale) && covariance_scale >= 1. && required_stations == 2 && full_stations < 2 &&
++		initialized && supported_stations >= 2 && strong_axes >= 3;
++}
++
++#endif
