@@ -1,0 +1,13 @@
+diff --git a/src/survive_kalman_lighthouses.c b/src/survive_kalman_lighthouses.c
+index f18daa4..64b99f6 100644
+--- a/src/survive_kalman_lighthouses.c
++++ b/src/survive_kalman_lighthouses.c
+@@ -132,7 +132,7 @@ void survive_kalman_lighthouse_report(SurviveKalmanLighthouse *tracker) {
+ 	FLT diff_p[7] = {0};
+ 	subnd(diff_p, lighthouse2world.Pos, survive_get_lighthouse_position(tracker->ctx, tracker->lh)->Pos, 7);
+ 	FLT diff = normnd2(diff_p, 7);
+-	if (diff > 1e-4 || !tracker->ctx->bsd[tracker->lh].PositionSet) {
++	if (diff > 1e-8 || !tracker->ctx->bsd[tracker->lh].PositionSet) {
+ 		tracker->updating = true;
+ 		SURVIVE_INVOKE_HOOK(raw_lighthouse_pose, tracker->ctx, tracker->lh, &lighthouse2world);
+ 		tracker->updating = false;
