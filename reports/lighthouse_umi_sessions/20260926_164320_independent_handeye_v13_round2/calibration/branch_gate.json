@@ -1,0 +1,47 @@
+{
+  "samples": 5145,
+  "step_p95_mm": 1.2168949513471334,
+  "step_max_mm": 4.986966773850513,
+  "threshold_mm": 3.6506848540414003,
+  "switches": [
+    {
+      "host_monotonic_s": 536624.064951328,
+      "step_mm": 4.786687027324634,
+      "recovery_gap_mm": 4.307768850538977,
+      "affected_camera_frames": 588,
+      "affected_frame_ratio": 0.49040867389491244
+    },
+    {
+      "host_monotonic_s": 536627.718929387,
+      "step_mm": 4.986966773850513,
+      "recovery_gap_mm": 4.565249917817645,
+      "affected_camera_frames": 479,
+      "affected_frame_ratio": 0.3994995829858215
+    },
+    {
+      "host_monotonic_s": 536632.634842908,
+      "step_mm": 4.036036483203544,
+      "recovery_gap_mm": 3.656777358031802,
+      "affected_camera_frames": 331,
+      "affected_frame_ratio": 0.27606338615512926
+    },
+    {
+      "host_monotonic_s": 536642.273374999,
+      "step_mm": 4.171744505348931,
+      "recovery_gap_mm": 4.4051626970046165,
+      "affected_camera_frames": 42,
+      "affected_frame_ratio": 0.03502919099249374
+    }
+  ],
+  "max_affected_frame_ratio": 0.49040867389491244,
+  "camera_frames": 1199,
+  "schema": "lighthouse_tracker_branch_gate_v1",
+  "lighthouse_session": "reports/lighthouse_umi_sessions/20260926_164320_independent_handeye_v13_round2",
+  "tracker_csv": "reports/lighthouse_umi_sessions/20260926_164320_independent_handeye_v13_round2/tracker.csv",
+  "d405_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260926_164325",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "max_affected_frame_ratio_threshold": 0.02,
+  "result": "REJECT",
+  "reason": "tracker 位姿换分支，最多影响 49.0% 的相机帧（阈值 2.0%）。真值被切成互不相接的多段，单一 SE(3) 对齐会在段间折中并抬高整条 ATE，该 take 的精度数字不可用，必须重录。"
+}

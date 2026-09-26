@@ -31,6 +31,15 @@ imu_bin="$session_dir/external_imu/imu.bin"
 [[ -f "$imu_bin" ]] || { echo "缺少UMI 400Hz IMU: $imu_bin" >&2; exit 66; }
 mkdir -p "$output_dir"
 
+# Stream continuity/overlap PASS does not exclude persistent position steps.
+# Reject those reference captures before spending time on board extraction or
+# creating a frozen candidate. This gate does not use any SLAM trajectory.
+python3 "$repo_root/scripts/lighthouse_tracker_branch_gate.py" \
+  "$(dirname "$tracker_csv")" \
+  --tracker-csv "$tracker_csv" \
+  --d405-session "$session_dir" \
+  --json "$output_dir/tracker_branch_gate.json"
+
 source /opt/ros/humble/setup.bash
 set -u
 

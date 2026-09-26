@@ -1,0 +1,49 @@
+{
+  "schema": "lighthouse_imu_time_offset_v1",
+  "result": "PASS_CANDIDATE",
+  "method": "coordinate-invariant angular-speed correlation",
+  "slam_supervision": false,
+  "slam_inputs": [],
+  "tracker_serial": "LHR-A2A59C7D",
+  "tracker_time_source": "host_monotonic",
+  "tracker_query_offset_ms": 4.96809665791482,
+  "repeat_spread_ms": 1.3963272037295837,
+  "captures": [
+    {
+      "imu": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260926_163731/external_imu/imu.bin",
+      "tracker": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260926_163714_independent_handeye_v13_round1/tracker.csv",
+      "tracker_query_offset_ms": 4.269933056050028,
+      "correlation": 0.981946712829133,
+      "overlap_duration_s": 39.60185548092704,
+      "imu_rate_hz": 400.27401467246096,
+      "tracker_rate_hz": 125.47234936091691,
+      "tracker_speed_clip_deg_s": 150.92016389101613,
+      "tracker_speed_clipped_samples": 9,
+      "tracker_speed_clipped_ratio": 0.0009693053311793214,
+      "search_range_ms": 30.0
+    },
+    {
+      "imu": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260926_164325/external_imu/imu.bin",
+      "tracker": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260926_164320_independent_handeye_v13_round2/tracker.csv",
+      "tracker_query_offset_ms": 5.6662602597796115,
+      "correlation": 0.9612965906813089,
+      "overlap_duration_s": 39.2788840100402,
+      "imu_rate_hz": 400.26080018101806,
+      "tracker_rate_hz": 125.37968098349563,
+      "tracker_speed_clip_deg_s": 80.0588845428057,
+      "tracker_speed_clipped_samples": 13,
+      "tracker_speed_clipped_ratio": 0.0014235654840122646,
+      "search_range_ms": 30.0
+    }
+  ],
+  "acceptance": {
+    "minimum_correlation": 0.9612965906813089,
+    "maximum_repeat_spread_ms": 1.3963272037295837,
+    "maximum_tracker_speed_clipped_ratio": 0.0014235654840122646,
+    "thresholds": {
+      "minimum_correlation": 0.8,
+      "maximum_repeat_spread_ms": 2.0,
+      "maximum_tracker_speed_clipped_ratio": 0.005
+    }
+  }
+}

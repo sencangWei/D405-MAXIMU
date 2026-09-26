@@ -1,0 +1,11 @@
+# Findings
+
+- Raw capture and overlap gates pass in both new v13 recordings. R1 single-capture PASS_CANDIDATE is loose, not proof of precision.
+- R2 split transform mismatch 7.826 mm / 3.227 deg fails existing 2 deg rotation gate. R1 split translation mismatch 8.490 mm remains material.
+- Independent query offsets +4.270 and +5.666 ms differ 1.396 ms (existing repeat gate <=2 ms). A common +4.968 ms refit still leaves R2 rotation mismatch 3.208 deg; inter-round timing difference alone is not the cause.
+- Preliminary 0.2 s angular increment comparison with raw gyro: R2 board–gyro magnitude P95 0.118 deg versus Tracker–gyro 0.441 deg at nominal camera timestamps. Rotation-axis mapping changes between rough halves: board–gyro 0.349 deg vs Tracker–gyro 3.255 deg. Need exact solver split windows and multi-horizon confirmation.
+- Applying the formal VINS camera/IMU -9.109 ms offset as a diagnostic worsens both board/gyro magnitude consistency in these new captures. Do not change formal calibration from this result; its timestamp semantics must be separated from raw independent capture clocks.
+- Exact solver halves and four horizons confirm the preliminary boundary: R2 board–gyro half mappings vary 0.350–0.405 deg, Tracker–gyro 3.001–7.654 deg. These are fitted sensor-axis consistency changes, not absolute pose errors. Same qualitative result under fixed formal td sensitivity.
+- Existing position-step gate PASS R1, REJECT R2: four candidates 4.04–4.99 mm. At R2 ~28.356 s Tracker 0.790 deg/6.034 ms versus raw UMI gyro 0.021 deg; board residual changes 5.30–5.46 mm in short windows. This corroborates a Tracker-side dynamic measurement discrepancy beyond merely a low fit residual.
+- Gate was absent from independent calibration entrypoint. Added before extraction/freezing without changing thresholds or deleting raw evidence. Red test fails before fix; green tests plus actual R2 replay returns3 and only emits gate JSON. R1 passes existing gate with explicit Tracker path.
+- No timestamped Lighthouse sweep or solver record exists in these hand-eye captures; aggregate MPFIT reseed totals do not isolate optical vs world geometry vs solver causes. Do not claim this fixes actual Tracker accuracy or proves station movement.

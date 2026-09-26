@@ -1,0 +1,578 @@
+{
+  "schema": "lighthouse_handeye_rotation_audit_v1",
+  "diagnostic_only": true,
+  "auto_apply": false,
+  "slam_supervision": false,
+  "method": "exact existing split; coordinate-invariant angles and constant SO(3) axis mappings",
+  "limitations": "Raw gyro is not absolute truth; no bias fit; increments overlap; mapping residual is rotvec Euclidean difference, not absolute pose ATE.",
+  "captures": [
+    {
+      "run": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260926_163714_independent_handeye_v13_round1",
+      "camera_clock_mapping": {
+        "camera_input_domain": "d405_global_time_unix_epoch_s",
+        "alignment_domain": "host_monotonic_s",
+        "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260926_163731/d405_frames.csv",
+        "epoch_minus_monotonic_s": 1789875603.810934,
+        "mapping_samples": 1200,
+        "mapping_span_us": 0.95367431640625
+      },
+      "tracker_query_offset_ms": 4.269933056050028,
+      "imu_query_shift_s": -0.009109323,
+      "split_times_relative_to_first_supported_board_s": [
+        4.224437713623047,
+        21.424588441848755,
+        39.72420263290405
+      ],
+      "profiles": [
+        {
+          "horizon_s": 0.2,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.6696405109209072,
+            "tracker": 0.863070533930908,
+            "tracker_to_board": 0.9721872257352835
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 449,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.1590439444019265,
+                "rmse": 0.22125332911936668,
+                "p95": 0.4321132946507105,
+                "max": 1.1661447161207235
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.0808350779597009,
+                "rmse": 0.1582663727712252,
+                "p95": 0.3212491930399162,
+                "max": 1.09776113060959
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.23959183983487162,
+                "rmse": 0.3016080366844483,
+                "p95": 0.5441783921167457,
+                "max": 0.8118985794894229
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.1093406238131472,
+                "rmse": 0.16436804768602983,
+                "p95": 0.33041956839798947,
+                "max": 0.5515428510480624
+              }
+            },
+            {
+              "name": "second",
+              "increments": 427,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.2891619269888091,
+                "rmse": 0.4306422519175761,
+                "p95": 0.8082305275964734,
+                "max": 1.630859340796813
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.18197582210783952,
+                "rmse": 0.3570798787997271,
+                "p95": 0.7479431900354879,
+                "max": 1.367912667942046
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.36839689064823194,
+                "rmse": 0.48936711785941867,
+                "p95": 0.9204798724168436,
+                "max": 1.2383715293345194
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.1962685110233369,
+                "rmse": 0.3360711332989035,
+                "p95": 0.7507385328786806,
+                "max": 0.9545067507406196
+              }
+            }
+          ]
+        },
+        {
+          "horizon_s": 0.5,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.6630036998653844,
+            "tracker": 0.4811694619328368,
+            "tracker_to_board": 1.0315077035482108
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 470,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.21516288972529457,
+                "rmse": 0.2971031124871551,
+                "p95": 0.5675405826616846,
+                "max": 1.1164651674368622
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.11368266953283201,
+                "rmse": 0.20217150410434484,
+                "p95": 0.4035059339209148,
+                "max": 0.8849204606412778
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.3595577983306484,
+                "rmse": 0.4538908267312664,
+                "p95": 0.8167887946128837,
+                "max": 1.1284609118959588
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.16243278245457626,
+                "rmse": 0.2531834167879148,
+                "p95": 0.5590491457569604,
+                "max": 0.7264398012425679
+              }
+            },
+            {
+              "name": "second",
+              "increments": 419,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.35701560452312925,
+                "rmse": 0.5614982097151362,
+                "p95": 1.110217890862294,
+                "max": 1.6296508676493644
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.2271695180967715,
+                "rmse": 0.44419913315080606,
+                "p95": 0.9433745780272179,
+                "max": 1.6065094731487848
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.6566880657027888,
+                "rmse": 0.716894493944288,
+                "p95": 1.0933693813313812,
+                "max": 1.6370625551055724
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.3142955197993187,
+                "rmse": 0.4397339138440132,
+                "p95": 0.8487028792374715,
+                "max": 1.3278274955844078
+              }
+            }
+          ]
+        },
+        {
+          "horizon_s": 1.0,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.8451803792375611,
+            "tracker": 1.1137524242989492,
+            "tracker_to_board": 1.640267599317538
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 460,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.2850477381415668,
+                "rmse": 0.3879978588614348,
+                "p95": 0.7422929692207898,
+                "max": 1.259165491946373
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.15563203798722172,
+                "rmse": 0.2944334966603558,
+                "p95": 0.6321623010263739,
+                "max": 1.1264222084534259
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.42865276389611084,
+                "rmse": 0.5585586498398131,
+                "p95": 1.0761982211011987,
+                "max": 1.6712523655054976
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.19041149989031295,
+                "rmse": 0.3468421550929524,
+                "p95": 0.7083134369224365,
+                "max": 1.3854254887015618
+              }
+            },
+            {
+              "name": "second",
+              "increments": 411,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.4896023667338507,
+                "rmse": 0.6667130393284098,
+                "p95": 1.1934721467877538,
+                "max": 1.8151855034192828
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.3071764052215198,
+                "rmse": 0.5127866952438099,
+                "p95": 1.030753752671314,
+                "max": 1.5510639141987883
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.8358118472359817,
+                "rmse": 0.9370428790203641,
+                "p95": 1.5382969402399378,
+                "max": 2.09180867017522
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.4538537872653247,
+                "rmse": 0.6186751257279969,
+                "p95": 1.209935313446512,
+                "max": 1.6648997465189406
+              }
+            }
+          ]
+        },
+        {
+          "horizon_s": 1.5,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.8610972889957907,
+            "tracker": 0.59516129872786,
+            "tracker_to_board": 1.0264352960610583
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 445,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.26862477930600315,
+                "rmse": 0.37616558398070293,
+                "p95": 0.7265586648471706,
+                "max": 1.3368893903943122
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.15168426958485193,
+                "rmse": 0.2979785975315594,
+                "p95": 0.6565353922113092,
+                "max": 1.3323078476968022
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.45566876558772945,
+                "rmse": 0.5987893193917875,
+                "p95": 1.081952208423757,
+                "max": 1.7822210912867997
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.20245360985672362,
+                "rmse": 0.3457007451056541,
+                "p95": 0.6537913972357327,
+                "max": 1.612221705191095
+              }
+            },
+            {
+              "name": "second",
+              "increments": 415,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.4633357358059768,
+                "rmse": 0.6629561759825486,
+                "p95": 1.2465814357035796,
+                "max": 1.8144904506537867
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.2938961408885783,
+                "rmse": 0.5472022656435048,
+                "p95": 1.1467386315589498,
+                "max": 1.7471075072134625
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.812012799459085,
+                "rmse": 1.0586104918724004,
+                "p95": 1.8600177960551105,
+                "max": 2.753051085033228
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.501588557796445,
+                "rmse": 0.702796098483909,
+                "p95": 1.4342256365543848,
+                "max": 2.087519001719741
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "/home/robot/ego_vio_humble/reports/lighthouse_umi_sessions/20260926_164320_independent_handeye_v13_round2",
+      "camera_clock_mapping": {
+        "camera_input_domain": "d405_global_time_unix_epoch_s",
+        "alignment_domain": "host_monotonic_s",
+        "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260926_164325/d405_frames.csv",
+        "epoch_minus_monotonic_s": 1789875603.8109338,
+        "mapping_samples": 1199,
+        "mapping_span_us": 0.95367431640625
+      },
+      "tracker_query_offset_ms": 5.6662602597796115,
+      "imu_query_shift_s": -0.009109323,
+      "split_times_relative_to_first_supported_board_s": [
+        10.526686429977417,
+        24.95962381362915,
+        39.39335012435913
+      ],
+      "profiles": [
+        {
+          "horizon_s": 0.2,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.7448920806257056,
+            "tracker": 3.2981351193828394,
+            "tracker_to_board": 3.087925165272667
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 363,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.12931077149748674,
+                "rmse": 0.16623996413891776,
+                "p95": 0.3033024713779364,
+                "max": 0.4644898794202947
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.06643095513932809,
+                "rmse": 0.11480368737464743,
+                "p95": 0.2287668717055539,
+                "max": 0.3278284475399692
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.23195034416795796,
+                "rmse": 0.3901663882890539,
+                "p95": 0.8285086521833692,
+                "max": 1.4883186417051648
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.09227900908058642,
+                "rmse": 0.19936128669667166,
+                "p95": 0.3644413701326641,
+                "max": 1.3950450272748276
+              }
+            },
+            {
+              "name": "second",
+              "increments": 324,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.1608911830600042,
+                "rmse": 0.20264604337939623,
+                "p95": 0.3639971555420902,
+                "max": 0.5234106491794387
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.09528015319744024,
+                "rmse": 0.15221964301575103,
+                "p95": 0.29533012990102925,
+                "max": 0.47938803712444894
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.27248845525018456,
+                "rmse": 0.4157090438975068,
+                "p95": 0.7793001795075595,
+                "max": 2.0469809580045473
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.13876698346920366,
+                "rmse": 0.2381211991516266,
+                "p95": 0.3925320048178706,
+                "max": 1.5273705259839456
+              }
+            }
+          ]
+        },
+        {
+          "horizon_s": 0.5,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.47980592280132967,
+            "tracker": 5.0570842962978375,
+            "tracker_to_board": 5.316608598911255
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 416,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.16693619131215884,
+                "rmse": 0.2112496140941212,
+                "p95": 0.3614672115109506,
+                "max": 0.5641962190121438
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.08857836699161804,
+                "rmse": 0.15112078670903598,
+                "p95": 0.30761874366377684,
+                "max": 0.5437970111907731
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.37786429213718353,
+                "rmse": 0.6204783018128335,
+                "p95": 1.2509771345531933,
+                "max": 1.968248762722756
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.1418772388165187,
+                "rmse": 0.31488102228132014,
+                "p95": 0.7594054382278892,
+                "max": 1.217317676678455
+              }
+            },
+            {
+              "name": "second",
+              "increments": 382,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.21450365524627046,
+                "rmse": 0.3154552002979625,
+                "p95": 0.6384908615324144,
+                "max": 1.1755815802326026
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.13671505677665863,
+                "rmse": 0.25457376366020185,
+                "p95": 0.5388349083282677,
+                "max": 0.9608137588202467
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.4476281512766252,
+                "rmse": 0.6096302523540418,
+                "p95": 1.1328324669878849,
+                "max": 2.1857679831867642
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.22986726762011003,
+                "rmse": 0.36473945995715407,
+                "p95": 0.5887029297479177,
+                "max": 1.7266424995248977
+              }
+            }
+          ]
+        },
+        {
+          "horizon_s": 1.0,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.6093302585913266,
+            "tracker": 7.399116037538806,
+            "tracker_to_board": 7.771937150207925
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 403,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.22616611814647608,
+                "rmse": 0.2863345738374353,
+                "p95": 0.5211160420191171,
+                "max": 0.7225829109930294
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.16267161193606305,
+                "rmse": 0.23474734737330444,
+                "p95": 0.45840182449131606,
+                "max": 0.7106441500740647
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.5631721210018645,
+                "rmse": 0.7992405149667152,
+                "p95": 1.5741703245982837,
+                "max": 2.0480364962000808
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.20004789996668906,
+                "rmse": 0.4387157662027913,
+                "p95": 1.015878145720397,
+                "max": 1.6112121138109545
+              }
+            },
+            {
+              "name": "second",
+              "increments": 399,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.24833119596749026,
+                "rmse": 0.4059726832663686,
+                "p95": 0.8035465679349586,
+                "max": 1.1105230937404322
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.145742719623494,
+                "rmse": 0.3310422463705047,
+                "p95": 0.7477218100823085,
+                "max": 1.0533858367199467
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.574528448761264,
+                "rmse": 0.7520514007975116,
+                "p95": 1.324907891273325,
+                "max": 2.365786699615027
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.3542101370714585,
+                "rmse": 0.5220736599397086,
+                "p95": 1.0096985338156912,
+                "max": 1.8161237666889827
+              }
+            }
+          ]
+        },
+        {
+          "horizon_s": 1.5,
+          "half_axis_mapping_difference_deg": {
+            "board": 0.7225649335948966,
+            "tracker": 7.001771762057837,
+            "tracker_to_board": 7.37357375590939
+          },
+          "halves": [
+            {
+              "name": "first",
+              "increments": 388,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.24363940959640318,
+                "rmse": 0.32938086589372967,
+                "p95": 0.5928233856150793,
+                "max": 0.7317406422709763
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.1576868866382777,
+                "rmse": 0.27045979172937834,
+                "p95": 0.5189885089936458,
+                "max": 0.6459060286852786
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.6317580449508421,
+                "rmse": 0.8310070980428074,
+                "p95": 1.5702376445286428,
+                "max": 2.003920548946205
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.21165899841652772,
+                "rmse": 0.4229163884295439,
+                "p95": 0.8847129968799297,
+                "max": 1.5037178964954676
+              }
+            },
+            {
+              "name": "second",
+              "increments": 389,
+              "board_gyro_vector_residual_deg": {
+                "median": 0.27075330866997943,
+                "rmse": 0.4016224616368519,
+                "p95": 0.7439829103616981,
+                "max": 1.1753714910450639
+              },
+              "board_gyro_angle_magnitude_difference_deg": {
+                "median": 0.17150875285883624,
+                "rmse": 0.3298698526410325,
+                "p95": 0.69014794672811,
+                "max": 1.0805850283586371
+              },
+              "tracker_gyro_vector_residual_deg": {
+                "median": 0.6062711523892631,
+                "rmse": 0.7388001373125576,
+                "p95": 1.2580553238612024,
+                "max": 1.7047095239376058
+              },
+              "tracker_gyro_angle_magnitude_difference_deg": {
+                "median": 0.38674029865273,
+                "rmse": 0.503162416319545,
+                "p95": 0.9230489121357552,
+                "max": 1.2416446678459265
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

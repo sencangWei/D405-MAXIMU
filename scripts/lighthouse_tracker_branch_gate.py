@@ -110,13 +110,15 @@ def find_branch_switches(t: np.ndarray, p: np.ndarray, camera_times: np.ndarray 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("lighthouse_session", type=Path)
+    ap.add_argument("--tracker-csv", type=Path, default=None,
+                    help="显式Tracker文件；默认lighthouse_session/tracker.csv")
     ap.add_argument("--d405-session", type=Path, default=None,
                     help="默认读 lighthouse_session/d405_session.txt 指向的采集目录")
     ap.add_argument("--max-affected-frame-ratio", type=float, default=MAX_AFFECTED_FRAME_RATIO)
     ap.add_argument("--json", type=Path, default=None)
     args = ap.parse_args()
 
-    tracker = args.lighthouse_session / "tracker.csv"
+    tracker = args.tracker_csv if args.tracker_csv is not None else args.lighthouse_session / "tracker.csv"
     if not tracker.is_file():
         print(f"缺 tracker.csv: {tracker}", file=sys.stderr)
         return 2

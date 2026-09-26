@@ -85,3 +85,13 @@ def test_external_calibration_fixes_independent_imu_tracker_offset() -> None:
     assert '"time_sync": time_sync' in text
     assert 'payload.get("calibration_target_frame") != "docker2_vins_body"' in text
     assert 'payload.get("time_offset_policy")' in text
+
+
+def test_external_calibration_rejects_tracker_steps_before_extracting_or_freezing() -> None:
+    text = CALIBRATION_SCRIPT.read_text(encoding="utf-8")
+    branch_check = text.index('lighthouse_tracker_branch_gate.py"')
+    extract = text.index('extract_aprilgrid_ground_truth.py"')
+    freeze = text.index('manifest_path = calibration.with_name("frozen_manifest.json")')
+    assert branch_check < extract < freeze
+    assert '--tracker-csv "$tracker_csv"' in text
+    assert '--d405-session "$session_dir"' in text
