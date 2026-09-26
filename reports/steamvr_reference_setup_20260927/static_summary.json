@@ -1,0 +1,54 @@
+{
+  "status": "FAIL_STATIC_STABILITY",
+  "operator_confirmed_stationary": true,
+  "samples": 3600,
+  "good_samples": 3599,
+  "good_fraction": 0.9997222222222222,
+  "query_rate_hz": 119.9997733321314,
+  "max_query_interval_ms": 10.085254,
+  "timestamp_regressions": 0,
+  "valid_running_all_window": {
+    "position_p95_mm": 0.7215110553698915,
+    "position_max_mm": 4.853122021566299,
+    "orientation_p95_deg": 0.04469535960716429,
+    "orientation_max_deg": 0.5891803589024741
+  },
+  "first_5s": {
+    "good_samples": 600,
+    "position_p95_mm": 0.5791958733789268,
+    "position_max_mm": 0.735279770032675
+  },
+  "valid_running_after_5s": {
+    "good_samples": 2999,
+    "position_p95_mm": 0.82681796376924,
+    "position_max_mm": 4.87663922251243,
+    "orientation_p95_deg": 0.049241242357760576,
+    "orientation_max_deg": 0.5886260060653374
+  },
+  "all_states_max_mm_against_steady_median": 4.978104523063943,
+  "first_5s_to_last_5s_centroid_shift_mm": 0.22301937353795845,
+  "over_3mm_samples_all_states": 31,
+  "over_3mm_elapsed_intervals_s": [[22.8, 22.85], [28.192, 28.375], [28.408, 28.408]],
+  "not_running_sample": {
+    "sequence": 3405,
+    "elapsed_s": 28.37505994,
+    "tracking_result": 101,
+    "tracking_result_name": "TrackingResult_Calibrating_OutOfRange",
+    "connected": true,
+    "pose_valid": true
+  },
+  "thresholds": {
+    "good_fraction_min": 0.999,
+    "steady_position_p95_mm_max": 1,
+    "steady_position_max_mm_max": 3,
+    "centroid_shift_mm_max": 3
+  },
+  "position_reference": "componentwise median separately in each stated interval; all-state maximum uses steady valid-running median",
+  "orientation_reference": "mean rotation separately in each stated interval",
+  "failed_check": "steady_position_max_mm",
+  "raw_samples_retained": true,
+  "precision_absolute_dynamic": "NOT_VALIDATED",
+  "time_alignment": "NOT_VALIDATED",
+  "extrinsic": "NOT_VALIDATED_FOR_STEAMVR",
+  "root_cause": "Transient reference-output excursion and one optical/tracking out-of-range state observed. Physical occlusion/reflection/coverage cause not established. No basis to assert base station moved."
+}

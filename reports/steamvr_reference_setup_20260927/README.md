@@ -55,8 +55,22 @@ Success requires >=95% connected+valid+Running_OK samples and successful output.
 All queried rows including invalid states are retained. Exit 2 for invalid CLI;
 exit 1 for failed init, absent physical target, output error, or failed validity.
 
-Next: operator-confirmed 30-second no-motion stability test; then independent
-fixed-board motion validation and SteamVR-local-frame/UMI clock calibration.
+## First operator-confirmed 30-second stationary test
+
+FAIL_STATIC_STABILITY against frozen P95 <=1 mm, max <=3 mm, centroid shift
+<=3 mm, valid-running fraction >=99.9% thresholds. 3599/3600 were connected,
+valid and Running_OK. After 5 seconds P95 0.8268 mm, maximum 4.8766 mm;
+first/last 5-second centroid shift 0.2230 mm. Whole-window P95 0.7215 mm.
+The one non-running sample is retained: state 101 (Calibrating_OutOfRange),
+sequence 3405 at 28.3751 seconds; its position deviation is 4.9781 mm against
+the same steady median. 31 raw rows exceed 3 mm, in intervals 22.800–22.850,
+28.192–28.375 and 28.408 seconds. No temporal smoothing or removal was applied.
+See static_30s.csv and static_summary.json. No explicit optical cause was
+reported in vrserver's contemporaneous log. Do not assert physical base
+movement, reflection, or operator movement from these values alone.
+
+Next: repeat stationary coverage check; then independent fixed-board motion
+validation and SteamVR-local-frame/UMI clock calibration.
 Do not use SLAM residuals to tune the reference and do not claim 10 mm accuracy
 from this connection check.
 
