@@ -1,0 +1,20 @@
+diff --git a/src/survive_kalman_tracker.c b/src/survive_kalman_tracker.c
+index 484cf8c..a7731f5 100644
+--- a/src/survive_kalman_tracker.c
++++ b/src/survive_kalman_tracker.c
+@@ -1185,6 +1185,15 @@ void survive_kalman_tracker_integrate_observation(PoserData *pd, SurviveKalmanTr
+ 	survive_long_timecode timecode = pd->timecode;
+ 
+ 	FLT time = timecode / (FLT)tracker->so->timebase_hz;
++	if (tracker->show_raw_obs) {
++		/* Diagnostic only: distinguish the observation's device time from the
++		 * filter time before a late observation is clamped to the current state. */
++		survive_recording_write_to_output(ctx->recptr,
++			"%s OBS_TIMING %.9f %.9f %.9f %.9f %.9f %.9f %.9f\n", so->codename,
++			time, tracker->model.t, tracker->last_light_time,
++			Ri ? cnMatrixGet(Ri, 0, 0) : -1., Ri ? cnMatrixGet(Ri, 1, 1) : -1.,
++			Ri ? cnMatrixGet(Ri, 2, 2) : -1., norm3d(tracker->state.Velocity.Pos));
++	}
+ 	if (tracker->model.t == 0) {
+ 		tracker->model.t = time;
+ 	}

@@ -1,0 +1,101 @@
+diff --git a/src/survive_kalman_tracker.c b/src/survive_kalman_tracker.c
+index 484cf8c..189e036 100644
+--- a/src/survive_kalman_tracker.c
++++ b/src/survive_kalman_tracker.c
+@@ -46,6 +46,7 @@ STRUCT_CONFIG_SECTION(SurviveKalmanTracker)
+     STRUCT_CONFIG_ITEM("obs-cov-scale",  "Covariance matrix scaling for obs",
+                        1, t->obs_cov_scale)
+ 	STRUCT_CONFIG_ITEM("kalman-obs-axisangle",  "Process observation updates as axis angle poses", false, t->obs_axisangle_model)
++	STRUCT_CONFIG_ITEM("kalman-model-delayed-observations", "Experimental device-time model for late quaternion observations", false, t->model_delayed_observations)
+     STRUCT_CONFIG_ITEM("obs-pos-variance",  "Variance of position integration from light capture",
+ 					   1e-6, t->obs_pos_var)
+ 	STRUCT_CONFIG_ITEM("obs-rot-variance",  "Variance of rotation integration from light capture",
+@@ -679,7 +680,7 @@ static void state_update_fn(void *user, const struct CnMat *x0, struct CnMat *Ky
+ 	cn_elementwise_add(x1, x0, Ky);
+ }
+ */
+-static bool map_obs_data(void *user, const struct CnMat *Z, const struct CnMat *x_t, struct CnMat *y,
++static bool map_obs_data_current(void *user, const struct CnMat *Z, const struct CnMat *x_t, struct CnMat *y,
+ 								   struct CnMat *H_k) {
+ 	SurviveKalmanTracker *tracker = (SurviveKalmanTracker *)user;
+ 	if(y) {
+@@ -697,6 +698,31 @@ static bool map_obs_data(void *user, const struct CnMat *Z, const struct CnMat *
+ 	}
+ 	return true;
+ }
++void survive_kalman_error_tracker_predict_jac(FLT dt, const struct cnkalman_state_s *k,
++										   const struct CnMat *x0, struct CnMat *x1, struct CnMat *f);
++static bool map_obs_data(void *user, const struct CnMat *Z, const struct CnMat *x_t, struct CnMat *y,
++								   struct CnMat *H_k) {
++	SurviveKalmanTracker *tracker = user;
++	if (tracker->observation_lag <= 0) {
++		return map_obs_data_current(user, Z, x_t, y, H_k);
++	}
++	/* Evaluate a delayed measurement at its device time, not at the clamped
++	 * filter time. This deterministic short-delay model is experimental; it
++	 * is not a rewind/replay of the filter's intervening measurements. */
++	CN_CREATE_STACK_VEC(past, x_t->rows);
++	CN_CREATE_STACK_MAT(F, tracker->model.error_state_size, tracker->model.error_state_size);
++	survive_kalman_error_tracker_predict_jac(-tracker->observation_lag, &tracker->model,
++										   x_t, &past, H_k ? &F : 0);
++	CN_CREATE_STACK_MAT(H_past, Z->rows, tracker->model.error_state_size);
++	bool result = map_obs_data_current(user, Z, &past, y, H_k ? &H_past : 0);
++	if (H_k) {
++		cnGEMM(&H_past, &F, 1, 0, 0, H_k, 0);
++	}
++	CN_FREE_STACK_MAT(H_past);
++	CN_FREE_STACK_MAT(F);
++	CN_FREE_STACK_MAT(past);
++	return result;
++}
+ static bool map_obs_data_axisangle(void *user, const struct CnMat *Z, const struct CnMat *x_t, struct CnMat *y,
+ 								   struct CnMat *H_k) {
+ 	SurviveKalmanTracker *tracker = (SurviveKalmanTracker *)user;
+@@ -1185,6 +1211,16 @@ void survive_kalman_tracker_integrate_observation(PoserData *pd, SurviveKalmanTr
+ 	survive_long_timecode timecode = pd->timecode;
+ 
+ 	FLT time = timecode / (FLT)tracker->so->timebase_hz;
++	tracker->observation_lag = 0;
++	if (tracker->show_raw_obs) {
++		/* Diagnostic only: distinguish the observation's device time from the
++		 * filter time before a late observation is clamped to the current state. */
++		survive_recording_write_to_output(ctx->recptr,
++			"%s OBS_TIMING %.9f %.9f %.9f %.9f %.9f %.9f %.9f\n", so->codename,
++			time, tracker->model.t, tracker->last_light_time,
++			Ri ? cnMatrixGet(Ri, 0, 0) : -1., Ri ? cnMatrixGet(Ri, 1, 1) : -1.,
++			Ri ? cnMatrixGet(Ri, 2, 2) : -1., norm3d(tracker->state.Velocity.Pos));
++	}
+ 	if (tracker->model.t == 0) {
+ 		tracker->model.t = time;
+ 	}
+@@ -1199,6 +1235,10 @@ void survive_kalman_tracker_integrate_observation(PoserData *pd, SurviveKalmanTr
+ 	if (time - tracker->model.t < 0) {
+ 		if (time - tracker->model.t > -.1) {
+ 			FLT tdiff = tracker->model.t - time;
++			if (tracker->model_delayed_observations && tracker->use_error_state &&
++				tracker->obs_model.error_state_model && !tracker->obs_axisangle_model) {
++				tracker->observation_lag = tdiff;
++			}
+ 
+ 			// Scale up the covariance
+ 			FLT pS = 10, rS = 1;
+@@ -1239,6 +1279,7 @@ void survive_kalman_tracker_integrate_observation(PoserData *pd, SurviveKalmanTr
+         }
+ 
+         FLT obs_error = integrate_pose(tracker, time, pose, tracker->obs_model.adaptive ? 0 : &R);
++		tracker->observation_lag = 0;
+ 		tracker->stats.obs_total_error += obs_error;
+ 		tracker->stats.obs_count++;
+ 
+diff --git a/src/survive_kalman_tracker.h b/src/survive_kalman_tracker.h
+index 5f06495..4a2ca51 100644
+--- a/src/survive_kalman_tracker.h
++++ b/src/survive_kalman_tracker.h
+@@ -133,6 +133,8 @@ typedef struct SurviveKalmanTracker {
+ 	FLT light_residuals[NUM_GEN2_LIGHTHOUSES];
+ 
+ 	FLT Obs_R[7 * 7];
++	bool model_delayed_observations;
++	FLT observation_lag;
+ 	FLT IMU_R[6 * 6];
+ 	FLT Lightcap_R;

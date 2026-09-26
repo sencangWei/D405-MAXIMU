@@ -1,0 +1,613 @@
+{
+  "result": "DIAGNOSTIC_ONLY",
+  "common_samples": 876,
+  "board_samples": 893,
+  "elapsed_origin_host_monotonic_s": 572338.4589357376,
+  "clock_mapping": {
+    "matched_callbacks": 7512,
+    "record_to_host_offset_s": 572336.4970039059,
+    "absolute_residual_p99_us": 302.1949250251058
+  },
+  "tracker_query_offset_ms": 13.371281046649964,
+  "alignment": "Same SE3 fitted to fourway, applied to both modes",
+  "scale_fit": false,
+  "external_fit": false,
+  "time_offset_fit": false,
+  "modes": {
+    "no_gate": {
+      "position_mm": {
+        "mean": 6.6063453792032165,
+        "median": 4.374568764340012,
+        "rmse": 8.365901824886345,
+        "p95": 18.498579587061386,
+        "max": 25.46400557416753,
+        "fraction_below_10": 0.7968036529680366
+      },
+      "peak_elapsed_s": 17.02595019340515,
+      "optical_age_ms": {
+        "mean": 6.5374487202208424,
+        "median": 5.645396828185767,
+        "rmse": 7.972730605405066,
+        "p95": 15.096029412234202,
+        "max": 21.73804643098265,
+        "fraction_below_10": 0.7659817351598174
+      },
+      "conditioned": {
+        "age_le_20ms": {
+          "samples": 874,
+          "position_mm": {
+            "mean": 6.5967669145589705,
+            "median": 4.371871180743058,
+            "rmse": 8.358812309822628,
+            "p95": 18.51277423982726,
+            "max": 25.46400557416753,
+            "fraction_below_10": 0.7974828375286042
+          }
+        },
+        "age_gt_20ms": {
+          "samples": 2,
+          "position_mm": {
+            "mean": 10.792134428738576,
+            "median": 10.792134428738576,
+            "rmse": 11.03646014964811,
+            "p95": 12.870586390298692,
+            "max": 13.101525497138706,
+            "fraction_below_10": 0.5
+          }
+        },
+        "last_solve_four_axes": {
+          "samples": 794,
+          "position_mm": {
+            "mean": 6.145170196304101,
+            "median": 4.226190430866355,
+            "rmse": 7.785586530563709,
+            "p95": 17.11324229467836,
+            "max": 25.46400557416753,
+            "fraction_below_10": 0.8350125944584383
+          }
+        },
+        "last_solve_partial_axes": {
+          "samples": 82,
+          "position_mm": {
+            "mean": 11.071870930689778,
+            "median": 11.368316233194495,
+            "rmse": 12.678562921016866,
+            "p95": 21.15348448154982,
+            "max": 24.05191026589314,
+            "fraction_below_10": 0.4268292682926829
+          }
+        }
+      },
+      "origin_lever_decomposition": {
+        "lever_length_mm": 35.36553348883579,
+        "orientation_lever_component_mm": {
+          "mean": 0.4876169229272608,
+          "median": 0.44802945155775226,
+          "rmse": 0.5683661679986101,
+          "p95": 1.0559448159546718,
+          "max": 1.648620071315257,
+          "fraction_below_10": 1.0
+        },
+        "tracker_origin_residual_mm": {
+          "mean": 6.595405808997858,
+          "median": 4.446699796736978,
+          "rmse": 8.34749922180983,
+          "p95": 18.189026612502914,
+          "max": 25.232831029703952,
+          "fraction_below_10": 0.8025114155251142
+        },
+        "at_camera_peak": {
+          "elapsed_s": 17.02595019340515,
+          "camera_residual_vector_mm": [
+            25.135020502845634,
+            3.23049996687641,
+            -2.492026116792556
+          ],
+          "tracker_origin_residual_vector_mm": [
+            24.834310225052626,
+            3.61587750985675,
+            -2.622637461249534
+          ],
+          "orientation_lever_vector_mm": [
+            0.3007102777930098,
+            -0.3853775429803399,
+            0.1306113444569776
+          ]
+        }
+      }
+    },
+    "fourway": {
+      "position_mm": {
+        "mean": 5.045639642751373,
+        "median": 3.938028472350477,
+        "rmse": 6.6154197268676835,
+        "p95": 12.089881064876787,
+        "max": 34.63402929081524,
+        "fraction_below_10": 0.930365296803653
+      },
+      "peak_elapsed_s": 11.625893115997314,
+      "optical_age_ms": {
+        "mean": 9.194347122763858,
+        "median": 6.412334449123591,
+        "rmse": 16.242206614935945,
+        "p95": 21.216567372903228,
+        "max": 167.70268941763788,
+        "fraction_below_10": 0.6963470319634704
+      },
+      "conditioned": {
+        "age_le_20ms": {
+          "samples": 831,
+          "position_mm": {
+            "mean": 4.8346899275456625,
+            "median": 3.832115973476412,
+            "rmse": 6.275087318041202,
+            "p95": 10.58318603901719,
+            "max": 31.322920009635798,
+            "fraction_below_10": 0.9398315282791817
+          }
+        },
+        "age_gt_20ms": {
+          "samples": 45,
+          "position_mm": {
+            "mean": 8.94117771688352,
+            "median": 7.22043504386342,
+            "rmse": 11.170411953917906,
+            "p95": 19.941517318982626,
+            "max": 34.63402929081524,
+            "fraction_below_10": 0.7555555555555555
+          }
+        },
+        "last_solve_four_axes": {
+          "samples": 876,
+          "position_mm": {
+            "mean": 5.045639642751373,
+            "median": 3.938028472350477,
+            "rmse": 6.6154197268676835,
+            "p95": 12.089881064876787,
+            "max": 34.63402929081524,
+            "fraction_below_10": 0.930365296803653
+          }
+        }
+      },
+      "origin_lever_decomposition": {
+        "lever_length_mm": 35.36553348883579,
+        "orientation_lever_component_mm": {
+          "mean": 0.5398837287008077,
+          "median": 0.4908895200350454,
+          "rmse": 0.646037557931802,
+          "p95": 1.3097002576318753,
+          "max": 1.9877617774890357,
+          "fraction_below_10": 1.0
+        },
+        "tracker_origin_residual_mm": {
+          "mean": 5.149465375956362,
+          "median": 4.041036915726979,
+          "rmse": 6.823262588965822,
+          "p95": 12.089936001064773,
+          "max": 35.55183780033644,
+          "fraction_below_10": 0.9200913242009132
+        },
+        "at_camera_peak": {
+          "elapsed_s": 11.625893115997314,
+          "camera_residual_vector_mm": [
+            33.63394416251209,
+            -1.4465464215173833,
+            -8.135188285495476
+          ],
+          "tracker_origin_residual_vector_mm": [
+            34.49556614393247,
+            -1.1040961892657608,
+            -8.53053685273442
+          ],
+          "orientation_lever_vector_mm": [
+            -0.8616219814203874,
+            -0.3424502322516226,
+            0.39534856723894485
+          ]
+        }
+      }
+    },
+    "no_motion_deskew": {
+      "position_mm": {
+        "mean": 5.0528189935634185,
+        "median": 3.7367808180769653,
+        "rmse": 6.529142470090909,
+        "p95": 11.580421784051236,
+        "max": 31.852622124767965,
+        "fraction_below_10": 0.928082191780822
+      },
+      "peak_elapsed_s": 11.625893115997314,
+      "optical_age_ms": {
+        "mean": 9.194347122763858,
+        "median": 6.412334449123591,
+        "rmse": 16.242206614935945,
+        "p95": 21.216567372903228,
+        "max": 167.70268941763788,
+        "fraction_below_10": 0.6963470319634704
+      },
+      "conditioned": {
+        "age_le_20ms": {
+          "samples": 831,
+          "position_mm": {
+            "mean": 4.851661000338124,
+            "median": 3.596521789999215,
+            "rmse": 6.204897352974733,
+            "p95": 11.038722536584224,
+            "max": 28.940999848971042,
+            "fraction_below_10": 0.9350180505415162
+          }
+        },
+        "age_gt_20ms": {
+          "samples": 45,
+          "position_mm": {
+            "mean": 8.767536601790509,
+            "median": 7.3392781044934905,
+            "rmse": 10.903102725620649,
+            "p95": 20.07539896041592,
+            "max": 31.852622124767965,
+            "fraction_below_10": 0.8
+          }
+        },
+        "last_solve_four_axes": {
+          "samples": 876,
+          "position_mm": {
+            "mean": 5.0528189935634185,
+            "median": 3.7367808180769653,
+            "rmse": 6.529142470090909,
+            "p95": 11.580421784051236,
+            "max": 31.852622124767965,
+            "fraction_below_10": 0.928082191780822
+          }
+        }
+      },
+      "origin_lever_decomposition": {
+        "lever_length_mm": 35.36553348883579,
+        "orientation_lever_component_mm": {
+          "mean": 0.5492729867829373,
+          "median": 0.5010463778887555,
+          "rmse": 0.6582663814446615,
+          "p95": 1.2893430020211405,
+          "max": 2.1130540856051043,
+          "fraction_below_10": 1.0
+        },
+        "tracker_origin_residual_mm": {
+          "mean": 5.162237127533322,
+          "median": 3.811831461220118,
+          "rmse": 6.7344276563394905,
+          "p95": 11.950296671390971,
+          "max": 32.803238792153216,
+          "fraction_below_10": 0.9029680365296804
+        },
+        "at_camera_peak": {
+          "elapsed_s": 11.625893115997314,
+          "camera_residual_vector_mm": [
+            30.980561144105188,
+            -1.4500374521136812,
+            -7.258908926766116
+          ],
+          "tracker_origin_residual_vector_mm": [
+            31.876722720884853,
+            -1.1050211080606065,
+            -7.661980956749328
+          ],
+          "orientation_lever_vector_mm": [
+            -0.8961615767796656,
+            -0.34501634405307463,
+            0.4030720299832119
+          ]
+        }
+      }
+    },
+    "delayed_measurement": {
+      "position_mm": {
+        "mean": 5.145505002445595,
+        "median": 3.9359746012619263,
+        "rmse": 6.842013597766424,
+        "p95": 12.382668601938127,
+        "max": 36.609548167658666,
+        "fraction_below_10": 0.9269406392694064
+      },
+      "peak_elapsed_s": 11.625893115997314,
+      "optical_age_ms": {
+        "mean": 9.194347122763858,
+        "median": 6.412334449123591,
+        "rmse": 16.242206614935945,
+        "p95": 21.216567372903228,
+        "max": 167.70268941763788,
+        "fraction_below_10": 0.6963470319634704
+      },
+      "conditioned": {
+        "age_le_20ms": {
+          "samples": 831,
+          "position_mm": {
+            "mean": 4.919937091572594,
+            "median": 3.841812842441418,
+            "rmse": 6.474742097446119,
+            "p95": 10.8409826501907,
+            "max": 33.000492342457164,
+            "fraction_below_10": 0.937424789410349
+          }
+        },
+        "age_gt_20ms": {
+          "samples": 45,
+          "position_mm": {
+            "mean": 9.310992423233674,
+            "median": 7.772953637730161,
+            "rmse": 11.710299776270693,
+            "p95": 21.687571673816656,
+            "max": 36.609548167658666,
+            "fraction_below_10": 0.7333333333333333
+          }
+        },
+        "last_solve_four_axes": {
+          "samples": 876,
+          "position_mm": {
+            "mean": 5.145505002445595,
+            "median": 3.9359746012619263,
+            "rmse": 6.842013597766424,
+            "p95": 12.382668601938127,
+            "max": 36.609548167658666,
+            "fraction_below_10": 0.9269406392694064
+          }
+        }
+      },
+      "origin_lever_decomposition": {
+        "lever_length_mm": 35.36553348883579,
+        "orientation_lever_component_mm": {
+          "mean": 0.5441708720303842,
+          "median": 0.49452698615313545,
+          "rmse": 0.6490102856479948,
+          "p95": 1.3067766037174522,
+          "max": 1.942144804476551,
+          "fraction_below_10": 1.0
+        },
+        "tracker_origin_residual_mm": {
+          "mean": 5.255465633569625,
+          "median": 4.02750893853377,
+          "rmse": 7.056050465969821,
+          "p95": 12.881289885081092,
+          "max": 37.519729840987345,
+          "fraction_below_10": 0.9041095890410958
+        },
+        "at_camera_peak": {
+          "elapsed_s": 11.625893115997314,
+          "camera_residual_vector_mm": [
+            35.49065758809,
+            -1.4666591201823036,
+            -8.861216171060004
+          ],
+          "tracker_origin_residual_vector_mm": [
+            36.34114101997957,
+            -1.1132247849848298,
+            -9.263494334468513
+          ],
+          "orientation_lever_vector_mm": [
+            -0.8504834318895638,
+            -0.35343433519747375,
+            0.40227816340850836
+          ]
+        }
+      }
+    }
+  },
+  "multi_record_motion_deskew_ab": {
+    "gP8kSJ": {
+      "baseline": {
+        "raw_solves": 5917,
+        "final_poses": 7633,
+        "raw_jump_flags": 1,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      },
+      "no_motion_deskew": {
+        "raw_solves": 5917,
+        "final_poses": 7633,
+        "raw_jump_flags": 3,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      }
+    },
+    "ucf7GS": {
+      "baseline": {
+        "raw_solves": 5927,
+        "final_poses": 7557,
+        "raw_jump_flags": 19,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      },
+      "no_motion_deskew": {
+        "raw_solves": 5927,
+        "final_poses": 7557,
+        "raw_jump_flags": 15,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      }
+    },
+    "rAt98l": {
+      "baseline": {
+        "raw_solves": 6013,
+        "final_poses": 7515,
+        "raw_jump_flags": 6,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      },
+      "no_motion_deskew": {
+        "raw_solves": 6013,
+        "final_poses": 7515,
+        "raw_jump_flags": 51,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      }
+    },
+    "board": {
+      "baseline": {
+        "raw_solves": 5579,
+        "final_poses": 7527,
+        "raw_jump_flags": 11,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      },
+      "no_motion_deskew": {
+        "raw_solves": 5579,
+        "final_poses": 7527,
+        "raw_jump_flags": 14,
+        "final_jump_flags": 0,
+        "invalid_values": 0
+      }
+    }
+  },
+  "peak_raw_sensor_coverage": {
+    "(0, 0)": {
+      "sensor_ids": [
+        4,
+        18,
+        19
+      ],
+      "count": 3,
+      "centered_point_singular_values_mm": [
+        49.67071183670819,
+        7.520332235187935,
+        0.0
+      ]
+    },
+    "(0, 1)": {
+      "sensor_ids": [
+        4,
+        18,
+        19
+      ],
+      "count": 3,
+      "centered_point_singular_values_mm": [
+        49.67071183670819,
+        7.520332235187935,
+        0.0
+      ]
+    },
+    "(1, 0)": {
+      "sensor_ids": [
+        0,
+        1,
+        8,
+        9,
+        12,
+        14,
+        16,
+        17
+      ],
+      "count": 8,
+      "centered_point_singular_values_mm": [
+        65.32210555721194,
+        60.97328186444639,
+        25.617712950422742
+      ]
+    },
+    "(1, 1)": {
+      "sensor_ids": [
+        0,
+        1,
+        8,
+        12,
+        14,
+        15,
+        16,
+        17
+      ],
+      "count": 8,
+      "centered_point_singular_values_mm": [
+        67.24604256639549,
+        59.768498430440026,
+        29.35814660197896
+      ]
+    }
+  },
+  "peak_optical_geometry": {
+    "last_optical_age_ms": 52.891228813678026,
+    "raw_imu_origin_position_std_principal_mm": [
+      1.5696237187232913,
+      2.3058053773585576,
+      8.498208219581677
+    ],
+    "filtered_origin_error_projected_on_raw_weak_direction_mm": 35.53981386020311,
+    "filtered_origin_error_norm_mm": 35.55183780033644,
+    "limits": "Raw IMU-origin position covariance, not filtered covariance or a precision bound; head lever covariance not propagated"
+  },
+  "peak_neighborhood": [
+    {
+      "elapsed_s": 11.459224224090576,
+      "fourway_error_mm": 31.60819347243045,
+      "no_gate_error_mm": 21.327668962196668,
+      "fourway_optical_age_ms": 26.127336896024644,
+      "no_gate_optical_age_ms": 0.225336872972548
+    },
+    {
+      "elapsed_s": 11.492557525634766,
+      "fourway_error_mm": 31.322920009635798,
+      "no_gate_error_mm": 22.08631267466592,
+      "fourway_optical_age_ms": 7.529638358391821,
+      "no_gate_optical_age_ms": 7.529638358391821
+    },
+    {
+      "elapsed_s": 11.525891780853271,
+      "fourway_error_mm": 30.144762065970102,
+      "no_gate_error_mm": 22.32477731585952,
+      "fourway_optical_age_ms": 12.887893593870103,
+      "no_gate_optical_age_ms": 12.887893593870103
+    },
+    {
+      "elapsed_s": 11.55922555923462,
+      "fourway_error_mm": 26.365595513007623,
+      "no_gate_error_mm": 21.56451976673571,
+      "fourway_optical_age_ms": 6.223671953193843,
+      "no_gate_optical_age_ms": 6.223671953193843
+    },
+    {
+      "elapsed_s": 11.592559814453125,
+      "fourway_error_mm": 28.465338374986416,
+      "no_gate_error_mm": 15.022508308276537,
+      "fourway_optical_age_ms": 19.557927269488573,
+      "no_gate_optical_age_ms": 7.524927263148129
+    },
+    {
+      "elapsed_s": 11.625893115997314,
+      "fourway_error_mm": 34.63402929081524,
+      "no_gate_error_mm": 17.86915252055456,
+      "fourway_optical_age_ms": 52.891228813678026,
+      "no_gate_optical_age_ms": 8.836228749714792
+    },
+    {
+      "elapsed_s": 11.65922737121582,
+      "fourway_error_mm": 26.537737559606164,
+      "no_gate_error_mm": 17.473352205520804,
+      "fourway_optical_age_ms": 6.221483927220106,
+      "no_gate_optical_age_ms": 6.221483927220106
+    },
+    {
+      "elapsed_s": 11.692561388015747,
+      "fourway_error_mm": 27.661848246845057,
+      "no_gate_error_mm": 18.641031129319135,
+      "fourway_optical_age_ms": 19.533500773832202,
+      "no_gate_optical_age_ms": 1.5215007588267326
+    },
+    {
+      "elapsed_s": 11.725894689559937,
+      "fourway_error_mm": 25.304544116594812,
+      "no_gate_error_mm": 18.940000807852368,
+      "fourway_optical_age_ms": 10.889802360907197,
+      "no_gate_optical_age_ms": 10.889802360907197
+    },
+    {
+      "elapsed_s": 11.759228467941284,
+      "fourway_error_mm": 21.5364334352799,
+      "no_gate_error_mm": 18.62132204540898,
+      "fourway_optical_age_ms": 2.200580667704344,
+      "no_gate_optical_age_ms": 2.200580667704344
+    },
+    {
+      "elapsed_s": 11.79256272315979,
+      "fourway_error_mm": 18.711727788382095,
+      "no_gate_error_mm": 18.27955395306328,
+      "fourway_optical_age_ms": 1.5568359522148967,
+      "no_gate_optical_age_ms": 1.5568359522148967
+    }
+  ]
+}

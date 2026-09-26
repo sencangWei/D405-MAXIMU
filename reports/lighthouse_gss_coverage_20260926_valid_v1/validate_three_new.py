@@ -62,7 +62,7 @@ def validate_replay(report, record, config, gate):
                 raise RuntimeError(f'{record}: an accepted solve lacks four-way support')
 
 
-def replay(task, source=None):
+def replay(task, source=None, extra_args=()):
     take, world, gate = task
     source = source or ROOT / f'reports/lighthouse_gate_check_{take}/lighthouse_raw.rec'
     target = OUT / f'{take}_{world}_{gate}'
@@ -76,7 +76,7 @@ def replay(task, source=None):
                '--show-raw-obs', '--mpfit-record-reprojection-error', '1',
                '--record', str(target / 'validation.rec'),
                '--min-lighthouse-count', '2' if gate == 'fourway' else '0',
-               '--min-measurements-per-lighthouse-axis', '1', '-v', '1']
+               '--min-measurements-per-lighthouse-axis', '1', '-v', '1', *extra_args]
     env = dict(os.environ, SURVIVE_PLUGINS=str(BUILD / 'plugins'), LD_LIBRARY_PATH=str(BUILD))
     with (target / 'replay.log').open('w') as log:
         result = subprocess.run(command, env=env, stdout=log, stderr=subprocess.STDOUT, timeout=150)
