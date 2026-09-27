@@ -162,7 +162,71 @@ cap clips, only.514mm maximum graph position change. These are estimator-only
 factor residuals, not GT ATE. Five windows cover only3.3s of40s; coverage/constraint
 conflict diagnosis continues with590 uniform20-frame raw windows onallten.
 Sameestimator/gates/5BAnodes/fullratepixeltracking; not a weight/cap/keyframe/model
-sweep and noGT-driven windowselection. Fullcoverage results are pending.
+sweep and noGT-driven windowselection. Fullcoverage results follow below.
 
 Independent review: noHIGH/CRITICAL, approved only isolatedbatch.168old/new
 testsPASS and freshremote restore168PASS; coverageadapter additional3PASS.
+
+## Phase6 — full uniform raw-window coverage (2026-09-28)
+
+`controls_full_ten_v1` completed590 windows (59 per recording), with567
+accepted and23 refused by unchanged internal guards. All21 raw frames are
+tracked per window; five poses share landmarks within each independent window.
+No external trajectory is used for estimation, rejection, or candidate selection.
+The unchanged graph/downstream/scoring pipeline completed allten cases in
+`graph_full_ten_v1`. No production source or weight/cap was changed.
+
+| Case | Frozen previous max mm | Full-window max mm | Mean mm | Result |
+| --- | ---: | ---: | ---: | --- |
+| fresh1 | 7.809 | 8.592 | 2.866 | PASS |
+| dev1 | 6.458 | 6.356 | 2.690 | PASS |
+| dev2 | 8.271 | 7.940 | 3.616 | PASS |
+| heldout1 | 5.921 | 6.032 | 2.550 | PASS |
+| heldout2 | 5.974 | 6.016 | 3.388 | PASS |
+| heldout3 | 6.831 | 6.650 | 3.776 | PASS |
+| heldout4 | 8.913 | 8.938 | 3.270 | PASS |
+| fresh2 | 11.323 | 8.128 | 3.354 | PASS |
+| fresh3 | 6.310 | 6.284 | 1.422 | PASS |
+| fresh4 | 15.333 | 14.016 | 5.670 | FAIL |
+
+**9/10 PASS, no lost previous passes; the all-recording10mm goal is NOT met.**
+fresh4 P95 is9.060mm and97.373% of samples are within10mm, but30 of1142
+samples exceed10mm. Its only remaining score failure is maximum ATE.
+Relative to the first five-probe batch, fresh2 max improves8.837→8.128mm and
+fresh4 improves14.983→14.016mm, while fresh1 worsens7.772→8.592mm.
+Do not pick one candidate per recording using external scores.
+
+The evaluation contract, official reference bytes, timestamps, sample counts,
+and SE3-no-scale alignment match the frozen baseline. These are time-associated
+ATE metrics, NOT nearest-curve geometric distances. The same1142–1143 scored
+output samples are used; fullrawcapture1199 samples are not all evaluated.
+Per-case precision reports, frozen command/hash manifests, and rotatable
+`metric_windows_3d.html` are retained. White=official reference, gray=frozen
+previous fusion, green=experimental full-window fusion. Allten plotted maxima
+were checked against official precision reports to1e-6mm.
+
+### What the raw observations establish (and what they do not)
+
+After freezing all window estimates, the separate local-displacement evaluation
+scored537 windows;30 accepted early windows are outside existing GT coverage.
+The median/P95/max local displacement errors are1.129/4.318/18.578mm. These
+are NOT full-trajectory ATE. All567 internally accepted factors were used;
+none were removed based on their external error.
+
+Low reprojection error does not guarantee millimetric motion accuracy:
+fresh1 window42 has pixelP951.722px and97.2% inliers, yet18.578mm external
+local displacement error; admitted tracks decline55→54→27→16→10.
+fresh4 window54 has pixelP951.199px and99.3% inliers, yet9.224mm local error;
+tracks decline97→97→64→32→14. Held-out pixel error also improved in both.
+This supports investigating weak metric observability/depth-motion ambiguity
+and endpoint support, rather than assuming a failed pixel fit. It does not
+prove a unique root cause, a moved Lighthouse, or deficient model training.
+
+Next bounded diagnostic: measure endpoint-motion Jacobian weak axes and
+track-resampling stability from UMI observations only, plus adjacent-window
+metric consistency. Freeze diagnostics before external scoring. A cross-window
+shared-landmark estimator would be a separate architectural step, not a weight
+sweep or interpolation replacing genuine motion.
+No live hardware acceptance, new independent recording validation, or
+production promotion has been performed. The experimental candidate is kept
+separate so the existing production pipeline is not silently replaced.

@@ -140,3 +140,35 @@ AFTERestimation graph-basisdiagnostic46metriclocalerrors matchexistingfrozen
 scorer; fresh4w5 localmetric2.881 vsgraph8.347mm (worldmetric1.864 vsgraph7.195).
 Nativeorientationbasis1.109deg atthiswindow isnot sufficientexplanation alone.
 Evidencebackup aead1d99 restored170changedfilesbyteidentical/171testsPASS.
+
+Latestremote diagnosticcommitc4095a63 fetchedintocleanrestore:5changedfiles
+byte-identical. Currentactiveofflineprocess execsession34290:
+run_full_coverage_controls.py --output reports/metric_window_bundle_20260928/controls_full_ten_v1
+(OPENBLAS/OMP threads1). Lastcensus279/590, first4casesfinished, fifthunderway.
+Afterallten summaryexistsandprocesssuccess: run_full_coverage_graph.py --output
+reports/metric_window_bundle_20260928/graph_full_ten_v1; then unchanged
+summarize_graph_regression.py --candidate sameoutput. Fresh main and restored
+extendedsuite171PASS; coreunchanged. No formalpromotion.
+Current9/10precisionappliesto samefrozen1142–1143outputsampleevaluationrange as
+baseline, not all1199rawcapture frames or independentfuturecapturegeneralization.
+
+Fullcoveragecontrolsfinished rc0:590windows/10cases,567accepted/23refused.
+Accepted percase(dev1,dev2,heldout1..4,fresh1..4):57,55,57,59,58,56,57,56,54,58.
+AFTERfrozenestimation localdisplacementscorer537scored (30firstwindowsoutside
+existingreferencecoverage). Neverdropthese inputframes orpickconstraintsbyGT.
+Fullgraph replay started execsession80806, outputgraph_full_ten_v1; SAMEfrozen
+alltencommands/oldparameters, onlyfullcoveragecontrolssummaryreplacesv6probes.
+Preflightalltencontrolssourcehashincludesadapter; no productionpromotion.
+
+Full graph execsession80806 completed exit0, allten downstream scores present.
+Full-window maxmm: fresh1 8.592,dev1 6.356,dev2 7.940,heldout1 6.032,
+heldout2 6.016,heldout3 6.650,heldout4 8.938,fresh2 8.128,fresh3 6.284,
+fresh4 14.016.9/10PASS, previous8passes retained; targetNOTmet.
+fresh4 mean5.670/P959.060/97.373%within10mm;30/1142over10mm.
+Allten evaluation contracts and external-reference bytes unchanged. Generated
+ten rotatable plots; maxima equal official scoreswithin1e-6mm. All raw outputs,
+failedcases and23refusedwindows retained. Main production not promoted.
+Fullcoverage local537scoredwindowerrors median1.129/P954.318/max18.578mm;
+pixel/internalguardspassing cannot guarantee metrictruth. Next scientifically
+bounded lane is endpoint observability/resampling/adjacent-window consistency,
+not GT-picked factors, per-recording weight tuning, or model-training guesses.
