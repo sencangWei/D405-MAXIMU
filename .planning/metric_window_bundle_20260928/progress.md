@@ -116,3 +116,17 @@ Fresh combined168testsPASS in1.31s. Allten actualcaseidentity/timestamp/hash
 preflightPASS46factors. Frozengraph_ten_v1 started: firstfresh1 completedall
 stages(score rc0, max7.772mm); automaticallycontinuingnineothers. This is not
 fullbatchPASS or productionpromotion. Existingnativeproduction hashesunchanged.
+
+graph_ten_v1 completedALLten. Officialcontract/GT-reference bytes/samplecounts
+identical topreviousfrozenSIFTcandidate.8→9PASS, zero lostpriorpasses. Newmaxmm:
+fresh1 7.772, dev1 6.454, dev2 8.261, heldout1 5.922, heldout2 5.967,
+heldout3 6.838, heldout4 8.960, fresh2 8.837, fresh3 6.305, fresh4 14.983.
+fresh4 mean5.936/P9510.102/94.658%≤10; targetNOTmet, no promotion.
+UMI-onlyfactor diagnostic: fresh2w3 residual9.956→5.220mm,graphdelta4.751mm;
+fresh4w5 residual9.387→8.901mm, graphdelta.711mm,maxgraphpositionchange.514mm.
+fresh4graphcapclips0; native local scalar state counts1650oldedges(no-scale
+newedges excluded). This doesnotprove a singlecause; fivewindowsspanonly3.3s
+of40s. Next testeduniformnon-overlapping20frame rawcoverage, sameestimator/
+gates/5BAnodes/fullratepixels, notweight/keyframedensitysweep or GT-pickedframes.
+Codebackup c5953e24 normalpushedsencang; fresh remote-onlyemptyrestore
+/tmp/ego-metric-graph-restore-0Wz3x7,9newchangedfilesbyteidentical,168testsPASS.

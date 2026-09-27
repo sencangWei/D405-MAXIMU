@@ -97,11 +97,10 @@ window factor interface, not fabricated MASt3Rscale metadata or oldweight sweeps
    matching evidence. Longitudinal depth noise can reject valid temporal points.
 3. Small source-depth bias remains variable and is synthetically recoverable;
    large bias may fail admission. Diagnostic/noise gates are not covariance.
-4. Both original blocks now have usable local measurements, not a reconstructed
-   full trajectory. Need frozen all-ten graph validation before integration.
-5. No all-ten full-trajectory rerun with these constraints yet; prior frozen
-   candidate still8/10 with max11.323/15.333mm on the two failures. Do not claim
-   a10mmSLAM success or replace production.
+4. Both original blocks have usable local measurements. The later isolated
+   all-ten graph result is below; local window error alone was not acceptance.
+5. Full-trajectory goal remains NOT met after first integration:9/10PASS,
+   fresh4max14.983mm. Do not claim universal10mmSLAM or replace production.
 
 ## Verification
 
@@ -121,3 +120,49 @@ rtk proxy /home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python 
   --controls reports/metric_window_bundle_20260928/new_controls \
   --output reports/metric_window_bundle_20260928/new_controls/local_evaluation.json
 ```
+
+## Phase5 — frozen full-trajectory graph integration (latest)
+
+New wrapper `scripts/fuse_mast3r_metric_windows.py` adds accepted raw metric
+endpoint vectors with explicit source `stereo_window_bundle_v1`, no per-edge
+learned scale, no rotation factor. Existing stereo sigma4mm is a fixed uncalibrated
+model assumption; old confidence/IRLS/priors/scale/caps/parameters unchanged.
+Source identity, all timestamps, full factory calibration, fixed pixel/gyro/bias
+guards, input/source hashes are verified. Production native source untouched.
+
+Allten `graph_ten_v1` completed, including the same downstream fusion/smoothing
+and official scoring. Reference CSV bytes, thresholds, SE3-no-scale alignment,
+samplecounts and interpolation rules match previous frozen candidate.
+
+| Case | Previous max mm | New max mm | New mean mm | Result |
+| --- | ---: | ---: | ---: | --- |
+| fresh1 | 7.809 | 7.772 | 2.490 | PASS |
+| dev1 | 6.458 | 6.454 | 2.721 | PASS |
+| dev2 | 8.271 | 8.261 | 3.715 | PASS |
+| heldout1 | 5.921 | 5.922 | 2.474 | PASS |
+| heldout2 | 5.974 | 5.967 | 3.408 | PASS |
+| heldout3 | 6.831 | 6.838 | 3.763 | PASS |
+| heldout4 | 8.913 | 8.960 | 3.375 | PASS |
+| fresh2 | 11.323 | 8.837 | 3.475 | PASS |
+| fresh3 | 6.310 | 6.305 | 1.535 | PASS |
+| fresh4 | 15.333 | 14.983 | 5.936 | FAIL |
+
+8→9PASS, zero lost prior passes. fresh4P9510.102mm,94.658%≤10mm. Some
+already-passing maxima/means increased slightly, so this is not monotonic
+improvement at every point. Both failure and passing data retained.
+
+Evidence: `graph_ten_v1/comparison.json`, per-case `official_score/precision.json`,
+frozen command/hash manifests and `window_residuals.json`. Allten rotatable
+`metric_windows_3d.html` plots contain officialreference(white), frozenbaseline
+(gray), newcandidate(green); their plotted maxima exactly matchprecision reports.
+
+Remaining rawmetric graph residual: fresh2w3 9.956→5.220mm, graphdelta change
+4.751mm; fresh4w5 9.387→8.901mm, graphdelta change.711mm. fresh4 no correction
+cap clips, only.514mm maximum graph position change. These are estimator-only
+factor residuals, not GT ATE. Five windows cover only3.3s of40s; coverage/constraint
+conflict diagnosis continues with590 uniform20-frame raw windows onallten.
+Sameestimator/gates/5BAnodes/fullratepixeltracking; not a weight/cap/keyframe/model
+sweep and noGT-driven windowselection. Fullcoverage results are pending.
+
+Independent review: noHIGH/CRITICAL, approved only isolatedbatch.168old/new
+testsPASS and freshremote restore168PASS; coverageadapter additional3PASS.

@@ -31,3 +31,13 @@ geometry repair. The completed follow-up is backed separately:
 Any following documentation-only commit records this proof; it does not change
 estimator code, tests or recorded observation/evaluation data. Full raw-data/GPU
 replay and production deployment are still not verified.
+
+## Phase5 metric-window graph integration
+
+- Commit `c5953e24f83aaf5a9d6acb8e236cb2ea31c1a48e`, normalfastforward push on
+  sameowned `sencang/codex/stereo-window-bundle-20260928`.
+- Fresh emptyremote-only restore `/tmp/ego-metric-graph-restore-0Wz3x7` fetched
+  exactbranch. Commit IDs matched, all9newchangedcode/test/planfilesbyte-identical.
+- Restored168old/newtestsPASS in1.50s. This is source/test restoration, not a
+  recording/GPU replay. Completed allten graph evidence will be copied in a
+  subsequent selected-evidence commit; do not infer it from this source commit.
