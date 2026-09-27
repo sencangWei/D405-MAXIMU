@@ -43,7 +43,10 @@ No broader universal10mm claim from these six development recordings.
 
 - Implemented optional joint scale state; firstprobe and sixcandidate cases PASS.
 - One-key fusion branch enables state after sixcase gate preservation; final
-  replay, independent re-review and fetched backup validation in progress.
+  replay and independent re-review APPROVE. Backup d858a15a fetched/restored;
+ 94filesbyteequal,99restoredtestsPASS,6rescoredPASSall30numericfieldsmatch1e-12.
+- This bounded implementation/verification step is complete. Fresh independent
+  recordings are the next acceptance step; no universal max10mm claim.
 - Prior accepted staticguard backedcommit27872422, documents189fd1f8.
 - 2026-09-27 RED-test slice: add
   `tests/test_mast3r_joint_metric_scale.py` only; verify current failure is the

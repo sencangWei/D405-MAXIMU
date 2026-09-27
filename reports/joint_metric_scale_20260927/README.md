@@ -75,7 +75,8 @@ weight sweeps or a switch from joint to stereo metric scale mode.
   CSVs byte-identical to trial. The report-only clipping metadata fix did not
   change numeric trajectories. Authoritative metrics are in
   `verified_v1_six/<case>/official_score/precision.json`.
-- Recovery backup validation in progress at document creation.
+- Independent final review: APPROVE for bounded six-recording deployment, no
+  remaining findings. Broad adjacent reviewer run229testsPASS, parentfocused126.
 
 Reproduce cached downstream stages7→9 (does not rerun neural frontend/stereo):
 
@@ -90,3 +91,25 @@ scoring reference provenance are recorded for each case. GT scoring occurs only
 after fusion output. Data/camera calibration/td/checkpoint/policy stay unchanged;
 formaltd=-0.009109323s, replay shift0. New recordings must use same frozen
 reference/calibration and be scored independently without per-case tuning.
+
+## Verified backup and recovery
+
+Owned writable remote `sencang` (`https://github.com/sencangWei/D405-MAXIMU.git`),
+branch `codex/fusion-joint-metric-scale-20260927`, capability commit
+`d858a15a16643f8e7244a86b61a6b32a4d7d296f`. No force push or broad reports staging.
+The algorithm actually lives in the humble workspace; an isolated clean backup
+worktree records changes without committing unrelated active-worktree edits.
+
+Fresh fetched detached restore `/tmp/ego_vio_joint_scale_restore_irvM8A`:
+
+-94changed code/test/plan/evidence files byte-identical to active workspace.
+-99restored focusedtestsPASS, including new scale/cap/guard/workflow tests.
+- Six saved reference/trajectory rescores via restored evaluator in
+  `/tmp/ego_vio_joint_scale_rescore_4EjPp8`:30numericmetrics/case matchwithin1e-12,
+  samePASS/failures/SE3alignment/thresholds, all6PASS. Restoredtrackedtreeclean.
+
+Recovery verifies code and scored evidence, not a portable archive of all raw
+DB3s, neural weights or installed toolchain. Full frontend was not rerun in this
+cached-backend comparison. Production generalization remains to test on fresh
+independent recordings. The new capability is backed up; no longer just a dirty
+working-tree edit.

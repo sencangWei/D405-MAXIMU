@@ -32,3 +32,11 @@
   capreportmetadata low issue, reproducedRED, fixedGREEN, no numericoutputchange.
 - Productionfusionworkflow now includes flag; adaptiveuses this sameworkflow.
   New independent recordings still required (these6are nowdevelopment).
+
+## Recovery verified
+
+- Independent finalreview APPROVE bounded sixcase deployment, no findings.
+- Capabilitycommitd858a15a on sencang/codex/fusion-joint-metric-scale-20260927.
+- Freshfetchedrestore94filesbyteidentical;99restoredtestsPASS;6rescores180numeric
+  fields matchwithin1e-12, allgates/alignment/failuresunchanged,trackedtreeclean.
+- No broadreportsstaging/forcepush, unrelatedactivechangespreserved.
