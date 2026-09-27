@@ -41,3 +41,33 @@ Next investigate training-only PnP geometric admission (fixed2px existing
 tolerance), never per-case/GT selection and never delete inputframes. Challenge:
 initial noisy depths can also reject valid pixels, so admission must be tested
 against depth-noise cases and not treated as new information or guaranteed ATE.
+# Phase5 latest full-graph result and index correction
+
+First frozen allten graph completed9/10PASS, zero loss ofprevious8passes.
+fresh2max11.323→8.837mm; fresh4max15.333→14.983mm. No productionpromotion.
+fresh4wrapper integrated5newvectors; no capclips; neww5 residual9.387→8.901mm
+andgraphdelta.711mm. Small influence doesNOTprove damagedrecording.
+
+Independent review initiallymistook evaluationrowindices forfullgraphindices.
+Corrected by exacttimestampmapping: fused1142rows vsgraph1199,sourceoffset57.
+Current>10mm eval759–772→source816–829(maxsource820,11.173mm),
+eval780–786→source837–843(max840,10.309mm),
+eval988–1027→source1045–1084(max1071,14.983mm).
+Window4[829..849] andwindow5[1068..1088] DOoverlaperrors; latterincludespeak1071.
+Do notsay sparsewindows missedworstblock. Relativefactorlowleverage / constant-
+offsetblindness is a hypothesis, notprovedsinglecause or GTadmissionjustification.
+Next samealgorithmuniform590rawwindows measurescoverage/connectedmotion
+information withoutchangingweights/caps/keyframes or pickingGTpositions.
+
+Separate AFTER-estimation evaluation `graph_ten_v1/window_basis_evaluation.json`
+compares rawmetricendpoint andoptimizedgraphdisplacement with unchangedbodyGT
+convertedtoleftIR. All46 metriclocalreferenceerrors exactly matchpriorfrozen
+localdisplacementscorer (<1e-9mm). Camera-graph SE3-no-scale alignment used ONLY
+for orientation/worlddisplacement diagnosis, not officialbody ATE or selection.
+fresh4w5 metriclocalerror2.881mm vsgraphlocalerror8.347mm; graphcameraorientation
+vsreference1.109deg; metricworlderror1.864mm vsgraphworlddeltaerror7.195mm;
+GTmotionlength186.461mm. Thusfor thiswindow, orientationbasis alone doesnot
+accountforremainingdisplacementgap; acceptedrawmetricmeasurement has better
+relativeGTagreement thanoptimizedgraph. This is evidence ofgraphconsensusgap,
+notproofwhich individual oldedge ordataiswrong. Fresh2w3 basis2.849deg makes
+metriclocal2.536mm→world4.243mm; orientationuncertaintystillmatterselsewhere.

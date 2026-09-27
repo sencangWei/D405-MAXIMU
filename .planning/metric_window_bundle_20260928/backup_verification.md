@@ -41,3 +41,9 @@ replay and production deployment are still not verified.
 - Restored168old/newtestsPASS in1.50s. This is source/test restoration, not a
   recording/GPU replay. Completed allten graph evidence will be copied in a
   subsequent selected-evidence commit; do not infer it from this source commit.
+
+- Completedgraph/evidence commit `aead1d995f0eb5361da65fedadda4a07f24c36df`,
+  sameownedbranch, normalfastforwardpush. Restored170changedcode/evidencefiles
+  byte-identical fromremote; restored171testsPASS in1.38s. Containsallten graph
+  trajectories,precisionreports,command/hashmanifests androtatableplots.
+  Laterdiagnostic additions and ongoingfullcoverageoutputs requirefollow-up.

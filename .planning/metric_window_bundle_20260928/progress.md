@@ -130,3 +130,13 @@ of40s. Next testeduniformnon-overlapping20frame rawcoverage, sameestimator/
 gates/5BAnodes/fullratepixels, notweight/keyframedensitysweep or GT-pickedframes.
 Codebackup c5953e24 normalpushedsencang; fresh remote-onlyemptyrestore
 /tmp/ego-metric-graph-restore-0Wz3x7,9newchangedfilesbyteidentical,168testsPASS.
+
+Fullcoverage590uniformwindowcontrols underway, firstfourcasescompleted. Old
+native disparity helper emitsinvalid-castRuntimeWarning fornonfinitepixels;
+downstreamvalidity/accepted-modelguards remainactive, nativefileunchanged.
+ThreecoverageadaptertestsPASS; finalcombined171PASS. Adapterhashnowincludedin
+controls sourcehashmap; fixturemissingthatrealfield repaired (oneRED→3PASS).
+AFTERestimation graph-basisdiagnostic46metriclocalerrors matchexistingfrozen
+scorer; fresh4w5 localmetric2.881 vsgraph8.347mm (worldmetric1.864 vsgraph7.195).
+Nativeorientationbasis1.109deg atthiswindow isnot sufficientexplanation alone.
+Evidencebackup aead1d99 restored170changedfilesbyteidentical/171testsPASS.
