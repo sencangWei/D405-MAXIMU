@@ -90,3 +90,29 @@ Existing graph consumes fullmetric3D vector; confidence/local-scale is still
 learnedscale based. Need distinct rawmetricfactor interface, not fakescale or
 oldweightfamily sweeps. Phase5pending. One documentation patch context mismatch
 failed atomically, corrected after exacttext inspection; no partial edits.
+
+Phase5 user approved. Nativegraph interface verified: fullvector constraints,
+but oldconfidence default would be0.1 for plain no-scale factor. Explicit source
+dispatch is required; no fakePnP/scales. Local scalar state excludes no-scale
+observations. Wrapper implementation delegated as bounded two-new-file slice;
+read-onlyreview independent. Native production and priorcachedreports untouched.
+Frozen ten-case replay runner uses previous validated SIFT-LM/gyro graph command,
+not originalunrefinedstereo command frommanifest. Runner tests2RED(no module)
+then2PASS; pathremap guards siblings and preserves td/referencecommands.
+
+Runner independentreview foundfullinput/sourcepostflightgap; repaired and added
+stub-subprocess mutationregression,4testsPASS. Wrapper initial8testsPASS but
+realrefinedSIFTreport pathnotinoriginalcontrolshashmap; caughtbeforebatch.
+Independentreview agreed; executorrepairingoriginalsourceidentitylookup,
+NaNguard/strictinteger/fullcalibration/frame/versionchecks. No rawbatch started
+with knownbadinterface. Broadtests during tests-firstversionupdate156PASS/2RED
+(expected oldtag vsnewtests); fresh fullrun requiredafteragentready.
+
+Actual all-tenpreflight exposedcontrols inputJSON `inputs` can be a string;
+sourceidentityscan repaired withdictguards +regression. Finalwrapperstrictfixed
+pixel/gyro/biasguards,frame/fullcalibration/integer/timestampguards, versioned
+typeconfidence dispatch, sourcehash rechecks;18wrappertestsPASS. Runner4PASS.
+Fresh combined168testsPASS in1.31s. Allten actualcaseidentity/timestamp/hash
+preflightPASS46factors. Frozengraph_ten_v1 started: firstfresh1 completedall
+stages(score rc0, max7.772mm); automaticallycontinuingnineothers. This is not
+fullbatchPASS or productionpromotion. Existingnativeproduction hashesunchanged.

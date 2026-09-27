@@ -28,8 +28,12 @@ no regression of eight prior passes; fresh independent captures after freeze.
 4. Complete for prototype (v6,46/50): uniform time-stratified window observation controls on ten cached
    recordings before any single-case full trajectory promotion. Raw data and
    optimizer diagnostics first; scoring isolated afterward.
-5. Pending: only with supported metric observations, frozen graph integration
-   candidate across all ten. Record any derived-confidence/interface effects.
+5. In progress (user approved): only with supported metric observations, frozen graph integration
+  candidate across all ten. Record any derived-confidence/interface effects.
+   Add accepted v6 endpoint factors to the previous frozen SIFT-LM/gyro candidate,
+   with a separate no-learned-scale factor contract. Keep native graph sigma,
+   all production source files, and original factor confidence unchanged.
+   Uniform five windows per case, no GT-selected locations; evaluate all ten.
 6. Complete for prototype: review/tests146PASS, owned sencang backup commits
    d725776f/8514a442; fresh remote restore83files byte-identical and146testsPASS.
    Full graph integration/acceptance (phase5) remains pending, no target-PASS.

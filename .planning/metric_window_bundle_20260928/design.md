@@ -63,3 +63,21 @@ enter estimation. Image-pair PnP is used only for visual initialization.
   gyro P95≤5deg; each biascomponent≤0.01rad/s. These reuse existing diagnostic
   tolerances, not a promise of millimetre accuracy. Rejections retain diagnostic
   states; never pass rejected states as graph constraints.
+
+## Phase5 frozen graph integration
+
+- Candidate wrapper only; do not edit native production fusion or frozen reports.
+- Reuse exact previous SIFT-LM/raw-gyro validated graph commands and subsequent
+  stages. This isolates new information from re-estimation or policy changes.
+- Append one endpoint displacement per accepted time-stratified v6 window.
+  Do not duplicate correlated subedges or scale fitted-to-MASt3R positions.
+- Endpoint vector is in window's first leftIR camera frame. Check all trajectory
+  timestamps, session, calibration, input hashes and core acceptance diagnostics.
+- Dispatch confidence only for the explicit new factor type. Use fixed1 with
+  existing native stereo sigma4mm, a declared uncalibrated model assumption.
+  Old confidence, local scale medians, priors, cap, IRLS and scoring stay frozen.
+- New factors have no scalar scale, no PnP orientation factor. Native camera
+  rotations place metric vectors into the graph world; this retains existing
+  orientation uncertainty and is not a raw full visual-inertial global BA.
+- First case smoke runs before remaining nine automatically. Record all failures,
+  never select a candidate or alter parameters using external scores.
