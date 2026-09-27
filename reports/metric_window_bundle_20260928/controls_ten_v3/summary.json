@@ -1,0 +1,4664 @@
+{
+  "cases": [
+    {
+      "case": "dev1",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6582744121551514,
+            3.8249094486236572,
+            3.9915413856506348,
+            4.15816855430603,
+            4.324789762496948
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.8075862219573263,
+              0.19675793159811739,
+              0.23556542337914155,
+              0.7350445271366579
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.020337434360187756,
+              0.019364253068886374,
+              0.0041622176885918825,
+              0.022254061333403626
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              80,
+              79,
+              77,
+              79,
+              78
+            ],
+            "post_count": [
+              79,
+              78,
+              77,
+              79,
+              78
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 79,
+          "heldout_tracks": 20,
+          "initial_heldout_rmse_px": 0.24250328325199708,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 21.58835156884232,
+            "nfev": 8,
+            "observed_pixels": 1564,
+            "valid_observations": 391,
+            "tracks": 79,
+            "frames": 5,
+            "pixel_rmse_px": 0.1705631439747568,
+            "pixel_p95_px": 0.44880902543467,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 2.3591887355843486e-05,
+            "gyro_p95_rad": 5.775574839149912e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00032779834192689497,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11691867887485029,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.00017293101610747907,
+            0.00030549863356145484,
+            -0.00032779834192689497
+          ],
+          "initial_endpoint_m": [
+            0.0001769707590184264,
+            -0.0001634573629680123,
+            6.367259293216865e-05
+          ],
+          "endpoint_m": [
+            1.743226851720772e-05,
+            6.550932353309144e-05,
+            5.898582434592039e-05
+          ],
+          "endpoint_change_mm": 0.2791061433907953,
+          "optimized_heldout_rmse_px": 0.2224123313122326,
+          "runtime_s": 0.5802974289981648
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.624692440032959,
+            11.79136610031128,
+            11.958039283752441,
+            12.12471604347229,
+            12.291392087936401
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.7693108141966232,
+              0.9079640491637241,
+              0.1530695443630257,
+              0.996834799922242
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.023293588199661385,
+              0.015768893636777522,
+              0.024078670578083588,
+              0.022330358813900962
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              78,
+              75,
+              74,
+              78,
+              76
+            ],
+            "post_count": [
+              78,
+              75,
+              74,
+              78,
+              76
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 78,
+          "heldout_tracks": 20,
+          "initial_heldout_rmse_px": 0.3284633082284271,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 20.675447316607826,
+            "nfev": 7,
+            "observed_pixels": 1524,
+            "valid_observations": 381,
+            "tracks": 78,
+            "frames": 5,
+            "pixel_rmse_px": 0.1679811638607043,
+            "pixel_p95_px": 0.42990807582091056,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 5.327848229318457e-05,
+            "gyro_p95_rad": 0.00012973603865352768,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00019353834168798315,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.09315506026005421,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.0001076270318728489,
+            0.00019353834168798315,
+            -0.00019098830396905553
+          ],
+          "initial_endpoint_m": [
+            8.156165731026422e-05,
+            -0.00018694255663898943,
+            -3.431992704147391e-06
+          ],
+          "endpoint_m": [
+            -1.5311256008077682e-05,
+            7.47863151836538e-06,
+            4.646869663127882e-05
+          ],
+          "endpoint_change_mm": 0.22287673394827748,
+          "optimized_heldout_rmse_px": 0.31601870448602,
+          "runtime_s": 0.5496571939438581
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.625006914138794,
+            19.791696548461914,
+            19.958380222320557,
+            20.1250422000885,
+            20.29170322418213
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              2.842170943040401e-14,
+              85.6762891040204,
+              104.1358747457737,
+              106.31445814405589,
+              97.98567540056649
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0847457627118644,
+              0.10526315789473684,
+              0.10909090909090909,
+              0.07272727272727272
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.18449743522496617,
+              0.0966620764432371,
+              0.07991918812499757,
+              0.0377893565801816
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              61,
+              59,
+              57,
+              55,
+              55
+            ],
+            "post_count": [
+              55,
+              54,
+              51,
+              49,
+              51
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 55,
+          "heldout_tracks": 16,
+          "initial_heldout_rmse_px": 18.83303387485128,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 24.133336991626134,
+            "nfev": 6,
+            "observed_pixels": 1040,
+            "valid_observations": 260,
+            "tracks": 55,
+            "frames": 5,
+            "pixel_rmse_px": 0.21823388497868665,
+            "pixel_p95_px": 0.6220802513064225,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00012855857557273463,
+            "gyro_p95_rad": 0.0002958734163075564,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0019306091842272435,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.3275993733149993,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.00040743901522535125,
+            0.0019306091842272435,
+            0.0009359556241876526
+          ],
+          "initial_endpoint_m": [
+            0.016594269972149057,
+            -3.806000057281003e-05,
+            0.0014261319926570648
+          ],
+          "endpoint_m": [
+            0.01625090700923437,
+            -0.00047899899606578043,
+            0.0013611351373222205
+          ],
+          "endpoint_change_mm": 0.5626276861756114,
+          "optimized_heldout_rmse_px": 18.230891975664278,
+          "runtime_s": 0.5035717859864235
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.625529766082764,
+            27.7922203540802,
+            27.958906888961792,
+            28.12558078765869,
+            28.292253971099854
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.380641384641531,
+              33.673468761583116,
+              76.80099842381867,
+              105.61233001498786
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.013513513513513514,
+              0.078125,
+              0.09523809523809523,
+              0.07936507936507936
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.10758036306022636,
+              0.18300410214790852,
+              0.05053865024939965,
+              0.020216773122954716
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              76,
+              74,
+              64,
+              63,
+              63
+            ],
+            "post_count": [
+              74,
+              73,
+              59,
+              57,
+              57
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 74,
+          "heldout_tracks": 19,
+          "initial_heldout_rmse_px": 0.32576218610038776,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 40.711819318446906,
+            "nfev": 12,
+            "observed_pixels": 1280,
+            "valid_observations": 320,
+            "tracks": 74,
+            "frames": 5,
+            "pixel_rmse_px": 0.24386869803091832,
+            "pixel_p95_px": 0.6252248207572141,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00033043258459390293,
+            "gyro_p95_rad": 0.0009302263572340982,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00546964565823027,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11427537808160106,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.000907381401044967,
+            -0.00546964565823027,
+            -0.0010224583029576487
+          ],
+          "initial_endpoint_m": [
+            0.014712268766895168,
+            0.008882106472387475,
+            0.008126712045136729
+          ],
+          "endpoint_m": [
+            0.012910752709076082,
+            0.009167149225924126,
+            0.008416746669809235
+          ],
+          "endpoint_change_mm": 1.8468431339539093,
+          "optimized_heldout_rmse_px": 0.3178607896199713,
+          "runtime_s": 0.5579786339076236
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59251403808594,
+            35.75920534133911,
+            35.925896406173706,
+            36.09261178970337,
+            36.25932836532593
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.7386655836051224,
+              2.3998659690647717,
+              4.601979640406576,
+              7.039697999657031
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.028846153846153848,
+              0.12643678160919541,
+              0.5526315789473685,
+              0.6666666666666666
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.32245063904696186,
+              0.3785956876698959,
+              0.5947490129539423,
+              1.0692045789844258
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              104,
+              104,
+              87,
+              76,
+              57
+            ],
+            "post_count": [
+              101,
+              101,
+              71,
+              35,
+              23
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": false,
+          "reason": "model_consistency_failed",
+          "train_tracks": 101,
+          "heldout_tracks": 27,
+          "initial_heldout_rmse_px": 1.5155032761569203,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 128.29384415307553,
+            "nfev": 11,
+            "observed_pixels": 1324,
+            "valid_observations": 331,
+            "tracks": 101,
+            "frames": 5,
+            "pixel_rmse_px": 0.44272173233716916,
+            "pixel_p95_px": 1.1688013283386793,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9924471299093656,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0004783540852333926,
+            "gyro_p95_rad": 0.0011822429834197612,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.011879413283468506,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.1888929421912578,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": true
+          },
+          "failures": [
+            "gyro_bias_exceeds_guard"
+          ],
+          "runtime_s": 0.5534343620529398
+        }
+      ]
+    },
+    {
+      "case": "dev2",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6582019329071045,
+            3.824850559234619,
+            3.9915082454681396,
+            4.158170461654663,
+            4.32483172416687
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.529788551507662,
+              1.2912974406913127,
+              0.3514433608048018,
+              0.48959678424609926
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.017779887746951644,
+              0.01889005852688498,
+              0.02876100316184724,
+              0.022573029397199247
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              76,
+              72,
+              75,
+              73,
+              72
+            ],
+            "post_count": [
+              76,
+              72,
+              73,
+              73,
+              72
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 76,
+          "heldout_tracks": 20,
+          "initial_heldout_rmse_px": 0.3395774913050415,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 28.386395268857015,
+            "nfev": 7,
+            "observed_pixels": 1464,
+            "valid_observations": 366,
+            "tracks": 76,
+            "frames": 5,
+            "pixel_rmse_px": 0.2032869000936446,
+            "pixel_p95_px": 0.5647770958174058,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 3.274307419092847e-05,
+            "gyro_p95_rad": 8.084221572616716e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0004152944206029796,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.1155612709402517,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.00011137748892711612,
+            0.0002263363013233569,
+            -0.0004152944206029796
+          ],
+          "initial_endpoint_m": [
+            5.4084589002649455e-05,
+            -8.292918323200499e-05,
+            -2.2182591548806276e-05
+          ],
+          "endpoint_m": [
+            5.389218905118614e-06,
+            7.12288191144508e-06,
+            2.1842411868252776e-05
+          ],
+          "endpoint_change_mm": 0.1114397345268183,
+          "optimized_heldout_rmse_px": 0.3378815719423639,
+          "runtime_s": 0.5552498829783872
+        },
+        {
+          "window": 2,
+          "indices": [
+            350,
+            355,
+            360,
+            365,
+            370
+          ],
+          "elapsed_s": [
+            11.6582670211792,
+            11.824946641921997,
+            11.991621255874634,
+            12.158285856246948,
+            12.324950933456421
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              4.121147867408589e-14,
+              1.6657894718810877,
+              0.6247542283540007,
+              0.41457644527596266,
+              1.3140150547343075
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.04931232679570956,
+              0.06545810636456467,
+              0.010622974203017242,
+              0.046510500413328056
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              72,
+              66,
+              70,
+              72,
+              69
+            ],
+            "post_count": [
+              72,
+              66,
+              70,
+              72,
+              69
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 72,
+          "heldout_tracks": 19,
+          "initial_heldout_rmse_px": 0.44772950452966037,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 39.85889015799604,
+            "nfev": 9,
+            "observed_pixels": 1396,
+            "valid_observations": 349,
+            "tracks": 72,
+            "frames": 5,
+            "pixel_rmse_px": 0.2466995060951517,
+            "pixel_p95_px": 0.6688635567623118,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00011418811802082522,
+            "gyro_p95_rad": 0.00028637338298224664,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0002763533186006423,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11451256185793797,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.00010337639981351341,
+            -4.403225410909205e-05,
+            -0.0002763533186006423
+          ],
+          "initial_endpoint_m": [
+            3.438248258104008e-05,
+            0.00031174946197912965,
+            3.732959878540508e-05
+          ],
+          "endpoint_m": [
+            1.8476497190934535e-05,
+            4.728570601229896e-06,
+            -0.00011365719661605268
+          ],
+          "endpoint_change_mm": 0.34250816121563005,
+          "optimized_heldout_rmse_px": 0.3968208214946293,
+          "runtime_s": 0.5591048600617796
+        },
+        {
+          "window": 3,
+          "indices": [
+            590,
+            595,
+            600,
+            605,
+            610
+          ],
+          "elapsed_s": [
+            19.658406496047974,
+            19.82506775856018,
+            19.991735219955444,
+            20.15840983390808,
+            20.325085639953613
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              2.842170943040401e-14,
+              1.5570993715361385,
+              3.43109406019105,
+              3.848579905752839,
+              4.786563389358778
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.018018018018018018,
+              0.21348314606741572,
+              0.3793103448275862,
+              0.4657534246575342
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.12089451844011276,
+              0.3049264001718563,
+              0.3788102678886091,
+              0.25678253620985403
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              112,
+              111,
+              89,
+              87,
+              73
+            ],
+            "post_count": [
+              110,
+              110,
+              72,
+              59,
+              40
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 110,
+          "heldout_tracks": 28,
+          "initial_heldout_rmse_px": 1.465245359360989,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 88.44217215247984,
+            "nfev": 9,
+            "observed_pixels": 1564,
+            "valid_observations": 391,
+            "tracks": 110,
+            "frames": 5,
+            "pixel_rmse_px": 0.3479215181833373,
+            "pixel_p95_px": 0.9273923553163451,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0002244191733533986,
+            "gyro_p95_rad": 0.0005940551918862284,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0010892661333427838,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.19156618001593573,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0010892661333427838,
+            -0.0007148252564987273,
+            0.00036542424657995143
+          ],
+          "initial_endpoint_m": [
+            0.024705996464358698,
+            -0.035747476624046495,
+            0.06541688677096609
+          ],
+          "endpoint_m": [
+            0.02673855701511291,
+            -0.03653485828490945,
+            0.06492154218498165
+          ],
+          "endpoint_change_mm": 2.2353162038534187,
+          "optimized_heldout_rmse_px": 1.262056378034758,
+          "runtime_s": 0.5558865789789706
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.625335693359375,
+            27.792001485824585,
+            27.95866870880127,
+            28.125338554382324,
+            28.292007446289062
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              88.45125701301765,
+              211.67494149793046,
+              315.7037170192543,
+              413.8104223935293
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.15517241379310345,
+              0.25,
+              0.22727272727272727,
+              0.35714285714285715
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.12435691306459448,
+              0.24124352150451037,
+              0.4277468066571093,
+              0.33711370501660987
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              60,
+              58,
+              48,
+              44,
+              42
+            ],
+            "post_count": [
+              54,
+              49,
+              36,
+              33,
+              27
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 54,
+          "heldout_tracks": 15,
+          "initial_heldout_rmse_px": 49.771348239699094,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 53.4994286705075,
+            "nfev": 9,
+            "observed_pixels": 796,
+            "valid_observations": 199,
+            "tracks": 54,
+            "frames": 5,
+            "pixel_rmse_px": 0.3856141943858332,
+            "pixel_p95_px": 0.9594608460425341,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9974874371859297,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00016967257140320207,
+            "gyro_p95_rad": 0.00044923077363580836,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.004022950187231457,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.20642883311357818,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.004022950187231457,
+            -0.0003749236635429496,
+            -0.0022334589657461517
+          ],
+          "initial_endpoint_m": [
+            0.04474615521156603,
+            -0.007685463909369779,
+            0.04552636679476417
+          ],
+          "endpoint_m": [
+            0.04541376506561479,
+            -0.007222452192675294,
+            0.04543050264397158
+          ],
+          "endpoint_change_mm": 0.8180908888543909,
+          "optimized_heldout_rmse_px": 49.97745232751744,
+          "runtime_s": 0.5229921389836818
+        },
+        {
+          "window": 5,
+          "indices": [
+            1069,
+            1074,
+            1079,
+            1084,
+            1089
+          ],
+          "elapsed_s": [
+            35.62555146217346,
+            35.79220795631409,
+            35.9588668346405,
+            36.125532150268555,
+            36.29219675064087
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              2.9114439294592307,
+              2.4408034544420336,
+              3.4334463252240646,
+              4.668366753581411
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.09195402298850575,
+              0.07246376811594203,
+              0.15,
+              0.36
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.13333693201017177,
+              0.06382945285424961,
+              0.14345222310994676,
+              0.1755875469366554
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              87,
+              87,
+              69,
+              60,
+              50
+            ],
+            "post_count": [
+              81,
+              81,
+              58,
+              47,
+              37
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 81,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 26.42142368576112,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 61.02925965763434,
+            "nfev": 9,
+            "observed_pixels": 1216,
+            "valid_observations": 304,
+            "tracks": 81,
+            "frames": 5,
+            "pixel_rmse_px": 0.33091806949186003,
+            "pixel_p95_px": 0.9149567506218915,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0001349803498638049,
+            "gyro_p95_rad": 0.000363024118365091,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0008327849764013555,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.25176880664795726,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            4.324688938577137e-05,
+            0.0001242788868099215,
+            0.0008327849764013555
+          ],
+          "initial_endpoint_m": [
+            0.0503889291672017,
+            0.005001409248522688,
+            -0.031818979246410674
+          ],
+          "endpoint_m": [
+            0.05304835632194019,
+            0.002333633075443385,
+            -0.03147180797817187
+          ],
+          "endpoint_change_mm": 3.782870654741003,
+          "optimized_heldout_rmse_px": 27.166540184196457,
+          "runtime_s": 0.5476124309934676
+        }
+      ]
+    },
+    {
+      "case": "heldout1",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6581802368164062,
+            3.824881076812744,
+            3.991546869277954,
+            4.1581854820251465,
+            4.324821710586548
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.8938775958512871,
+              1.2025242380789842,
+              0.3478693630574449,
+              1.1854472951573998
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.02127659574468085,
+              0.010869565217391304,
+              0.010869565217391304
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.056224439881547635,
+              0.037398909535682555,
+              0.09056080019430601,
+              0.08901874962705719
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              100,
+              95,
+              94,
+              92,
+              92
+            ],
+            "post_count": [
+              100,
+              95,
+              89,
+              91,
+              90
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 100,
+          "heldout_tracks": 26,
+          "initial_heldout_rmse_px": 0.5830396630340191,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 41.97508528142488,
+            "nfev": 12,
+            "observed_pixels": 1860,
+            "valid_observations": 465,
+            "tracks": 100,
+            "frames": 5,
+            "pixel_rmse_px": 0.21735568129752433,
+            "pixel_p95_px": 0.5799442632024647,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 9.390472971537249e-05,
+            "gyro_p95_rad": 0.0002381051666239426,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00044798653034013486,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11398106217060776,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.00026477286380810727,
+            0.00044798653034013486,
+            -0.0002922651362010974
+          ],
+          "initial_endpoint_m": [
+            0.000275943539522467,
+            -0.0004708940243286043,
+            -0.00022698720013395227
+          ],
+          "endpoint_m": [
+            4.898679824168361e-05,
+            -4.876355062286461e-05,
+            4.0176989281228574e-05
+          ],
+          "endpoint_change_mm": 0.5487077576904625,
+          "optimized_heldout_rmse_px": 0.4318438892705833,
+          "runtime_s": 0.6217056309105828
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.624837636947632,
+            11.79150128364563,
+            11.958166360855103,
+            12.124836206436157,
+            12.291504859924316
+          ],
+          "accepted": false,
+          "reason": "insufficient_persistent_stereo_tracks",
+          "runtime_s": 0.41787753091193736
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.625289916992188,
+            19.79197907447815,
+            19.958664894104004,
+            20.125333070755005,
+            20.29199981689453
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              2.842170943040401e-14,
+              2.1479129445461695,
+              2.0894636900066073,
+              2.084027272323928,
+              3.4434046748493783
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.058823529411764705,
+              0.054945054945054944,
+              0.0625,
+              0.10126582278481013
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.1986489419327443,
+              0.1377625564080504,
+              0.045989870854994376,
+              0.05631776827478814
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              102,
+              102,
+              91,
+              80,
+              79
+            ],
+            "post_count": [
+              97,
+              96,
+              85,
+              72,
+              69
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 97,
+          "heldout_tracks": 26,
+          "initial_heldout_rmse_px": 0.8211197219707043,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 80.90637911993993,
+            "nfev": 9,
+            "observed_pixels": 1676,
+            "valid_observations": 419,
+            "tracks": 97,
+            "frames": 5,
+            "pixel_rmse_px": 0.3149978708657392,
+            "pixel_p95_px": 0.8220690086224876,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0003000328579585671,
+            "gyro_p95_rad": 0.0008375092640923451,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0029417326098000584,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.1888635475758986,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0024553994403589486,
+            0.0029417326098000584,
+            -0.001892346329357265
+          ],
+          "initial_endpoint_m": [
+            0.012341828137227,
+            -0.003048095105399256,
+            0.057752100609987
+          ],
+          "endpoint_m": [
+            0.012674810273073525,
+            -0.002371697040673379,
+            0.05770043460626765
+          ],
+          "endpoint_change_mm": 0.755685662625773,
+          "optimized_heldout_rmse_px": 0.8278720275027849,
+          "runtime_s": 0.5843452280387282
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.625644207000732,
+            27.792309522628784,
+            27.95897936820984,
+            28.125665187835693,
+            28.29235005378723
+          ],
+          "accepted": false,
+          "reason": "insufficient_persistent_stereo_tracks",
+          "runtime_s": 0.4164748420007527
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59293985366821,
+            35.75961780548096,
+            35.926295042037964,
+            36.09295630455017,
+            36.25961685180664
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.6898781439614388,
+              1.5163849084170322,
+              1.3514881340716944,
+              1.3251103818449212
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0136986301369863,
+              0.0273972602739726,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.09182357336073883,
+              0.05761975912085918,
+              0.03932513396520082,
+              0.017697851833053634
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              75,
+              73,
+              73,
+              72,
+              72
+            ],
+            "post_count": [
+              75,
+              73,
+              71,
+              72,
+              72
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 75,
+          "heldout_tracks": 19,
+          "initial_heldout_rmse_px": 0.5516004388018766,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 51.66360467399157,
+            "nfev": 9,
+            "observed_pixels": 1452,
+            "valid_observations": 363,
+            "tracks": 75,
+            "frames": 5,
+            "pixel_rmse_px": 0.2712977008436716,
+            "pixel_p95_px": 0.7238783126649464,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00022585953437039417,
+            "gyro_p95_rad": 0.000538844059833103,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0015660643168443852,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11344587430404014,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.0010129399525019944,
+            0.0011343837149232132,
+            -0.0015660643168443852
+          ],
+          "initial_endpoint_m": [
+            0.00016663427998327943,
+            0.0004843336037588831,
+            -0.0008489747259109589
+          ],
+          "endpoint_m": [
+            0.0002814889680467813,
+            0.0006706289232623129,
+            -0.0009106356339957189
+          ],
+          "endpoint_change_mm": 0.22737548905914753,
+          "optimized_heldout_rmse_px": 0.4733194229340495,
+          "runtime_s": 0.564779145992361
+        }
+      ]
+    },
+    {
+      "case": "heldout2",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.658217668533325,
+            3.824934959411621,
+            3.991650342941284,
+            4.158363103866577,
+            4.3250792026519775
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.22120087655128143,
+              1.2929117221481254,
+              0.5153059546756756,
+              0.33790482627565094
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.006826741570749723,
+              0.05643013889839797,
+              0.06664867875925615,
+              0.01936794179119391
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              88,
+              86,
+              82,
+              83,
+              84
+            ],
+            "post_count": [
+              88,
+              86,
+              82,
+              83,
+              84
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 88,
+          "heldout_tracks": 23,
+          "initial_heldout_rmse_px": 0.3314667969097344,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 35.2704013510764,
+            "nfev": 8,
+            "observed_pixels": 1692,
+            "valid_observations": 423,
+            "tracks": 88,
+            "frames": 5,
+            "pixel_rmse_px": 0.2131750705370798,
+            "pixel_p95_px": 0.549547422844702,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 3.339557779153357e-05,
+            "gyro_p95_rad": 6.79294311942241e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00040752006438460434,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11496552948985757,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -5.727038808655312e-05,
+            0.0003072042313092723,
+            -0.00040752006438460434
+          ],
+          "initial_endpoint_m": [
+            2.4635595703764488e-05,
+            -6.30718152503418e-05,
+            -4.6894589580664165e-05
+          ],
+          "endpoint_m": [
+            9.933876550410354e-08,
+            1.171628777019143e-06,
+            1.1044394604713705e-05
+          ],
+          "endpoint_change_mm": 0.08992315549106612,
+          "optimized_heldout_rmse_px": 0.2603377468110006,
+          "runtime_s": 0.5459721380611882
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.625227928161621,
+            11.79187560081482,
+            11.958522319793701,
+            12.125173091888428,
+            12.29182243347168
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.6426495485772281,
+              0.69870054448569,
+              0.5682846465205847,
+              1.8577057010924662
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.03571428571428571,
+              0.0,
+              0.0,
+              0.03614457831325301
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.09069551166325045,
+              0.06257023327534846,
+              0.01403317257643747,
+              0.08269130266182607
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              84,
+              84,
+              84,
+              83,
+              83
+            ],
+            "post_count": [
+              84,
+              84,
+              84,
+              83,
+              83
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 84,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 0.5413589525772898,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 40.041172503141496,
+            "nfev": 7,
+            "observed_pixels": 1672,
+            "valid_observations": 418,
+            "tracks": 84,
+            "frames": 5,
+            "pixel_rmse_px": 0.2242022658773166,
+            "pixel_p95_px": 0.5838345575789554,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 7.289633667498528e-05,
+            "gyro_p95_rad": 0.00015909250372062126,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0005938266907865179,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11523432637405283,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.00013186940400364248,
+            0.0005938266907865179,
+            -0.0005855866657748382
+          ],
+          "initial_endpoint_m": [
+            0.0002814301423895359,
+            -0.0006207852934609504,
+            -0.0002967173317477883
+          ],
+          "endpoint_m": [
+            6.359898205529124e-05,
+            1.9340989314957343e-05,
+            4.498805344561041e-05
+          ],
+          "endpoint_change_mm": 0.7576111420664521,
+          "optimized_heldout_rmse_px": 0.3416000998608723,
+          "runtime_s": 0.5365503520006314
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.62519359588623,
+            19.791881322860718,
+            19.958566188812256,
+            20.125243186950684,
+            20.291919708251953
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              1.4210854715201196e-15,
+              1.3500807578990341,
+              2.0086387489482544,
+              2.4976573703169356,
+              5.190981370990564
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.058823529411764705,
+              0.12389380530973451,
+              0.49107142857142855
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.171289448297298,
+              0.04705679007138124,
+              0.23345584480969897,
+              0.49813160331545187
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              120,
+              119,
+              119,
+              113,
+              112
+            ],
+            "post_count": [
+              118,
+              118,
+              109,
+              97,
+              75
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 118,
+          "heldout_tracks": 31,
+          "initial_heldout_rmse_px": 1.3216190011153335,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 131.24100351134524,
+            "nfev": 8,
+            "observed_pixels": 2068,
+            "valid_observations": 517,
+            "tracks": 118,
+            "frames": 5,
+            "pixel_rmse_px": 0.34927681391198045,
+            "pixel_p95_px": 0.8980366993456496,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0007027694631576914,
+            "gyro_p95_rad": 0.0018347396258393729,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.001781387490249872,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.2540185889436836,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0009542297176779941,
+            -0.001519419381844156,
+            -0.001781387490249872
+          ],
+          "initial_endpoint_m": [
+            0.002318002203851446,
+            -0.0096684099027149,
+            0.061928255655400354
+          ],
+          "endpoint_m": [
+            0.005217388900246176,
+            -0.010866094904270478,
+            0.0587366879538542
+          ],
+          "endpoint_change_mm": 4.475153290305767,
+          "optimized_heldout_rmse_px": 1.0882886895003168,
+          "runtime_s": 0.5901231630705297
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.625682830810547,
+            27.79235291481018,
+            27.959020614624023,
+            28.12568497657776,
+            28.29234743118286
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.6465438682484312,
+              2.440177987024258,
+              3.222866214988427,
+              3.640706775790532
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.017857142857142856,
+              0.12871287128712872,
+              0.17894736842105263,
+              0.2967032967032967
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.07230189055153281,
+              0.06952864338520962,
+              0.10265883453073132,
+              0.49427679539256214
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              114,
+              112,
+              101,
+              95,
+              91
+            ],
+            "post_count": [
+              112,
+              109,
+              85,
+              77,
+              65
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 112,
+          "heldout_tracks": 29,
+          "initial_heldout_rmse_px": 1.4017678722578946,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 111.70971657492339,
+            "nfev": 11,
+            "observed_pixels": 1792,
+            "valid_observations": 448,
+            "tracks": 112,
+            "frames": 5,
+            "pixel_rmse_px": 0.3679261656916739,
+            "pixel_p95_px": 0.9327298373402352,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9988839285714286,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0002833271721177671,
+            "gyro_p95_rad": 0.0006406834274897909,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0029315398330962248,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.261388214386675,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            8.860991095277384e-05,
+            -0.0003633267895068008,
+            0.0029315398330962248
+          ],
+          "initial_endpoint_m": [
+            -0.03086260505897391,
+            0.04283455713559033,
+            -0.07932788755707976
+          ],
+          "endpoint_m": [
+            -0.02880371352476679,
+            0.0458177647823224,
+            -0.07926323834807403
+          ],
+          "endpoint_change_mm": 3.625291951467562,
+          "optimized_heldout_rmse_px": 1.3734907760201,
+          "runtime_s": 0.5878414389444515
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59288430213928,
+            35.75955057144165,
+            35.92621564865112,
+            36.092883825302124,
+            36.259551763534546
+          ],
+          "accepted": false,
+          "reason": "ValueError",
+          "detail": "training_only_PnP_failed",
+          "runtime_s": 0.38487666903529316
+        }
+      ]
+    },
+    {
+      "case": "heldout3",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6583967208862305,
+            3.8250339031219482,
+            3.991672992706299,
+            4.15831184387207,
+            4.324948310852051
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.1904922153312231,
+              0.8036471118833036,
+              0.25733453087613467,
+              0.34584971533717884
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.010321925018827827,
+              0.03409270430769536,
+              0.02160229937130006,
+              0.007960480035190984
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              92,
+              90,
+              84,
+              84,
+              84
+            ],
+            "post_count": [
+              92,
+              90,
+              84,
+              84,
+              84
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 92,
+          "heldout_tracks": 24,
+          "initial_heldout_rmse_px": 0.3237357789588895,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 45.571078776746056,
+            "nfev": 11,
+            "observed_pixels": 1736,
+            "valid_observations": 434,
+            "tracks": 92,
+            "frames": 5,
+            "pixel_rmse_px": 0.3818032035169265,
+            "pixel_p95_px": 0.5397917667033676,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9988479262672811,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.208604167762145e-05,
+            "gyro_p95_rad": 0.0001659257620029625,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0002565684576386504,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11529024189937351,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -5.536087753883408e-05,
+            0.00023664900794802317,
+            -0.0002565684576386504
+          ],
+          "initial_endpoint_m": [
+            -1.750301218065352e-05,
+            3.1503199959331706e-06,
+            -2.8503522595235635e-05
+          ],
+          "endpoint_m": [
+            1.3873509101955116e-05,
+            1.802414906985855e-05,
+            1.2224501659733253e-05
+          ],
+          "endpoint_change_mm": 0.05352091963738735,
+          "optimized_heldout_rmse_px": 0.31512144433378786,
+          "runtime_s": 0.5807547790464014
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.625030040740967,
+            11.791686058044434,
+            11.958343982696533,
+            12.125005722045898,
+            12.291668176651001
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.27411848270886585,
+              1.1519381463476153,
+              0.2038022926760178,
+              0.3634494206987955
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.021052631578947368,
+              0.011363636363636364,
+              0.011494252873563218,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.004849363099107279,
+              0.06014732229615451,
+              0.05643976785845587,
+              0.008434093844770995
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              98,
+              95,
+              88,
+              87,
+              87
+            ],
+            "post_count": [
+              96,
+              93,
+              87,
+              86,
+              87
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 96,
+          "heldout_tracks": 25,
+          "initial_heldout_rmse_px": 0.4305672202657547,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 32.98156857754273,
+            "nfev": 7,
+            "observed_pixels": 1796,
+            "valid_observations": 449,
+            "tracks": 96,
+            "frames": 5,
+            "pixel_rmse_px": 0.19634429243138618,
+            "pixel_p95_px": 0.5116544008823712,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 3.553914780016237e-05,
+            "gyro_p95_rad": 9.87519093183434e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00034651178039389125,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11516827520354606,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            6.715400596396432e-05,
+            0.0002870297092506858,
+            -0.00034651178039389125
+          ],
+          "initial_endpoint_m": [
+            -7.943836150555092e-05,
+            -6.17967028790776e-05,
+            -1.935892594763887e-05
+          ],
+          "endpoint_m": [
+            1.027045148742983e-05,
+            -3.920073433947688e-06,
+            1.2063590867619854e-05
+          ],
+          "endpoint_change_mm": 0.11128679134355385,
+          "optimized_heldout_rmse_px": 0.3910758091361688,
+          "runtime_s": 0.5529806369449943
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.62551784515381,
+            19.792181491851807,
+            19.958848237991333,
+            20.12552237510681,
+            20.292197465896606
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              3.552713678800501e-14,
+              0.7629173372807296,
+              1.3559991164018144,
+              1.0159951999471133,
+              1.9091989420821875
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.017543859649122806,
+              0.017391304347826087,
+              0.01818181818181818,
+              0.04716981132075472
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.09948483240730369,
+              0.12302296819626697,
+              0.16834581617476668,
+              0.20333075314275376
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              116,
+              114,
+              115,
+              110,
+              106
+            ],
+            "post_count": [
+              113,
+              112,
+              110,
+              108,
+              95
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 113,
+          "heldout_tracks": 30,
+          "initial_heldout_rmse_px": 0.6618555138552064,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 115.23702434438988,
+            "nfev": 8,
+            "observed_pixels": 2152,
+            "valid_observations": 538,
+            "tracks": 113,
+            "frames": 5,
+            "pixel_rmse_px": 0.3400876179309536,
+            "pixel_p95_px": 0.883576863019355,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9990706319702602,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0002000508751127878,
+            "gyro_p95_rad": 0.0003996677263990134,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.004207352719359836,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.25358214259986944,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.004207352719359836,
+            0.0007127579354529324,
+            0.0002607969564037322
+          ],
+          "initial_endpoint_m": [
+            0.001980355651919774,
+            0.009831837408094273,
+            -0.05052485490830017
+          ],
+          "endpoint_m": [
+            0.0026644728885139835,
+            0.009748205047958832,
+            -0.05059382986065122
+          ],
+          "endpoint_change_mm": 0.6926530943545627,
+          "optimized_heldout_rmse_px": 0.6661933255099782,
+          "runtime_s": 0.5781402849825099
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.62612748146057,
+            27.792778968811035,
+            27.959432363510132,
+            28.12609100341797,
+            28.292749881744385
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.5293011796567699,
+              0.7064879343002592,
+              1.101348476225975,
+              1.938165284106907
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.046511627906976744
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.14574962115255166,
+              0.1199109663020795,
+              0.16370218725935134,
+              0.1876802656085767
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              128,
+              128,
+              119,
+              105,
+              86
+            ],
+            "post_count": [
+              128,
+              128,
+              119,
+              101,
+              78
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 128,
+          "heldout_tracks": 32,
+          "initial_heldout_rmse_px": 0.361764874879336,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 42.07358046932297,
+            "nfev": 7,
+            "observed_pixels": 2216,
+            "valid_observations": 554,
+            "tracks": 128,
+            "frames": 5,
+            "pixel_rmse_px": 0.19460427018903104,
+            "pixel_p95_px": 0.5182053232194666,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9981949458483754,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0002864301094815679,
+            "gyro_p95_rad": 0.0005972367121425894,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.002691665213821616,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.23537034520712505,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0006517129281216656,
+            -0.002691665213821616,
+            -0.0023469781064897363
+          ],
+          "initial_endpoint_m": [
+            -0.036635086670835156,
+            0.008289124471583652,
+            0.008189565863441222
+          ],
+          "endpoint_m": [
+            -0.03596890672522871,
+            0.008000625192399568,
+            0.008287569785266584
+          ],
+          "endpoint_change_mm": 0.7325519249248423,
+          "optimized_heldout_rmse_px": 0.36327802204904064,
+          "runtime_s": 0.5767807249212638
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59290170669556,
+            35.75957632064819,
+            35.926249742507935,
+            36.092921018600464,
+            36.259591817855835
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              4.878546462480902,
+              12.704616491651713,
+              60.877275096833046,
+              91.42204610760052
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.07526881720430108,
+              0.125,
+              0.08571428571428572,
+              0.1044776119402985
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.18751206425138986,
+              0.08841559380765712,
+              0.31810572827327876,
+              0.20569429614935927
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              94,
+              93,
+              80,
+              70,
+              67
+            ],
+            "post_count": [
+              88,
+              87,
+              70,
+              61,
+              55
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 88,
+          "heldout_tracks": 24,
+          "initial_heldout_rmse_px": 1.0620289918339512,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 106.01229303179107,
+            "nfev": 18,
+            "observed_pixels": 1444,
+            "valid_observations": 361,
+            "tracks": 88,
+            "frames": 5,
+            "pixel_rmse_px": 0.35477165540177164,
+            "pixel_p95_px": 0.9069000415405507,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0008531114866496716,
+            "gyro_p95_rad": 0.0022826646406961435,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.001504890258271061,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.15429767758555976,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.001504890258271061,
+            0.0010743528139276729,
+            0.000164394830272659
+          ],
+          "initial_endpoint_m": [
+            0.009432740724097584,
+            -0.008822112366192719,
+            0.04620096178219615
+          ],
+          "endpoint_m": [
+            0.009377362372687251,
+            -0.008844257197650609,
+            0.04620544097538828
+          ],
+          "endpoint_change_mm": 0.05980985317551907,
+          "optimized_heldout_rmse_px": 1.1521329430598686,
+          "runtime_s": 0.623571966891177
+        }
+      ]
+    },
+    {
+      "case": "heldout4",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.658535957336426,
+            3.825185775756836,
+            3.9918456077575684,
+            4.158510208129883,
+            4.32517409324646
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.7859034781978469,
+              0.4434786063623499,
+              0.2786724637026032,
+              0.6604927427312873
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.03473474240487844,
+              0.03728301675209844,
+              0.01155628825550737,
+              0.037000551790618535
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              87,
+              87,
+              84,
+              85,
+              84
+            ],
+            "post_count": [
+              87,
+              87,
+              84,
+              85,
+              84
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 87,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 0.3987212202489946,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 32.37724208111639,
+            "nfev": 9,
+            "observed_pixels": 1708,
+            "valid_observations": 427,
+            "tracks": 87,
+            "frames": 5,
+            "pixel_rmse_px": 0.1983038527909911,
+            "pixel_p95_px": 0.5455096614666701,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.54152251329949e-05,
+            "gyro_p95_rad": 0.00015444658435350895,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0005313296075150553,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11568514909167373,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0002433527700970216,
+            0.00026131743364242585,
+            -0.0005313296075150553
+          ],
+          "initial_endpoint_m": [
+            0.00012041234061685276,
+            -3.911497264342638e-05,
+            0.00036048378640913414
+          ],
+          "endpoint_m": [
+            -1.0746658487528248e-05,
+            -1.9112486194980038e-05,
+            7.286654705202077e-05
+          ],
+          "endpoint_change_mm": 0.31674352224724395,
+          "optimized_heldout_rmse_px": 0.316756772048043,
+          "runtime_s": 0.5722743920050561
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.625292301177979,
+            11.791975975036621,
+            11.95865774154663,
+            12.125338792800903,
+            12.29201889038086
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              4.547473508864625e-14,
+              0.21924649271487232,
+              0.6694180466173792,
+              0.26813670700050185,
+              0.31766021673971845
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.005451448510225188,
+              0.040792612864097036,
+              0.035376339798955825,
+              0.009687290837351089
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              89,
+              85,
+              85,
+              84,
+              85
+            ],
+            "post_count": [
+              89,
+              85,
+              85,
+              84,
+              85
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 89,
+          "heldout_tracks": 23,
+          "initial_heldout_rmse_px": 0.25829716048176105,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 26.814717591879102,
+            "nfev": 10,
+            "observed_pixels": 1712,
+            "valid_observations": 428,
+            "tracks": 89,
+            "frames": 5,
+            "pixel_rmse_px": 0.1798528586462716,
+            "pixel_p95_px": 0.5021412335272433,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 7.973849381511952e-05,
+            "gyro_p95_rad": 0.0001915046134730675,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00037792049739356347,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11609943241145282,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.00033268138741798087,
+            0.00022779724407564662,
+            -0.00037792049739356347
+          ],
+          "initial_endpoint_m": [
+            -7.776364987350232e-05,
+            4.930811788403652e-05,
+            -4.777493270330294e-06
+          ],
+          "endpoint_m": [
+            -2.215605909015832e-05,
+            -1.1259799553724217e-06,
+            3.8588205179833285e-05
+          ],
+          "endpoint_change_mm": 0.08669709441309692,
+          "optimized_heldout_rmse_px": 0.2516155597720628,
+          "runtime_s": 0.5581230149837211
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.626529693603516,
+            19.793219327926636,
+            19.959909439086914,
+            20.12660789489746,
+            20.29330587387085
+          ],
+          "accepted": false,
+          "reason": "ValueError",
+          "detail": "training_only_PnP_failed",
+          "runtime_s": 0.401890377048403
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.62728238105774,
+            27.79396080970764,
+            27.960640907287598,
+            28.127335786819458,
+            28.294029712677002
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.608098991432994,
+              4.182503001196447,
+              2.683980350895385,
+              4.235733760821832
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.02857142857142857,
+              0.3188405797101449,
+              0.16071428571428573,
+              0.39285714285714285
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.3281553821127165,
+              0.2042546123634196,
+              0.4534452901433183,
+              0.9818935614918415
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              71,
+              70,
+              69,
+              56,
+              56
+            ],
+            "post_count": [
+              68,
+              67,
+              62,
+              53,
+              38
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 68,
+          "heldout_tracks": 18,
+          "initial_heldout_rmse_px": 1.2496250417134656,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 92.32653104513875,
+            "nfev": 9,
+            "observed_pixels": 1152,
+            "valid_observations": 288,
+            "tracks": 68,
+            "frames": 5,
+            "pixel_rmse_px": 0.41209174432368556,
+            "pixel_p95_px": 1.1163160143264665,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 0.9965277777777778,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0004163646589998167,
+            "gyro_p95_rad": 0.0009929268098239372,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.005719761040054328,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.2966083909004696,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.005719761040054328,
+            -0.00033514420930627674,
+            -0.00018896684347038977
+          ],
+          "initial_endpoint_m": [
+            -0.014927756709453613,
+            0.02960593255778921,
+            0.024574045939386228
+          ],
+          "endpoint_m": [
+            -0.02610788542923575,
+            0.02868432744297881,
+            0.023754202575987437
+          ],
+          "endpoint_change_mm": 11.247967697279854,
+          "optimized_heldout_rmse_px": 0.9264211553268219,
+          "runtime_s": 0.5189541269792244
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59501767158508,
+            35.76169753074646,
+            35.92837619781494,
+            36.095075845718384,
+            36.26177644729614
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.0777295493414227,
+              1.5358734309328754,
+              2.1978655982357482,
+              4.183753941337014
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.01694915254237288,
+              0.08695652173913043,
+              0.16129032258064516
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.3080377380275829,
+              0.21597511204709116,
+              0.10996372011226911,
+              0.301654088854406
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              69,
+              67,
+              59,
+              46,
+              31
+            ],
+            "post_count": [
+              67,
+              62,
+              57,
+              42,
+              25
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 67,
+          "heldout_tracks": 18,
+          "initial_heldout_rmse_px": 0.6043461045912876,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 71.36167475883036,
+            "nfev": 9,
+            "observed_pixels": 1012,
+            "valid_observations": 253,
+            "tracks": 67,
+            "frames": 5,
+            "pixel_rmse_px": 0.37411470690398235,
+            "pixel_p95_px": 0.9806485908585728,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00032710055641736724,
+            "gyro_p95_rad": 0.0008134737573880341,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.007801165325860067,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.2369050317327929,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.003167132665781608,
+            0.004534374501787477,
+            0.007801165325860067
+          ],
+          "initial_endpoint_m": [
+            0.035110441960063056,
+            -0.011637141046352604,
+            -0.02562123939039445
+          ],
+          "endpoint_m": [
+            0.033650140420437666,
+            -0.011160428007496356,
+            -0.026257513081447005
+          ],
+          "endpoint_change_mm": 1.6627026547081372,
+          "optimized_heldout_rmse_px": 0.6936458476907646,
+          "runtime_s": 0.5173411730211228
+        }
+      ]
+    },
+    {
+      "case": "fresh1",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6583826541900635,
+            3.825076103210449,
+            3.991748571395874,
+            4.158402919769287,
+            4.325056076049805
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.1626064981726225,
+              0.8837833595414173,
+              0.5214237648222368,
+              1.0684653705898954
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.025,
+              0.01282051282051282,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.026079174227761678,
+              0.038515929949823675,
+              0.031060406170689416,
+              0.013239380395979002
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              81,
+              80,
+              78,
+              76,
+              75
+            ],
+            "post_count": [
+              80,
+              78,
+              77,
+              76,
+              75
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 80,
+          "heldout_tracks": 21,
+          "initial_heldout_rmse_px": 0.32279029319502367,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 51.90411751783864,
+            "nfev": 9,
+            "observed_pixels": 1544,
+            "valid_observations": 386,
+            "tracks": 80,
+            "frames": 5,
+            "pixel_rmse_px": 0.2692605743018973,
+            "pixel_p95_px": 0.7511733473572261,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 3.320769869467352e-05,
+            "gyro_p95_rad": 7.806381651218869e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0003669708750963056,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11542019264598567,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0002473675969999189,
+            0.0003669708750963056,
+            -0.00023660147873839785
+          ],
+          "initial_endpoint_m": [
+            0.00020924006344047116,
+            -1.6572865227261097e-05,
+            0.00011305193116459434
+          ],
+          "endpoint_m": [
+            3.3281163976336085e-05,
+            6.419659452678342e-05,
+            9.04707134814224e-05
+          ],
+          "endpoint_change_mm": 0.1949234499018643,
+          "optimized_heldout_rmse_px": 0.32791294809220844,
+          "runtime_s": 0.5639413540484384
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.625822067260742,
+            11.792479991912842,
+            11.95914101600647,
+            12.125815153121948,
+            12.292487859725952
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              6.01981465919691e-14,
+              3.3466472276873143,
+              2.253536958297569,
+              1.1892535965323736,
+              2.527849532546928
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.14285714285714285,
+              0.07042253521126761,
+              0.0,
+              0.1076923076923077
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.10809707193064098,
+              0.05111179019673719,
+              0.039840838765518645,
+              0.07317658821801454
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              71,
+              70,
+              71,
+              69,
+              65
+            ],
+            "post_count": [
+              70,
+              59,
+              65,
+              69,
+              58
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 70,
+          "heldout_tracks": 18,
+          "initial_heldout_rmse_px": 0.7568192100231598,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 63.362215099353236,
+            "nfev": 12,
+            "observed_pixels": 1284,
+            "valid_observations": 321,
+            "tracks": 70,
+            "frames": 5,
+            "pixel_rmse_px": 0.3281144998936542,
+            "pixel_p95_px": 0.9320266732991234,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00012286874559081716,
+            "gyro_p95_rad": 0.0002588431598175288,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0007892433161083025,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11472736681263722,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0007892433161083025,
+            0.000399734559930559,
+            0.00019206785618829588
+          ],
+          "initial_endpoint_m": [
+            0.0003802794233965677,
+            0.00010952817267440117,
+            0.0003271586662949153
+          ],
+          "endpoint_m": [
+            5.358564236627783e-05,
+            0.0001608500105051127,
+            0.0002492675443808788
+          ],
+          "endpoint_change_mm": 0.3397495908389238,
+          "optimized_heldout_rmse_px": 0.7034308234848413,
+          "runtime_s": 0.5787103099282831
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.626118898391724,
+            19.792776346206665,
+            19.959434509277344,
+            20.12609314918518,
+            20.292749643325806
+          ],
+          "accepted": false,
+          "reason": "ValueError",
+          "detail": "training_only_PnP_failed",
+          "runtime_s": 0.39972345996648073
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.626516342163086,
+            27.79320454597473,
+            27.95989227294922,
+            28.126574516296387,
+            28.29325556755066
+          ],
+          "accepted": false,
+          "reason": "insufficient_persistent_stereo_tracks",
+          "runtime_s": 0.4160568789811805
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59414029121399,
+            35.76081919670105,
+            35.927496910095215,
+            36.09416651725769,
+            36.26083540916443
+          ],
+          "accepted": false,
+          "reason": "ValueError",
+          "detail": "training_only_PnP_failed",
+          "runtime_s": 0.3948840880766511
+        }
+      ]
+    },
+    {
+      "case": "fresh2",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.657876491546631,
+            3.824589967727661,
+            3.991267442703247,
+            4.157917261123657,
+            4.324563026428223
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.9378219762261286,
+              2.1898221800153963,
+              0.4790508762665448,
+              2.6736393723015723
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0547945205479452,
+              0.05555555555555555,
+              0.0,
+              0.11940298507462686
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.034865819266117155,
+              0.010222776310084903,
+              0.036289316082278804,
+              0.08740022210001414
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              76,
+              73,
+              72,
+              68,
+              67
+            ],
+            "post_count": [
+              74,
+              70,
+              67,
+              68,
+              60
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 74,
+          "heldout_tracks": 20,
+          "initial_heldout_rmse_px": 0.46281932486570443,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 47.8189777070853,
+            "nfev": 9,
+            "observed_pixels": 1356,
+            "valid_observations": 339,
+            "tracks": 74,
+            "frames": 5,
+            "pixel_rmse_px": 0.2751811223233799,
+            "pixel_p95_px": 0.7896768833578329,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.390111549733493e-05,
+            "gyro_p95_rad": 0.0001678944731518722,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00025624747924030285,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.1157732307953691,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.00025624747924030285,
+            -6.72613585862743e-05,
+            -0.00022800352985802262
+          ],
+          "initial_endpoint_m": [
+            0.0003685733265041109,
+            -0.0003806178857431855,
+            4.995967472966678e-05
+          ],
+          "endpoint_m": [
+            1.503928851851382e-05,
+            -3.20773243698396e-05,
+            0.00010164440381261299
+          ],
+          "endpoint_change_mm": 0.4991374060889709,
+          "optimized_heldout_rmse_px": 0.40179028692531804,
+          "runtime_s": 0.5578377940692008
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.625051021575928,
+            11.791710615158081,
+            11.95837116241455,
+            12.125041484832764,
+            12.291710376739502
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.0598114656775495,
+              1.7474816130920745,
+              0.6659450362840235,
+              1.257892724895228
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.05084745762711865,
+              0.0,
+              0.03508771929824561
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.045512533069261944,
+              0.02089148645534415,
+              0.06055432727947527,
+              0.04586246540977855
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              61,
+              59,
+              59,
+              58,
+              57
+            ],
+            "post_count": [
+              61,
+              59,
+              57,
+              58,
+              55
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 61,
+          "heldout_tracks": 16,
+          "initial_heldout_rmse_px": 0.5671964283914901,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 31.812891293265647,
+            "nfev": 9,
+            "observed_pixels": 1160,
+            "valid_observations": 290,
+            "tracks": 61,
+            "frames": 5,
+            "pixel_rmse_px": 0.24134094305236747,
+            "pixel_p95_px": 0.6903401415322717,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.0116594124325046e-05,
+            "gyro_p95_rad": 0.00014663799899595746,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0006116805167048845,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.1155823811422885,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0003279784708558862,
+            0.00017614408196973727,
+            -0.0006116805167048845
+          ],
+          "initial_endpoint_m": [
+            -0.0001511215281575129,
+            8.151254207267844e-05,
+            4.088371517098271e-05
+          ],
+          "endpoint_m": [
+            -7.046319830028256e-06,
+            2.6106504799543797e-05,
+            2.2551134050599432e-05
+          ],
+          "endpoint_change_mm": 0.1554463835264607,
+          "optimized_heldout_rmse_px": 0.5214718679000191,
+          "runtime_s": 0.5206193390768021
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.6256046295166,
+            19.792298793792725,
+            19.958988428115845,
+            20.125662565231323,
+            20.292335271835327
+          ],
+          "accepted": false,
+          "reason": "ValueError",
+          "detail": "training_only_PnP_failed",
+          "runtime_s": 0.4067392540164292
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.626028776168823,
+            27.79270839691162,
+            27.959386348724365,
+            28.126062631607056,
+            28.29273748397827
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              0.0,
+              1.4111538340508614,
+              2.0831787767051604,
+              3.267408012781479,
+              4.128677534847421
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.019230769230769232,
+              0.07692307692307693,
+              0.14563106796116504,
+              0.3300970873786408
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.07083815511224952,
+              0.045867125136039424,
+              0.2016299963595041,
+              0.1620031682706335
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              109,
+              104,
+              104,
+              103,
+              103
+            ],
+            "post_count": [
+              105,
+              102,
+              95,
+              82,
+              67
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 105,
+          "heldout_tracks": 28,
+          "initial_heldout_rmse_px": 6.48532961811989,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 127.2040449919883,
+            "nfev": 9,
+            "observed_pixels": 1804,
+            "valid_observations": 451,
+            "tracks": 105,
+            "frames": 5,
+            "pixel_rmse_px": 0.39532354772215306,
+            "pixel_p95_px": 1.018041563379542,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0001336610437358882,
+            "gyro_p95_rad": 0.0003133098511604452,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0019076310078677242,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.23915215141086293,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.0019076310078677242,
+            -0.0007805920456384949,
+            -0.0002553600657907102
+          ],
+          "initial_endpoint_m": [
+            -0.005288747816601627,
+            0.0009700198273199546,
+            0.07839109071361965
+          ],
+          "endpoint_m": [
+            -0.004295888194796994,
+            0.0007796664363445988,
+            0.07787552946979472
+          ],
+          "endpoint_change_mm": 1.1348163015220416,
+          "optimized_heldout_rmse_px": 6.319719052759966,
+          "runtime_s": 0.5941332939546555
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59324836730957,
+            35.75992131233215,
+            35.92659330368042,
+            36.0932776927948,
+            36.259963035583496
+          ],
+          "accepted": false,
+          "reason": "ValueError",
+          "detail": "training_only_PnP_failed",
+          "runtime_s": 0.38523628492839634
+        }
+      ]
+    },
+    {
+      "case": "fresh3",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6573293209075928,
+            3.823960304260254,
+            3.9906363487243652,
+            4.1573851108551025,
+            4.324138402938843
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.1635661733602556,
+              1.7463201196935014,
+              0.3036054299273558,
+              1.6950657134258666
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.03389830508474576,
+              0.017241379310344827,
+              0.01694915254237288,
+              0.05263157894736842
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.02504225437299727,
+              0.043195802598072576,
+              0.06785406247817685,
+              0.09123888509692799
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              61,
+              59,
+              58,
+              59,
+              57
+            ],
+            "post_count": [
+              60,
+              56,
+              57,
+              58,
+              57
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 60,
+          "heldout_tracks": 16,
+          "initial_heldout_rmse_px": 0.4026921575315776,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 27.120476220416936,
+            "nfev": 9,
+            "observed_pixels": 1152,
+            "valid_observations": 288,
+            "tracks": 60,
+            "frames": 5,
+            "pixel_rmse_px": 0.22432852262860745,
+            "pixel_p95_px": 0.621861995632385,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 4.179119033217306e-05,
+            "gyro_p95_rad": 9.391159328760953e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0003943583651337127,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11493311991101708,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.00020631278263605766,
+            5.688121562264969e-05,
+            -0.0003943583651337127
+          ],
+          "initial_endpoint_m": [
+            -0.00030801207679033134,
+            0.00045176153904483157,
+            0.00031682197148067884
+          ],
+          "endpoint_m": [
+            -1.9556391487753636e-05,
+            2.1861314352576754e-06,
+            7.846537053191066e-05
+          ],
+          "endpoint_change_mm": 0.5849261480961032,
+          "optimized_heldout_rmse_px": 0.3305005351568693,
+          "runtime_s": 0.5601951130665839
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.624608993530273,
+            11.791282653808594,
+            11.957958936691284,
+            12.124650955200195,
+            12.291342973709106
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.6440143851687445,
+              0.935699694539024,
+              0.2733550049316784,
+              0.9018418868443745
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.01639344262295082,
+              0.016666666666666666,
+              0.01694915254237288
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.022965670411568415,
+              0.022901720700685524,
+              0.01216225321173729,
+              0.019551713334998826
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              63,
+              62,
+              61,
+              60,
+              59
+            ],
+            "post_count": [
+              63,
+              62,
+              60,
+              59,
+              58
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 63,
+          "heldout_tracks": 16,
+          "initial_heldout_rmse_px": 0.3193121594351797,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 22.915786246941078,
+            "nfev": 8,
+            "observed_pixels": 1208,
+            "valid_observations": 302,
+            "tracks": 63,
+            "frames": 5,
+            "pixel_rmse_px": 0.19926824707905852,
+            "pixel_p95_px": 0.5667362873329458,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 4.467474336121257e-05,
+            "gyro_p95_rad": 8.871811906584579e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0004886309163705281,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11451043765746949,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.00042107336756168725,
+            0.00014418114840856946,
+            -0.0004886309163705281
+          ],
+          "initial_endpoint_m": [
+            4.914223628805698e-05,
+            -4.9410491559835685e-05,
+            -4.517685992656947e-05
+          ],
+          "endpoint_m": [
+            -2.1487190240345415e-05,
+            -1.0813280431913656e-05,
+            -5.67480778907226e-05
+          ],
+          "endpoint_change_mm": 0.08131515039498063,
+          "optimized_heldout_rmse_px": 0.3244842263093684,
+          "runtime_s": 0.5465136780403554
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.625256061553955,
+            19.79194664955139,
+            19.95863962173462,
+            20.125346422195435,
+            20.292053937911987
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.9293645460769783,
+              0.9680714373738651,
+              0.2991165986154124,
+              40.19968965126095
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.07407407407407407
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.04338929014449878,
+              0.04679159934858157,
+              0.06687023423102469,
+              0.1328326801493479
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              63,
+              61,
+              58,
+              57,
+              54
+            ],
+            "post_count": [
+              63,
+              61,
+              58,
+              57,
+              50
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 63,
+          "heldout_tracks": 16,
+          "initial_heldout_rmse_px": 5.5344822484530525,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 41.934051560465036,
+            "nfev": 9,
+            "observed_pixels": 1156,
+            "valid_observations": 289,
+            "tracks": 63,
+            "frames": 5,
+            "pixel_rmse_px": 0.28367175498623287,
+            "pixel_p95_px": 0.7610148911400758,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0001675218077820165,
+            "gyro_p95_rad": 0.0003856911488768583,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0015818891576105379,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11471152486204261,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -7.081731385394992e-06,
+            0.0015818891576105379,
+            6.988094036825436e-05
+          ],
+          "initial_endpoint_m": [
+            -0.0026793322523888056,
+            0.0012665842683277323,
+            -0.003951523741518514
+          ],
+          "endpoint_m": [
+            -0.0027687288049253827,
+            0.0010239963162578755,
+            -0.004141332918949105
+          ],
+          "endpoint_change_mm": 0.3207307000144354,
+          "optimized_heldout_rmse_px": 5.557098566844802,
+          "runtime_s": 0.5586360730230808
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.62572145462036,
+            27.792392253875732,
+            27.959063053131104,
+            28.125739574432373,
+            28.292415142059326
+          ],
+          "accepted": false,
+          "reason": "insufficient_persistent_stereo_tracks",
+          "runtime_s": 0.38272213900927454
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59292674064636,
+            35.759604930877686,
+            35.92628264427185,
+            36.09297704696655,
+            36.25967264175415
+          ],
+          "accepted": false,
+          "reason": "insufficient_persistent_stereo_tracks",
+          "runtime_s": 0.3994718969333917
+        }
+      ]
+    },
+    {
+      "case": "fresh4",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            110,
+            115,
+            120,
+            125,
+            130
+          ],
+          "elapsed_s": [
+            3.6579811573028564,
+            3.824653387069702,
+            3.9913570880889893,
+            4.158084392547607,
+            4.324814558029175
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.32421636166367623,
+              1.1270710960014971,
+              0.2876264369286594,
+              0.49783881484161996
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.008246517486559975,
+              0.034311189692712706,
+              0.043234334110571516,
+              0.009469301349114116
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              85,
+              83,
+              84,
+              84,
+              83
+            ],
+            "post_count": [
+              85,
+              83,
+              84,
+              84,
+              83
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 85,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 0.2507603850906413,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 38.185818196652974,
+            "nfev": 7,
+            "observed_pixels": 1676,
+            "valid_observations": 419,
+            "tracks": 85,
+            "frames": 5,
+            "pixel_rmse_px": 0.22456903384939514,
+            "pixel_p95_px": 0.6372887560242291,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 2.3569301629419298e-05,
+            "gyro_p95_rad": 5.516357293863774e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00040642461760883214,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11482908970380847,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            7.865331410795848e-05,
+            0.00025609685129899954,
+            -0.00040642461760883214
+          ],
+          "initial_endpoint_m": [
+            8.181437646156328e-05,
+            -8.405531882188619e-06,
+            2.791431295255734e-05
+          ],
+          "endpoint_m": [
+            -3.6510381213852564e-06,
+            -3.115037872518729e-06,
+            2.4911401680010206e-05
+          ],
+          "endpoint_change_mm": 0.08568164268273816,
+          "optimized_heldout_rmse_px": 0.2503018906944152,
+          "runtime_s": 0.5299742929637432
+        },
+        {
+          "window": 2,
+          "indices": [
+            349,
+            354,
+            359,
+            364,
+            369
+          ],
+          "elapsed_s": [
+            11.625191926956177,
+            11.791884899139404,
+            11.958573341369629,
+            12.125248193740845,
+            12.291921615600586
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.25591072343477544,
+              3.327133324777887,
+              0.22539127485075208,
+              0.2648180214535666
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.07058823529411765,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.0024928366069986974,
+              0.13901202155528677,
+              0.1318078410398598,
+              0.007104379850935708
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              88,
+              88,
+              85,
+              87,
+              87
+            ],
+            "post_count": [
+              88,
+              88,
+              79,
+              87,
+              87
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 88,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 0.4611196345793081,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 27.354796028311426,
+            "nfev": 7,
+            "observed_pixels": 1716,
+            "valid_observations": 429,
+            "tracks": 88,
+            "frames": 5,
+            "pixel_rmse_px": 0.18328915334307966,
+            "pixel_p95_px": 0.49352637565359303,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 3.699027185223087e-05,
+            "gyro_p95_rad": 9.981493032799359e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0004928888671457362,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.1147859390831819,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            7.139762314938198e-05,
+            0.00036098284302139334,
+            -0.0004928888671457362
+          ],
+          "initial_endpoint_m": [
+            3.992480636148251e-06,
+            1.6283591726406816e-05,
+            6.691292293076244e-06
+          ],
+          "endpoint_m": [
+            4.638137458302729e-06,
+            -2.834453962813536e-06,
+            -2.2063841857613326e-05
+          ],
+          "endpoint_change_mm": 0.03453656444597906,
+          "optimized_heldout_rmse_px": 0.3479794411576463,
+          "runtime_s": 0.5575824700063094
+        },
+        {
+          "window": 3,
+          "indices": [
+            589,
+            594,
+            599,
+            604,
+            609
+          ],
+          "elapsed_s": [
+            19.625680208206177,
+            19.792353630065918,
+            19.959028005599976,
+            20.125710010528564,
+            20.292391777038574
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              2.842170943040401e-14,
+              0.8265484477478635,
+              2.4499708969186256,
+              5.180156329595746,
+              3.4984264492763204
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.011764705882352941,
+              0.05970149253731343,
+              0.13333333333333333,
+              0.2
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.16433520906472185,
+              0.27665052290167963,
+              0.44338547002026624,
+              0.4223228011703461
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              86,
+              85,
+              67,
+              30,
+              25
+            ],
+            "post_count": [
+              84,
+              83,
+              62,
+              26,
+              21
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 84,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 0.7826769597143253,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 53.65432157842916,
+            "nfev": 9,
+            "observed_pixels": 1104,
+            "valid_observations": 276,
+            "tracks": 84,
+            "frames": 5,
+            "pixel_rmse_px": 0.30626375173025444,
+            "pixel_p95_px": 0.8175509761432421,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0003087483102595046,
+            "gyro_p95_rad": 0.0007516344085045766,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.006592449697761429,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.24114387498579798,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            0.006592449697761429,
+            -0.0014615055892518239,
+            -0.004110967609831901
+          ],
+          "initial_endpoint_m": [
+            -0.006870585103296169,
+            0.029787307733002436,
+            0.06491514365242237
+          ],
+          "endpoint_m": [
+            -0.0014612683584140872,
+            0.03426853713623175,
+            0.06360335220086133
+          ],
+          "endpoint_change_mm": 7.145832451381523,
+          "optimized_heldout_rmse_px": 0.7685286253749899,
+          "runtime_s": 0.5125473219668493
+        },
+        {
+          "window": 4,
+          "indices": [
+            829,
+            834,
+            839,
+            844,
+            849
+          ],
+          "elapsed_s": [
+            27.626276969909668,
+            27.792986392974854,
+            27.959693431854248,
+            28.12639284133911,
+            28.293091773986816
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              2.842170943040401e-14,
+              1.0399879782711847,
+              2.7442047177556725,
+              1.8927331506722738,
+              3.5232219301785945
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.013513513513513514,
+              0.11940298507462686,
+              0.04838709677419355,
+              0.15254237288135594
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.08882832594462083,
+              0.08307395107665211,
+              0.06863675934689784,
+              0.11757252376299177
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "pre_count": [
+              76,
+              74,
+              67,
+              62,
+              59
+            ],
+            "post_count": [
+              74,
+              73,
+              55,
+              58,
+              50
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 74,
+          "heldout_tracks": 19,
+          "initial_heldout_rmse_px": 0.7461629291657768,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 62.22334466586497,
+            "nfev": 8,
+            "observed_pixels": 1240,
+            "valid_observations": 310,
+            "tracks": 74,
+            "frames": 5,
+            "pixel_rmse_px": 0.32599514227660437,
+            "pixel_p95_px": 0.8340267490001535,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.0001600941772630638,
+            "gyro_p95_rad": 0.00032255134123782247,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.002976318984356116,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.16261905599303858,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false
+          },
+          "gyro_bias_rad_s": [
+            -0.002976318984356116,
+            0.001439338049075135,
+            -0.00045210874670613557
+          ],
+          "initial_endpoint_m": [
+            0.019664137706843086,
+            0.010430275105282414,
+            0.022653534670282617
+          ],
+          "endpoint_m": [
+            0.019528409159865256,
+            0.010268023861502404,
+            0.022639959479378798
+          ],
+          "endpoint_change_mm": 0.21197167353433882,
+          "optimized_heldout_rmse_px": 0.7303352021110334,
+          "runtime_s": 0.5144981159828603
+        },
+        {
+          "window": 5,
+          "indices": [
+            1068,
+            1073,
+            1078,
+            1083,
+            1088
+          ],
+          "elapsed_s": [
+            35.59366250038147,
+            35.760345697402954,
+            35.92702794075012,
+            36.09371519088745,
+            36.2604022026062
+          ],
+          "accepted": false,
+          "reason": "insufficient_persistent_stereo_tracks",
+          "runtime_s": 0.39421490591485053
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "/home/robot/ego_vio_humble/.planning/metric_window_bundle_20260928/run_observation_controls.py": "3171b7f06e1118aad9e8b1a4572707863ef5d5c1aa008adbf8daf2e88ab5ef49",
+    "/home/robot/ego_vio_humble/scripts/stereo_window_bundle.py": "6f756f6c9125a078c9339806c0aa637f2706d630bb3590d5d2c4160444d1f9df",
+    "/home/robot/ego_vio_humble/scripts/prepare_stereo_window_observations.py": "874eb1dc0790c324b65c91b6926d1c8dd6def4d9abc9f724a0d93dbcafb11813"
+  },
+  "external_reference_used": false,
+  "production_modified": false,
+  "interpretation": "observation diagnostics only, not trajectory accuracy or calibrated covariance"
+}
