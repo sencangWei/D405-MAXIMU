@@ -31,7 +31,12 @@ def camera_reference(body_positions, body_rotations, body_t_camera):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
-    out = parser.parse_args().output
+    parser.add_argument('--probe-directory', type=Path,
+                        default=ROOT / 'reports/stereo_factor_attribution_20260927/raw_gyro_pnp_v1')
+    parser.add_argument('--measurement-source', choices=('cached', 'free', 'mast3r_fixed', 'raw_gyro_fixed'),
+                        default='cached')
+    args = parser.parse_args()
+    out = args.output
     if out.exists():
         raise ValueError('Refuse overwrite')
     out.mkdir()
@@ -47,7 +52,7 @@ def main():
         graph = json.loads(graph_path.read_text())
         score = json.loads(score_path.read_text())
         reference_path = Path(score['ground_truth'])
-        probe_path = ROOT / f'reports/stereo_factor_attribution_20260927/raw_gyro_pnp_v1/{name}.json'
+        probe_path = args.probe_directory / f'{name}.json'
         times, _, _, _ = fusion.load_trajectory(Path(graph['inputs']['trajectory']))
         gt_times, gt_positions, gt_quats = evaluation.load_trajectory(reference_path)
         inside, accepted_time, interpolated, quaternions = evaluation.interpolate_ground_truth(times, gt_times, gt_positions, gt_quats, .05)
@@ -64,10 +69,13 @@ def main():
         rows = []
         for sample in sampled:
             first, second = sample['first'], sample['second']
-            measurement = next(edge for edge in reports[sample['family']]['observations']
-                               if edge['first_index']==first and edge['second_index']==second and edge.get('accepted'))
+            if args.measurement_source == 'cached':
+                measurement = next(edge for edge in reports[sample['family']]['observations']
+                                   if edge['first_index']==first and edge['second_index']==second and edge.get('accepted'))
+            else:
+                measurement = sample[args.measurement_source]['measurement']
             if not measurement.get('accepted'):
-                rows.append(dict(first=first, second=second, status='cached_pnp_rejected'))
+                rows.append(dict(first=first, second=second, status='pnp_rejected'))
                 continue
             i, j = mapping[first], mapping[second]
             if min(i, j) < 0:
@@ -91,7 +99,7 @@ def main():
                    displacement_max_mm=max(errors), rotation_median_deg=float(np.median([r['rotation_error_deg'] for r in valid_rows])))
         case = dict(summary=row, external_reference_used_in_evaluation=True, external_reference_used_in_optimization=False,
                     trajectory_modified=False, measurements_modified=False,
-                    measurement_source='original cached production stereo report, not newly recomputed freePnP subset',
+                    measurement_source=args.measurement_source,
                     reference_policy='existing official body reference; fixed body-to-leftIR lever; no new time/SE3/scale fit',
                     warning='Local stereo motion evaluation, not full-trajectory ATE; reference calibration uncertainty remains.',
                     source_sha256=hashes, measurements=rows)

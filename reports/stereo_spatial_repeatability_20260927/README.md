@@ -6,6 +6,16 @@ No new trajectory, production weights or calibration changes in this experiment.
 
 ## Results
 
+**Superseding correction:** the old rawgyro/spatial/target-depth diagnostic used
+maximum depth1.5m, while the formal workflow uses0.6m. These results are NOT a
+production-equivalent replay. Withdraw their production-level conclusions about
+which observation mechanisms can be ruled out. Original data remain for audit.
+Exact0.6m reproduction matches cachedfresh2edge590→610 (162points/78inliers,
+acceptedpose), independent of OpenCVthreads1/2/4/8/24. The earlier163-point
+rejectedreplay is not evidence of runtimeinstability. Correctedten-case replay
+is being written separately toproduction_depth_raw_ten_v2. Baseline trajectory
+precision, rejectedactualattitudecandidate, and cachedlocalGTscoring unaffected.
+
 Same166uniformly time-stratified measurement pairs across ten cached cases.
 No Lighthouse/Tracker input, no per-case tuning, no frame deletion or retraining.
 
@@ -72,3 +82,38 @@ alsohasanedge12.729mm: single-edgeerror is not sufficient toexplain finalATE.
 `local_stereo_scoring_ten_v1` is superseded: it onlyscored newlyacceptedfreePnP
 subset and omits3fresh2originalacceptededges. Its4.044mmmax must NOT be cited as
 theproductionstereo measurementmax. Use originalcachedv2all166 above instead.
+
+### Scope correction
+
+Spatial and target-depth sidecars likewise only cover newlyacceptedfreePnP;
+fresh2 has13of16selectededges, missing3originalproductionacceptededges. Their
+aggregate lackoffailure separation does NOT rule out depth/featuregeometry
+problems on omittedbadcachededges. They justify no threshold deployment, not
+declaring those observation mechanisms irrelevant.
+
+Ten-seed RANSACdiagnostic coversall166firstforwardinputs, including newrejected
+edges: eachfixedinput givesidenticalR/t for alltenseeds (diameter0mm/0deg). Thus
+globalRNGseedalone is not an explanation for these fixed-inputPnPresults.
+The badfresh2pair currentinputhas163points vs originalcached162; the subsequent
+depth-contract correction above explains thisdifference. No solverrandomness
+rootcauseclaim.
+
+## Corrected formal-depth diagnostics
+
+`production_depth_raw_ten_v2/cached_motion_audit.json`:166/166sampled freePnP
+motions matchoriginalcachedproduction, with0.6mmaximumdepth. Allsourcehashes
+unchanged. `production_depth_spatial_ten_v2` and`production_depth_target_ten_v2`
+coverall166acceptedfreeedges and auditedcontrolfields equalcorrectedrawreplay.
+These supersede the old1.5m diagnostics forproductioninterpretation.
+
+Fresh2edge590→610: same78inliers LMrefit shifts14.422mm and lowersmedianpixel
+residual1.995→0.857px, while delete-tilevariationmax1.022mm. ExistingfreePnP
+refinement is implementedbutnotenabledbyproductioncallers. A uniform allten
+free-refinement observationprobe isrunning; this is NOT yet an accuracyrepair.
+
+Hard-gyrofixedlocalmotion evaluation: medianerrorworse9/10, fresh1max18.516mm,
+fresh4max16.054mm. Fresh2improvesbutrejects1/16edge. Do not deployhardgyrofix.
+GTusedonlyafterestimationforevaluation; noGTselectionoroptimization.
+
+EarlierSIFTreversecandidate andobservabilityprobe likewiseused1.5m. Retainthose
+historicaloutputs,butwithdrawgeneralizationtoformal0.6m observationrepairs.

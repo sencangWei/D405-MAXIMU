@@ -1,0 +1,455 @@
+{
+  "summary": {
+    "case": "dev2",
+    "sampled_edges": 17,
+    "scored_edges": 17,
+    "displacement_median_mm": 1.6566779065176236,
+    "displacement_p95_mm": 5.4440730346282855,
+    "displacement_max_mm": 6.224627041216149,
+    "rotation_median_deg": 0.16112706478437372
+  },
+  "external_reference_used_in_evaluation": true,
+  "external_reference_used_in_optimization": false,
+  "trajectory_modified": false,
+  "measurements_modified": false,
+  "measurement_source": "raw_gyro_fixed",
+  "reference_policy": "existing official body reference; fixed body-to-leftIR lever; no new time/SE3/scale fit",
+  "warning": "Local stereo motion evaluation, not full-trajectory ATE; reference calibration uncertainty remains.",
+  "source_sha256": {
+    "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev2/official_score/steamvr_body_reference.csv": "519e57f5b38949bc70e0ffadc92cd0b6ee7a43bae647db8fb1a8025d0521bd7c",
+    "reports/stereo_spatial_repeatability_20260927/production_depth_raw_ten_v2/dev2.json": "695d086a13dde8a2560db2281fd7fe43ff257a17ff4ffa836a77ef31e06220da",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/graph_fusion_report.json": "ab846ccae995f7d966df2dad0a1c114371dbdb8f63cd321c42fbf762394ecd17",
+    "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev2/official_score/precision.json": "b4107f2e270667ded8f936480f5e45ac65cd8249ca176537487263ef5bc36538",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_bidirectional_report.json": "4683ac674afe64e90105363d362640db2430e8355de62cdc961202fe70e9acfb",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_long_hops_report.json": "fe01e154ba47ad18801f1578305b920e2ae59f9d45d83beb620a8479613935a8",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_dense10hz_report.json": "91f761f487eeee1e51b904297269a2f0c65140bfdd469680e3196c4a0ff435d4",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_multisecond_report.json": "8c8605c8f8b8a66f15d0af7f64a2120bdf1b8aff858768eecfefb5a34197a85c"
+  },
+  "measurements": [
+    {
+      "first": 380,
+      "second": 405,
+      "family": "stereo_scale_bidirectional_report.json",
+      "status": "scored",
+      "duration_s": 0.8333477973937988,
+      "reference_motion_mm": 6.120333830658438,
+      "measured_delta_m": [
+        -0.000950781217234484,
+        0.0005856883598581541,
+        -0.005899546000966908
+      ],
+      "reference_delta_m": [
+        -0.0008868020869214052,
+        0.0007880539092564708,
+        -0.006004251767992379
+      ],
+      "local_displacement_error_mm": 0.2366610283660846,
+      "local_error_vector_mm": [
+        -0.06397913031307882,
+        -0.2023655493983167,
+        0.10470576702547099
+      ],
+      "rotation_error_deg": 0.10543713953278469
+    },
+    {
+      "first": 595,
+      "second": 605,
+      "family": "stereo_scale_bidirectional_report.json",
+      "status": "scored",
+      "duration_s": 0.3333420753479004,
+      "reference_motion_mm": 42.45496106090437,
+      "measured_delta_m": [
+        0.01525477398859362,
+        -0.020716201776443312,
+        0.033992031291089284
+      ],
+      "reference_delta_m": [
+        0.014858945661820736,
+        -0.01930739289662615,
+        0.03476866451328372
+      ],
+      "local_displacement_error_mm": 1.6566779065176236,
+      "local_error_vector_mm": [
+        0.39582832677288393,
+        -1.408808879817161,
+        -0.7766332221944352
+      ],
+      "rotation_error_deg": 0.20725844558301165
+    },
+    {
+      "first": 835,
+      "second": 845,
+      "family": "stereo_scale_bidirectional_report.json",
+      "status": "scored",
+      "duration_s": 0.33333683013916016,
+      "reference_motion_mm": 37.03375881037206,
+      "measured_delta_m": [
+        0.025707382243928243,
+        0.0007125830268786056,
+        0.02575770066779085
+      ],
+      "reference_delta_m": [
+        0.026691444974827096,
+        0.0010588570485069275,
+        0.025650436224973157
+      ],
+      "local_displacement_error_mm": 1.04870911939,
+      "local_error_vector_mm": [
+        -0.9840627308988527,
+        -0.3462740216283219,
+        0.10726444281769151
+      ],
+      "rotation_error_deg": 0.15960549392256124
+    },
+    {
+      "first": 1075,
+      "second": 1085,
+      "family": "stereo_scale_bidirectional_report.json",
+      "status": "scored",
+      "duration_s": 0.3333251476287842,
+      "reference_motion_mm": 31.094668495355982,
+      "measured_delta_m": [
+        0.027359950928687676,
+        0.00059041378447701,
+        -0.01419340303860806
+      ],
+      "reference_delta_m": [
+        0.02771792989387456,
+        0.00032006832633566743,
+        -0.014088730514166823
+      ],
+      "local_displacement_error_mm": 0.46064296762984,
+      "local_error_vector_mm": [
+        -0.35797896518688366,
+        0.27034545814134253,
+        -0.10467252444123706
+      ],
+      "rotation_error_deg": 0.16112706478437372
+    },
+    {
+      "first": 325,
+      "second": 405,
+      "family": "stereo_scale_long_hops_report.json",
+      "status": "scored",
+      "duration_s": 2.6667518615722656,
+      "reference_motion_mm": 6.099593080738764,
+      "measured_delta_m": [
+        -0.0009345998740737381,
+        0.0005506972998193683,
+        -0.006079308519945196
+      ],
+      "reference_delta_m": [
+        -0.0004851636308936744,
+        0.0007341059044017012,
+        -0.006035788309987091
+      ],
+      "local_displacement_error_mm": 0.48736604476865786,
+      "local_error_vector_mm": [
+        -0.4494362431800637,
+        -0.1834086045823329,
+        -0.04352020995810474
+      ],
+      "rotation_error_deg": 0.09432727354150346
+    },
+    {
+      "first": 590,
+      "second": 630,
+      "family": "stereo_scale_long_hops_report.json",
+      "status": "scored",
+      "duration_s": 1.3333802223205566,
+      "reference_motion_mm": 115.76715546281497,
+      "measured_delta_m": [
+        0.032933541031952306,
+        -0.045645964783511246,
+        0.10144855947000786
+      ],
+      "reference_delta_m": [
+        0.03185037447793586,
+        -0.04196371697303237,
+        0.10308556827885296
+      ],
+      "local_displacement_error_mm": 4.172768452928199,
+      "local_error_vector_mm": [
+        1.0831665540164472,
+        -3.682247810478878,
+        -1.6370088088450974
+      ],
+      "rotation_error_deg": 0.4798483443674778
+    },
+    {
+      "first": 800,
+      "second": 880,
+      "family": "stereo_scale_long_hops_report.json",
+      "status": "scored",
+      "duration_s": 2.6667044162750244,
+      "reference_motion_mm": 90.21610034593988,
+      "measured_delta_m": [
+        0.0041846635578133675,
+        -0.0325904646139485,
+        0.08163786490915695
+      ],
+      "reference_delta_m": [
+        0.005038908916890052,
+        -0.031374706659789586,
+        0.08443448312489474
+      ],
+      "local_displacement_error_mm": 3.166840062459919,
+      "local_error_vector_mm": [
+        -0.8542453590766842,
+        -1.2157579541589163,
+        -2.7966182157377895
+      ],
+      "rotation_error_deg": 0.2008230657836386
+    },
+    {
+      "first": 1050,
+      "second": 1090,
+      "family": "stereo_scale_long_hops_report.json",
+      "status": "scored",
+      "duration_s": 1.3332808017730713,
+      "reference_motion_mm": 133.19854185008197,
+      "measured_delta_m": [
+        0.08470911070234871,
+        0.02042020463640074,
+        -0.10058668618382832
+      ],
+      "reference_delta_m": [
+        0.08448935180385536,
+        0.01839950666908749,
+        -0.10131564112755051
+      ],
+      "local_displacement_error_mm": 2.1593724918475563,
+      "local_error_vector_mm": [
+        0.21975889849334962,
+        2.020697967313249,
+        0.7289549437221876
+      ],
+      "rotation_error_deg": 0.5573158346261806
+    },
+    {
+      "first": 393,
+      "second": 402,
+      "family": "stereo_scale_dense10hz_report.json",
+      "status": "scored",
+      "duration_s": 0.30000972747802734,
+      "reference_motion_mm": 3.1062175820700197,
+      "measured_delta_m": [
+        0.0012925800914792122,
+        0.00010108746662415398,
+        -0.003113880922248656
+      ],
+      "reference_delta_m": [
+        5.0771997809537624e-05,
+        0.00041000515744445533,
+        -0.003078620736997056
+      ],
+      "local_displacement_error_mm": 1.2801409148485317,
+      "local_error_vector_mm": [
+        1.2418080936696745,
+        -0.3089176908203014,
+        -0.03526018525160015
+      ],
+      "rotation_error_deg": 0.08815424359336603
+    },
+    {
+      "first": 597,
+      "second": 603,
+      "family": "stereo_scale_dense10hz_report.json",
+      "status": "scored",
+      "duration_s": 0.20000743865966797,
+      "reference_motion_mm": 26.35383687028469,
+      "measured_delta_m": [
+        0.009138587416734073,
+        -0.013122403241920462,
+        0.020654657646377535
+      ],
+      "reference_delta_m": [
+        0.010129162795536568,
+        -0.011959891299671989,
+        0.021186924716605875
+      ],
+      "local_displacement_error_mm": 1.6173997128135906,
+      "local_error_vector_mm": [
+        -0.990575378802495,
+        -1.1625119422484735,
+        -0.53226707022834
+      ],
+      "rotation_error_deg": 0.1147536303454345
+    },
+    {
+      "first": 837,
+      "second": 843,
+      "family": "stereo_scale_dense10hz_report.json",
+      "status": "scored",
+      "duration_s": 0.20000243186950684,
+      "reference_motion_mm": 21.637791998699566,
+      "measured_delta_m": [
+        0.014753933296451908,
+        -0.0011077215227379411,
+        0.013549944333147945
+      ],
+      "reference_delta_m": [
+        0.01567355182963266,
+        0.0006621850617050517,
+        0.014902863032547148
+      ],
+      "local_displacement_error_mm": 2.4101154684803396,
+      "local_error_vector_mm": [
+        -0.91961853318075,
+        -1.7699065844429929,
+        -1.3529186993992033
+      ],
+      "rotation_error_deg": 0.1236700985341851
+    },
+    {
+      "first": 1074,
+      "second": 1083,
+      "family": "stereo_scale_dense10hz_report.json",
+      "status": "scored",
+      "duration_s": 0.2999911308288574,
+      "reference_motion_mm": 29.149528721203353,
+      "measured_delta_m": [
+        0.025287869737800835,
+        -5.500200191265619e-05,
+        -0.013719778537463973
+      ],
+      "reference_delta_m": [
+        0.025417140896404695,
+        -9.851713614842349e-05,
+        -0.014270748673228612
+      ],
+      "local_displacement_error_mm": 0.5676025809127768,
+      "local_error_vector_mm": [
+        -0.12927115860385946,
+        0.0435151342357673,
+        0.5509701357646387
+      ],
+      "rotation_error_deg": 0.1328946070499541
+    },
+    {
+      "first": 165,
+      "second": 405,
+      "family": "stereo_scale_multisecond_report.json",
+      "status": "scored",
+      "duration_s": 8.000166416168213,
+      "reference_motion_mm": 6.035372733676695,
+      "measured_delta_m": [
+        -0.0011872020282705914,
+        0.0001469812223146698,
+        -0.006202656525549809
+      ],
+      "reference_delta_m": [
+        -0.0003808048389680567,
+        0.0007236040979835383,
+        -0.005979724811260804
+      ],
+      "local_displacement_error_mm": 1.0161047765341418,
+      "local_error_vector_mm": [
+        -0.8063971893025347,
+        -0.5766228756688685,
+        -0.22293171428900554
+      ],
+      "rotation_error_deg": 0.22417835904238642
+    },
+    {
+      "first": 300,
+      "second": 420,
+      "family": "stereo_scale_multisecond_report.json",
+      "status": "scored",
+      "duration_s": 4.000105142593384,
+      "reference_motion_mm": 26.251255766100588,
+      "measured_delta_m": [
+        0.004655415826094422,
+        -0.003430602298699608,
+        -0.026259487593576023
+      ],
+      "reference_delta_m": [
+        0.0035714649481271635,
+        -0.0015338295500275014,
+        -0.025961903519060206
+      ],
+      "local_displacement_error_mm": 2.2048248563903132,
+      "local_error_vector_mm": [
+        1.0839508779672582,
+        -1.8967727486721067,
+        -0.29758407451581714
+      ],
+      "rotation_error_deg": 0.14385321569819168
+    },
+    {
+      "first": 480,
+      "second": 720,
+      "family": "stereo_scale_multisecond_report.json",
+      "status": "scored",
+      "duration_s": 8.00028395652771,
+      "reference_motion_mm": 111.01079285585155,
+      "measured_delta_m": [
+        -0.0029364046803792843,
+        0.06612797309560031,
+        -0.09030654979254862
+      ],
+      "reference_delta_m": [
+        0.0018997830321750135,
+        0.06411002329549062,
+        -0.09060734996658434
+      ],
+      "local_displacement_error_mm": 5.248934532981321,
+      "local_error_vector_mm": [
+        -4.836187712554297,
+        2.017949800109692,
+        0.30080017403572024
+      ],
+      "rotation_error_deg": 0.5447138267639994
+    },
+    {
+      "first": 835,
+      "second": 1075,
+      "family": "stereo_scale_multisecond_report.json",
+      "status": "scored",
+      "duration_s": 8.00020456314087,
+      "reference_motion_mm": 82.53955355978948,
+      "measured_delta_m": [
+        -0.049838268323537153,
+        -0.011188122796819444,
+        -0.06888087437454629
+      ],
+      "reference_delta_m": [
+        -0.043862103614239825,
+        -0.012921429958123367,
+        -0.06871630386029474
+      ],
+      "local_displacement_error_mm": 6.224627041216149,
+      "local_error_vector_mm": [
+        -5.976164709297328,
+        1.7333071613039233,
+        -0.1645705142515469
+      ],
+      "rotation_error_deg": 0.290099217511899
+    },
+    {
+      "first": 965,
+      "second": 1085,
+      "family": "stereo_scale_multisecond_report.json",
+      "status": "scored",
+      "duration_s": 4.000097036361694,
+      "reference_motion_mm": 133.03166131613978,
+      "measured_delta_m": [
+        0.0673344030934664,
+        0.01583514332788269,
+        -0.11185568693968011
+      ],
+      "reference_delta_m": [
+        0.06852777376148719,
+        0.01497172726495924,
+        -0.11303634158327236
+      ],
+      "local_displacement_error_mm": 1.8877410406203936,
+      "local_error_vector_mm": [
+        -1.1933706680207905,
+        0.86341606292345,
+        1.180654643592252
+      ],
+      "rotation_error_deg": 0.5871424475286375
+    }
+  ]
+}

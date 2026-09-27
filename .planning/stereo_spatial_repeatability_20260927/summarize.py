@@ -1,4 +1,5 @@
 """Audit diagnostic-only replay identity and write bounded all-case summaries."""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -10,12 +11,12 @@ OUT = ROOT / 'reports/stereo_spatial_repeatability_20260927'
 REFERENCE = ROOT / 'reports/stereo_factor_attribution_20260927/raw_gyro_pnp_v1'
 
 
-def summarize(directory, field):
+def summarize(directory, field, reference_directory=REFERENCE):
     rows = []
     for item in json.loads((directory / 'summary.json').read_text())['cases']:
         name = item['case']
         case = json.loads((directory / f'{name}.json').read_text())
-        reference = json.loads((REFERENCE / f'{name}.json').read_text())
+        reference = json.loads((reference_directory / f'{name}.json').read_text())
         stripped = json.loads(json.dumps(case))
         for measurement in stripped['measurements']:
             measurement['free']['measurement'].pop(field, None)
@@ -52,7 +53,41 @@ def summarize(directory, field):
     print(json.dumps(output, indent=2))
 
 
+def audit_ransac(directory):
+    rows = []
+    for item in json.loads((directory/'summary.json').read_text())['cases']:
+        name = item['case']
+        case = json.loads((directory/f'{name}.json').read_text())
+        reference = json.loads((REFERENCE/f'{name}.json').read_text())
+        stripped = json.loads(json.dumps(case))
+        diagnostics = [r['free']['measurement'].get('ransac_repeatability', {}) for r in case['measurements']]
+        for r in stripped['measurements']:
+            r['free']['measurement'].pop('ransac_repeatability', None)
+        assert stripped==reference, f'{name}: original diagnostic fields changed'
+        for path,digest in case['source_sha256'].items():
+            assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==digest
+        measured = [d for d in diagnostics if 'translation_diameter_mm' in d]
+        rows.append(dict(case=name, sampled_edges=len(case['measurements']), measured_edges=len(measured),
+                         maximum_translation_diameter_mm=max(d['translation_diameter_mm'] for d in measured),
+                         maximum_rotation_diameter_deg=max(d['rotation_diameter_deg'] for d in measured),
+                         previous_control_fields_unchanged=True))
+    output = dict(cases=rows, external_reference_used=False, trajectory_modified=False,
+                  interpretation='Changing global RNG seed alone on these fixed correspondence inputs does not perturb PnP. Original cached input sets may differ.')
+    (directory/'audit_summary.json').write_text(json.dumps(output,indent=2)+'\n')
+    print(json.dumps(output,indent=2))
+
+
 if __name__ == '__main__':
-    summarize(OUT / 'ten_case_v1', 'spatial_repeatability')
-    if (OUT / 'target_depth_ten_v1/summary.json').exists():
-        summarize(OUT / 'target_depth_ten_v1', 'target_depth_holdout')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--production', action='store_true')
+    args = parser.parse_args()
+    if args.production:
+        reference = OUT / 'production_depth_raw_ten_v2'
+        summarize(OUT / 'production_depth_spatial_ten_v2', 'spatial_repeatability', reference)
+        summarize(OUT / 'production_depth_target_ten_v2', 'target_depth_holdout', reference)
+    else:
+        summarize(OUT / 'ten_case_v1', 'spatial_repeatability')
+        if (OUT / 'target_depth_ten_v1/summary.json').exists():
+            summarize(OUT / 'target_depth_ten_v1', 'target_depth_holdout')
+        if (OUT/'ransac_repeatability_ten_v1/summary.json').exists():
+            audit_ransac(OUT/'ransac_repeatability_ten_v1')

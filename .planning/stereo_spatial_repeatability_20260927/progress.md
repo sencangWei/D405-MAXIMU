@@ -93,3 +93,37 @@ session89387, fixedfullcorrespondences/solverkwargs perfirstforwardfreePnP,
 never rewritesacceptedmeasurement or trajectory. Extra solvercalls occurafter
 originalfullestimate and before nextseed-resetcontrol to preserveoldresults.
 103relatedtestsPASS; compileallPASS. No productionchange.
+
+RANSACsession89387complete10/166: eachfixedinputtenseeds yieldsidenticalR/t,
+diameter0mm/0deg. SeedalonePnP hypothesisrejected; originalcachedfresh2has162
+PnPpoints whereascurrentfirstfreeinput163. Need locateinput-generationcontract
+difference; assignedboundedfresh2thread-countcheckwith sourcepixelidentityknown.
+Correct interpretation ofearlierdiagnostics: enrichnewacceptedfreeedges only,
+fresh2 13/16 excludes3badoriginalcachededges. Aggregate lackofseparation is
+NOT a proof depth/featuregeometry is irrelevant onexcludedbadcachededges.
+
+Secondbackup71736139 pushednormally, remoteartifactfreshfetch/checkout into
+/tmp/ego-stereo-spatial-restore-paR9kF; all77changedcomponents byteidentical to
+backupworktree and103restoredtestsPASS. Need append finalRANSACresults and
+scopecorrection to sameownedbranch afterthreadcheck.
+
+Continuing: child exact0.6m repro matchescachedfresh2edge byte-for-number across
+threads1/2/4/8/24. Foundrootdiagnosticharnesshardcoded1.5m, notformal0.6m.
+Supersede priorproduction-level negativeclaims fromraw/spatial/targetprobes.
+Patched ONLYdiagnosticharness, added explicitrange+reportedparameters andtwo
+passingtests. Correctedalltenrawcontrols running session57693. Originaloutputs
+retained; no productionchanges orclaimedaccuracygain. READMEcorrectionadded.
+
+Addedcached-forward-motionaudit: correctedrawcompleted session57693,166/166
+sampledfreeedgesexactmatchcachedproduction (poses/methods/inliercounts/status).
+Correctedspatial53884andtarget44654completed; summarize.py --production verifies
+oldcontrolfieldsequalnewrawcontrolandallsourcehashesunchanged. All166nowaccepted.
+Fresh2badedgeLM-allinliercontrolshifts14.422mm,reproj1.995→.857px,smalltile
+variation1.022mm. Existingrefine_pnp functionhasnocallerenablingit.
+Launchalltenuniformfree-refinementdiagnostic session94161; no productionchange,
+noGToptimization, no per-case tuning. ThreecontracttestsPASS (106relatedtotal
+requiresfreshfullrun). FixedgyroGTlocalscoreallten showsworsemedian9/10,
+fresh1max18.516/fresh4max16.054; nohardfixdeployment.
+AlsofoundolderreverseSIFTcandidate/observabilityprobehardcode1.5m; thoseprior
+experimentsareNOTformal-equivalent. Appendreadmecorrections; historicaloutputs
+preserved. Oneapply_patchcontextfailuremade nofilechanges; correctedcontext.

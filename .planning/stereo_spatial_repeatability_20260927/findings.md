@@ -56,3 +56,45 @@ Four fresh2IRimages atfirst590/source620 andsecond610/source640 exactlymatch
 preparedPNG vsoriginalDB3, zero pixelchanges/skew. Excludesimagecontentmismatch
 for thispair only. CandidateRANSACseed/input-order solution sensitivity is an
 unprovenhypothesis; evaluate all166uniformly, fixedfullinputs, tenfixedseeds.
+
+Important scope correction after originalcachedscoring: spatial/target-depth
+diagnostics only enriched newlyacceptedfreePnP (fresh2 13/16), not the3original
+productionacceptededges nowrejected. Thus their aggregate lackoffailure
+separation cannot rule out instability on the missingbadcachededges, especially
+590→610. They justify no weight/filter deployment, NOT declaringdepth/geometry
+irrelevant. Do not cite their fresh2median as a complete productionedge audit.
+
+RANSACseed diagnostic completed10cases/166firstforwardinputs (including rejected
+replay). All ten-seed R/t results identical perinput: translationdiameter0mm,
+rotationdiameter0deg. Reject seed-alone-as-PnP-cause hypothesis. Badfresh2pair
+current163PnPpoints vscached162; inputgeneration/implementation/runtime
+contract remains to investigate, not solverrandomsampling onfixedinputs.
+
+### Superseding correction: diagnostic depth range was wrong
+
+Bounded child reproduction with exact formal0.6m maximum source depth restores
+fresh2edge590→610 original162points/78inliers/acceptedpose exactly, independently
+of cv2threads1/2/4/8/24. Root probe instead hardcoded1.5m in forward and reverse.
+Therefore prior rawgyro/spatial/target-depth controls are not production-equivalent
+and cannot justify ruling out their respective mechanisms on productionedges.
+The fixed-input RANSAC seed result remains a measured property of1.5m inputs,
+not an explanation of production. Four-image identity still valid. Localcached
+GTscoring and actual attitudecandidate/baseline precision are unaffected.
+Corrected diagnostic parser default0.6, explicit1.5 override for legacyreruns;
+record actualdepth/disparityparameters. Two parser contracttestsPASS. No production
+change. Launch correctedrawallten166pairs, outputproduction_depth_raw_ten_v2.
+
+Correctedalltencompleted: cached_motion_audit.json verifies166/166freeposes,
+methods/inliercounts/acceptedstates matchactualcachedproduction; sourcehashes
+unchanged. Correctedspatial/targetsidecars both all166freeaccepted andequalraw
+controlafterremovingtheirsidecar. Fresh2bad590→610 is nowincluded. Its LM-all
+inlierrefit shifts14.4217mm, reducesreprojectionmedian1.995→0.857px; tiledelete
+max1.022mm. This differs materiallyfromtheearlieromission-basednegativeclaim.
+Sourceestimate_motion_from_correspondences supportsrefine_pnp butdefaultsFalse;
+no productioncaller passesTrue. TestoneuniformexistingfreePnPLM onall166,
+without changingRANSACinliers/depth/gates or usingGT; outputlm_probe_ten_v1.
+
+Correctedrawgyrofix evaluated AFTERestimation onexistingGT allten: medianlocal
+errorworse9/10; fresh1max8.986→18.516mm; fresh4max10.767→16.054mm; fresh2
+max15.684→5.046mm butoneedge rejected (15/16 scored). No universalhardgyrofix
+justified. These arelocaledgeerrors, notcandidateSLAMmax. No GToptimizerinput.

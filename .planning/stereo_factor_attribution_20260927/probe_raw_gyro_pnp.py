@@ -26,10 +26,19 @@ def load_module(name, path):
     return result
 
 
-def main():
+def argument_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
-    args = parser.parse_args()
+    # Formal workflow uses 0.6m. Explicit 1.5m reproduces the old diagnostic,
+    # which was not a production-equivalent replay.
+    parser.add_argument('--max-depth-m', type=float, default=0.6)
+    return parser
+
+
+def main():
+    args = argument_parser().parse_args()
+    if not np.isfinite(args.max_depth_m) or args.max_depth_m <= 0.07:
+        raise ValueError('Maximum depth must be finite and greater than 0.07m')
     if args.output.exists():
         raise ValueError('Refuse to overwrite diagnostic output')
     args.output.mkdir(parents=True)
@@ -120,7 +129,7 @@ def main():
                     second_rotation = rotations[first] * camera_delta if label == 'raw_gyro_fixed' else rotations[second]
                     measurement = stereo.estimate_pair_scale(left[int(left_numbers[first])], right[int(right_numbers[first])],
                         left[int(left_numbers[second])], right[int(right_numbers[second])], positions[first], positions[second],
-                        rotations[first], second_rotation, calibration, 128, 0.07, 1.5,
+                        rotations[first], second_rotation, calibration, 128, 0.07, args.max_depth_m,
                         trajectory_frame='infrared_left', pnp_rotation_mode=mode)
                     reverse_diagnostic = None
                     if measurement.get('accepted') and measurement.get('method') == 'sift' and not inverse_checks:
@@ -129,7 +138,7 @@ def main():
                         cv2.setRNGSeed(0)
                         reverse_diagnostic = stereo.estimate_sift_fallback(left[int(left_numbers[second])], left[int(left_numbers[first])],
                             *disparity_cache[second], positions[second], positions[first], second_rotation, rotations[first],
-                            calibration, 0.07, 1.5, 'infrared_left', mode)
+                            calibration, 0.07, args.max_depth_m, 'infrared_left', mode)
                         if reverse_diagnostic.get('accepted'):
                             inverse = -Rotation.from_quat(measurement['pnp_rotation_quaternion_xyzw']).inv().apply(reverse_diagnostic['metric_displacement_camera_i_m'])
                             inverse_checks.append(float(np.linalg.norm(np.asarray(measurement['metric_displacement_camera_i_m']) - inverse) * 1000))
@@ -160,6 +169,8 @@ def main():
         for path, expected in source_hashes.items():
             assert hashlib.sha256(Path(path).read_bytes()).hexdigest() == expected
         case = {'case': name, 'external_reference_used': False, 'trajectory_modified': False,
+                'replay_parameters': {'num_disparities': 128, 'min_depth_m': 0.07,
+                                      'max_depth_m': args.max_depth_m},
                 'selection': '10%, 30%, 50%, 70%, 90% recording-time quantiles per report family; accepted edges only; duplicate pairs removed',
                 'rotation_source': 'raw calibrated gyro preintegration, fixed formal td applied once; no graph-refined attitude',
                 'bias_policy': 'fixed accepted runtime gyro calibration; no per-recording bias fit',
