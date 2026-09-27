@@ -4,6 +4,7 @@ Existing image inputs, formal depth range, RANSAC inliers and downstream gates
 remain unchanged. No external reference is read and production stays untouched.
 """
 import importlib.util
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,6 +33,12 @@ def main():
     base.load_module = observed_load
     try:
         base.main()
+        output = base.argument_parser().parse_args().output
+        for case_path in output.glob('*.json'):
+            case = json.loads(case_path.read_text())
+            if 'measurements' in case:
+                case['estimator_policy'] = 'Existing inlier-only LM for free PnP, original gates; trajectory-fixed controls unchanged'
+                case_path.write_text(json.dumps(case, indent=2)+'\n')
     finally:
         base.load_module = original_load
 

@@ -32,6 +32,7 @@ def argument_parser():
     # Formal workflow uses 0.6m. Explicit 1.5m reproduces the old diagnostic,
     # which was not a production-equivalent replay.
     parser.add_argument('--max-depth-m', type=float, default=0.6)
+    parser.add_argument('--include-gyro-free-gate', action='store_true')
     return parser
 
 
@@ -122,11 +123,14 @@ def main():
                 item = {'family': family, 'fraction': fraction, 'first': first, 'second': second,
                         'duration_s': float(times[second] - times[first]), 'cached_method': edge.get('method'),
                         'gyro_rotation_deg': float(np.degrees(body_delta.magnitude()))}
-                for label, mode in (('free', 'free'), ('mast3r_fixed', 'trajectory-fixed'), ('raw_gyro_fixed', 'trajectory-fixed')):
+                controls = [('free', 'free'), ('mast3r_fixed', 'trajectory-fixed'), ('raw_gyro_fixed', 'trajectory-fixed')]
+                if args.include_gyro_free_gate:
+                    controls.append(('raw_gyro_gate', 'free'))
+                for label, mode in controls:
                     inverse_checks.clear()
                     pnp_fingerprints.clear()
                     cv2.setRNGSeed(0)
-                    second_rotation = rotations[first] * camera_delta if label == 'raw_gyro_fixed' else rotations[second]
+                    second_rotation = rotations[first] * camera_delta if label in ('raw_gyro_fixed', 'raw_gyro_gate') else rotations[second]
                     measurement = stereo.estimate_pair_scale(left[int(left_numbers[first])], right[int(right_numbers[first])],
                         left[int(left_numbers[second])], right[int(right_numbers[second])], positions[first], positions[second],
                         rotations[first], second_rotation, calibration, 128, 0.07, args.max_depth_m,
@@ -169,6 +173,7 @@ def main():
         for path, expected in source_hashes.items():
             assert hashlib.sha256(Path(path).read_bytes()).hexdigest() == expected
         case = {'case': name, 'external_reference_used': False, 'trajectory_modified': False,
+                'gyro_free_gate_enabled': args.include_gyro_free_gate,
                 'replay_parameters': {'num_disparities': 128, 'min_depth_m': 0.07,
                                       'max_depth_m': args.max_depth_m},
                 'selection': '10%, 30%, 50%, 70%, 90% recording-time quantiles per report family; accepted edges only; duplicate pairs removed',

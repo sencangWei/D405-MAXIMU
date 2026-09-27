@@ -1,0 +1,116 @@
+{
+  "cases": [
+    {
+      "case": "dev1",
+      "sampled_edges": 17,
+      "compared_pairs": 17,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.3326268605132574,
+      "paired_candidate_median_mm": 1.2846220927028282,
+      "paired_original_max_mm": 8.634154253111616,
+      "paired_candidate_max_mm": 4.261771585921244
+    },
+    {
+      "case": "dev2",
+      "sampled_edges": 17,
+      "compared_pairs": 17,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.2472956851807722,
+      "paired_candidate_median_mm": 1.098272632910405,
+      "paired_original_max_mm": 4.725634789076351,
+      "paired_candidate_max_mm": 5.5235529492865245
+    },
+    {
+      "case": "heldout1",
+      "sampled_edges": 20,
+      "compared_pairs": 20,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.3435223159002072,
+      "paired_candidate_median_mm": 1.2299147199742109,
+      "paired_original_max_mm": 8.744334167058925,
+      "paired_candidate_max_mm": 8.744334167058925
+    },
+    {
+      "case": "heldout2",
+      "sampled_edges": 16,
+      "compared_pairs": 16,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.253387717520103,
+      "paired_candidate_median_mm": 1.1938440126001855,
+      "paired_original_max_mm": 5.753840261805124,
+      "paired_candidate_max_mm": 4.990698232858442
+    },
+    {
+      "case": "heldout3",
+      "sampled_edges": 17,
+      "compared_pairs": 17,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.6599242957823914,
+      "paired_candidate_median_mm": 1.6599242957823914,
+      "paired_original_max_mm": 5.9313981900054,
+      "paired_candidate_max_mm": 5.804364892988423
+    },
+    {
+      "case": "heldout4",
+      "sampled_edges": 16,
+      "compared_pairs": 16,
+      "rejected_edges": [],
+      "paired_original_median_mm": 2.6176084226335083,
+      "paired_candidate_median_mm": 2.2426588661062445,
+      "paired_original_max_mm": 12.728819118404596,
+      "paired_candidate_max_mm": 12.728819118404596
+    },
+    {
+      "case": "fresh1",
+      "sampled_edges": 16,
+      "compared_pairs": 16,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.3904154417611196,
+      "paired_candidate_median_mm": 1.471444756354963,
+      "paired_original_max_mm": 8.986113186093402,
+      "paired_candidate_max_mm": 8.986113186093402
+    },
+    {
+      "case": "fresh2",
+      "sampled_edges": 16,
+      "compared_pairs": 15,
+      "rejected_edges": [
+        {
+          "first": 590,
+          "second": 610,
+          "reason": "insufficient_consistent_points",
+          "sift_failure_reason": "rotation_disagrees"
+        }
+      ],
+      "paired_original_median_mm": 1.559572689734445,
+      "paired_candidate_median_mm": 1.5108958476059495,
+      "paired_original_max_mm": 10.634347443901804,
+      "paired_candidate_max_mm": 5.331069059716627
+    },
+    {
+      "case": "fresh3",
+      "sampled_edges": 14,
+      "compared_pairs": 14,
+      "rejected_edges": [],
+      "paired_original_median_mm": 1.417744775534481,
+      "paired_candidate_median_mm": 1.362162458867295,
+      "paired_original_max_mm": 7.2244002216596215,
+      "paired_candidate_max_mm": 7.435036828090654
+    },
+    {
+      "case": "fresh4",
+      "sampled_edges": 17,
+      "compared_pairs": 17,
+      "rejected_edges": [],
+      "paired_original_median_mm": 2.1140963841107796,
+      "paired_candidate_median_mm": 1.4641163342611883,
+      "paired_original_max_mm": 10.767343785875022,
+      "paired_candidate_max_mm": 10.767343785875022
+    }
+  ],
+  "external_reference_used_in_optimization": false,
+  "external_reference_used_in_evaluation": true,
+  "production_changed": false,
+  "policy": "Existing free-PnP LM on original RANSAC inliers; original gates. raw_gyro_gate changes only rotation gate reference, never fixes PnP rotation.",
+  "warning": "Observation-only sampled-pair diagnostic, not all production edges or trajectory ATE. Rejection is reported, not treated as corrected accuracy."
+}

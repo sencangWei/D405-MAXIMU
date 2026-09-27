@@ -98,3 +98,19 @@ Correctedrawgyrofix evaluated AFTERestimation onexistingGT allten: medianlocal
 errorworse9/10; fresh1max8.986→18.516mm; fresh4max10.767→16.054mm; fresh2
 max15.684→5.046mm butoneedge rejected (15/16 scored). No universalhardgyrofix
 justified. These arelocaledgeerrors, notcandidateSLAMmax. No GToptimizerinput.
+
+UniformLM + rawgyro-as-rotation-gate (notfixedrotation) diagnostic complete:
+all166motionsaccepted, matchedsame-RANSACinputs. Fresh2localmaximum15.684→5.331mm
+withoutomittingbad590→610. Pairedmedian improved8cases,heldout3unchanged,
+fresh1slightlyworse1.390→1.471mm; dev2localmaxworsens4.726→5.524,fresh3
+7.224→7.435. These arelocalmeasurementresults, nottrajectoryprecision orfinal
+independentacceptance. Casesalreadyexaminedfordevelopment requirefreshrecordings
+afteralgorithmfreeze for independentfinalvalidation.
+
+Preparedcandidate differsfromsampleprobe: onlyalloriginalacceptedSIFT factors
+are re-estimated (LK frozen to isolate SIFTfallback), global scales unchanged.
+No per-case tuning or GT-driven edge selection. Existing5deg gatechecksrawgyro,
+PnProtationremainsfree. Reviewer confirmsgyroframe/td-onceconvention andscope;
+addedIR/calibrationsameassertions andexplicitrefinement_estimate to distinguish
+staleinheritedfields onrejectedobservations. Actualalltenstarted5720,
+output sift_lm_gyro_candidate_ten_v1, firstfresh1thenprior6thenfresh2..4.

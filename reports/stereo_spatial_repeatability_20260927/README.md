@@ -117,3 +117,18 @@ GTusedonlyafterestimationforevaluation; noGTselectionoroptimization.
 
 EarlierSIFTreversecandidate andobservabilityprobe likewiseused1.5m. Retainthose
 historicaloutputs,butwithdrawgeneralizationtoformal0.6m observationrepairs.
+
+## Free LM + gyro validation, observation diagnostic and full candidate
+
+`production_depth_lm_gyro_gate_probe_ten_v1/raw_gyro_gate_audit.json`:same166
+sourcepairs/RANSACinputs,allaccepted. Fresh2localmotionmaximum15.684→5.331mm
+withoutremovingbadpair. Dev2/fresh3localmaxslightlyworse;fresh1medianworse.
+These aremeasurementdiagnostics,NOT finalSLAMprecision or universal10mmproof.
+
+`sift_lm_gyro_candidate_ten_v1` isrunninga fullten-casegraph→fusion→scorecandidate.
+Re-estimatealloriginalacceptedSIFT factors only, notGT-selectedwindows; keepLK,
+globalscales/frontends/VINS/graphsettings unchanged. PnP freelyestimatesrotation,
+existing5degconsistencygate usescalibratedrawgyro, formaltdonce. Productionnot
+changed. NoGToptimizerinputs, no per-case parameter tuning, noframe deletion.
+Alltenresultsrequired; do not extrapolate fromfirstcase. Alreadyseenrecordings
+aredevelopment/regressioncases; finalindependentvalidationneedsnewrecordings.

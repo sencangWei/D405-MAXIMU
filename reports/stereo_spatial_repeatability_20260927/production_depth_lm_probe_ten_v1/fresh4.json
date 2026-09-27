@@ -1,0 +1,3159 @@
+{
+  "case": "fresh4",
+  "external_reference_used": false,
+  "trajectory_modified": false,
+  "replay_parameters": {
+    "num_disparities": 128,
+    "min_depth_m": 0.07,
+    "max_depth_m": 0.6
+  },
+  "selection": "10%, 30%, 50%, 70%, 90% recording-time quantiles per report family; accepted edges only; duplicate pairs removed",
+  "rotation_source": "raw calibrated gyro preintegration, fixed formal td applied once; no graph-refined attitude",
+  "bias_policy": "fixed accepted runtime gyro calibration; no per-recording bias fit",
+  "imu": {
+    "calibration_id": "imu_runtime_accel_calibrated_raw_gyro_20260816",
+    "runtime_axis_rotation": [
+      [
+        0.99980212,
+        -0.01423891,
+        -0.01389161
+      ],
+      [
+        -0.01423891,
+        -0.02458715,
+        -0.99959628
+      ],
+      [
+        0.01389161,
+        0.99959628,
+        -0.02478503
+      ]
+    ],
+    "samples": 16001,
+    "median_rate_hz": 400.1815129082116
+  },
+  "source_sha256": {
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "dc518d21c7c143e408293bd38cc7b7f67712c431594b5d2d62d319a1e8f62d56",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_long_hops_report.json": "32cc87e86b2282572f258ed7a2a341aa524e8977976c112210571ad1b1222adc",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json": "ec052bfd602c0da642e39f85acd1d53e248b464aa898800bd84bf12716e3a4a8",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_multisecond_report.json": "37b7e34be597a39a5a8b52a5eaa98cdfa35b2e3201285e103101052ce441ea28"
+  },
+  "measurements": [
+    {
+      "family": "stereo_scale_bidirectional_report.json",
+      "fraction": 0.1,
+      "first": 425,
+      "second": 450,
+      "duration_s": 0.8334300518035889,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 2.1984177287949653,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.3395245013089952,
+          "metric_distance_m": 0.008927911724856656,
+          "metric_displacement_camera_i_m": [
+            -0.008816882226035775,
+            -0.000862591757589463,
+            -0.0011073080144142838
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026355312050405783,
+          "direction_cosine": 0.999766961684718,
+          "rotation_error_deg": 0.1400731410920114,
+          "pnp_rotation_quaternion_xyzw": [
+            0.00315390040645652,
+            0.00520293662817055,
+            0.018397227309954814,
+            0.9998122445689367
+          ],
+          "tracked_points": 228,
+          "pnp_inliers": 189,
+          "pnp_inlier_ratio": 0.8289473684210527,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.4177892506122589,
+          "pnp_reprojection_p95_px": 1.4719600439071647,
+          "median_depth_m": 0.3657966491979462,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3386729461703293,
+          "reverse_scale": 0.34034355037657704,
+          "bidirectional_relative_disagreement": 0.004920658672487366,
+          "reverse_metric_distance_m": 0.008974396484681646,
+          "reverse_pnp_inlier_ratio": 0.8529411764705882,
+          "reverse_rotation_error_deg": 0.1393712899020258
+        },
+        "reverse_closure_mm": [
+          0.12193019385739291
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "cf690d12339d3e176a93fab3c92a687614edecdb8360c24aac50c1c4e2e801bf",
+          "f912ebf15d938dd75bb907203074439aac55e9b5906ee6aef52192de70f5592f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.2589110469194568,
+        "vs_vins_displacement_mm": 0.9860528402128
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.3797030609777566,
+          "metric_distance_m": 0.009993849213384592,
+          "metric_displacement_camera_i_m": [
+            -0.009860043743018887,
+            -0.0011747479568426106,
+            -0.0011298348213416094
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026355312050405783,
+          "direction_cosine": 0.9995841049923913,
+          "rotation_error_deg": 4.9720805648229304e-17,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0035050820544644447,
+            0.004132523114960292,
+            0.017922973430922022,
+            0.9998246864705284
+          ],
+          "tracked_points": 228,
+          "pnp_inliers": 189,
+          "pnp_inlier_ratio": 0.8289473684210527,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.1208538183857258,
+          "pnp_reprojection_median_px": 0.6225714456223627,
+          "pnp_reprojection_p95_px": 2.194526203642247,
+          "median_depth_m": 0.3657966491979462,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3790390643937051,
+          "reverse_scale": 0.3803440382377293,
+          "bidirectional_relative_disagreement": 0.0034369314763579573,
+          "reverse_metric_distance_m": 0.010027630950636112,
+          "reverse_pnp_inlier_ratio": 0.8529411764705882,
+          "reverse_rotation_error_deg": 4.9720805648229304e-17
+        },
+        "reverse_closure_mm": [
+          0.04974252071954312
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "cf690d12339d3e176a93fab3c92a687614edecdb8360c24aac50c1c4e2e801bf",
+          "f912ebf15d938dd75bb907203074439aac55e9b5906ee6aef52192de70f5592f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.3060264602719757,
+        "vs_vins_displacement_mm": 2.0172914773429858
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.34377519262104905,
+          "metric_distance_m": 0.009303099241488191,
+          "metric_displacement_camera_i_m": [
+            -0.009253026846633252,
+            0.0009063820222947629,
+            -0.00032805685806471793
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026355312050405783,
+          "direction_cosine": 0.9729054764952227,
+          "rotation_error_deg": 4.0989925606512783e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0009707622510491577,
+            0.004652135113043527,
+            0.018585671602358356,
+            0.9998159771031023
+          ],
+          "tracked_points": 228,
+          "pnp_inliers": 189,
+          "pnp_inlier_ratio": 0.8289473684210527,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.22611794681475267,
+          "pnp_reprojection_median_px": 0.7874597002976262,
+          "pnp_reprojection_p95_px": 2.174175527969848,
+          "median_depth_m": 0.3657966491979462,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.34342360216080453,
+          "reverse_scale": 0.3441164851920589,
+          "bidirectional_relative_disagreement": 0.0020155422032832244,
+          "reverse_metric_distance_m": 0.009308650311193777,
+          "reverse_pnp_inlier_ratio": 0.8529411764705882,
+          "reverse_rotation_error_deg": 4.1008749912124423e-16
+        },
+        "reverse_closure_mm": [
+          0.1232873342713246
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "cf690d12339d3e176a93fab3c92a687614edecdb8360c24aac50c1c4e2e801bf",
+          "f912ebf15d938dd75bb907203074439aac55e9b5906ee6aef52192de70f5592f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 8.015734779928627e-16,
+        "vs_vins_displacement_mm": 2.458726329967021
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_bidirectional_report.json",
+      "fraction": 0.5,
+      "first": 595,
+      "second": 605,
+      "duration_s": 0.3333590030670166,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 6.9432162634982735,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4297756748521263,
+          "metric_distance_m": 0.045639903933722845,
+          "metric_displacement_camera_i_m": [
+            0.0034566725795590735,
+            0.0220841699549671,
+            0.03979122620826485
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.10618688124310423,
+          "direction_cosine": 0.9999262621799113,
+          "rotation_error_deg": 0.10842301993151625,
+          "pnp_rotation_quaternion_xyzw": [
+            0.05872201863248404,
+            0.00015284074519587008,
+            -0.014412090531213376,
+            0.9981703225471857
+          ],
+          "tracked_points": 278,
+          "pnp_inliers": 172,
+          "pnp_inlier_ratio": 0.6187050359712231,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.7462350726127625,
+          "pnp_reprojection_p95_px": 1.9072017967700952,
+          "median_depth_m": 0.4174142250516622,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          1.6704027325237374
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4284250263001604,
+          "metric_distance_m": 0.04554136668646637,
+          "metric_displacement_camera_i_m": [
+            -0.0025209565541521478,
+            -0.01650850875879799,
+            -0.042368974454002964
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.10618688124310426,
+          "direction_cosine": 0.9989405391039405,
+          "rotation_error_deg": 0.22098911050152148,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.059434472850785784,
+            0.0013840085144361176,
+            0.014552891400504916,
+            0.9981251631480224
+          ],
+          "tracked_points": 250,
+          "pnp_inliers": 172,
+          "pnp_inlier_ratio": 0.688,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.7584421634674072,
+          "pnp_reprojection_p95_px": 1.8627292037010184,
+          "median_depth_m": 0.3921428001529185,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "0851c601d5b6cf94512e21d5139613deb7a1ac3b24e4fa4a0dc433591c15c10d",
+          "5f4ad5ba2d4426cf3064f9ae4285690e59424c13de3d4c06e13b6f8588268b13"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.10913577478264264,
+        "vs_vins_displacement_mm": 2.104764303132944
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4316734450295308,
+          "metric_distance_m": 0.04583985386814358,
+          "metric_displacement_camera_i_m": [
+            0.0032280937343019634,
+            0.022508506857619272,
+            0.039802496561595534
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.10618688124310423,
+          "direction_cosine": 0.9999607977591665,
+          "rotation_error_deg": 7.765973899104782e-19,
+          "pnp_rotation_quaternion_xyzw": [
+            0.05820243977535631,
+            -4.032198079202198e-05,
+            -0.015178640127597598,
+            0.9981894024994509
+          ],
+          "tracked_points": 278,
+          "pnp_inliers": 172,
+          "pnp_inlier_ratio": 0.6187050359712231,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.10842301993151625,
+          "pnp_reprojection_median_px": 0.8655218110091235,
+          "pnp_reprojection_p95_px": 1.9558160719629019,
+          "median_depth_m": 0.4174142250516622,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.2243347018769225
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4300925559559704,
+          "metric_distance_m": 0.04567100520138383,
+          "metric_displacement_camera_i_m": [
+            -0.003922073110409534,
+            -0.017653366146947236,
+            -0.04193824891794182
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.10618688124310426,
+          "direction_cosine": 0.9999820884488876,
+          "rotation_error_deg": 7.765973899104782e-19,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.05820243977535631,
+            4.032198079202198e-05,
+            0.015178640127597598,
+            0.9981894024994509
+          ],
+          "tracked_points": 250,
+          "pnp_inliers": 172,
+          "pnp_inlier_ratio": 0.688,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.3142364927190303,
+          "pnp_reprojection_median_px": 0.8471153149860742,
+          "pnp_reprojection_p95_px": 1.9288090709734087,
+          "median_depth_m": 0.3921428001529185,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "0851c601d5b6cf94512e21d5139613deb7a1ac3b24e4fa4a0dc433591c15c10d",
+          "5f4ad5ba2d4426cf3064f9ae4285690e59424c13de3d4c06e13b6f8588268b13"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.21109090431246705,
+        "vs_vins_displacement_mm": 1.941869063390678
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.42870705816634413,
+          "metric_distance_m": 0.04552754660176059,
+          "metric_displacement_camera_i_m": [
+            0.003976992406913773,
+            0.02205306423464977,
+            0.039630838861084476
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.10618688124310423,
+          "direction_cosine": 0.9999015732560854,
+          "rotation_error_deg": 1.983976509380806e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.058980975697404806,
+            0.0007212332647849274,
+            -0.013693141725058963,
+            0.9981649273532192
+          ],
+          "tracked_points": 278,
+          "pnp_inliers": 172,
+          "pnp_inlier_ratio": 0.6187050359712231,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.1091357747826377,
+          "pnp_reprojection_median_px": 0.9547458337902488,
+          "pnp_reprojection_p95_px": 1.9458723128017468,
+          "median_depth_m": 0.4174142250516622,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.23444547862618068
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.42696307816316265,
+          "metric_distance_m": 0.0453429726832522,
+          "metric_displacement_camera_i_m": [
+            -0.004682390197647722,
+            -0.0171025043483521,
+            -0.04173205888529495
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.10618688124310426,
+          "direction_cosine": 0.9998876340290744,
+          "rotation_error_deg": 1.9994763101580789e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.058980975697404806,
+            -0.0007212332647849274,
+            0.013693141725058963,
+            0.9981649273532192
+          ],
+          "tracked_points": 250,
+          "pnp_inliers": 172,
+          "pnp_inlier_ratio": 0.688,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.36011409139913086,
+          "pnp_reprojection_median_px": 0.9501829406311263,
+          "pnp_reprojection_p95_px": 2.239557516029488,
+          "median_depth_m": 0.3921428001529185,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "0851c601d5b6cf94512e21d5139613deb7a1ac3b24e4fa4a0dc433591c15c10d",
+          "5f4ad5ba2d4426cf3064f9ae4285690e59424c13de3d4c06e13b6f8588268b13"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 8.3881494845567e-15,
+        "vs_vins_displacement_mm": 2.1553167263633406
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_bidirectional_report.json",
+      "fraction": 0.7,
+      "first": 835,
+      "second": 840,
+      "duration_s": 0.16670584678649902,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 1.3137523769741914,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4293200524571959,
+          "metric_distance_m": 0.008563104663089323,
+          "metric_displacement_camera_i_m": [
+            0.0055045106186098975,
+            0.0028451369640567973,
+            0.0059103570092161675
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.019607470859813153,
+          "direction_cosine": 0.9838434993688157,
+          "rotation_error_deg": 0.4546048404532385,
+          "pnp_rotation_quaternion_xyzw": [
+            0.009069848750193277,
+            -0.00160533882852082,
+            -0.006982831162421628,
+            0.9999331981686833
+          ],
+          "tracked_points": 1695,
+          "pnp_inliers": 1573,
+          "pnp_inlier_ratio": 0.928023598820059,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.4864831268787384,
+          "pnp_reprojection_p95_px": 1.299521303176878,
+          "median_depth_m": 0.2608838906572889,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4296706555082701,
+          "reverse_scale": 0.42897214627364705,
+          "bidirectional_relative_disagreement": 0.0016270077223577966,
+          "reverse_metric_distance_m": 0.008563278681969464,
+          "reverse_pnp_inlier_ratio": 0.935179358086847,
+          "reverse_rotation_error_deg": 0.45783112752502214
+        },
+        "reverse_closure_mm": [
+          0.04399138921027103
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "08d6c1058cacb8fa428283bb978a99e394df3c8460eef2f36a72fa2c14b783fb",
+          "13386b2892c2d187dad87dac9eb752ab752fe5e5f4dc17aa03a2ac4c8e691b5c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.04390176006286312,
+        "vs_vins_displacement_mm": 0.4502570495221759
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.39459560029559704,
+          "metric_distance_m": 0.007760001812337931,
+          "metric_displacement_camera_i_m": [
+            0.005013444732713206,
+            0.0010319025849121375,
+            0.005832510359593872
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.019607470859813153,
+          "direction_cosine": 0.9993369170370783,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            0.012243867412829708,
+            -0.0025272905620920415,
+            -0.009176279293067602,
+            0.9998797409746472
+          ],
+          "tracked_points": 1695,
+          "pnp_inliers": 1573,
+          "pnp_inlier_ratio": 0.928023598820059,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.4416040805561365,
+          "pnp_reprojection_median_px": 1.5169804201575414,
+          "pnp_reprojection_p95_px": 3.461256918241227,
+          "median_depth_m": 0.2608838906572889,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.39550517977502314,
+          "reverse_scale": 0.3936844935845167,
+          "bidirectional_relative_disagreement": 0.00461406491231922,
+          "reverse_metric_distance_m": 0.007723774410123293,
+          "reverse_pnp_inlier_ratio": 0.935179358086847,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.039137771506926884
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "08d6c1058cacb8fa428283bb978a99e394df3c8460eef2f36a72fa2c14b783fb",
+          "13386b2892c2d187dad87dac9eb752ab752fe5e5f4dc17aa03a2ac4c8e691b5c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.4635518595095294,
+        "vs_vins_displacement_mm": 1.68508656431646
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.42398907348059595,
+          "metric_distance_m": 0.00846265506686224,
+          "metric_displacement_camera_i_m": [
+            0.005329006552357458,
+            0.0028555533423067,
+            0.005921489259878924
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.019607470859813153,
+          "direction_cosine": 0.9836239419484382,
+          "rotation_error_deg": 2.4851874676347637e-17,
+          "pnp_rotation_quaternion_xyzw": [
+            0.00909757060356428,
+            -0.0018806643609534724,
+            -0.006717871962800713,
+            0.9999342815940285
+          ],
+          "tracked_points": 1695,
+          "pnp_inliers": 1573,
+          "pnp_inlier_ratio": 0.928023598820059,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.027046335729406717,
+          "pnp_reprojection_median_px": 0.49922554949179365,
+          "pnp_reprojection_p95_px": 1.3455050535254922,
+          "median_depth_m": 0.2608838906572889,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.42453563724415405,
+          "reverse_scale": 0.42344384388654077,
+          "bidirectional_relative_disagreement": 0.002575046641830257,
+          "reverse_metric_distance_m": 0.008440523840720386,
+          "reverse_pnp_inlier_ratio": 0.935179358086847,
+          "reverse_rotation_error_deg": 2.4851874676347637e-17
+        },
+        "reverse_closure_mm": [
+          0.02272428284235104
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "08d6c1058cacb8fa428283bb978a99e394df3c8460eef2f36a72fa2c14b783fb",
+          "13386b2892c2d187dad87dac9eb752ab752fe5e5f4dc17aa03a2ac4c8e691b5c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 6.450982456707983e-15,
+        "vs_vins_displacement_mm": 0.29190841067196566
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_bidirectional_report.json",
+      "fraction": 0.9,
+      "first": 1075,
+      "second": 1080,
+      "duration_s": 0.16668462753295898,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 5.480316635630598,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.47438490630369334,
+          "metric_distance_m": 0.044891749136764116,
+          "metric_displacement_camera_i_m": [
+            -0.03560345881656186,
+            0.011637258977273813,
+            -0.024743424669018743
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.0933717819149488,
+          "direction_cosine": 0.9989164599463424,
+          "rotation_error_deg": 0.373757525724489,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.012219401926110656,
+            0.03780804158748105,
+            0.025457304312564814,
+            0.9988859613915019
+          ],
+          "tracked_points": 154,
+          "pnp_inliers": 128,
+          "pnp_inlier_ratio": 0.8311688311688312,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.8208891153335571,
+          "pnp_reprojection_p95_px": 1.5317215740680694,
+          "median_depth_m": 0.4684199532998703,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4802640177665529,
+          "reverse_scale": 0.46764530469920434,
+          "bidirectional_relative_disagreement": 0.02662430417821831,
+          "reverse_metric_distance_m": 0.043792480204947325,
+          "reverse_pnp_inlier_ratio": 0.7619047619047619,
+          "reverse_rotation_error_deg": 0.5321787253117888
+        },
+        "reverse_closure_mm": [
+          1.9496430980160517
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "194ff529cb72abe8811e433d1a3f730dee485a19729ab0ca39fdc0cf42d20e27",
+          "9659bfa91a40a97125cbc295d86b33cc95d4e016778277f6f03892ae09643d16"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.1895900276224122,
+        "vs_vins_displacement_mm": 2.634615215699106
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.49116911503564936,
+          "metric_distance_m": 0.04581412613186872,
+          "metric_displacement_camera_i_m": [
+            -0.038312061109549295,
+            0.010966122352664281,
+            -0.0226023071236397
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.0933717819149488,
+          "direction_cosine": 0.9994086272227619,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.010814396510358303,
+            0.03529720257104939,
+            0.02699203618204862,
+            0.9989537458268636
+          ],
+          "tracked_points": 154,
+          "pnp_inliers": 128,
+          "pnp_inlier_ratio": 0.8311688311688312,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.3519503030910877,
+          "pnp_reprojection_median_px": 1.044519232754768,
+          "pnp_reprojection_p95_px": 2.6522360814106944,
+          "median_depth_m": 0.4684199532998703,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.490373343700008,
+          "reverse_scale": 0.49203158309611944,
+          "bidirectional_relative_disagreement": 0.0033758776058246532,
+          "reverse_metric_distance_m": 0.04596384197363248,
+          "reverse_pnp_inlier_ratio": 0.7619047619047619,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.23783845274808782
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "194ff529cb72abe8811e433d1a3f730dee485a19729ab0ca39fdc0cf42d20e27",
+          "9659bfa91a40a97125cbc295d86b33cc95d4e016778277f6f03892ae09643d16"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.295349919403973,
+        "vs_vins_displacement_mm": 2.865712447888431
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.48405534175155907,
+          "metric_distance_m": 0.0453077925054622,
+          "metric_displacement_camera_i_m": [
+            -0.03610906464913638,
+            0.012326398175861938,
+            -0.02443340786490115
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.0933717819149488,
+          "direction_cosine": 0.998865489303493,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.012207525931818045,
+            0.037461909304685015,
+            0.027074867421646054,
+            0.9988566129410026
+          ],
+          "tracked_points": 154,
+          "pnp_inliers": 128,
+          "pnp_inlier_ratio": 0.8311688311688312,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.19546541075051757,
+          "pnp_reprojection_median_px": 1.0739490577047697,
+          "pnp_reprojection_p95_px": 2.666102933266041,
+          "median_depth_m": 0.4684199532998703,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4846902286972858,
+          "reverse_scale": 0.48335882544183373,
+          "bidirectional_relative_disagreement": 0.002750693778914058,
+          "reverse_metric_distance_m": 0.045180365179136456,
+          "reverse_pnp_inlier_ratio": 0.7619047619047619,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.147186844282771
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "194ff529cb72abe8811e433d1a3f730dee485a19729ab0ca39fdc0cf42d20e27",
+          "9659bfa91a40a97125cbc295d86b33cc95d4e016778277f6f03892ae09643d16"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.2678539786879047e-14,
+        "vs_vins_displacement_mm": 1.851442637533664
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_long_hops_report.json",
+      "fraction": 0.1,
+      "first": 370,
+      "second": 450,
+      "duration_s": 2.666844129562378,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 2.23110248213833,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.33823519654959217,
+          "metric_distance_m": 0.00903078609646645,
+          "metric_displacement_camera_i_m": [
+            -0.008916928075930619,
+            -0.0009592359257047359,
+            -0.0010598856766884824
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026375387245324188,
+          "direction_cosine": 0.9996803415667582,
+          "rotation_error_deg": 0.11070328230495176,
+          "pnp_rotation_quaternion_xyzw": [
+            0.003393595273736359,
+            0.005065994033415951,
+            0.018119996315046995,
+            0.9998172257713478
+          ],
+          "tracked_points": 272,
+          "pnp_inliers": 222,
+          "pnp_inlier_ratio": 0.8161764705882353,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.584543764591217,
+          "pnp_reprojection_p95_px": 1.5808717429637906,
+          "median_depth_m": 0.3577836214728533,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3422849964461611,
+          "reverse_scale": 0.3342575832084868,
+          "bidirectional_relative_disagreement": 0.023730696275678705,
+          "reverse_metric_distance_m": 0.00881905326170575,
+          "reverse_pnp_inlier_ratio": 0.8713692946058091,
+          "reverse_rotation_error_deg": 0.14247833515816063
+        },
+        "reverse_closure_mm": [
+          0.21400897739238484
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "14ca446fad256cb2c395c8d21211d79b896d03304e3f4a2ff6a25d72866740dc",
+          "81d29912053e1aec1ff7b5bc36497d3f46eeaf6d245e04e4bbcf432980098182"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.2860324158975271,
+        "vs_vins_displacement_mm": 2.516378002193998
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.3749975212678705,
+          "metric_distance_m": 0.009876097610510646,
+          "metric_displacement_camera_i_m": [
+            -0.00976162105594084,
+            -0.0010442270966230802,
+            -0.0010759405853599247
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026375387245324188,
+          "direction_cosine": 0.9994313260964912,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            0.003518020783811713,
+            0.004130460754656289,
+            0.017913777399613154,
+            0.9998248143564932
+          ],
+          "tracked_points": 272,
+          "pnp_inliers": 222,
+          "pnp_inlier_ratio": 0.8161764705882353,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.1049118132972394,
+          "pnp_reprojection_median_px": 0.6941804685557784,
+          "pnp_reprojection_p95_px": 1.6636165860645837,
+          "median_depth_m": 0.3577836214728533,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.37423076445184233,
+          "reverse_scale": 0.3757100201427867,
+          "bidirectional_relative_disagreement": 0.003944993315022766,
+          "reverse_metric_distance_m": 0.009915463357978105,
+          "reverse_pnp_inlier_ratio": 0.8713692946058091,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.043142113268342275
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "14ca446fad256cb2c395c8d21211d79b896d03304e3f4a2ff6a25d72866740dc",
+          "81d29912053e1aec1ff7b5bc36497d3f46eeaf6d245e04e4bbcf432980098182"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.30402212346840446,
+        "vs_vins_displacement_mm": 3.0930957373904717
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.34514797618073395,
+          "metric_distance_m": 0.009336897062982689,
+          "metric_displacement_camera_i_m": [
+            -0.00928676010593129,
+            0.0008955640369033888,
+            -0.00036290295593054427
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026375387245324188,
+          "direction_cosine": 0.973248409366478,
+          "rotation_error_deg": 4.0980528602671115e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.001088302980426281,
+            0.004519381961358923,
+            0.0189056982187252,
+            0.9998104647172746
+          ],
+          "tracked_points": 272,
+          "pnp_inliers": 222,
+          "pnp_inlier_ratio": 0.8161764705882353,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.29543591161757343,
+          "pnp_reprojection_median_px": 1.0316755130265818,
+          "pnp_reprojection_p95_px": 2.4925628037030227,
+          "median_depth_m": 0.3577836214728533,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3445303051077441,
+          "reverse_scale": 0.34572245952815944,
+          "bidirectional_relative_disagreement": 0.0034542546773983903,
+          "reverse_metric_distance_m": 0.009369866198335554,
+          "reverse_pnp_inlier_ratio": 0.8713692946058091,
+          "reverse_rotation_error_deg": 4.0980528602671115e-16
+        },
+        "reverse_closure_mm": [
+          0.07630200801601685
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "14ca446fad256cb2c395c8d21211d79b896d03304e3f4a2ff6a25d72866740dc",
+          "81d29912053e1aec1ff7b5bc36497d3f46eeaf6d245e04e4bbcf432980098182"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 8.212094278678086e-16,
+        "vs_vins_displacement_mm": 3.1829767003595
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_long_hops_report.json",
+      "fraction": 0.5,
+      "first": 580,
+      "second": 620,
+      "duration_s": 1.3334269523620605,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 13.99999943102428,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.44143804956123434,
+          "metric_distance_m": 0.10708318507063433,
+          "metric_displacement_camera_i_m": [
+            -0.006988101354860751,
+            0.05748328891292617,
+            0.0900757817622416
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.24186972641330506,
+          "direction_cosine": 0.9970799823088067,
+          "rotation_error_deg": 1.2755566404484557,
+          "pnp_rotation_quaternion_xyzw": [
+            0.12261009604579712,
+            -0.0026303664008965693,
+            -0.014537711085257924,
+            0.9923449503457147
+          ],
+          "tracked_points": 94,
+          "pnp_inliers": 24,
+          "pnp_inlier_ratio": 0.2553191489361702,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 1.3418247699737549,
+          "pnp_reprojection_p95_px": 1.8546319782733913,
+          "median_depth_m": 0.4338023124093487,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          4.7306790344462595
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4238713628549974,
+          "metric_distance_m": 0.10291202942844713,
+          "metric_displacement_camera_i_m": [
+            0.003970465728210556,
+            -0.03178068061833124,
+            -0.09780137801901514
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.24186972641330498,
+          "direction_cosine": 0.9962066741619783,
+          "rotation_error_deg": 0.7779561445382368,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.12192407050671589,
+            4.454641615244313e-05,
+            0.019583993445405196,
+            0.9923462028180591
+          ],
+          "tracked_points": 81,
+          "pnp_inliers": 21,
+          "pnp_inlier_ratio": 0.25925925925925924,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.9093595147132874,
+          "pnp_reprojection_p95_px": 1.5440988540649414,
+          "median_depth_m": 0.3787024219218709,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "f9b848c00c5c011bf5420b0ada6253014b9ba76148be120042be9eb9db8091a0",
+          "b9cd3fe0318bff8fbe0e57573fe639a01c8ef29754d934d0e22248feb01a9ac8"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.34734929331378334,
+        "vs_vins_displacement_mm": 2.900497496420273
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.42280929104542186,
+          "metric_distance_m": 0.10228315356031008,
+          "metric_displacement_camera_i_m": [
+            -0.001256002251288754,
+            0.05701833672100706,
+            0.08490686213820758
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.24186972641330506,
+          "direction_cosine": 0.9998202440039201,
+          "rotation_error_deg": 1.6422308707182556e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.11778873223177709,
+            0.005174205082219225,
+            -0.020825403197002202,
+            0.9928068013176985
+          ],
+          "tracked_points": 94,
+          "pnp_inliers": 24,
+          "pnp_inlier_ratio": 0.2553191489361702,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 1.0748188450917506,
+          "pnp_reprojection_median_px": 1.8367522853844347,
+          "pnp_reprojection_p95_px": 7.697009596256322,
+          "median_depth_m": 0.4338023124093487,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.5765534276742054
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4246675458421493,
+          "metric_distance_m": 0.10273345606791878,
+          "metric_displacement_camera_i_m": [
+            -0.0018436680311890979,
+            -0.03543948560285211,
+            -0.09640957807217605
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.24186972641330498,
+          "direction_cosine": 0.9998127879738051,
+          "rotation_error_deg": 1.6422308707182556e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.11778873223177709,
+            -0.005174205082219225,
+            0.020825403197002202,
+            0.9928068013176985
+          ],
+          "tracked_points": 81,
+          "pnp_inliers": 21,
+          "pnp_inlier_ratio": 0.25925925925925924,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 1.01848406810467,
+          "pnp_reprojection_median_px": 1.3389529452986146,
+          "pnp_reprojection_p95_px": 1.8568874544198262,
+          "median_depth_m": 0.3787024219218709,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "f9b848c00c5c011bf5420b0ada6253014b9ba76148be120042be9eb9db8091a0",
+          "b9cd3fe0318bff8fbe0e57573fe639a01c8ef29754d934d0e22248feb01a9ac8"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.937832182824726,
+        "vs_vins_displacement_mm": 6.097205516973009
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.43922246890163563,
+          "metric_distance_m": 0.10642505911343388,
+          "metric_displacement_camera_i_m": [
+            -0.0054102208052115505,
+            0.05791408448309479,
+            0.08912340622205656
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.24186972641330506,
+          "direction_cosine": 0.9982105650003361,
+          "rotation_error_deg": 1.639267444176041e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.12079263573743508,
+            -0.0008227724894161103,
+            -0.016143043635978575,
+            0.9925461522464337
+          ],
+          "tracked_points": 94,
+          "pnp_inliers": 24,
+          "pnp_inlier_ratio": 0.2553191489361702,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.3028514168469845,
+          "pnp_reprojection_median_px": 1.274878833089001,
+          "pnp_reprojection_p95_px": 2.3409418393651307,
+          "median_depth_m": 0.4338023124093487,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          2.536840242714412
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4296230559542277,
+          "metric_distance_m": 0.10416740202016919,
+          "metric_displacement_camera_i_m": [
+            0.005113632105663941,
+            -0.03424621285907051,
+            -0.0982440599483282
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.24186972641330506,
+          "direction_cosine": 0.9975559435031047,
+          "rotation_error_deg": 1.639267444176041e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.12079263573743508,
+            0.0008227724894161103,
+            0.016143043635978575,
+            0.9925461522464337
+          ],
+          "tracked_points": 81,
+          "pnp_inliers": 21,
+          "pnp_inlier_ratio": 0.25925925925925924,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.5771681004168787,
+          "pnp_reprojection_median_px": 1.2639838807131443,
+          "pnp_reprojection_p95_px": 2.709278887934846,
+          "median_depth_m": 0.3787024219218709,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "f9b848c00c5c011bf5420b0ada6253014b9ba76148be120042be9eb9db8091a0",
+          "b9cd3fe0318bff8fbe0e57573fe639a01c8ef29754d934d0e22248feb01a9ac8"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 4.29395976372135e-15,
+        "vs_vins_displacement_mm": 2.373658293127213
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_long_hops_report.json",
+      "fraction": 0.7,
+      "first": 820,
+      "second": 860,
+      "duration_s": 1.3336310386657715,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 11.121801805321397,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4884420832846915,
+          "metric_distance_m": 0.06192719467863868,
+          "metric_displacement_camera_i_m": [
+            0.03757506753042804,
+            0.024289919576457687,
+            0.04281461838927219
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.12683455593651022,
+          "direction_cosine": 0.9983616328753613,
+          "rotation_error_deg": 0.9309201413926224,
+          "pnp_rotation_quaternion_xyzw": [
+            0.07487999992959353,
+            -0.021686339956899715,
+            -0.05525602436188091,
+            0.995424261328574
+          ],
+          "tracked_points": 309,
+          "pnp_inliers": 132,
+          "pnp_inlier_ratio": 0.42718446601941745,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 1.1127663850784302,
+          "pnp_reprojection_p95_px": 1.8833223938941952,
+          "median_depth_m": 0.2863359775506829,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4874518205409597,
+          "reverse_scale": 0.48936468262823435,
+          "bidirectional_relative_disagreement": 0.003916522870095943,
+          "reverse_metric_distance_m": 0.06219695488441466,
+          "reverse_pnp_inlier_ratio": 0.45454545454545453,
+          "reverse_rotation_error_deg": 0.8887990587866073
+        },
+        "reverse_closure_mm": [
+          3.5487110560161397
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "5198fe0349dd4b50e90d300f3cf2f4e96b04caf8f2cbb702c2bbcadd29a74a3c",
+          "175711da32b0b5e4629a2c0b5882f2d0c0209d098f2fb443383893033d68773c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.28143799290753785,
+        "vs_vins_displacement_mm": 1.3024833158733946
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.46946544526008477,
+          "metric_distance_m": 0.05895936624563934,
+          "metric_displacement_camera_i_m": [
+            0.035500335647652655,
+            0.02013969305378307,
+            0.0425479235767251
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.12683455593651022,
+          "direction_cosine": 0.9999770865000553,
+          "rotation_error_deg": 1.5941551259104545e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.08178970262025693,
+            -0.025005616912216685,
+            -0.05783362543531609,
+            0.9946559382204164
+          ],
+          "tracked_points": 309,
+          "pnp_inliers": 132,
+          "pnp_inlier_ratio": 0.42718446601941745,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.9144120053635474,
+          "pnp_reprojection_median_px": 1.436780514532249,
+          "pnp_reprojection_p95_px": 3.9048681669644894,
+          "median_depth_m": 0.2863359775506829,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.46484189458365627,
+          "reverse_scale": 0.47365006782980923,
+          "bidirectional_relative_disagreement": 0.018770908220676695,
+          "reverse_metric_distance_m": 0.060080223203070715,
+          "reverse_pnp_inlier_ratio": 0.45454545454545453,
+          "reverse_rotation_error_deg": 1.5941551259104545e-15
+        },
+        "reverse_closure_mm": [
+          1.2251023235418808
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "5198fe0349dd4b50e90d300f3cf2f4e96b04caf8f2cbb702c2bbcadd29a74a3c",
+          "175711da32b0b5e4629a2c0b5882f2d0c0209d098f2fb443383893033d68773c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.7379090667331739,
+        "vs_vins_displacement_mm": 3.480377653647684
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4867516355230916,
+          "metric_distance_m": 0.061302428026416514,
+          "metric_displacement_camera_i_m": [
+            0.03715083294557857,
+            0.023407685199424343,
+            0.042777138368389506
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.12683455593651022,
+          "direction_cosine": 0.9989827371278598,
+          "rotation_error_deg": 8.017117738811538e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0769695982005577,
+            -0.022605782297132948,
+            -0.054359835044191965,
+            0.9952937595974103
+          ],
+          "tracked_points": 309,
+          "pnp_inliers": 132,
+          "pnp_inlier_ratio": 0.42718446601941745,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.26083621790834993,
+          "pnp_reprojection_median_px": 1.237854528202264,
+          "pnp_reprojection_p95_px": 2.0256244903179494,
+          "median_depth_m": 0.2863359775506829,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4828342472619862,
+          "reverse_scale": 0.49032385555535146,
+          "bidirectional_relative_disagreement": 0.015392377192734655,
+          "reverse_metric_distance_m": 0.06223374706108062,
+          "reverse_pnp_inlier_ratio": 0.45454545454545453,
+          "reverse_rotation_error_deg": 8.017117738811538e-16
+        },
+        "reverse_closure_mm": [
+          1.0564319683687007
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "5198fe0349dd4b50e90d300f3cf2f4e96b04caf8f2cbb702c2bbcadd29a74a3c",
+          "175711da32b0b5e4629a2c0b5882f2d0c0209d098f2fb443383893033d68773c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 4.260921064530478e-15,
+        "vs_vins_displacement_mm": 0.5284009929280735
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_long_hops_report.json",
+      "fraction": 0.9,
+      "first": 1035,
+      "second": 1075,
+      "duration_s": 1.3334388732910156,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 32.06526406007212,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.5166618061035659,
+          "metric_distance_m": 0.2803654438091243,
+          "metric_displacement_camera_i_m": [
+            -0.10892379920106132,
+            0.10671607806045523,
+            -0.23527019941609462
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.542360578865676,
+          "direction_cosine": 0.999470521149141,
+          "rotation_error_deg": 1.1806506909974037,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.18125560732597049,
+            0.14750665819572245,
+            0.15484992772896752,
+            0.959900875342427
+          ],
+          "tracked_points": 78,
+          "pnp_inliers": 26,
+          "pnp_inlier_ratio": 0.3333333333333333,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 1.1012437343597412,
+          "pnp_reprojection_p95_px": 1.7912006378173828,
+          "median_depth_m": 0.2732167281815062,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [],
+        "reverse_closure_measured": false,
+        "explicit_sift_reverse": {
+          "accepted": false,
+          "reason": "translation_direction_disagrees",
+          "direction_cosine": 0.26768541714247274,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "2672625c00f23e4d3e1cf023cae4beeb1e6fa0440807464ecb3de0fda8fcb996",
+          "641be07670ae8c6025945ff331e38e5495c3cc411e7a19d5fc73418bd156d3c0"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.7198464360191837,
+        "vs_vins_displacement_mm": 10.82673385198037
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.5180601684099757,
+          "metric_distance_m": 0.28099183237697634,
+          "metric_displacement_camera_i_m": [
+            -0.10197471480161359,
+            0.09996426631054792,
+            -0.24200147285645637
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.542360578865676,
+          "direction_cosine": 0.9999415657360806,
+          "rotation_error_deg": 4.244878902356311e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.1774556895388854,
+            0.15540207476917214,
+            0.14943948843723384,
+            0.9602226370500402
+          ],
+          "tracked_points": 78,
+          "pnp_inliers": 26,
+          "pnp_inlier_ratio": 0.3333333333333333,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 1.1806506909974037,
+          "pnp_reprojection_median_px": 2.468069986844628,
+          "pnp_reprojection_p95_px": 3.6617313226366854,
+          "median_depth_m": 0.2732167281815062,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [],
+        "reverse_closure_measured": false,
+        "explicit_sift_reverse": {
+          "accepted": false,
+          "reason": "translation_direction_disagrees",
+          "direction_cosine": -0.09465009996293133,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "2672625c00f23e4d3e1cf023cae4beeb1e6fa0440807464ecb3de0fda8fcb996",
+          "641be07670ae8c6025945ff331e38e5495c3cc411e7a19d5fc73418bd156d3c0"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.670850504959425,
+        "vs_vins_displacement_mm": 19.39772401400012
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.5161344001224324,
+          "metric_distance_m": 0.28036281251250406,
+          "metric_displacement_camera_i_m": [
+            -0.1156202053889557,
+            0.10586861596894458,
+            -0.23243732681855842
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.542360578865676,
+          "direction_cosine": 0.9984596370476418,
+          "rotation_error_deg": 3.2298685475317884e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.18133856836198975,
+            0.14174778425645435,
+            0.15264967904966847,
+            0.9611045545458844
+          ],
+          "tracked_points": 78,
+          "pnp_inliers": 26,
+          "pnp_inlier_ratio": 0.3333333333333333,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.7198464360191675,
+          "pnp_reprojection_median_px": 2.0539065505689553,
+          "pnp_reprojection_p95_px": 3.7681517223297765,
+          "median_depth_m": 0.2732167281815062,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [],
+        "reverse_closure_measured": false,
+        "explicit_sift_reverse": {
+          "accepted": false,
+          "reason": "translation_direction_disagrees",
+          "direction_cosine": -0.06694785331742578,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "2672625c00f23e4d3e1cf023cae4beeb1e6fa0440807464ecb3de0fda8fcb996",
+          "641be07670ae8c6025945ff331e38e5495c3cc411e7a19d5fc73418bd156d3c0"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.8617964394026143e-14,
+        "vs_vins_displacement_mm": 6.27122086505284
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_dense10hz_report.json",
+      "fraction": 0.1,
+      "first": 438,
+      "second": 447,
+      "duration_s": 0.3000373840332031,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 1.2498498546636405,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.29791262579470046,
+          "metric_distance_m": 0.003916941643985767,
+          "metric_displacement_camera_i_m": [
+            -0.0036405711886186008,
+            -0.00047525933432946094,
+            -0.0013648449831840945
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.012947612966807626,
+          "direction_cosine": 0.9891009232893745,
+          "rotation_error_deg": 0.12499216772050807,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.004559389240138298,
+            0.004933757019981708,
+            0.010429371004666083,
+            0.9999230461549887
+          ],
+          "tracked_points": 278,
+          "pnp_inliers": 241,
+          "pnp_inlier_ratio": 0.8669064748201439,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.2377224862575531,
+          "pnp_reprojection_p95_px": 0.9490842223167419,
+          "median_depth_m": 0.36651040011474934,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.2992250854631594,
+          "reverse_scale": 0.29659398436188017,
+          "bidirectional_relative_disagreement": 0.008831879456466026,
+          "reverse_metric_distance_m": 0.0038789106296039672,
+          "reverse_pnp_inlier_ratio": 0.8798449612403101,
+          "reverse_rotation_error_deg": 0.1266731805207081
+        },
+        "reverse_closure_mm": [
+          0.045498174602043015
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "5cfe787a60f932e56be9d6e99b22d1066b3f2d8646f3171fe7fa3a20cfdcfc71",
+          "d2db00930b81bae2f8fffe03097f71f10370489579ae4b6e75e73f9685cb7be9"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.18449153675341132,
+        "vs_vins_displacement_mm": 1.0538092201201013
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.355527710937988,
+          "metric_distance_m": 0.004599655862109101,
+          "metric_displacement_camera_i_m": [
+            -0.004252563683322486,
+            -0.0009143591852175188,
+            -0.001495487696214736
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.012947612966807626,
+          "direction_cosine": 0.9967129672788398,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.0040118518161544135,
+            0.004397606351616204,
+            0.00965326020436365,
+            0.9999356882674046
+          ],
+          "tracked_points": 278,
+          "pnp_inliers": 241,
+          "pnp_inlier_ratio": 0.8669064748201439,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.12311299118378746,
+          "pnp_reprojection_median_px": 0.6060247978472709,
+          "pnp_reprojection_p95_px": 1.7739666538075458,
+          "median_depth_m": 0.36651040011474934,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.35408354069102516,
+          "reverse_scale": 0.3569283018805397,
+          "bidirectional_relative_disagreement": 0.008002007896874695,
+          "reverse_metric_distance_m": 0.004636197489007206,
+          "reverse_pnp_inlier_ratio": 0.8798449612403101,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.036900423949642595
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "5cfe787a60f932e56be9d6e99b22d1066b3f2d8646f3171fe7fa3a20cfdcfc71",
+          "d2db00930b81bae2f8fffe03097f71f10370489579ae4b6e75e73f9685cb7be9"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.09986421018056074,
+        "vs_vins_displacement_mm": 1.488179586438814
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.35434863439572967,
+          "metric_distance_m": 0.004642257323774173,
+          "metric_displacement_camera_i_m": [
+            -0.004420011557198994,
+            -0.0004617492352673147,
+            -0.0013419532548089445
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.012947612966807626,
+          "direction_cosine": 0.9820889735475481,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.0045100823814983185,
+            0.0043179789935976496,
+            0.008942711713974498,
+            0.9999405192917845
+          ],
+          "tracked_points": 278,
+          "pnp_inliers": 241,
+          "pnp_inlier_ratio": 0.8669064748201439,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.18077080864160502,
+          "pnp_reprojection_median_px": 1.027907182674731,
+          "pnp_reprojection_p95_px": 2.202396925437567,
+          "median_depth_m": 0.36651040011474934,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.35211971053943725,
+          "reverse_scale": 0.3564921782238587,
+          "bidirectional_relative_disagreement": 0.012340937976788674,
+          "reverse_metric_distance_m": 0.004698872815684146,
+          "reverse_pnp_inlier_ratio": 0.8798449612403101,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.0571202311283036
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "5cfe787a60f932e56be9d6e99b22d1066b3f2d8646f3171fe7fa3a20cfdcfc71",
+          "d2db00930b81bae2f8fffe03097f71f10370489579ae4b6e75e73f9685cb7be9"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 4.216873892175694e-16,
+        "vs_vins_displacement_mm": 1.6540360356905748
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_dense10hz_report.json",
+      "fraction": 0.5,
+      "first": 594,
+      "second": 603,
+      "duration_s": 0.3000197410583496,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 6.30748763401904,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.42744372093057065,
+          "metric_distance_m": 0.04060752700166803,
+          "metric_displacement_camera_i_m": [
+            0.0021960137695305397,
+            0.017792320465924515,
+            0.03643600012560482
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.09470550434776022,
+          "direction_cosine": 0.9999402260359743,
+          "rotation_error_deg": 0.07291046311226482,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0527392761215376,
+            0.005382435454911846,
+            -0.016129171293194588,
+            0.9984635436389977
+          ],
+          "tracked_points": 47,
+          "pnp_inliers": 36,
+          "pnp_inlier_ratio": 0.7659574468085106,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.6985733509063721,
+          "pnp_reprojection_p95_px": 1.4727208614349365,
+          "median_depth_m": 0.47195075696795974,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4287512115421216,
+          "reverse_scale": 0.4261829219384173,
+          "bidirectional_relative_disagreement": 0.0060081578290680625,
+          "reverse_metric_distance_m": 0.04036438928020913,
+          "reverse_pnp_inlier_ratio": 0.803921568627451,
+          "reverse_rotation_error_deg": 0.01998898440287434
+        },
+        "reverse_closure_mm": [
+          0.394930347334241
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "f7a20943ed1e1c21b9b28a3c0524a1ca60f790f41ac795701251638d6fa468e1",
+          "3924a136b8d07feed70c448e252400830ae263a221fe95c54aeba2b0ba195d6a"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.1492176828544606,
+        "vs_vins_displacement_mm": 1.6882134980964782
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4256006881238243,
+          "metric_distance_m": 0.04032878213072723,
+          "metric_displacement_camera_i_m": [
+            0.002192855420253118,
+            0.01726749651241872,
+            0.03637905465301618
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.09470550434776022,
+          "direction_cosine": 0.9999249682173227,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            0.05337422401711653,
+            0.00535956685095597,
+            -0.016133097594268873,
+            0.9984298625420589
+          ],
+          "tracked_points": 47,
+          "pnp_inliers": 36,
+          "pnp_inlier_ratio": 0.7659574468085106,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.1302664516528042,
+          "pnp_reprojection_median_px": 0.7921600475253562,
+          "pnp_reprojection_p95_px": 1.6601641835387029,
+          "median_depth_m": 0.47195075696795974,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.42580160961113617,
+          "reverse_scale": 0.4254088922424751,
+          "bidirectional_relative_disagreement": 0.000922726793915019,
+          "reverse_metric_distance_m": 0.04029063777225536,
+          "reverse_pnp_inlier_ratio": 0.803921568627451,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.11542721233022621
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "f7a20943ed1e1c21b9b28a3c0524a1ca60f790f41ac795701251638d6fa468e1",
+          "3924a136b8d07feed70c448e252400830ae263a221fe95c54aeba2b0ba195d6a"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.1774789583802191,
+        "vs_vins_displacement_mm": 2.0691070190993526
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4279857244146625,
+          "metric_distance_m": 0.040522697815202714,
+          "metric_displacement_camera_i_m": [
+            0.0031300902264188423,
+            0.01798637501593706,
+            0.03617709064011073
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.09470550434776022,
+          "direction_cosine": 0.999855111683512,
+          "rotation_error_deg": 8.257315733420858e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.052540035779442926,
+            0.006164619491487245,
+            -0.015107576742874584,
+            0.9984855047679851
+          ],
+          "tracked_points": 47,
+          "pnp_inliers": 36,
+          "pnp_inlier_ratio": 0.7659574468085106,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.15752271728229436,
+          "pnp_reprojection_median_px": 0.8655236719031163,
+          "pnp_reprojection_p95_px": 1.7813986750725772,
+          "median_depth_m": 0.47195075696795974,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.42781913077573874,
+          "reverse_scale": 0.42814419086581673,
+          "bidirectional_relative_disagreement": 0.0007595187360472239,
+          "reverse_metric_distance_m": 0.04055593080339866,
+          "reverse_pnp_inlier_ratio": 0.803921568627451,
+          "reverse_rotation_error_deg": 8.257315733420858e-16
+        },
+        "reverse_closure_mm": [
+          0.1457748649290447
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "f7a20943ed1e1c21b9b28a3c0524a1ca60f790f41ac795701251638d6fa468e1",
+          "3924a136b8d07feed70c448e252400830ae263a221fe95c54aeba2b0ba195d6a"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.9488452003023915e-15,
+        "vs_vins_displacement_mm": 1.810446412722836
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_dense10hz_report.json",
+      "fraction": 0.7,
+      "first": 837,
+      "second": 840,
+      "duration_s": 0.1000216007232666,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 0.8155762137115974,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.35351607081284825,
+          "metric_distance_m": 0.0050982280142228414,
+          "metric_displacement_camera_i_m": [
+            0.003117768950132967,
+            0.0015837682321536153,
+            0.003709868440445613
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.012914118102255887,
+          "direction_cosine": 0.8990086223594315,
+          "rotation_error_deg": 0.6893424910635172,
+          "pnp_rotation_quaternion_xyzw": [
+            0.006013568215573096,
+            -0.0012370004969393736,
+            -0.0040986996928127645,
+            0.9999727533727684
+          ],
+          "tracked_points": 2087,
+          "pnp_inliers": 2023,
+          "pnp_inlier_ratio": 0.9693339722089123,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.21758030354976654,
+          "pnp_reprojection_p95_px": 0.6466073811054228,
+          "median_depth_m": 0.24945073210258698,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3549100997256715,
+          "reverse_scale": 0.35211787461304184,
+          "bidirectional_relative_disagreement": 0.007898485530904902,
+          "reverse_metric_distance_m": 0.005084119125400045,
+          "reverse_pnp_inlier_ratio": 0.9718162839248434,
+          "reverse_rotation_error_deg": 0.6872399606443371
+        },
+        "reverse_closure_mm": [
+          0.018091161255939268
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "a5eb5b64973804923da00110204996517494b2ade47e390fbeb7c802b55d117e",
+          "91cc272264dcf7f3b2bd52870fa7a604213d8d11779277dc5d0a65e0ddbca934"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.033337888963130856,
+        "vs_vins_displacement_mm": 0.22516721818968943
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.3627218660438573,
+          "metric_distance_m": 0.004751366317653385,
+          "metric_displacement_camera_i_m": [
+            0.0026411840466293813,
+            -0.0013025636568274243,
+            0.003728666871185183
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.012914118102255887,
+          "direction_cosine": 0.9893369278496883,
+          "rotation_error_deg": 2.2774306547654547e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.011451125919948613,
+            -0.0023947787179258444,
+            -0.006395791039043836,
+            0.9999111113529254
+          ],
+          "tracked_points": 2087,
+          "pnp_inliers": 2023,
+          "pnp_inlier_ratio": 0.9693339722089123,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.6861193058501069,
+          "pnp_reprojection_median_px": 1.7963743962506578,
+          "pnp_reprojection_p95_px": 4.248596009881768,
+          "median_depth_m": 0.24945073210258698,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3639971478172056,
+          "reverse_scale": 0.3614309019369578,
+          "bidirectional_relative_disagreement": 0.00707512173293395,
+          "reverse_metric_distance_m": 0.004716383790546293,
+          "reverse_pnp_inlier_ratio": 0.9718162839248434,
+          "reverse_rotation_error_deg": 2.2774306547654547e-16
+        },
+        "reverse_closure_mm": [
+          0.04282549062635664
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "a5eb5b64973804923da00110204996517494b2ade47e390fbeb7c802b55d117e",
+          "91cc272264dcf7f3b2bd52870fa7a604213d8d11779277dc5d0a65e0ddbca934"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.7168199221680028,
+        "vs_vins_displacement_mm": 2.9247825030181245
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.35403930298018066,
+          "metric_distance_m": 0.005129181711745127,
+          "metric_displacement_camera_i_m": [
+            0.0031185454457249564,
+            0.0016750521054034427,
+            0.0037117892961794456
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.012914118102255887,
+          "direction_cosine": 0.8916297273506291,
+          "rotation_error_deg": 2.277364465586363e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0058576269517997695,
+            -0.0012216483628021554,
+            -0.003853583331112784,
+            0.9999746725179001
+          ],
+          "tracked_points": 2087,
+          "pnp_inliers": 2023,
+          "pnp_inlier_ratio": 0.9693339722089123,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.036098589582617996,
+          "pnp_reprojection_median_px": 0.2752457806598163,
+          "pnp_reprojection_p95_px": 0.752501690094769,
+          "median_depth_m": 0.24945073210258698,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3541342006448163,
+          "reverse_scale": 0.3539444992272378,
+          "bidirectional_relative_disagreement": 0.0005358201499714422,
+          "reverse_metric_distance_m": 0.005125163369762862,
+          "reverse_pnp_inlier_ratio": 0.9718162839248434,
+          "reverse_rotation_error_deg": 2.277364465586363e-16
+        },
+        "reverse_closure_mm": [
+          0.005223803734994363
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "a5eb5b64973804923da00110204996517494b2ade47e390fbeb7c802b55d117e",
+          "91cc272264dcf7f3b2bd52870fa7a604213d8d11779277dc5d0a65e0ddbca934"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 6.745030931507013e-15,
+        "vs_vins_displacement_mm": 0.23439635806763087
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_dense10hz_report.json",
+      "fraction": 0.9,
+      "first": 1077,
+      "second": 1080,
+      "duration_s": 0.10001087188720703,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 3.2391471395227778,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4652353399675069,
+          "metric_distance_m": 0.02638710563063516,
+          "metric_displacement_camera_i_m": [
+            -0.02119075210899521,
+            0.0060086344434509935,
+            -0.014530233334065466
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.05669935402291748,
+          "direction_cosine": 0.9972877315701267,
+          "rotation_error_deg": 0.2918588037751001,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.00741925293949296,
+            0.02404000810815835,
+            0.012389366233674173,
+            0.9996066908040919
+          ],
+          "tracked_points": 180,
+          "pnp_inliers": 163,
+          "pnp_inlier_ratio": 0.9055555555555556,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.582650899887085,
+          "pnp_reprojection_p95_px": 1.4668620824813845,
+          "median_depth_m": 0.4684199532998703,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4641241010689628,
+          "reverse_scale": 0.46639063799947506,
+          "bidirectional_relative_disagreement": 0.0048715766346298876,
+          "reverse_metric_distance_m": 0.02647289402357891,
+          "reverse_pnp_inlier_ratio": 0.8653846153846154,
+          "reverse_rotation_error_deg": 0.2454206445270052
+        },
+        "reverse_closure_mm": [
+          0.628166499844132
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "e44f84e851897a0a064248b7b20c600c90973c46199065da174e2c282fcb1767",
+          "1a6992d70ea703e01316f5856a5ebbb2bc22094f20aa05d7be5428be321ba48f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.10969872952604258,
+        "vs_vins_displacement_mm": 1.4737820574463463
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4864397960479203,
+          "metric_distance_m": 0.02749541464659872,
+          "metric_displacement_camera_i_m": [
+            -0.023681704797851064,
+            0.005878321266971279,
+            -0.012673595525268522
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.05669935402291748,
+          "direction_cosine": 0.9992295505377196,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.007111369114971702,
+            0.02156500090496146,
+            0.012902947443027817,
+            0.9996588883777117
+          ],
+          "tracked_points": 180,
+          "pnp_inliers": 163,
+          "pnp_inlier_ratio": 0.9055555555555556,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.19431995891490378,
+          "pnp_reprojection_median_px": 0.7644472257233872,
+          "pnp_reprojection_p95_px": 1.6901171382501683,
+          "median_depth_m": 0.4684199532998703,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4845598559740941,
+          "reverse_scale": 0.4883774235492627,
+          "bidirectional_relative_disagreement": 0.007847510123240076,
+          "reverse_metric_distance_m": 0.027704485922788118,
+          "reverse_pnp_inlier_ratio": 0.8653846153846154,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.2979387279789808
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "e44f84e851897a0a064248b7b20c600c90973c46199065da174e2c282fcb1767",
+          "1a6992d70ea703e01316f5856a5ebbb2bc22094f20aa05d7be5428be321ba48f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.2671064152625491,
+        "vs_vins_displacement_mm": 2.6057686185835944
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4719924013293045,
+          "metric_distance_m": 0.02683742124971753,
+          "metric_displacement_camera_i_m": [
+            -0.021572649744426197,
+            0.006750988744580493,
+            -0.014466931717183362
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.05669935402291748,
+          "direction_cosine": 0.9970344595098558,
+          "rotation_error_deg": 4.869210042878689e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.00793045890086523,
+            0.023733750314793262,
+            0.01313854150686063,
+            0.9996005180294222
+          ],
+          "tracked_points": 180,
+          "pnp_inliers": 163,
+          "pnp_inlier_ratio": 0.9055555555555556,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.19268670508372282,
+          "pnp_reprojection_median_px": 0.8301817296164601,
+          "pnp_reprojection_p95_px": 1.7023616535805586,
+          "median_depth_m": 0.4684199532998703,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.4719248437916085,
+          "reverse_scale": 0.4720630604609404,
+          "bidirectional_relative_disagreement": 0.0002928356787396173,
+          "reverse_metric_distance_m": 0.026843955230084333,
+          "reverse_pnp_inlier_ratio": 0.8653846153846154,
+          "reverse_rotation_error_deg": 4.869210042878689e-16
+        },
+        "reverse_closure_mm": [
+          0.031212726262615557
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "e44f84e851897a0a064248b7b20c600c90973c46199065da174e2c282fcb1767",
+          "1a6992d70ea703e01316f5856a5ebbb2bc22094f20aa05d7be5428be321ba48f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 8.300311948856357e-15,
+        "vs_vins_displacement_mm": 0.6816674090319393
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_multisecond_report.json",
+      "fraction": 0.1,
+      "first": 210,
+      "second": 450,
+      "duration_s": 8.000388860702515,
+      "cached_method": "lk",
+      "gyro_rotation_deg": 2.3450351967275362,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.33862476803967473,
+          "metric_distance_m": 0.00898831216433882,
+          "metric_displacement_camera_i_m": [
+            -0.008875179040611542,
+            -0.0009450375738769611,
+            -0.0010620059061283698
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026343100298864473,
+          "direction_cosine": 0.9997315275590846,
+          "rotation_error_deg": 0.1201562687913038,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0034601096041259505,
+            0.005171716159766564,
+            0.018084426770396473,
+            0.9998171005248292
+          ],
+          "tracked_points": 273,
+          "pnp_inliers": 200,
+          "pnp_inlier_ratio": 0.7326007326007326,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.6893863677978516,
+          "pnp_reprojection_p95_px": 1.6387957155704493,
+          "median_depth_m": 0.3557507599872121,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.34111015591508376,
+          "reverse_scale": 0.33611187431372913,
+          "bidirectional_relative_disagreement": 0.014761131145322775,
+          "reverse_metric_distance_m": 0.008858533344974662,
+          "reverse_pnp_inlier_ratio": 0.7459677419354839,
+          "reverse_rotation_error_deg": 0.1591070619364957
+        },
+        "reverse_closure_mm": [
+          0.2149396205195538
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "861aa44c73a11faed45c02b376f637c165d2238924229c8b0712d494475739af",
+          "45426616dee715cd3c37381d354ad64a5baf19561f3300def0c0185741d4446c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.4156347109711832,
+        "vs_vins_displacement_mm": 2.4915951781690575
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.3775081711686916,
+          "metric_distance_m": 0.009941013717498432,
+          "metric_displacement_camera_i_m": [
+            -0.00983221353072535,
+            -0.0009868627625482741,
+            -0.0010850957126488595
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026343100298864473,
+          "direction_cosine": 0.9994340114291872,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            0.00351840834685772,
+            0.004137776054687804,
+            0.01792013301497698,
+            0.99982466885187
+          ],
+          "tracked_points": 273,
+          "pnp_inliers": 200,
+          "pnp_inlier_ratio": 0.7326007326007326,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.09486164555736581,
+          "pnp_reprojection_median_px": 0.7455005150099789,
+          "pnp_reprojection_p95_px": 1.8454665013154123,
+          "median_depth_m": 0.3557507599872121,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3771533002810722,
+          "reverse_scale": 0.37785511745934697,
+          "bidirectional_relative_disagreement": 0.001859097625362027,
+          "reverse_metric_distance_m": 0.009963418798754122,
+          "reverse_pnp_inlier_ratio": 0.7459677419354839,
+          "reverse_rotation_error_deg": 0.0
+        },
+        "reverse_closure_mm": [
+          0.10928553558145483
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "861aa44c73a11faed45c02b376f637c165d2238924229c8b0712d494475739af",
+          "45426616dee715cd3c37381d354ad64a5baf19561f3300def0c0185741d4446c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.39858106834318696,
+        "vs_vins_displacement_mm": 3.0434250805135474
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.3666387819719729,
+          "metric_distance_m": 0.009926170041528758,
+          "metric_displacement_camera_i_m": [
+            -0.00985757225742625,
+            0.0011057499229780272,
+            -0.00036665786613332847
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.026343100298864473,
+          "direction_cosine": 0.9699419276546306,
+          "rotation_error_deg": 4.008558869405769e-16,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0008626306794154212,
+            0.0036594302141584756,
+            0.020114503572363177,
+            0.9997906136711107
+          ],
+          "tracked_points": 273,
+          "pnp_inliers": 200,
+          "pnp_inlier_ratio": 0.7326007326007326,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.4034061227520673,
+          "pnp_reprojection_median_px": 1.4514740559834771,
+          "pnp_reprojection_p95_px": 3.74630970435806,
+          "median_depth_m": 0.3557507599872121,
+          "method": "lk",
+          "scale_estimator": "bidirectional_pnp_weighted_mean",
+          "forward_scale": 0.3654774265397705,
+          "reverse_scale": 0.36776621938996984,
+          "bidirectional_relative_disagreement": 0.006242925834828584,
+          "reverse_metric_distance_m": 0.009983704469698571,
+          "reverse_pnp_inlier_ratio": 0.7459677419354839,
+          "reverse_rotation_error_deg": 4.008558869405769e-16
+        },
+        "reverse_closure_mm": [
+          0.14288865441563503
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": null,
+        "pnp_correspondence_and_inlier_sha256": [
+          "861aa44c73a11faed45c02b376f637c165d2238924229c8b0712d494475739af",
+          "45426616dee715cd3c37381d354ad64a5baf19561f3300def0c0185741d4446c"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 7.967643274835643e-16,
+        "vs_vins_displacement_mm": 3.3416404682564127
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_multisecond_report.json",
+      "fraction": 0.3,
+      "first": 240,
+      "second": 480,
+      "duration_s": 8.000354528427124,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 7.26509036034501,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.43102586356148714,
+          "metric_distance_m": 0.09819613288400761,
+          "metric_displacement_camera_i_m": [
+            -0.05969896606062797,
+            -0.05651139428957364,
+            -0.053711975202128004
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.22781754799735623,
+          "direction_cosine": 0.9999910635586065,
+          "rotation_error_deg": 0.04871425332441116,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.009063555149919217,
+            0.03380936085119151,
+            0.05022864589425853,
+            0.9981241717434297
+          ],
+          "tracked_points": 101,
+          "pnp_inliers": 38,
+          "pnp_inlier_ratio": 0.37623762376237624,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.9198662042617798,
+          "pnp_reprojection_p95_px": 1.8708858668804167,
+          "median_depth_m": 0.38809173816786774,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          2.244412042460302
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4222188584535474,
+          "metric_distance_m": 0.09619133291738464,
+          "metric_displacement_camera_i_m": [
+            0.05562841383397154,
+            0.06166332178052804,
+            0.04853747881514436
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.2278175479973562,
+          "direction_cosine": 0.9999743441931844,
+          "rotation_error_deg": 0.2914221724377287,
+          "pnp_rotation_quaternion_xyzw": [
+            0.010687080838299019,
+            -0.03603114095901234,
+            -0.049941548199414376,
+            0.9980447810332926
+          ],
+          "tracked_points": 79,
+          "pnp_inliers": 27,
+          "pnp_inlier_ratio": 0.34177215189873417,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.7250670194625854,
+          "pnp_reprojection_p95_px": 1.6058278083801267,
+          "median_depth_m": 0.44616722392695485,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "aed27569df5509585bdfe93628854a06dea058585a18c407a39929a1a6c6d1d8",
+          "414199cc6a732eab898499116ec030244037a9bda14835c13f548ce5268b55f1"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.4652196287906435,
+        "vs_vins_displacement_mm": 4.821009140849235
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.43073278551965344,
+          "metric_distance_m": 0.0981291393851203,
+          "metric_displacement_camera_i_m": [
+            -0.05951314405626797,
+            -0.05651176258566252,
+            -0.0537953006355014
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.22781754799735623,
+          "direction_cosine": 0.9999933521687259,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.00900078062917496,
+            0.03412932991527933,
+            0.04995590410658542,
+            0.9981275381595747
+          ],
+          "tracked_points": 101,
+          "pnp_inliers": 38,
+          "pnp_inlier_ratio": 0.37623762376237624,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.04871425332441116,
+          "pnp_reprojection_median_px": 0.9420091382693172,
+          "pnp_reprojection_p95_px": 1.821593891278793,
+          "median_depth_m": 0.38809173816786774,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.7085643125298167
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4325480126941161,
+          "metric_distance_m": 0.0985424824163536,
+          "metric_displacement_camera_i_m": [
+            0.05724207340888429,
+            0.06319467707213265,
+            0.049400391318066846
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.2278175479973562,
+          "direction_cosine": 0.9999953850031009,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            0.00900078062917496,
+            -0.03412932991527933,
+            -0.04995590410658542,
+            0.9981275381595747
+          ],
+          "tracked_points": 79,
+          "pnp_inliers": 27,
+          "pnp_inlier_ratio": 0.34177215189873417,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.1873773968580245,
+          "pnp_reprojection_median_px": 0.7968289725689877,
+          "pnp_reprojection_p95_px": 1.8755328796875281,
+          "median_depth_m": 0.44616722392695485,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "aed27569df5509585bdfe93628854a06dea058585a18c407a39929a1a6c6d1d8",
+          "414199cc6a732eab898499116ec030244037a9bda14835c13f548ce5268b55f1"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.47684721792758933,
+        "vs_vins_displacement_mm": 4.758327852790053
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.41707520239005574,
+          "metric_distance_m": 0.09503712306862916,
+          "metric_displacement_camera_i_m": [
+            -0.05845366306797902,
+            -0.05285041580927366,
+            -0.05312304192988036
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.22781754799735623,
+          "direction_cosine": 0.9997887864344223,
+          "rotation_error_deg": 1.8218915724690907e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.012834946977512635,
+            0.03460849154946161,
+            0.051494443696027514,
+            0.99799090111944
+          ],
+          "tracked_points": 101,
+          "pnp_inliers": 38,
+          "pnp_inlier_ratio": 0.37623762376237624,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.4652196287906431,
+          "pnp_reprojection_median_px": 1.005049889659819,
+          "pnp_reprojection_p95_px": 2.4459778440592426,
+          "median_depth_m": 0.38809173816786774,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.9994608437919094
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.41864496614399144,
+          "metric_distance_m": 0.09541462376990235,
+          "metric_displacement_camera_i_m": [
+            0.056349297262657846,
+            0.059715233375762775,
+            0.04860862094356129
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.22781754799735615,
+          "direction_cosine": 0.9995812580926967,
+          "rotation_error_deg": 1.8218915724690907e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.012834946977512635,
+            -0.03460849154946161,
+            -0.051494443696027514,
+            0.99799090111944
+          ],
+          "tracked_points": 79,
+          "pnp_inliers": 27,
+          "pnp_inlier_ratio": 0.34177215189873417,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.39139003697699504,
+          "pnp_reprojection_median_px": 0.9629343349440767,
+          "pnp_reprojection_p95_px": 3.1988465080203943,
+          "median_depth_m": 0.44616722392695485,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "aed27569df5509585bdfe93628854a06dea058585a18c407a39929a1a6c6d1d8",
+          "414199cc6a732eab898499116ec030244037a9bda14835c13f548ce5268b55f1"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.1419309761504361e-15,
+        "vs_vins_displacement_mm": 7.5189878739473235
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_multisecond_report.json",
+      "fraction": 0.5,
+      "first": 540,
+      "second": 660,
+      "duration_s": 4.000171661376953,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 28.44403337070542,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.45120352144916964,
+          "metric_distance_m": 0.10460573372848239,
+          "metric_displacement_camera_i_m": [
+            0.0511924220882167,
+            0.07118150440483224,
+            0.057051633458481014
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.23182813768997979,
+          "direction_cosine": 0.9999611719968325,
+          "rotation_error_deg": 0.15795564412415805,
+          "pnp_rotation_quaternion_xyzw": [
+            0.0769271151599405,
+            -0.18263386108075721,
+            -0.13702858209333046,
+            0.9705412198507569
+          ],
+          "tracked_points": 74,
+          "pnp_inliers": 23,
+          "pnp_inlier_ratio": 0.3108108108108108,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.9805581569671631,
+          "pnp_reprojection_p95_px": 1.836409735679626,
+          "median_depth_m": 0.3901105383586478,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          4.808824281396081
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.44208034665141815,
+          "metric_distance_m": 0.1025572683292759,
+          "metric_displacement_camera_i_m": [
+            -0.03818300110701758,
+            -0.04344191829893993,
+            -0.08469268828023362
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.23182813768997979,
+          "direction_cosine": 0.9993115567829844,
+          "rotation_error_deg": 0.6608801724993228,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.08099865149264193,
+            0.1852777815047323,
+            0.13693959351728277,
+            0.9697210474483781
+          ],
+          "tracked_points": 78,
+          "pnp_inliers": 31,
+          "pnp_inlier_ratio": 0.3974358974358974,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.8553123474121094,
+          "pnp_reprojection_p95_px": 1.6217401027679443,
+          "median_depth_m": 0.3719591039286577,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "00b8c9b83abda647a11ca32ae72daf6c2c3a37cd0d2ec02fe2d40b264567becf",
+          "f68a29183cf11a63b8d6adc4d08ec3b5757aaf6c75900a4edde1955a14e33bf4"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.8251527995113358,
+        "vs_vins_displacement_mm": 5.010949181721147
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.45263243172263873,
+          "metric_distance_m": 0.10494092983420102,
+          "metric_displacement_camera_i_m": [
+            0.05152329136361603,
+            0.07154860500655388,
+            0.05690998438888174
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.23182813768997979,
+          "direction_cosine": 0.9999238035162507,
+          "rotation_error_deg": 6.376620503641816e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.07644475955627561,
+            -0.1820645644109369,
+            -0.13818742386736768,
+            0.9705219879050343
+          ],
+          "tracked_points": 74,
+          "pnp_inliers": 23,
+          "pnp_inlier_ratio": 0.3108108108108108,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.16427948229156983,
+          "pnp_reprojection_median_px": 1.2438554976108325,
+          "pnp_reprojection_p95_px": 1.93847855271867,
+          "median_depth_m": 0.3901105383586478,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.11942983917213594
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.45243019393278305,
+          "metric_distance_m": 0.10489514970431164,
+          "metric_displacement_camera_i_m": [
+            -0.04210003770283178,
+            -0.04706658707199,
+            -0.08375748108858622
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.23182813768997979,
+          "direction_cosine": 0.9999132427935533,
+          "rotation_error_deg": 6.376620503641816e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.07644475955627561,
+            0.1820645644109369,
+            0.13818742386736768,
+            0.9705219879050343
+          ],
+          "tracked_points": 78,
+          "pnp_inliers": 31,
+          "pnp_inlier_ratio": 0.3974358974358974,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.6190790099969965,
+          "pnp_reprojection_median_px": 1.3909059039956955,
+          "pnp_reprojection_p95_px": 2.1647346145561586,
+          "median_depth_m": 0.3719591039286577,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "00b8c9b83abda647a11ca32ae72daf6c2c3a37cd0d2ec02fe2d40b264567becf",
+          "f68a29183cf11a63b8d6adc4d08ec3b5757aaf6c75900a4edde1955a14e33bf4"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.9225014871432464,
+        "vs_vins_displacement_mm": 5.481120056667384
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.43279756976972406,
+          "metric_distance_m": 0.10039761088358587,
+          "metric_displacement_camera_i_m": [
+            0.04836810773993287,
+            0.06600649473449842,
+            0.05816656322712213
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.23182813768997979,
+          "direction_cosine": 0.9993729304256588,
+          "rotation_error_deg": 3.555968236953807e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.08277659261106417,
+            -0.18664255015340148,
+            -0.13664260945535017,
+            0.9693510156125951
+          ],
+          "tracked_points": 74,
+          "pnp_inliers": 23,
+          "pnp_inlier_ratio": 0.3108108108108108,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.9530355240699739,
+          "pnp_reprojection_median_px": 1.4888235295377645,
+          "pnp_reprojection_p95_px": 3.7212805243771885,
+          "median_depth_m": 0.3901105383586478,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          1.3590246783221003
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4379406776005992,
+          "metric_distance_m": 0.10161334966257635,
+          "metric_displacement_camera_i_m": [
+            -0.03655525902566386,
+            -0.04197199756673933,
+            -0.08501374763809234
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.23182813768997976,
+          "direction_cosine": 0.9991499349639744,
+          "rotation_error_deg": 3.555968236953807e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.08277659261106417,
+            0.18664255015340148,
+            0.13664260945535017,
+            0.9693510156125951
+          ],
+          "tracked_points": 78,
+          "pnp_inliers": 31,
+          "pnp_inlier_ratio": 0.3974358974358974,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.3131804097948365,
+          "pnp_reprojection_median_px": 0.849369169768163,
+          "pnp_reprojection_p95_px": 2.1166118615458673,
+          "median_depth_m": 0.3719591039286577,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "00b8c9b83abda647a11ca32ae72daf6c2c3a37cd0d2ec02fe2d40b264567becf",
+          "f68a29183cf11a63b8d6adc4d08ec3b5757aaf6c75900a4edde1955a14e33bf4"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 6.999930474377542e-15,
+        "vs_vins_displacement_mm": 1.4604947018024401
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_multisecond_report.json",
+      "fraction": 0.7,
+      "first": 920,
+      "second": 1080,
+      "duration_s": 5.333774089813232,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 16.628286363696404,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.476498319060043,
+          "metric_distance_m": 0.09745914555984297,
+          "metric_displacement_camera_i_m": [
+            0.0007291977687577103,
+            -0.03905898127613435,
+            -0.08928689324609344
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.20299585786918345,
+          "direction_cosine": 0.9924895657065225,
+          "rotation_error_deg": 1.8294764369388334,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.1396039468801175,
+            -0.010019227988468188,
+            0.04487002635709554,
+            0.9891395421378735
+          ],
+          "tracked_points": 129,
+          "pnp_inliers": 46,
+          "pnp_inlier_ratio": 0.35658914728682173,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.9216705560684204,
+          "pnp_reprojection_p95_px": 1.7577896416187286,
+          "median_depth_m": 0.3749229566332295,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          1.246257519422741
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4821759895561003,
+          "metric_distance_m": 0.09838882207969127,
+          "metric_displacement_camera_i_m": [
+            -0.006624860415642393,
+            0.061940192930080094,
+            0.07615696970394012
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.20299585786918334,
+          "direction_cosine": 0.9948256984374102,
+          "rotation_error_deg": 1.9478457625916967,
+          "pnp_rotation_quaternion_xyzw": [
+            0.14039175847503788,
+            0.009949325783921575,
+            -0.043542055741549686,
+            0.9890880923611061
+          ],
+          "tracked_points": 88,
+          "pnp_inliers": 41,
+          "pnp_inlier_ratio": 0.4659090909090909,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 1.2261555194854736,
+          "pnp_reprojection_p95_px": 1.9106379747390747,
+          "median_depth_m": 0.481015900696461,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "f01ef85e5b2738f4569536f6c5bbaec4bdf68dadca0968586a91a5e32963f2a5",
+          "025e775034560697a5253fc2492d36d06c5a5417b368ec0d79a9c4bb454098dc"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.5734510709996338,
+        "vs_vins_displacement_mm": 12.078411237155704
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.5319359885534444,
+          "metric_distance_m": 0.10799806730101158,
+          "metric_displacement_camera_i_m": [
+            0.004149039736478291,
+            -0.05302217804611192,
+            -0.09399476924417315
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.20299585786918345,
+          "direction_cosine": 0.9998401362770237,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.12476601939162145,
+            -0.00549447150174896,
+            0.04815278303587741,
+            0.9910017965039144
+          ],
+          "tracked_points": 129,
+          "pnp_inliers": 46,
+          "pnp_inlier_ratio": 0.35658914728682173,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 1.8294764369388334,
+          "pnp_reprojection_median_px": 1.464637263706444,
+          "pnp_reprojection_p95_px": 3.755836570993555,
+          "median_depth_m": 0.3749229566332295,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.7841475021925479
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.5325985911308205,
+          "metric_distance_m": 0.10814901855032323,
+          "metric_displacement_camera_i_m": [
+            -0.010835230088313785,
+            0.07359998987117823,
+            0.07849744896042113
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.20299585786918334,
+          "direction_cosine": 0.9996882945009045,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            0.12476601939162145,
+            0.00549447150174896,
+            -0.04815278303587741,
+            0.9910017965039144
+          ],
+          "tracked_points": 88,
+          "pnp_inliers": 41,
+          "pnp_inlier_ratio": 0.4659090909090909,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 1.932435803322009,
+          "pnp_reprojection_median_px": 2.0217783644183505,
+          "pnp_reprojection_p95_px": 6.1596735158320195,
+          "median_depth_m": 0.481015900696461,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "f01ef85e5b2738f4569536f6c5bbaec4bdf68dadca0968586a91a5e32963f2a5",
+          "025e775034560697a5253fc2492d36d06c5a5417b368ec0d79a9c4bb454098dc"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.8844902103386698,
+        "vs_vins_displacement_mm": 16.268058054811014
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4755484739492243,
+          "metric_distance_m": 0.09716741371808607,
+          "metric_displacement_camera_i_m": [
+            -0.0029762397621700245,
+            -0.0419170829950624,
+            -0.08761053839992555
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.20299585786918345,
+          "direction_cosine": 0.9934850248024619,
+          "rotation_error_deg": 3.284461741436511e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.13760519963339596,
+            -0.01376528843903693,
+            0.04224473690712338,
+            0.9894901253027699
+          ],
+          "tracked_points": 129,
+          "pnp_inliers": 46,
+          "pnp_inlier_ratio": 0.35658914728682173,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.5734510709996422,
+          "pnp_reprojection_median_px": 1.4049357766160226,
+          "pnp_reprojection_p95_px": 3.4503271429889644,
+          "median_depth_m": 0.3749229566332295,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [
+          0.97764959280096
+        ],
+        "reverse_closure_measured": true,
+        "explicit_sift_reverse": {
+          "accepted": true,
+          "scale": 0.4800492195230248,
+          "metric_distance_m": 0.09811501200937597,
+          "metric_displacement_camera_i_m": [
+            -0.003654394660578455,
+            0.06469666858269962,
+            0.07367185388983404
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.20299585786918345,
+          "direction_cosine": 0.9932017653648777,
+          "rotation_error_deg": 3.284461741436511e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            0.13760519963339596,
+            0.01376528843903693,
+            -0.04224473690712338,
+            0.9894901253027699
+          ],
+          "tracked_points": 88,
+          "pnp_inliers": 41,
+          "pnp_inlier_ratio": 0.4659090909090909,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.44345309050760423,
+          "pnp_reprojection_median_px": 1.5255966091438886,
+          "pnp_reprojection_p95_px": 2.6534765137419134,
+          "median_depth_m": 0.481015900696461,
+          "method": "sift"
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "f01ef85e5b2738f4569536f6c5bbaec4bdf68dadca0968586a91a5e32963f2a5",
+          "025e775034560697a5253fc2492d36d06c5a5417b368ec0d79a9c4bb454098dc"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.062292620955197e-14,
+        "vs_vins_displacement_mm": 7.453044544221005
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    },
+    {
+      "family": "stereo_scale_multisecond_report.json",
+      "fraction": 0.9,
+      "first": 975,
+      "second": 1095,
+      "duration_s": 4.000339984893799,
+      "cached_method": "sift",
+      "gyro_rotation_deg": 32.72785749213269,
+      "free": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.49728234133721066,
+          "metric_distance_m": 0.24732280714023988,
+          "metric_displacement_camera_i_m": [
+            -0.12369862524501568,
+            0.06206811476901556,
+            -0.2049750476844481
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.4970323140073166,
+          "direction_cosine": 0.9993635269134702,
+          "rotation_error_deg": 1.301118467399455,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.18505582223458864,
+            0.1449441099750892,
+            0.15991970858689616,
+            0.9587341834137822
+          ],
+          "tracked_points": 84,
+          "pnp_inliers": 28,
+          "pnp_inlier_ratio": 0.3333333333333333,
+          "pnp_refined": true,
+          "pnp_rotation_mode": "free",
+          "pnp_rotation_constrained": false,
+          "pnp_free_rotation_delta_deg": 0.0,
+          "pnp_reprojection_median_px": 0.8317583799362183,
+          "pnp_reprojection_p95_px": 1.8427268624305724,
+          "median_depth_m": 0.30493243726300234,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [],
+        "reverse_closure_measured": false,
+        "explicit_sift_reverse": {
+          "accepted": false,
+          "reason": "pnp_failed",
+          "method": "sift",
+          "tracked_points": 34,
+          "pnp_inliers": 9
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "09197cd46d4c2c5877ea53cdce57876f8b731e595cb1599e476ec1da17de385c",
+          "14ec1f2098de930b3aa190f90d6cd069709c236a3957b5f376f6071e25d6542f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 0.7644406292284801,
+        "vs_vins_displacement_mm": 12.426108560414795
+      },
+      "mast3r_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.4997380193311105,
+          "metric_distance_m": 0.24843364046691085,
+          "metric_displacement_camera_i_m": [
+            -0.1292309272986508,
+            0.04993731776021598,
+            -0.2062156769988363
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.4970323140073166,
+          "direction_cosine": 0.9998080118246215,
+          "rotation_error_deg": 9.558215078589255e-15,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.17477797928164682,
+            0.14189089654576248,
+            0.15743632818764233,
+            0.9615266163775483
+          ],
+          "tracked_points": 84,
+          "pnp_inliers": 28,
+          "pnp_inlier_ratio": 0.3333333333333333,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 1.3521151028639447,
+          "pnp_reprojection_median_px": 2.0821017039305567,
+          "pnp_reprojection_p95_px": 5.8114210805654425,
+          "median_depth_m": 0.30493243726300234,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [],
+        "reverse_closure_measured": false,
+        "explicit_sift_reverse": {
+          "accepted": false,
+          "reason": "pnp_failed",
+          "method": "sift",
+          "tracked_points": 34,
+          "pnp_inliers": 9
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "09197cd46d4c2c5877ea53cdce57876f8b731e595cb1599e476ec1da17de385c",
+          "14ec1f2098de930b3aa190f90d6cd069709c236a3957b5f376f6071e25d6542f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 1.5026339776484106,
+        "vs_vins_displacement_mm": 13.483400274828137
+      },
+      "raw_gyro_fixed": {
+        "measurement": {
+          "accepted": true,
+          "scale": 0.49049588232647084,
+          "metric_distance_m": 0.2440871995618605,
+          "metric_displacement_camera_i_m": [
+            -0.1287357073229106,
+            0.062447000791752236,
+            -0.19775249870010825
+          ],
+          "metric_displacement_frame": "infrared_left_camera_i",
+          "mast3r_distance": 0.4970323140073166,
+          "direction_cosine": 0.9987918409543657,
+          "rotation_error_deg": 0.0,
+          "pnp_rotation_quaternion_xyzw": [
+            -0.18743794771803748,
+            0.13916183434938723,
+            0.15772441831142436,
+            0.9594915359106024
+          ],
+          "tracked_points": 84,
+          "pnp_inliers": 28,
+          "pnp_inlier_ratio": 0.3333333333333333,
+          "pnp_refined": false,
+          "pnp_rotation_mode": "trajectory-fixed",
+          "pnp_rotation_constrained": true,
+          "pnp_free_rotation_delta_deg": 0.767519966981975,
+          "pnp_reprojection_median_px": 1.5758572201674017,
+          "pnp_reprojection_p95_px": 5.310251022064287,
+          "median_depth_m": 0.30493243726300234,
+          "method": "sift",
+          "lk_failure_reason": "insufficient_consistent_points"
+        },
+        "reverse_closure_mm": [],
+        "reverse_closure_measured": false,
+        "explicit_sift_reverse": {
+          "accepted": false,
+          "reason": "pnp_failed",
+          "method": "sift",
+          "tracked_points": 34,
+          "pnp_inliers": 9
+        },
+        "pnp_correspondence_and_inlier_sha256": [
+          "09197cd46d4c2c5877ea53cdce57876f8b731e595cb1599e476ec1da17de385c",
+          "14ec1f2098de930b3aa190f90d6cd069709c236a3957b5f376f6071e25d6542f"
+        ],
+        "pnp_vs_raw_gyro_rotation_deg": 6.580943481000154e-15,
+        "vs_vins_displacement_mm": 8.67806850663515
+      },
+      "same_first_pnp_correspondences_and_inliers": true
+    }
+  ]
+}

@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--probe-directory', type=Path,
                         default=ROOT / 'reports/stereo_factor_attribution_20260927/raw_gyro_pnp_v1')
-    parser.add_argument('--measurement-source', choices=('cached', 'free', 'mast3r_fixed', 'raw_gyro_fixed'),
+    parser.add_argument('--measurement-source', choices=('cached', 'free', 'mast3r_fixed', 'raw_gyro_fixed', 'raw_gyro_gate'),
                         default='cached')
     args = parser.parse_args()
     out = args.output
