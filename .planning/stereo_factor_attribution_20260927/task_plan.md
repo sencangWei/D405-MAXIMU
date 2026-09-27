@@ -8,7 +8,8 @@ Goal: improve failed fresh take2/take4 without regressing the six earlier cases 
 3. Complete, REJECTED for production: fixed SIFT reverse validation + identical cached stages7–9 on all ten.8PASS/2FAIL; fresh2 max16.151→14.382mm stillFAIL and mean worsened; fresh4 max16.181→16.643mm worsened. Production baseline preserved.
 4. Complete for initial helper/harness: independent review,41testsPASS, owned-remote backup e610973 verified from fresh fetch. Later diagnostic/summary additions need another verified backup after results.
 5. Complete: all-ten raw calibrated gyro vs free-PnP vs raw-MASt3R-fixed measurement probe,166edges. Internal reverse closure improves, reprojection worsens allten, paired VINS disagreement worsens8/10. Not sufficient to promote another candidate. No trajectory changed.
-6. In progress: bounded read-only IR rectification/distortion contract audit; rule out a concrete geometry implementation mismatch before a more complex observation-model change. Back up final diagnostic sources/evidence and verify restored artifact. Goal NOT achieved; no claim of stable all-frame10mm.
+6. Complete: IR contract audit finds allten zero-distortion reports, crop0/maskfalse manifests and one direct dual-IR pixel equality sample at fresh4 peak. Updated diagnostic source/result backup08211029 verified from remote with nine component comparisons,41testsPASS and compilePASS.
+7. Unresolved target: no supported universal repair yet. Stereo rotation/translation/depth coupling is an observation-model frontier, not grounds to deploy hard gyro fixing or tune backend weights. Preserve baseline; do not claim stable all-frame10mm or identify model training/data corruption as established cause.
 
 ## Constraints
 No closed-family sweeps, GT-driven corrections, parameter selection from GT, deleted frames, model retraining, or production replacement before validation.
