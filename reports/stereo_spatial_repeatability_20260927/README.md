@@ -36,3 +36,39 @@ v1data was generated before those changes. Targetdepthsource unchanged duringrun
 
 Validation:99relatedtestsPASS; compileallPASS; independent read-only review finds
 no frame/inlier/convention blocker. Actual precision target still NOT met.
+
+## Additional world-basis contract candidate: REJECTED
+
+Survey `direction_basis_ten_v2` explicitly removes the graph's final constant
+attitude correction and brings VINS body attitude to the same leftIR camera
+basis. It compares position-fit worldalignment with a single all-overlap attitude
+worldalignment. Fresh4constantdifference2.764deg gives per-edge projection
+difference max14.697mm versus2.291mm after attitude gauge alignment. Passing
+fresh1alsohas3.544degconstantdifference; this is NOT a sufficient cause.
+
+Opt-in `attitude_alignment_candidate_v1` changes only VINSbody relative-motion
+worldalignment; stereo attitude, weights, sigmas, caps, frontend and calibration
+remain unchanged. Actual all-ten stage7→9 + GTscore:8PASS2FAIL, no improvement.
+Fresh2max16.151→16.153mm; fresh4max16.181→16.256mm. Reject this candidate.
+Samplecounts, SE3scoring and selectedvisualsigma0.020m unchanged. Both original
+positionalignment and candidateattitudealignment stats in comparisonJSON.
+102relatedtestsPASS; production unchanged. This is not a delivered10mm repair.
+
+## Original stereo edges evaluated against existing external reference
+
+`local_stereo_scoring_cached_ten_v2` scores all166frozen selected original
+productionobservations. Externalreference is used AFTER estimation only. Camera
+origin recovered from bodyreference with fixed rotating body-to-leftIR lever.
+No newextrinsic/timeoffset/worldalignment/scalefit; no observation/outputchanged.
+These arelocalmotion residuals, not global trajectoryATE.
+
+Fresh2edge590→610 SIFT localmotionerror15.684mm; the samepair is rejected by
+newfreePnPreplay. BothIRs atbothtimes exactlymatch DB3 and preparedPNG (four
+imageschecked, sourceframes620/640, skew0ms). Thusimagecontentmismatch is ruled
+out for thispair. PnPsolver randomstate/order is an UNPROVEN followup hypothesis.
+Fresh4edge1035→1075 error10.767mm remains accepted on replay. Passingheldout4
+alsohasanedge12.729mm: single-edgeerror is not sufficient toexplain finalATE.
+
+`local_stereo_scoring_ten_v1` is superseded: it onlyscored newlyacceptedfreePnP
+subset and omits3fresh2originalacceptededges. Its4.044mmmax must NOT be cited as
+theproductionstereo measurementmax. Use originalcachedv2all166 above instead.

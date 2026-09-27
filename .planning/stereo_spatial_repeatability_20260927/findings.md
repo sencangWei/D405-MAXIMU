@@ -36,3 +36,23 @@ Diagnostics do not establish that a joint two-time stereo/soft-gyro solve would
 improve absolute SLAM. Request independent architecture critique before another
 candidate; a new observation model requires one frozen all-case falsification,
 not scalarweight sweeps or GT-guided frame selection.
+
+One isolated attitude-world-alignment candidate actually scored on allten:
+8PASS2FAIL, no newpasses. fresh2max16.1514227→16.1527936mm;
+fresh4max16.1810366→16.2559919mm. Candidate REJECTED, production unchanged.
+Allscore samplecounts/SE3alignment unchanged; auto visualsigma0.020m unchanged;
+allcachedinputhashes unchanged. Do not mistake projectionbasis difference14.7mm
+for a predicted14.7mm improvement in the actual graph; observed effect<0.075mm.
+
+Originalcachedmeasurement scoring (GT evaluation only, not optimization) all166:
+fresh2worstedge590→610 error15.684mm, originallySIFT78/162inliers and reproj
+median1.995px/P953.641px, visualrotationdifference4.488deg; newfree replay rejects
+SIFTrotationdisagrees after LK insufficientdepthpoints. fresh4worstedge1035→1075
+10.767mm, also acceptedreplay; passingheldout4worstedge12.729mm. These arelocal
+motionerror evaluations, not wholetrajectoryATE. Initialv1onlynewacceptedfree
+subset incorrectly excludes3fresh2productionedges; supersede bycachedv2all166.
+
+Four fresh2IRimages atfirst590/source620 andsecond610/source640 exactlymatch
+preparedPNG vsoriginalDB3, zero pixelchanges/skew. Excludesimagecontentmismatch
+for thispair only. CandidateRANSACseed/input-order solution sensitivity is an
+unprovenhypothesis; evaluate all166uniformly, fixedfullinputs, tenfixedseeds.

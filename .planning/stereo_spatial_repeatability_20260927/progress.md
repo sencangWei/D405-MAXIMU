@@ -43,3 +43,53 @@ boundedarchitecturecritique before more observationmodel candidates.
 Two documentation apply_patch context failures made no filechanges; corrected
 exactcontext and reapplied. No production filechanges thisturn. New diagnostic
 guards and helpers freshly99relatedtestsPASS, compileall exit0.
+
+Direction-basis survey firstattempt failed at helperAPI because fusion.load_trajectory
+returns Rotation, not quaternionarray; emptyv1directory retained, correctedread
+contract then completed direction_basis_ten_v2 all10/166. Undo finalconstant
+graphattitude correction before comparing basis. Both worldgauge choices explicit:
+positionfit existingmatrix; all-overlap attitude mean, never perframe/peredge.
+fresh4 positionfit projectionmax14.697mm versus attitudefit2.291mm; constant2.764deg.
+PASSfresh1has3.544degconstantoffset, hence not sufficient causal diagnosis.
+
+Independentreview supports a singleonboard framealignment candidate, confirms
+bodyoriginsmatch and camera extrinsic rotations cancel in meanworldtransform.
+Do not replace stereoattitudes. Implement opt-in proxy under planning only;
+existing production untouched. Fresh102testsPASS. Launch alltenstage7→9score
+session44101 output attitude_alignment_candidate_v1. Casesorderedfresh1first,
+thenprior6thenfresh2..4. Need allscores/samplecounts, cachedhashes and identical
+autovisual-sigma policy before accepting/rejecting. Do not edit frozen candidate
+sourcewhilebatchruns. Sourceoriginal alignment stats retained in cached reports.
+
+Session44101completed allten graph→fusion→score. Candidate8PASS2FAIL,
+fresh2max16.1527936mm and fresh4max16.2559919mm. No gain; rejectcandidate.
+summarize_attitude_candidate.py checks samples/SE3alignment unchanged,
+sourceinputhashes and selected visualsigma0.020m unchanged for eachcase;
+storesboth oldpositionfit and newattitudefit stats. NoGToptimizerinputs.
+
+Firstdiagnosticbackup34ce6faa pushednormally to sencang branch
+codex/stereo-spatial-repeatability-20260927; freshfullrestore
+/tmp/ego-stereo-spatial-restore-paR9kF matchesall37committedcomponents bytewise,
+99restoredtestsPASS. Fullfetch took~9min; optionalfilteredfreshrestore also
+completed /tmp/ego-stereo-spatial-partial-2iHmjv. Nootherprocesskilled.
+Need secondbackup for basishelper/candidate/tests/results beforehandoff.
+
+Localmeasurement evaluation firstv1scored newlyrecomputedfreePnP subset,
+notproductioncachededges: do NOT use fresh2v1max4.044mm asproductionfactorerror.
+Corrected explicitmeasurement-source to originalcachedproductionreports and
+ran local_stereo_scoring_cached_ten_v2: all166selectedoriginalacceptededges
+scored againstexistingofficialbodyreference converted toleftIR withfixedlever.
+No new timeoffset/SE3/scale fits, no GT input to optimization, no estimateschanged.
+fresh2edge590→610 SIFT error15.684mm; originalSIFTaccepted, replayfree rejects
+(LK insufficientconsistentpoints; SIFTrotationdisagrees). fresh4edge1035→1075
+SIFTerror10.767mm, alsoacceptedreplay. PASSheldout4has12.729mm edgeerror too;
+do not equate anysingleedgeerror with wholetrajectorymax or universalcause.
+
+IndependentrawDB3-vs-preparedPNG check fresh2sourceframes620/640 bothIRs:
+allfour1280x720 imagesexact, pixel difference0, stereo skew0ms. Sourcegraphfinal
+attitude correction is downstream, not a cachedPnP input. RNGstate/order
+hypothesis remainsunproven. Launch same166pair ten-seed repeatability diagnostic
+session89387, fixedfullcorrespondences/solverkwargs perfirstforwardfreePnP,
+never rewritesacceptedmeasurement or trajectory. Extra solvercalls occurafter
+originalfullestimate and before nextseed-resetcontrol to preserveoldresults.
+103relatedtestsPASS; compileallPASS. No productionchange.

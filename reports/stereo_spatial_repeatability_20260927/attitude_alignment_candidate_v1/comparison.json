@@ -1,0 +1,934 @@
+{
+  "completed": 10,
+  "total": 10,
+  "pass_count": 8,
+  "production_changed": false,
+  "optimizer_external_reference_used": false,
+  "candidate_source_sha256": {
+    "/home/robot/ego_vio_humble/.planning/stereo_spatial_repeatability_20260927/attitude_alignment.py": "a8f0434d70bf48810cc88740f3e0310c791d1ba12fa7807cb922f6322682cf09",
+    "/home/robot/ego_vio_humble/.planning/stereo_spatial_repeatability_20260927/graph_attitude_proxy.py": "19b55331ddae560ae8f1cdb5f1c6b86c299669ddac0f683c5101523bbe8d468c",
+    "/home/robot/ego_vio_humble/.planning/stereo_spatial_repeatability_20260927/run_attitude_regression.py": "c770cc542e46e815b46057ef7b8ada7e3388bc7a68f92feffc4a47c003be4ac6"
+  },
+  "cases": [
+    {
+      "case": "dev1",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 6.927231821130431,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 6.9342114777307815,
+      "candidate_mean_mm": 2.862866381155175,
+      "candidate_p95_mm": 5.527837068140504,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9995819564507867,
+            -0.0062311991605275945,
+            0.02823268487126286
+          ],
+          [
+            0.024251635727708096,
+            -0.35093321069741135,
+            -0.936086395475405
+          ],
+          [
+            0.015740727510148204,
+            0.9363797593853831,
+            -0.3506353885602869
+          ]
+        ],
+        "translation_m": [
+          0.018381500660637415,
+          0.008280959576970476,
+          -0.0243803028472882
+        ],
+        "position_disagreement_median_m": 0.005641003513368565,
+        "position_disagreement_p95_m": 0.015736880418999174,
+        "inlier_position_disagreement_median_m": 0.0048452288379776135,
+        "inlier_position_disagreement_p95_m": 0.011213033344905865,
+        "alignment_inliers": 903,
+        "alignment_outliers": 240,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9998641765410154,
+            -0.01646229814843368,
+            0.0007881685286069738
+          ],
+          [
+            -0.005146822942960369,
+            -0.3573163951082972,
+            -0.9339692200497858
+          ],
+          [
+            0.01565690529929929,
+            0.9338383085558675,
+            -0.3573525916933658
+          ]
+        ],
+        "translation_m": [
+          0.022868101266887143,
+          0.012100739615434645,
+          -0.02506087482484782
+        ],
+        "position_disagreement_median_m": 0.009373964269336805,
+        "position_disagreement_p95_m": 0.014443099243531557,
+        "inlier_position_disagreement_median_m": 0.009373964269336805,
+        "inlier_position_disagreement_p95_m": 0.014443099243531557,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.6823269198034482,
+        "attitude_disagreement_p95_deg": 1.156662990961586,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "dev2",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 8.76917654866396,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 8.769717549485623,
+      "candidate_mean_mm": 3.7744663000144185,
+      "candidate_p95_mm": 6.3851590638421865,
+      "within_10mm_ratio": 1.0,
+      "samples": 1144,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9998029312622586,
+            -0.016100727841940138,
+            0.011613147822863934
+          ],
+          [
+            0.0050350820296876375,
+            -0.360194497976705,
+            -0.9328636403978148
+          ],
+          [
+            0.019202775537672516,
+            0.9327382752896276,
+            -0.3600424464162252
+          ]
+        ],
+        "translation_m": [
+          0.013593659613274188,
+          0.008077025405070161,
+          -0.02485015345332238
+        ],
+        "position_disagreement_median_m": 0.004975965231728018,
+        "position_disagreement_p95_m": 0.011186475571636543,
+        "inlier_position_disagreement_median_m": 0.004975965231728018,
+        "inlier_position_disagreement_p95_m": 0.011186475571636543,
+        "alignment_inliers": 1144,
+        "alignment_outliers": 0,
+        "overlap_samples": 1144,
+        "overlap_ratio": 0.9533333333333334,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999871824566209,
+            -0.003903178541474093,
+            0.0032249216643742465
+          ],
+          [
+            0.0016195138283062738,
+            -0.3568989634685706,
+            -0.9341415883312439
+          ],
+          [
+            0.004797092601555545,
+            0.9341348377361444,
+            -0.3568880676490022
+          ]
+        ],
+        "translation_m": [
+          0.013971878150416202,
+          0.008091781474311657,
+          -0.025170837970048786
+        ],
+        "position_disagreement_median_m": 0.0055255722795882235,
+        "position_disagreement_p95_m": 0.012255279448056246,
+        "inlier_position_disagreement_median_m": 0.0055255722795882235,
+        "inlier_position_disagreement_p95_m": 0.012255279448056246,
+        "alignment_inliers": 1144,
+        "alignment_outliers": 0,
+        "overlap_samples": 1144,
+        "overlap_ratio": 0.9533333333333334,
+        "attitude_disagreement_median_deg": 0.3577951118899476,
+        "attitude_disagreement_p95_deg": 0.7684578230306369,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "heldout1",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 6.088972866183836,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 6.083625236271842,
+      "candidate_mean_mm": 2.508344105073458,
+      "candidate_p95_mm": 4.26843854214345,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9995842378816893,
+            -0.015910659972803026,
+            0.024045837014181594
+          ],
+          [
+            0.01719354979587967,
+            -0.3405489386542797,
+            -0.9400695730778976
+          ],
+          [
+            0.02314591160225392,
+            0.940092161056922,
+            -0.34013379058162885
+          ]
+        ],
+        "translation_m": [
+          0.013274395868498962,
+          0.008138120992977454,
+          -0.02549033068614149
+        ],
+        "position_disagreement_median_m": 0.005129491252627255,
+        "position_disagreement_p95_m": 0.012426702109883758,
+        "inlier_position_disagreement_median_m": 0.005129491252627255,
+        "inlier_position_disagreement_p95_m": 0.012426702109883758,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999113773451613,
+            -0.010839037457949991,
+            0.007729988530909488
+          ],
+          [
+            0.0033525937810159542,
+            -0.35690840430651516,
+            -0.934133368984492
+          ],
+          [
+            0.012884004449018495,
+            0.9340764991168351,
+            -0.3568404352466177
+          ]
+        ],
+        "translation_m": [
+          0.013969014930963143,
+          0.008308098691255436,
+          -0.024452639359342318
+        ],
+        "position_disagreement_median_m": 0.005822538808689449,
+        "position_disagreement_p95_m": 0.013756108683459337,
+        "inlier_position_disagreement_median_m": 0.005822538808689449,
+        "inlier_position_disagreement_p95_m": 0.013756108683459337,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.4215263140053014,
+        "attitude_disagreement_p95_deg": 0.8328483497084643,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "heldout2",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 6.061998449629387,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 6.064243439845249,
+      "candidate_mean_mm": 3.527701419644014,
+      "candidate_p95_mm": 5.190728312061295,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9999088678454642,
+            0.0008915469381865632,
+            0.013470751577383932
+          ],
+          [
+            0.012915314134065908,
+            -0.35369749550456675,
+            -0.9352706968223775
+          ],
+          [
+            0.0039307333693572935,
+            0.9353594425769454,
+            -0.3536767768985193
+          ]
+        ],
+        "translation_m": [
+          0.0226786632364655,
+          0.005018811338886552,
+          -0.02632823624531483
+        ],
+        "position_disagreement_median_m": 0.010167930611341008,
+        "position_disagreement_p95_m": 0.01909990940786852,
+        "inlier_position_disagreement_median_m": 0.009849800380429138,
+        "inlier_position_disagreement_p95_m": 0.012939411596820443,
+        "alignment_inliers": 1004,
+        "alignment_outliers": 139,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999845814715873,
+            -0.005553089847969721,
+            3.4977700658195797e-06
+          ],
+          [
+            -0.0019571096552361534,
+            -0.3530200473584905,
+            -0.935613710825577
+          ],
+          [
+            0.005196781782161075,
+            0.935599278193474,
+            -0.35302547231461795
+          ]
+        ],
+        "translation_m": [
+          0.024959348413375403,
+          0.0069914740770465455,
+          -0.027195534289993425
+        ],
+        "position_disagreement_median_m": 0.011393857420040338,
+        "position_disagreement_p95_m": 0.018332771725092376,
+        "inlier_position_disagreement_median_m": 0.011393857420040338,
+        "inlier_position_disagreement_p95_m": 0.018332771725092376,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.3272969723205911,
+        "attitude_disagreement_p95_deg": 0.7436159891102889,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "heldout3",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 6.745539619945041,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 6.742204918097125,
+      "candidate_mean_mm": 3.865782867846055,
+      "candidate_p95_mm": 6.080263074826286,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9999984296121349,
+            0.0014716026322055056,
+            -0.0009875013708857319
+          ],
+          [
+            -0.00039416087433317287,
+            -0.3585713195422494,
+            -0.9335022514375284
+          ],
+          [
+            -0.0017278340399934783,
+            0.9335011747113247,
+            -0.35857017639802025
+          ]
+        ],
+        "translation_m": [
+          0.0038011375470434344,
+          0.005552111541856607,
+          -0.025685966768776915
+        ],
+        "position_disagreement_median_m": 0.010367752911122737,
+        "position_disagreement_p95_m": 0.019474813882515547,
+        "inlier_position_disagreement_median_m": 0.010293354778404176,
+        "inlier_position_disagreement_p95_m": 0.017845733996917974,
+        "alignment_inliers": 1104,
+        "alignment_outliers": 39,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999790258522394,
+            0.0009098273284999267,
+            0.006412493262259247
+          ],
+          [
+            0.006327625028079251,
+            -0.34845373296637167,
+            -0.9373046234513647
+          ],
+          [
+            0.0013816718533105564,
+            0.9373255401385545,
+            -0.3484521814924639
+          ]
+        ],
+        "translation_m": [
+          0.002774155376892182,
+          0.005224124156601644,
+          -0.02643909868601061
+        ],
+        "position_disagreement_median_m": 0.01132425214742113,
+        "position_disagreement_p95_m": 0.018475717869465516,
+        "inlier_position_disagreement_median_m": 0.01132425214742113,
+        "inlier_position_disagreement_p95_m": 0.018475717869465516,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.7269177815148637,
+        "attitude_disagreement_p95_deg": 1.3735281543254179,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "heldout4",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 9.024342627863566,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 9.03052613311259,
+      "candidate_mean_mm": 3.4390616263092886,
+      "candidate_p95_mm": 5.15876246766971,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9997886248303666,
+            -0.008835884497684576,
+            0.018564288430982973
+          ],
+          [
+            0.013662494272763837,
+            -0.3892084811008054,
+            -0.9210483670738747
+          ],
+          [
+            0.015363655491185818,
+            0.9211073148034097,
+            -0.38900549187074523
+          ]
+        ],
+        "translation_m": [
+          0.01525064516485719,
+          0.00891480903090204,
+          -0.02725078107352579
+        ],
+        "position_disagreement_median_m": 0.00614201828004843,
+        "position_disagreement_p95_m": 0.019204769582225518,
+        "inlier_position_disagreement_median_m": 0.005547587124534868,
+        "inlier_position_disagreement_p95_m": 0.014910709664337905,
+        "alignment_inliers": 1054,
+        "alignment_outliers": 89,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999192498884105,
+            -0.012610512503161662,
+            0.001571202407892821
+          ],
+          [
+            -0.0029525583048548203,
+            -0.350792265856786,
+            -0.9364486470781614
+          ],
+          [
+            0.012360263025332337,
+            0.9363683896786938,
+            -0.35080117261559296
+          ]
+        ],
+        "translation_m": [
+          0.015312988099852645,
+          0.012486137237644235,
+          -0.030066738123354118
+        ],
+        "position_disagreement_median_m": 0.007986014975701217,
+        "position_disagreement_p95_m": 0.018245929167313303,
+        "inlier_position_disagreement_median_m": 0.007986014975701217,
+        "inlier_position_disagreement_p95_m": 0.018245929167313303,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.6404173589776888,
+        "attitude_disagreement_p95_deg": 1.2168231387895825,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "fresh1",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 7.89978948961002,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 7.88046368444917,
+      "candidate_mean_mm": 2.4900077083794954,
+      "candidate_p95_mm": 5.90600664994716,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9996516308010814,
+            -0.005499804678442244,
+            0.025814127628819253
+          ],
+          [
+            0.021402936447296073,
+            -0.40339854885160237,
+            -0.9147740295263384
+          ],
+          [
+            0.015444460112642111,
+            0.9150078485635628,
+            -0.4031403052522894
+          ]
+        ],
+        "translation_m": [
+          0.014990935964359672,
+          0.007958248096576095,
+          -0.024794886747447092
+        ],
+        "position_disagreement_median_m": 0.003862220665917152,
+        "position_disagreement_p95_m": 0.03481257802928373,
+        "inlier_position_disagreement_median_m": 0.0019462745900598742,
+        "inlier_position_disagreement_p95_m": 0.010629975299792819,
+        "alignment_inliers": 821,
+        "alignment_outliers": 322,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.999985854615617,
+            -0.005259734037175008,
+            0.0007910540638071052
+          ],
+          [
+            -0.0011048885774339297,
+            -0.3508973036951978,
+            -0.9364132962963901
+          ],
+          [
+            0.005202863625460413,
+            0.9363991763437737,
+            -0.3508981515380162
+          ]
+        ],
+        "translation_m": [
+          0.021090594942369676,
+          0.011848714937566895,
+          -0.030507252378580433
+        ],
+        "position_disagreement_median_m": 0.010197482427848185,
+        "position_disagreement_p95_m": 0.028416919822039075,
+        "inlier_position_disagreement_median_m": 0.010197482427848185,
+        "inlier_position_disagreement_p95_m": 0.028416919822039075,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.4415325475327247,
+        "attitude_disagreement_p95_deg": 0.9299578395384928,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "fresh2",
+      "baseline_result": "FAIL",
+      "baseline_max_mm": 16.151422685671506,
+      "candidate_complete": true,
+      "candidate_result": "FAIL",
+      "candidate_max_mm": 16.152793552994762,
+      "candidate_mean_mm": 4.16580079077813,
+      "candidate_p95_mm": 8.18774924291069,
+      "within_10mm_ratio": 0.9772528433945756,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9999935811618984,
+            0.002532735215945131,
+            0.0025343415964224486
+          ],
+          [
+            0.003264303766912259,
+            -0.35239942935068225,
+            -0.9358439968895621
+          ],
+          [
+            -0.0014771445151940538,
+            0.9358462627192776,
+            -0.3524054349729042
+          ]
+        ],
+        "translation_m": [
+          0.010938458772833164,
+          0.010128569533476205,
+          -0.02366126395961419
+        ],
+        "position_disagreement_median_m": 0.004890042214143043,
+        "position_disagreement_p95_m": 0.021006796045402613,
+        "inlier_position_disagreement_median_m": 0.0032799266730086244,
+        "inlier_position_disagreement_p95_m": 0.013576352534798377,
+        "alignment_inliers": 952,
+        "alignment_outliers": 191,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999637280142446,
+            0.006390997615509782,
+            -0.005630080402059788
+          ],
+          [
+            -0.002924560048755254,
+            -0.36319054494905106,
+            -0.9317102956435193
+          ],
+          [
+            -0.007999350247134706,
+            0.931692966169162,
+            -0.36315868045048
+          ]
+        ],
+        "translation_m": [
+          0.009316013813279733,
+          0.011396068356727268,
+          -0.021668151736757797
+        ],
+        "position_disagreement_median_m": 0.006009716605242123,
+        "position_disagreement_p95_m": 0.019362009248106715,
+        "inlier_position_disagreement_median_m": 0.006009716605242123,
+        "inlier_position_disagreement_p95_m": 0.019362009248106715,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.9913154120182863,
+        "attitude_disagreement_p95_deg": 2.675656042579527,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "fresh3",
+      "baseline_result": "PASS",
+      "baseline_max_mm": 6.216786273227914,
+      "candidate_complete": true,
+      "candidate_result": "PASS",
+      "candidate_max_mm": 6.217590410983067,
+      "candidate_mean_mm": 1.5662611054883813,
+      "candidate_p95_mm": 3.8502828461372496,
+      "within_10mm_ratio": 1.0,
+      "samples": 1143,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9996943629010909,
+            0.021180612892702982,
+            0.012749996912596432
+          ],
+          [
+            0.019783710971264856,
+            -0.37612802994146893,
+            -0.9263564701952243
+          ],
+          [
+            -0.01482516657536087,
+            0.9263255835449212,
+            -0.3764321023852426
+          ]
+        ],
+        "translation_m": [
+          0.012584465726494734,
+          0.008478419987219758,
+          -0.02456824969948212
+        ],
+        "position_disagreement_median_m": 0.0025433129342938583,
+        "position_disagreement_p95_m": 0.025890805324647534,
+        "inlier_position_disagreement_median_m": 0.0013768308260771716,
+        "inlier_position_disagreement_p95_m": 0.007545111052825075,
+        "alignment_inliers": 828,
+        "alignment_outliers": 315,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999802400142216,
+            -0.0025428266053123816,
+            0.005749227248484352
+          ],
+          [
+            0.004474889944684933,
+            -0.3544056372950889,
+            -0.9350810764920038
+          ],
+          [
+            0.004415307586381397,
+            0.9350883264624347,
+            -0.35438725537552906
+          ]
+        ],
+        "translation_m": [
+          0.016488048421357916,
+          0.010019591955836262,
+          -0.02784460443674705
+        ],
+        "position_disagreement_median_m": 0.005760755676039812,
+        "position_disagreement_p95_m": 0.022733071523539372,
+        "inlier_position_disagreement_median_m": 0.005760755676039812,
+        "inlier_position_disagreement_p95_m": 0.022733071523539372,
+        "alignment_inliers": 1143,
+        "alignment_outliers": 0,
+        "overlap_samples": 1143,
+        "overlap_ratio": 0.9532944120100083,
+        "attitude_disagreement_median_deg": 0.21664151504979573,
+        "attitude_disagreement_p95_deg": 0.6689857955160645,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    },
+    {
+      "case": "fresh4",
+      "baseline_result": "FAIL",
+      "baseline_max_mm": 16.181036594106487,
+      "candidate_complete": true,
+      "candidate_result": "FAIL",
+      "candidate_max_mm": 16.2559919052881,
+      "candidate_mean_mm": 6.39337378840723,
+      "candidate_p95_mm": 11.369346180189213,
+      "within_10mm_ratio": 0.9159369527145359,
+      "samples": 1142,
+      "selected_visual_sigma_m": 0.02,
+      "baseline_alignment": {
+        "alignment": "robust_SE3_relative_motion_to_visual_body_no_scale",
+        "rotation": [
+          [
+            0.9997037380909338,
+            -0.022833946721495635,
+            0.008428933748294731
+          ],
+          [
+            -0.0013374560809329417,
+            -0.39730991513421965,
+            -0.9176835198189354
+          ],
+          [
+            0.024303235550947433,
+            0.9174003718187381,
+            -0.3972227467411654
+          ]
+        ],
+        "translation_m": [
+          0.007699694698947206,
+          0.008862667009041668,
+          -0.01908543641264404
+        ],
+        "position_disagreement_median_m": 0.009846591119169558,
+        "position_disagreement_p95_m": 0.024818897983085373,
+        "inlier_position_disagreement_median_m": 0.008756272546636593,
+        "inlier_position_disagreement_p95_m": 0.017785878129216958,
+        "alignment_inliers": 1019,
+        "alignment_outliers": 123,
+        "overlap_samples": 1142,
+        "overlap_ratio": 0.9524603836530442,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      },
+      "candidate_alignment": {
+        "alignment": "constant_onboard_attitude_world_rotation_with_body_translation",
+        "rotation": [
+          [
+            0.9999766249163156,
+            -0.006081634393070452,
+            0.0031246350318947357
+          ],
+          [
+            0.0007569067171677209,
+            -0.3557216136290066,
+            -0.9345916545151666
+          ],
+          [
+            0.006795344965123375,
+            0.9345721734142761,
+            -0.3557086953765964
+          ]
+        ],
+        "translation_m": [
+          0.008593899271959528,
+          0.010335552414754668,
+          -0.018798264994527015
+        ],
+        "position_disagreement_median_m": 0.011569737062302524,
+        "position_disagreement_p95_m": 0.025832731640171053,
+        "inlier_position_disagreement_median_m": 0.011569737062302524,
+        "inlier_position_disagreement_p95_m": 0.025832731640171053,
+        "alignment_inliers": 1142,
+        "alignment_outliers": 0,
+        "overlap_samples": 1142,
+        "overlap_ratio": 0.9524603836530442,
+        "attitude_disagreement_median_deg": 0.37204460905867565,
+        "attitude_disagreement_p95_deg": 1.173327700219313,
+        "external_reference_used": false,
+        "source_validation": {
+          "source_result": "PASS",
+          "source_failures": [],
+          "policy": "accepted_passed_relative_odometry"
+        }
+      }
+    }
+  ]
+}
