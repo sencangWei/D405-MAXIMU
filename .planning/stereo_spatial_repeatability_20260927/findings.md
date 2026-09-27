@@ -148,3 +148,26 @@ above10mm are a single17.363–18.130s block. Fresh4 remaining63samples comprise
 At the largest fresh4 peak the aligned output changes only0.956mm, versus a
 remaining15.333mm error. Repairing SIFT fallback alone is insufficient. This
 does not identify the remaining cause as LK, model, IMU, or ground truth.
+
+### Actual confidence decomposition and limits of the inference
+
+Actual graph confidence uses per-edge local references from
+`local_stereo_scale_state`, not the report's global scale directly. On fresh2
+590→610, refined motion scale1.566 versus localreference0.995 gives
+scalequality0.0102; inliers0.481, rotationquality0.924, bidirectionalquality1,
+unclippedconfidence0.00455→floor0.05. This confirms the floor, while correcting
+earlier global-reference confidence summaries (not actual graph values).
+Scale is a ratio of stereo motion to MASt3R motion: its disagreement alone does
+not establish that the stereo motion is incorrect. Independent onboard VINS
+disagreement improves13.568→3.152mm, reverseclosure1.290mm, rawgyro residual
+0.431deg. Separate fixed-reference evaluation gives correctedlocalerror2.744mm.
+Do not use that GT error to choose factors or weights. These numbers support a
+specific remaining estimator-consistency/quality-coupling hypothesis, not a
+universal cause or a justification for re-running closed confidence families.
+Bounded allten sampled consistency audit now requested; no newtrajectory run.
+
+Evaluation-only velocity projection also cannot explain the whole failure with
+one constant time offset: fresh2 fittedapparent15.316ms explains12.54% squared
+residualenergy; fresh4 apparent11.172ms explains2.68%; passingcases span-0.756
+to12.456ms. This is a diagnostic regression only; no reference or SLAM td change,
+no latency-correction candidate, and no claim that actual clockdelay was measured.

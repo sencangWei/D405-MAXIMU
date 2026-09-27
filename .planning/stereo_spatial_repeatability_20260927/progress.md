@@ -176,3 +176,37 @@ reproduces officialmaxima to1e-7mm and asserts identical reference/timestamps:
 fresh2 24samples>10 at17.363–18.130s; fresh4 63samples in threeblocks,
 largest41samples32.898–34.231s. These are sustained blocks, not singleton spikes.
 Current108relatedtestsPASS. Source+completeevidence pending fifth backup.
+
+Fifthbackup3891712ced9d52df294ab868b23d5537345304af normalFFtosencang branch
+codex/stereo-spatial-repeatability-20260927 includes198explicitcode/evidence
+components (no broadreports staging). Freshfetch/checkoutpaR9kF and bytecmp all
+198componentsPASS;108restoredtestsPASS. First verification used shallowclone
+diff-tree withmissingparent, emitted nofiles/countfailure; corrected enumeration
+fromfullbackuphistory, then comparedremotecheckout bytes. CSV CRLF caused broad
+diff-checkwarnings; cr-at-eol awarecheckPASS, data not rewritten.
+Restoredlocalizer fullrun cannot resolve oldbaseline precision reports absent
+fromselectedbackup; algorithm/test/code restoration verified, not a selfcontained
+dataset archive. Full localizer ran on main cachedinputs and verifiedallten.
+No claim of full pipeline replay from empty data cache. Original input manifests
+preserve hashes and paths for existing recordings.
+
+Read-only allten LK quantilecontrol comparison(raworiginal vsLM+gyrogate),99
+pairedacceptedLKmeasurements: mediantranslation changes0–0.349mm bycase,
+max0.357–3.029mm; twofailedfresh2max0.357,fresh4max1.546mm. This small sampled
+effect doesnotjustifyblindall-LKfullreplay as a guaranteed6mmrepair. Alsofound
+criticalaudit detail: actualoptimizer confidence reference is per-edge local
+scale fromlocal_stereo_scale_state at2079, notglobalreportscale. Requestedagent
+recomputeactualfloor attribution; global-reference stats cannot explainactual
+graphweight withoutthischeck. No newcandidate launched.
+
+Boundedconsistency audit complete (consistency_audit.md): all166 sampledrecords,
+99LK/67SIFT; independentVINSdiff pooledmedian2.090→2.093mm (notcleanseparator),
+SIFTmedian4.585→3.826mm. Confidenceaggregate usesdeclaredsingle-edgecounterfactual,
+notallSIFTactualgraph. Parent independentlyrecomputedfresh2actualfullcandidate
+1353edges: bad590→610scale1.566131959/localref0.994531541, +57.4743%,
+scalequality0.0102322,rotationquality0.923816,rawconf0.00455127→0.05floor.
+Correctedartifact whichmixedcounterfactual56.3%/.0119withactualref/rawconfidence.
+Specificmechanism supported, butnotuniversal: fresh4sampledSIFTdoesnotshowsame
+pattern. No newgate/weight/trajectoryrun justifiedfromthisaudit. Existingclosed
+families remainclosed; nextcandidate needsnew physicallysupported metricfactor
+information ratherthanrescalingexistingquality. Productionunchanged.
