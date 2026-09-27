@@ -1,0 +1,50 @@
+{
+  "scale": 1.0682421500966253,
+  "gravity": [
+    0.03174440102493836,
+    9.139086377600968,
+    3.493466638800456
+  ],
+  "gravity_norm": 9.784079756454348,
+  "accelerometer_bias_mps2": [
+    -0.011461992428784984,
+    0.011023023744094917,
+    0.0173278750152126
+  ],
+  "accelerometer_bias_norm_mps2": 0.0235189195211692,
+  "residual_rmse_mps": 0.0035411558944373326,
+  "rank": 355,
+  "unknowns": 355,
+  "condition_number": 35.10280518112564,
+  "nodes": 116,
+  "intervals": 115,
+  "schema": "umi_mast3r_imu_scale_v1",
+  "result": "PASS",
+  "failures": [],
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "inputs": "MASt3R camera poses + onboard calibrated 400Hz IMU + onboard orientation trajectory",
+  "attitude": {
+    "source": "onboard_orientation_trajectory",
+    "overlap_ratio": 0.9533333333333334,
+    "visual_orientation_difference_p95_deg": 1.5534836647157635,
+    "selection": {
+      "policy": "smallest_log_scale_difference_to_validated_onboard_stereo",
+      "stereo_scale": 0.9917060844384727,
+      "mast3r_scale": 1.2301575888362037,
+      "onboard_scale": 1.0682421500966253,
+      "log_scale_differences": {
+        "mast3r": 0.21547078362947655,
+        "onboard_orientation_trajectory": 0.07434294858523233
+      }
+    }
+  },
+  "orientation_trajectory": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take2_retry_environment/vins_input/vio_corrected_stream.csv",
+  "stereo_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_bidirectional_report.json",
+  "td_s": -0.009109323,
+  "node_stride": 10,
+  "max_hop": 1,
+  "trajectory": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/trajectory_frames.csv",
+  "imu_calibration": "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+  "output": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/trajectory_imu_metric.csv"
+}

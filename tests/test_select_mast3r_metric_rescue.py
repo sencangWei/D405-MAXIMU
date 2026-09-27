@@ -128,6 +128,25 @@ def test_dispersion_failure_requires_internal_only_provenance(tmp_path):
         decide(root)
 
 
+def test_scale_failure_with_visual_gap_is_not_rescued(tmp_path):
+    root = tmp_path / "gapped"
+    report(root / STEREO_STAGES[0], "FAIL",
+           failures=["stereo scale dispersion too high: relative_p90_p10=0.523"],
+           external_ground_truth_used=False, slam_supervision=False,
+           trajectory_continuity={"result": "FAIL", "unverified_gap_count": 1})
+    with pytest.raises(ValueError, match="unverified visual gap"):
+        decide(root)
+
+
+def test_multiple_failures_are_not_treated_as_sole_scale_failure(tmp_path):
+    root = tmp_path / "multiple"
+    report(root / STEREO_STAGES[0], "FAIL",
+           failures=["stereo scale dispersion too high: relative_p90_p10=0.523", "invalid timestamps"],
+           external_ground_truth_used=False, slam_supervision=False)
+    with pytest.raises(ValueError, match="not eligible"):
+        decide(root)
+
+
 def test_rescue_with_unverified_visual_gap_is_not_published(tmp_path):
     original = baseline(
         tmp_path, dense_result="FAIL", complete=False,
