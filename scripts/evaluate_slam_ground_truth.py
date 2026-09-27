@@ -55,7 +55,10 @@ def interpolate_ground_truth(
     right = np.clip(right, 1, len(gt_times) - 1)
     left = right - 1
     gaps = gt_times[right] - gt_times[left]
-    valid = gaps <= max_gap_s
+    # Exact recorded poses require no interpolation across the neighboring
+    # gap. Keep them; the gap limit still rejects genuinely missing times.
+    exact = (selected_times == gt_times[left]) | (selected_times == gt_times[right])
+    valid = (gaps <= max_gap_s) | exact
     selected_times = selected_times[valid]
     left, right, gaps = left[valid], right[valid], gaps[valid]
     alpha = (selected_times - gt_times[left]) / gaps

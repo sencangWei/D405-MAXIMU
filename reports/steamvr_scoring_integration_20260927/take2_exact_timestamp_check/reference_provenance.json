@@ -1,0 +1,68 @@
+{
+  "schema": "lighthouse_aprilgrid_ground_truth_provenance_v1",
+  "result": "PASS",
+  "target": "body",
+  "target_transform_source": "tracker_T_body",
+  "samples_written": 1196,
+  "query_samples": 1197,
+  "timestamp_overlap_ratio": 0.9991645781119465,
+  "query_columns_used": [
+    "t_sec"
+  ],
+  "pose_columns_from_query_used": [],
+  "slam_supervision": false,
+  "reference_backend": "steamvr_official",
+  "reference_pose_frame": "steamvr_standing_tracker",
+  "reference_manifest_sha256": "b5ac5b8f639f55b9c99e81837fe32224fa3ab806177b8067bf14a2bf43490439",
+  "capture_manifest_sha256": "d9dcf821c6bcd7c93d7a30d61b18032b6b19ce4077d503cc3e801bcede0f50b6",
+  "tracker_csv_sha256": "f3a756b9995369ba4b4e3d7987750850b6abad76c7456e24a9814ddde20c1fc2",
+  "query_time_domain": "camera",
+  "clock_mapping": {
+    "camera_input_domain": "d405_global_time_unix_epoch_s",
+    "alignment_domain": "host_monotonic_s",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_124230/d405_frames.csv",
+    "epoch_minus_monotonic_s": 1789875603.810934,
+    "mapping_samples": 1199,
+    "mapping_span_us": 0.95367431640625
+  },
+  "tracker_query_offset_ms": -12.786861933161967,
+  "offset_semantics": "interpolate Tracker at mapped camera timestamp + tracker_query_offset_ms",
+  "tracker_T_target": [
+    [
+      0.9931207747105925,
+      -0.11705073384987787,
+      -0.0032019593123438837,
+      0.01078876350813477
+    ],
+    [
+      0.11709447749648354,
+      0.9927254720320882,
+      0.02801821761806746,
+      0.0023063682750653234
+    ],
+    [
+      -0.00010088636358625107,
+      -0.02820040573950903,
+      0.9996022843801773,
+      0.03884257414255031
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "inputs": {
+    "query_timestamps": "/home/robot/ego_vio_humble/reports/steamvr_scoring_integration_20260927/take2_aprilgrid_body_check.csv",
+    "tracker": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_124226_steamvr_aprilgrid_take2_retry40/tracker.csv",
+    "calibration": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/aprilgrid_time_contract_validated.json",
+    "body_camera_config": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_124230/d405_frames.csv"
+  },
+  "sha256": {
+    "calibration": "135e0fdb8862dc52871f1b0948c7d9495398ddefee1932490f293e97c8285519",
+    "body_camera_config": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331"
+  },
+  "output": "/home/robot/ego_vio_humble/reports/steamvr_scoring_integration_20260927/take2_exact_timestamp_check/steamvr_body_reference.csv"
+}

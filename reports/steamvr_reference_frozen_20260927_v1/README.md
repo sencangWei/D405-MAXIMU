@@ -40,3 +40,13 @@ take3 with the new CLI yielded an identical transform and a timing difference
 of only1.78e-15ms (floating point). No legacy libsurvive configuration or SLAM
 evaluation consumer has been replaced automatically. A scoring consumer must
 check the declared backend/frame and use the camera-vs-IMU time contract.
+
+## Explicit official scoring entrypoint
+
+`scripts/score_steamvr_slam.py` now defaults to this frozen reference and scores
+an already-produced body trajectory. It validates the pinned independent
+acceptance and current capture provenance before exporting reference poses.
+This is a new explicit entrypoint; legacy libsurvive workflows remain separate.
+Recorded-data integration checks and the command are documented in
+`reports/steamvr_scoring_integration_20260927/README.md`; board checks there
+are not fusion SLAM precision results.
