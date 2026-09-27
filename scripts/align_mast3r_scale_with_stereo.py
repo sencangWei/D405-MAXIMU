@@ -1162,6 +1162,133 @@ def estimate_sift_fallback(
     )
 
 
+def _finite_vector3(value, *, label: str) -> np.ndarray:
+    vector = np.asarray(value, dtype=float)
+    if vector.shape != (3,) or not np.all(np.isfinite(vector)):
+        raise ValueError(f"{label} must be a finite 3-vector")
+    return vector
+
+
+def _finite_quaternion_xyzw(value, *, label: str) -> np.ndarray:
+    quaternion = np.asarray(value, dtype=float)
+    if quaternion.shape != (4,) or not np.all(np.isfinite(quaternion)):
+        raise ValueError(f"{label} must be a finite xyzw quaternion")
+    if float(np.linalg.norm(quaternion)) <= np.finfo(float).eps:
+        raise ValueError(f"{label} must be nonzero")
+    return quaternion
+
+
+def _try_reverse_vector(reverse: dict) -> tuple[np.ndarray | None, str | None]:
+    try:
+        return (
+            _finite_vector3(
+                reverse.get("metric_displacement_camera_i_m"),
+                label="reverse metric displacement",
+            ),
+            None,
+        )
+    except (TypeError, ValueError):
+        return None, "bidirectional_motion_contract_malformed"
+
+
+def validate_bidirectional_motion(
+    forward: dict,
+    reverse: dict,
+    max_relative_disagreement: float = 0.20,
+    max_absolute_disagreement_m: float = 0.008,
+) -> dict:
+    """Validate inverse 3D motion closure without changing the forward estimate.
+
+    ``forward`` is an i→j observation in camera_i. ``reverse`` is the replayed j→i
+    observation in camera_j.  The reverse displacement is mapped into camera_i
+    with the forward PnP rotation and compared as a vector, not just as a scalar
+    scale.  Rejection requires both the relative and absolute closure gates to be
+    exceeded so tiny noisy motions are not dropped.
+    """
+    if max_relative_disagreement <= 0.0 or max_absolute_disagreement_m <= 0.0:
+        raise ValueError("bidirectional motion thresholds must be positive")
+    if not forward.get("accepted"):
+        return forward
+    forward_displacement = _finite_vector3(
+        forward.get("metric_displacement_camera_i_m"),
+        label="forward metric displacement",
+    )
+    if not reverse.get("accepted"):
+        rejected = dict(forward)
+        rejected.update(
+            {
+                "accepted": False,
+                "reason": "reverse_motion_failed",
+                "reverse_failure_reason": reverse.get("reason", "unknown"),
+            }
+        )
+        return rejected
+    try:
+        forward_rotation = Rotation.from_quat(
+            _finite_quaternion_xyzw(
+                forward.get("pnp_rotation_quaternion_xyzw"),
+                label="forward pnp rotation",
+            )
+        )
+    except (TypeError, ValueError):
+        rejected = dict(forward)
+        rejected.update(
+            {
+                "accepted": False,
+                "reason": "bidirectional_motion_contract_missing",
+            }
+        )
+        return rejected
+    reverse_displacement, malformed_reason = _try_reverse_vector(reverse)
+    if reverse_displacement is None:
+        rejected = dict(forward)
+        rejected.update(
+            {
+                "accepted": False,
+                "reason": malformed_reason,
+            }
+        )
+        return rejected
+
+    mapped_reverse_displacement = -forward_rotation.inv().apply(reverse_displacement)
+    closure_m = float(
+        np.linalg.norm(forward_displacement - mapped_reverse_displacement)
+    )
+    mean_distance_m = 0.5 * (
+        float(np.linalg.norm(forward_displacement))
+        + float(np.linalg.norm(mapped_reverse_displacement))
+    )
+    relative_disagreement = closure_m / max(mean_distance_m, 1e-12)
+    diagnostics = {
+        "forward_scale": float(forward["scale"]) if "scale" in forward else None,
+        "reverse_scale": float(reverse["scale"]) if "scale" in reverse else None,
+        "bidirectional_motion_closure_m": closure_m,
+        "bidirectional_motion_closure_mm": 1000.0 * closure_m,
+        "bidirectional_relative_vector_disagreement": float(relative_disagreement),
+        "mapped_reverse_metric_displacement_camera_i_m": (
+            mapped_reverse_displacement.tolist()
+        ),
+        "reverse_metric_displacement_camera_i_m": reverse_displacement.tolist(),
+    }
+    if "pnp_rotation_quaternion_xyzw" in reverse:
+        diagnostics["reverse_pnp_rotation_quaternion_xyzw"] = reverse[
+            "pnp_rotation_quaternion_xyzw"
+        ]
+    validated = dict(forward)
+    validated.update(diagnostics)
+    if (
+        relative_disagreement > max_relative_disagreement
+        and closure_m > max_absolute_disagreement_m
+    ):
+        validated.update(
+            {
+                "accepted": False,
+                "reason": "bidirectional_motion_vector_disagrees",
+            }
+        )
+    return validated
+
+
 def combine_bidirectional_scale(
     forward: dict,
     reverse: dict,
