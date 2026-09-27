@@ -12,9 +12,16 @@ Baseline and rejected SIFT candidate remain separate and immutable.
    max_depth1.5m, production uses0.6m. Prior spatial/target/rawgyro results are NOT
    production-equivalent; withdraw their production-level negative conclusions.
    Reproduced166/166cachedmotions using explicit recorded0.6m replay parameters.
-6. In progress: uniform free-PnP LM and rawgyrorotation-validation diagnostics;
-   only if supported run alltenactualgraphcandidate, withnoGToptimizer/selection.
-7. Back up new code/evidence to owned sencang and verify clean remote restore.
+6. Complete: uniform free-PnP LM and raw gyro rotation-validation diagnostics;
+   actual frozen SIFT candidate completed all ten, 8 PASS / 2 FAIL. Fresh2 maximum
+   16.151→11.323 mm; fresh4 16.181→15.333 mm. Do not deploy as a solved 10mm
+   pipeline. Production untouched; no GT optimizer/selection. Confidence values
+   change under the existing formula; this is not a gate-only ablation.
+7. In progress: back up candidate code and complete ten-case evidence to owned
+   sencang, then verify remote restore.
+8. Read-only next diagnosis: map residual blocks to original image indices and
+   their visual factor support. No single-case guard/weight adjustment. Any next
+   estimator candidate must have physical evidence and a frozen multi-case test.
 
 Stop condition for this diagnostic branch: a measured instability explanation,
 or evidence against it. Overall10mm target is NOT achieved by a diagnostic.

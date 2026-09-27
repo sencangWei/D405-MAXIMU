@@ -1,0 +1,79 @@
+{
+  "schema": "umi_docker2_mast3r_complementary_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "algorithm": "MASt3R long-term pose + Docker2 high-pass local metric motion",
+  "inputs": {
+    "mast3r_camera_trajectory": "/home/robot/ego_vio_humble/reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1/fresh1/trajectory_graph.csv",
+    "docker2_body_trajectory": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/vins_input/vio_corrected_stream.csv",
+    "body_camera_calibration": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml"
+  },
+  "samples": 1143,
+  "timestamp_overlap_s": 38.06517553329468,
+  "scale": {
+    "horizon_s": 1.0,
+    "hop_samples": 30,
+    "candidate_windows": 633,
+    "robust_inliers": 618,
+    "ratio_median": 1.017710248835727,
+    "ratio_p10": 0.9917496806199154,
+    "ratio_p90": 1.0485583438896484,
+    "ratio_mad": 0.013692297843925338,
+    "docker2_to_mast3r_ratio": 1.017710248835727,
+    "stereo_reference_ratio": 1.0,
+    "selected_joint_ratio": 1.00439845737994,
+    "relative_disagreement": 0.017554798907272552,
+    "selection_policy": "weighted_log_mean_of_stereo_and_docker2",
+    "docker2_scale_weight": 0.25,
+    "automatic_selection": null
+  },
+  "fusion": {
+    "smoothing_s": 8.0,
+    "local_weight": 0.0,
+    "adaptive_local_weight": false,
+    "roughness_threshold_mm": 9.0,
+    "adaptive_weight_strength": 0.45,
+    "injection_limit_mm": null,
+    "injection_clipped_frames": 0,
+    "effective_local_weight_min": 0.0,
+    "effective_local_weight_median": 0.0,
+    "effective_local_weight_max": 0.0,
+    "input_disagreement_p95_mm": 17.029176555856232,
+    "injected_correction_median_mm": 0.0,
+    "injected_correction_p95_mm": 0.0,
+    "injected_correction_max_mm": 0.0,
+    "alignment_rotation": [
+      [
+        0.9991310153757569,
+        -0.027809080273460685,
+        0.031046242422440765
+      ],
+      [
+        0.016299653342543408,
+        -0.4248571991358807,
+        -0.9051136291335622
+      ],
+      [
+        0.0383605971684704,
+        0.9048331422957265,
+        -0.42403472639410045
+      ]
+    ],
+    "alignment_translation_m": [
+      0.01854718387026877,
+      0.009690232693227725,
+      -0.0286567650017314
+    ]
+  },
+  "docker2_position_policy": {
+    "source_report": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/vins_input/run_acceptance.json",
+    "source_result": "PASS",
+    "source_failures": [],
+    "local_translation_allowed": true,
+    "policy": "accepted_run_local_translation_enabled"
+  },
+  "orientation_prior": null,
+  "output_frame": "body_imu_origin",
+  "output": "/home/robot/ego_vio_humble/reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1/fresh1/trajectory_fused_unsmoothed.csv"
+}

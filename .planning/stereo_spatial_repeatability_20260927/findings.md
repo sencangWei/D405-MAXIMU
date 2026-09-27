@@ -114,3 +114,37 @@ PnProtationremainsfree. Reviewer confirmsgyroframe/td-onceconvention andscope;
 addedIR/calibrationsameassertions andexplicitrefinement_estimate to distinguish
 staleinheritedfields onrejectedobservations. Actualalltenstarted5720,
 output sift_lm_gyro_candidate_ten_v1, firstfresh1thenprior6thenfresh2..4.
+
+Boundedsinglepairfresh4edge1035→1075 LMunchangedbecauseexistingmedianreprojection
+guard: before1.101244px→after1.160628px, thoughMSE1.453252→1.423824px² and
+P951.791201→1.665221px. All26inliers/78validpoints positiveZ, posesfinite.
+LMmovesonly0.900mm/.05177deg; rotationgatebefore1.181→after1.218deg both<5.
+Thus mediancriterion(notrotationgate) explains unchangedpose onthispair only;
+changingguardnotobviouslycapableofrepairing6mmfulltrajectorygap. No further
+guardtuning orper-pairchangesmadewhilefrozenalltenruncontinues.
+
+### Candidate scope caveat: derived confidence changes with observations
+
+`scripts/fuse_mast3r_stereo_imu.py:1317` reads `rotation_error_deg` in
+`stereo_observation_confidence`; its rotation term is
+`1 / (1 + (rotation_error_deg / 1.5)**2)`. The candidate changes that residual's
+reference from MASt3R relative attitude to calibrated raw gyro, and also refines
+the measured pose/scale. Thus existing formulas and graph parameters are frozen,
+but their per-edge derived confidence is NOT unchanged. This is a combined
+observation-estimator policy, not a pure rotation-gate-only or position-only
+ablation. Do not attribute trajectory gains solely to LM or claim unchanged
+edge weights. No source/formula change or closed-family weight sweep is made.
+
+### Full trajectory result, not local-edge extrapolation
+
+Frozen candidate completed all ten: 8 PASS / 2 FAIL, same pass count as baseline.
+Fresh2 maximum improves16.151→11.323mm; fresh4 improves16.181→15.333mm.
+All eight formerly passing cases remain passing, but heldout3 and fresh3 maxima
+slightly worsen. No production promotion; no universal 10mm claim.
+Evaluation-only residual localization exactly reproduces official maxima and
+compares identical sample times/reference positions. Fresh2 remaining24samples
+above10mm are a single17.363–18.130s block. Fresh4 remaining63samples comprise
+14samples25.297–25.731s,8samples25.997–26.231s,and41samples32.898–34.231s.
+At the largest fresh4 peak the aligned output changes only0.956mm, versus a
+remaining15.333mm error. Repairing SIFT fallback alone is insufficient. This
+does not identify the remaining cause as LK, model, IMU, or ground truth.

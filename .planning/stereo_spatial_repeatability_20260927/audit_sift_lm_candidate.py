@@ -60,10 +60,13 @@ def main():
         rows.append(row)
     result = dict(completed=sum(r['complete'] for r in rows), total=10,
                   pass_count=sum(r.get('result') == 'PASS' for r in rows), production_changed=False,
-                  external_reference_used_in_optimization=False, cases=rows)
+                  external_reference_used_in_optimization=False,
+                  derived_stereo_confidence_policy='Existing formula unchanged; values may change with refined scale and gyro-referenced rotation residual',
+                  isolated_gate_only_ablation=False, cases=rows)
     (args.candidate/'comparison.json').write_text(json.dumps(result, indent=2)+'\n')
     lines = ['# SIFT free-PnP LM with raw-gyro validation', '',
              'Cached LK, global scales and all other modules unchanged. GT evaluation only.', '',
+             'Scope: refined SIFT pose/scale and gyro-referenced rotation residual also change derived confidence under the unchanged formula. This is not a gate-only ablation.', '',
              '|Case|Baseline max mm|Candidate max mm|Mean mm|P95 mm|Result|', '|---|---:|---:|---:|---:|---|']
     for r in rows:
         if r['complete']:

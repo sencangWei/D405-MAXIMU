@@ -150,3 +150,29 @@ fresh1first; source frozenwhilebatchrunning. Current108relatedtestsPASS.
 Thirdbackupfullyverified71componentsand106restoredtests; newtwoLMsafetytests,
 fourthcontroldata/candidatecode neednextsame-daybackup. Onefailedno-op patch
 matchedwrongcontext,made nochanges; correctedcontext.
+
+Fourthbackup8363f7b5 normalFFtosencang verifiedbyfreshremotecheckoutpaR9kF:
+57changedcomponentsbyteidenticaland108restoredtestsPASS. Frozencandidate5720
+completedfresh1 (max7.808628mean2.462184P955.989976PASS) anddev1 (max6.457796
+mean2.735298P955.403573PASS). audit_sift_lm_candidate.py verifiedunchangedLK,
+globalscales, samples/SE3, visualsigmaandoriginalhashes. 2/10complete, notoverall
+acceptance; originalfailedfresh2/fresh4pending. Continuealltenwithoutpercase
+tuning. Boundedparallelreviewfresh4LMguard behavior assignedlast_three.
+
+Continuation: actual candidate now 5/10 complete, all PASS; heldout2 max
+5.973924 mm vs baseline6.061998. Original failed fresh2/fresh4 remain pending.
+Confirmed confidence coupling at fusion.py:1317: rotation_error_deg now uses
+raw-gyro reference, so derived confidence changes under the frozen existing
+formula. Recorded scope caveat; candidate source remains frozen and production
+unchanged. Full-ten output audit continues, not single-case acceptance.
+
+Actual candidate5720 finished rc0 (runner distinguishes quality-gate FAIL from
+execution failure). Audit complete10/10,8PASS2FAIL; source/inputhashes and frozen
+LK/scales/sample counts verified. Fresh2max16.151423→11.323193mean3.528973,
+P957.727460,97.9003%within10; fresh4max16.181037→15.333417mean5.978813,
+P9510.117727,94.4834%within10. Eight prior passes remain passes; heldout3 and
+fresh3 maxima slightlyworse. Production not promoted. New eval-only localizer
+reproduces officialmaxima to1e-7mm and asserts identical reference/timestamps:
+fresh2 24samples>10 at17.363–18.130s; fresh4 63samples in threeblocks,
+largest41samples32.898–34.231s. These are sustained blocks, not singleton spikes.
+Current108relatedtestsPASS. Source+completeevidence pending fifth backup.
