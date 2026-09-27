@@ -1,0 +1,67 @@
+{
+  "failures": [],
+  "hashes": {
+    "input_sha256": "d4801fa2f7ae7f34d03404dcf2f00f4b453f35f573e9e7a5aa8b5efece6fa776",
+    "output_sha256": "dd4fa76a9bfb74ef158e9ded2d06a2cb94a9f9c8254dcf6b0650be74354db2fb"
+  },
+  "provenance": {
+    "adapter": "steamvr_trace_adapter.py",
+    "caveat": "OpenVR exposes host query timing here, not tracker sensor hardware time; device_time_s is intentionally empty.",
+    "name_alias": "WM0",
+    "output_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_133741_steamvr_fusion_validation_take2/tracker.csv",
+    "pose_frame": "steamvr_standing_tracker",
+    "raw_columns": [
+      "sequence",
+      "query_monotonic_begin_ns",
+      "query_monotonic_end_ns",
+      "host_realtime_ns",
+      "index",
+      "connected",
+      "pose_valid",
+      "tracking_result",
+      "m00",
+      "m01",
+      "m02",
+      "px",
+      "m10",
+      "m11",
+      "m12",
+      "py",
+      "m20",
+      "m21",
+      "m22",
+      "pz",
+      "vx",
+      "vy",
+      "vz",
+      "wx",
+      "wy",
+      "wz"
+    ],
+    "raw_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_133741_steamvr_fusion_validation_take2/tracker_camera_window_raw.csv",
+    "serial": "LHR-A2A59C7D",
+    "source": "steamvr_official",
+    "timestamp_source": "host_query_midpoint_not_sensor"
+  },
+  "result": "PASS",
+  "status": "PASS",
+  "validation": {
+    "clock_pair_drift_ns": 122538,
+    "exported_rows": 4798,
+    "good_pose_max_gap_ns": 9792474,
+    "input_rows": 4798,
+    "max_rotation_det_error": 1.0164633934550693e-07,
+    "max_rotation_orthogonality_error": 9.522320532084905e-08,
+    "query_begin_le_end": true,
+    "query_midpoint_strictly_increasing": true,
+    "rejected_counts": {},
+    "sample_good_fraction": 1.0,
+    "sequence_strictly_increasing": true,
+    "thresholds": {
+      "clock_pair_drift_ns_max": 1000000,
+      "good_pose_max_gap_ns_max": 30000000,
+      "rotation_tolerance": 0.001,
+      "sample_good_fraction_min": 0.999
+    }
+  }
+}

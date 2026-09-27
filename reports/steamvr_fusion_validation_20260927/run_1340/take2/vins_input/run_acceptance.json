@@ -1,0 +1,157 @@
+{
+  "schema": "umi_docker2_run_acceptance_v1",
+  "result": "FAIL",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "failure_scope": "INFRASTRUCTURE",
+  "runtime_error": "benchmark environment preflight failed",
+  "ros_domain_id": 77,
+  "ros_localhost_only": true,
+  "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133744",
+  "benchmark_environment": {
+    "schema_version": 1,
+    "result": "FAIL",
+    "thresholds": {
+      "max_load_1m_per_cpu": 0.75,
+      "max_cpu_pressure_some_avg10_percent": 10.0,
+      "max_io_pressure_full_avg10_percent": 10.0,
+      "max_memory_pressure_full_avg10_percent": 1.0,
+      "min_memory_available_gib": 8.0,
+      "max_conflicting_processes": 0
+    },
+    "snapshot": {
+      "captured_at_utc": "2026-09-27T05:56:16.712845+00:00",
+      "hostname": "robot-MS-7E19",
+      "kernel_release": "6.8.0-138-generic",
+      "cpu_count": 24,
+      "load_average": {
+        "one_minute": 7.14453125,
+        "five_minutes": 7.70556640625,
+        "fifteen_minutes": 6.8330078125,
+        "one_minute_per_cpu": 0.2976888020833333
+      },
+      "memory_available_gib": 39.37184143066406,
+      "pressure": {
+        "cpu": {
+          "some": {
+            "avg10": 11.0,
+            "avg60": 12.65,
+            "avg300": 13.02,
+            "total": 35063564835.0
+          },
+          "full": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 0.0
+          }
+        },
+        "memory": {
+          "some": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 297030102.0
+          },
+          "full": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 254491106.0
+          }
+        },
+        "io": {
+          "some": {
+            "avg10": 0.06,
+            "avg60": 0.05,
+            "avg300": 0.41,
+            "total": 17770486511.0
+          },
+          "full": {
+            "avg10": 0.06,
+            "avg60": 0.03,
+            "avg300": 0.3,
+            "total": 15968980319.0
+          }
+        }
+      },
+      "conflicting_processes": [],
+      "resource_gated_processes": [
+        {
+          "pid": 3088996,
+          "command": "/opt/umi-ui/share/umi-collector/ros2_ws/install/lib/hik_camera/hik_camera_node --ros-args --params-file /opt/umi-ui/share/umi-collector/config/camera/hik_umi_fisheye_bayergb8_preview20.yaml --params-file /tmp/launch_params_ery11f4b"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "name": "load_1m_per_cpu",
+        "value": 0.2976888020833333,
+        "operator": "<=",
+        "threshold": 0.75,
+        "result": "PASS"
+      },
+      {
+        "name": "cpu_pressure_some_avg10_percent",
+        "value": 11.0,
+        "operator": "<=",
+        "threshold": 10.0,
+        "result": "FAIL"
+      },
+      {
+        "name": "io_pressure_full_avg10_percent",
+        "value": 0.06,
+        "operator": "<=",
+        "threshold": 10.0,
+        "result": "PASS"
+      },
+      {
+        "name": "memory_pressure_full_avg10_percent",
+        "value": 0.0,
+        "operator": "<=",
+        "threshold": 1.0,
+        "result": "PASS"
+      },
+      {
+        "name": "memory_available_gib",
+        "value": 39.37184143066406,
+        "operator": ">=",
+        "threshold": 8.0,
+        "result": "PASS"
+      },
+      {
+        "name": "conflicting_processes",
+        "value": 0,
+        "operator": "<=",
+        "threshold": 0,
+        "result": "PASS"
+      }
+    ],
+    "failures": [
+      "cpu_pressure_some_avg10_percent 11.000 <= 10.000 failed"
+    ]
+  },
+  "failures": [
+    "cpu_pressure_some_avg10_percent 11.000 <= 10.000 failed",
+    "benchmark environment preflight is not PASS",
+    "benchmark environment reports failures"
+  ],
+  "health": {
+    "schema_version": 3,
+    "state": "INFRASTRUCTURE_BLOCKED",
+    "product_usable": false,
+    "thresholds": {
+      "min_pose_coverage": 0.98,
+      "min_true_elevation_retention": 0.9,
+      "min_absolute_jump_limit_m": 0.03,
+      "max_raw_step_limit_m": 0.05,
+      "raw_step_multiplier": 3.5
+    },
+    "checks": [],
+    "failures": [
+      "benchmark environment preflight is not PASS",
+      "benchmark environment reports failures",
+      "run classified as infrastructure failure"
+    ]
+  }
+}
