@@ -1,0 +1,36 @@
+{
+  "schema": "lighthouse_imu_time_offset_v1",
+  "result": "DIAGNOSTIC_CANDIDATE",
+  "method": "coordinate-invariant angular-speed correlation",
+  "slam_supervision": false,
+  "slam_inputs": [],
+  "tracker_serial": "LHR-A2A59C7D",
+  "tracker_time_source": "host_monotonic",
+  "tracker_query_offset_ms": 1.534506412163685,
+  "repeat_spread_ms": 0.0,
+  "captures": [
+    {
+      "imu": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_121427/external_imu/imu.bin",
+      "tracker": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_121423_steamvr_aprilgrid_take1/tracker.csv",
+      "tracker_query_offset_ms": 1.534506412163685,
+      "correlation": 0.41683491365297276,
+      "overlap_duration_s": 39.7828291420592,
+      "imu_rate_hz": 400.15079100957274,
+      "tracker_rate_hz": 119.99654217342717,
+      "tracker_speed_clip_deg_s": 49.90351941742509,
+      "tracker_speed_clipped_samples": 0,
+      "tracker_speed_clipped_ratio": 0.0,
+      "search_range_ms": 30.0
+    }
+  ],
+  "acceptance": {
+    "minimum_correlation": 0.41683491365297276,
+    "maximum_repeat_spread_ms": 0.0,
+    "maximum_tracker_speed_clipped_ratio": 0.0,
+    "thresholds": {
+      "minimum_correlation": 0.8,
+      "maximum_repeat_spread_ms": 2.0,
+      "maximum_tracker_speed_clipped_ratio": 0.005
+    }
+  }
+}

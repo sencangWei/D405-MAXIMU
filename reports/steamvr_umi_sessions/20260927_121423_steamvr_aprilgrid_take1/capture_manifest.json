@@ -1,0 +1,99 @@
+{
+  "schema": "d405_steamvr_capture_v1",
+  "reference_backend": "steamvr_official",
+  "reference_pose_frame": "steamvr_standing_tracker",
+  "serial": "LHR-A2A59C7D",
+  "slam_supervision": false,
+  "extrinsic": "NOT_VALIDATED",
+  "time_offset": "NOT_ESTIMATED",
+  "duration_requested_s": 40.0,
+  "raw_storage": "private_tmpfs_then_sha256_verified_disk_copy",
+  "d405_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_121427",
+  "tracker_acquisition_window": {
+    "selection": "camera_exposure_interval_plus_bracketing_queries",
+    "full_raw_rows": 13155,
+    "selected_rows": 4793,
+    "pre_acquisition_rows": 896,
+    "post_acquisition_rows": 7466,
+    "full_raw_preserved": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_121423_steamvr_aprilgrid_take1/tracker_openvr_raw.csv",
+    "selected_raw": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_121423_steamvr_aprilgrid_take1/tracker_camera_window_raw.csv"
+  },
+  "tracker_integrity": {
+    "status": "PASS",
+    "result": "PASS",
+    "failures": [],
+    "provenance": {
+      "adapter": "steamvr_trace_adapter.py",
+      "raw_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_121423_steamvr_aprilgrid_take1/tracker_camera_window_raw.csv",
+      "output_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_121423_steamvr_aprilgrid_take1/tracker.csv",
+      "serial": "LHR-A2A59C7D",
+      "name_alias": "WM0",
+      "source": "steamvr_official",
+      "timestamp_source": "host_query_midpoint_not_sensor",
+      "pose_frame": "steamvr_standing_tracker",
+      "caveat": "OpenVR exposes host query timing here, not tracker sensor hardware time; device_time_s is intentionally empty.",
+      "raw_columns": [
+        "sequence",
+        "query_monotonic_begin_ns",
+        "query_monotonic_end_ns",
+        "host_realtime_ns",
+        "index",
+        "connected",
+        "pose_valid",
+        "tracking_result",
+        "m00",
+        "m01",
+        "m02",
+        "px",
+        "m10",
+        "m11",
+        "m12",
+        "py",
+        "m20",
+        "m21",
+        "m22",
+        "pz",
+        "vx",
+        "vy",
+        "vz",
+        "wx",
+        "wy",
+        "wz"
+      ]
+    },
+    "hashes": {
+      "input_sha256": "fce0bc8bab29bd495c4897ba086dbe026ae6dd01f51d1538dec55fa64a41b9c7",
+      "output_sha256": "7a42b162b33fa62d28c4f4ab3648dc73d02bc468f156849c1e3b7d8f0f851f64"
+    },
+    "validation": {
+      "input_rows": 4793,
+      "exported_rows": 4793,
+      "rejected_counts": {},
+      "sample_good_fraction": 1.0,
+      "max_rotation_orthogonality_error": 8.586500099827532e-08,
+      "max_rotation_det_error": 8.802604400948155e-08,
+      "good_pose_max_gap_ns": 11637476,
+      "sequence_strictly_increasing": true,
+      "query_midpoint_strictly_increasing": true,
+      "query_begin_le_end": true,
+      "clock_pair_drift_ns": 13607,
+      "thresholds": {
+        "sample_good_fraction_min": 0.999,
+        "good_pose_max_gap_ns_max": 30000000,
+        "clock_pair_drift_ns_max": 1000000,
+        "rotation_tolerance": 0.001
+      }
+    }
+  },
+  "clock_coverage": {
+    "status": "PASS_CLOCK_COVERAGE_ONLY",
+    "camera_frames": 1199,
+    "supported_frames": 1199,
+    "ratio": 1.0,
+    "minimum_ratio": 0.98,
+    "max_bracketing_gap_ms": 30,
+    "alignment_domain": "host_monotonic",
+    "dynamic_time_offset": "NOT_ESTIMATED"
+  },
+  "status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED"
+}

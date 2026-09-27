@@ -73,7 +73,11 @@ def robust_normalize(values: np.ndarray) -> np.ndarray:
         scale = float(np.std(values))
     if scale < 1.0e-6:
         raise ValueError("angular motion has no measurable variation")
-    return np.clip((values - median) / scale, -5.0, 10.0)
+    # Long stationary holds make MAD reflect only sensor noise. Clipping at
+    # 10*MAD then flattens real rotations differently for the two devices and
+    # destroys timing correlation. Keep affine normalization; isolated Tracker
+    # orientation spikes are handled separately with their explicit ratio gate.
+    return (values - median) / scale
 
 
 def estimate_offset(
