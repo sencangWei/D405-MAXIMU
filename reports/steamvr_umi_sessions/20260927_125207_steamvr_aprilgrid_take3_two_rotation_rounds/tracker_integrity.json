@@ -1,0 +1,67 @@
+{
+  "failures": [],
+  "hashes": {
+    "input_sha256": "994322b0f9488489d6a527ccbb2507bc6ed5c59de2d76fcb2b5c6083ef2d4fd6",
+    "output_sha256": "8c0504b5562698e043267df8eee38325077a519f796fa2d02912069d4716b8e4"
+  },
+  "provenance": {
+    "adapter": "steamvr_trace_adapter.py",
+    "caveat": "OpenVR exposes host query timing here, not tracker sensor hardware time; device_time_s is intentionally empty.",
+    "name_alias": "WM0",
+    "output_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/tracker.csv",
+    "pose_frame": "steamvr_standing_tracker",
+    "raw_columns": [
+      "sequence",
+      "query_monotonic_begin_ns",
+      "query_monotonic_end_ns",
+      "host_realtime_ns",
+      "index",
+      "connected",
+      "pose_valid",
+      "tracking_result",
+      "m00",
+      "m01",
+      "m02",
+      "px",
+      "m10",
+      "m11",
+      "m12",
+      "py",
+      "m20",
+      "m21",
+      "m22",
+      "pz",
+      "vx",
+      "vy",
+      "vz",
+      "wx",
+      "wy",
+      "wz"
+    ],
+    "raw_csv": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/tracker_camera_window_raw.csv",
+    "serial": "LHR-A2A59C7D",
+    "source": "steamvr_official",
+    "timestamp_source": "host_query_midpoint_not_sensor"
+  },
+  "result": "PASS",
+  "status": "PASS",
+  "validation": {
+    "clock_pair_drift_ns": 120078,
+    "exported_rows": 4793,
+    "good_pose_max_gap_ns": 11472723,
+    "input_rows": 4793,
+    "max_rotation_det_error": 1.0018907126152499e-07,
+    "max_rotation_orthogonality_error": 9.386954769041722e-08,
+    "query_begin_le_end": true,
+    "query_midpoint_strictly_increasing": true,
+    "rejected_counts": {},
+    "sample_good_fraction": 1.0,
+    "sequence_strictly_increasing": true,
+    "thresholds": {
+      "clock_pair_drift_ns_max": 1000000,
+      "good_pose_max_gap_ns_max": 30000000,
+      "rotation_tolerance": 0.001,
+      "sample_good_fraction_min": 0.999
+    }
+  }
+}

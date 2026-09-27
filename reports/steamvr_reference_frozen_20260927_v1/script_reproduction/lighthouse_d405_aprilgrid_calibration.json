@@ -1,0 +1,310 @@
+{
+  "schema": "lighthouse_d405_aprilgrid_handeye_v1",
+  "result": "PASS_CANDIDATE",
+  "auto_apply": false,
+  "method": "fixed AprilGrid body poses + Lighthouse relative-motion AX=XB",
+  "calibration_target_frame": "docker2_vins_body",
+  "independent_ground_truth": true,
+  "slam_supervision": false,
+  "slam_inputs": [],
+  "tracker_serial": "LHR-A2A59C7D",
+  "tracker_time_source": "host_monotonic",
+  "clock_mapping": {
+    "camera_input_domain": "d405_global_time_unix_epoch_s",
+    "alignment_domain": "host_monotonic_s",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_125216/d405_frames.csv",
+    "epoch_minus_monotonic_s": 1789875603.810934,
+    "mapping_samples": 1199,
+    "mapping_span_us": 0.95367431640625
+  },
+  "tracker_query_offset_ms": -12.786861933161967,
+  "time_offset_policy": "fixed_imu_tracker_sync_composed_with_camera_imu_td",
+  "time_alignment": {
+    "input_domain": "imu",
+    "camera_imu_td_ms": -9.109323000000002,
+    "imu_tracker_query_offset_ms": -3.6775389331619657,
+    "effective_camera_tracker_query_offset_ms": -12.786861933161967,
+    "camera_imu_td_applied": true,
+    "formula": "t_tracker_query = t_camera + camera_imu_td + imu_tracker_query_offset",
+    "configuration_sha256": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331"
+  },
+  "offset_semantics": "interpolate Tracker at AprilGrid camera timestamp + tracker_query_offset_ms",
+  "offset_search": {
+    "range_ms": [
+      -50.0,
+      50.0
+    ],
+    "boundary_margin_ms": null,
+    "minimum_boundary_margin_ms": 5.0,
+    "coarse_best_candidates": []
+  },
+  "tracker_T_d405_left_camera": [
+    [
+      0.992812603395396,
+      -0.006026675070477404,
+      0.11952746013206494,
+      0.00013943041324700027
+    ],
+    [
+      0.11952568315987815,
+      -0.0006554644844033373,
+      -0.9928308926648601,
+      -0.023175206970568997
+    ],
+    [
+      0.006061815194720034,
+      0.9999816246078429,
+      6.958905432878073e-05,
+      0.029910846514170412
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "translation_norm_mm": 40.37898362606724,
+  "rotation_angle_deg": 6.915756909953423,
+  "aprilgrid": {
+    "family": "t36h11",
+    "tag_columns": 6,
+    "tag_rows": 6,
+    "tag_size_m": 0.0352,
+    "tag_spacing_ratio": 0.3,
+    "config": "/home/robot/ego_vio_humble/config/aprilgrid_6x6_35mm.yaml"
+  },
+  "profile": {
+    "overlap_samples": 1182,
+    "overlap_ratio": 0.9991546914623838,
+    "sample_rate_hz": 29.608205451210228,
+    "excitation": {
+      "relative_pairs": 518,
+      "translation_p95_m": 0.0727883951356647,
+      "rotation_p95_deg": 29.12841152689493,
+      "observability": {
+        "result": "PASS",
+        "translation_singular_values": [
+          5.008640666152802,
+          4.374596663745638,
+          3.805235089807294
+        ],
+        "translation_normalized_min_singular": 0.16719243120292798,
+        "translation_condition": 1.3162499945322566,
+        "rotation_axis_singular_values": [
+          16.375102733852916,
+          11.763527486128966,
+          10.510729353325148
+        ],
+        "rotation_axis_singular_ratio": 0.641872574734807,
+        "thresholds": {
+          "maximum_translation_condition": 8.0,
+          "minimum_translation_normalized_singular": 0.02,
+          "minimum_rotation_axis_singular_ratio": 0.15
+        }
+      }
+    },
+    "residuals": {
+      "solver_success": true,
+      "translation_residual_mm": {
+        "median": 1.1292819132075183,
+        "rmse": 1.6738594100975004,
+        "p95": 3.2265976490491446,
+        "max": 5.5137571358232815
+      },
+      "rotation_residual_deg": {
+        "median": 0.3194812256419187,
+        "rmse": 0.4365641404736219,
+        "p95": 0.8044186200333775,
+        "max": 1.306092229301053
+      },
+      "combined_residual_mm": {
+        "median": 1.3404371173598655,
+        "rmse": 1.8391221630232113,
+        "p95": 3.404829459650539,
+        "max": 5.68218289196088
+      }
+    }
+  },
+  "split_half_stability": {
+    "result": "PASS",
+    "active_motion_window": {
+      "start_sample": 583,
+      "end_sample_exclusive": 1182,
+      "samples": 599,
+      "leading_excluded_s": 19.41946506500244,
+      "trailing_excluded_s": 0.0
+    },
+    "halves": [
+      {
+        "name": "first",
+        "samples": 299,
+        "excitation": {
+          "relative_pairs": 248,
+          "translation_p95_m": 0.06064145789318926,
+          "rotation_p95_deg": 21.346725367784394,
+          "observability": {
+            "result": "PASS",
+            "translation_singular_values": [
+              2.959638363401654,
+              2.772936345927107,
+              1.2541055790617206
+            ],
+            "translation_normalized_min_singular": 0.07963578390624299,
+            "translation_condition": 2.3599594905047434,
+            "rotation_axis_singular_values": [
+              13.064749202048947,
+              7.742575425434773,
+              3.655797323295561
+            ],
+            "rotation_axis_singular_ratio": 0.2798214697242119,
+            "thresholds": {
+              "maximum_translation_condition": 8.0,
+              "minimum_translation_normalized_singular": 0.02,
+              "minimum_rotation_axis_singular_ratio": 0.15
+            }
+          }
+        },
+        "residuals": {
+          "solver_success": true,
+          "translation_residual_mm": {
+            "median": 0.9170715850180177,
+            "rmse": 1.3923630333753934,
+            "p95": 2.7903968784003967,
+            "max": 4.7618470034379765
+          },
+          "rotation_residual_deg": {
+            "median": 0.26449350029341967,
+            "rmse": 0.35274356766346066,
+            "p95": 0.6291276353989078,
+            "max": 0.8398772981133305
+          },
+          "combined_residual_mm": {
+            "median": 1.1057869549823034,
+            "rmse": 1.5224008192716298,
+            "p95": 2.912267552038828,
+            "max": 4.825843266894379
+          }
+        }
+      },
+      {
+        "name": "second",
+        "samples": 300,
+        "excitation": {
+          "relative_pairs": 269,
+          "translation_p95_m": 0.0744846627586983,
+          "rotation_p95_deg": 30.854578241889655,
+          "observability": {
+            "result": "PASS",
+            "translation_singular_values": [
+              4.064476897302879,
+              3.633244575752557,
+              2.8739418929676517
+            ],
+            "translation_normalized_min_singular": 0.17522732981991118,
+            "translation_condition": 1.4142515919505503,
+            "rotation_axis_singular_values": [
+              10.547041172281983,
+              10.036793754720735,
+              7.551337208427892
+            ],
+            "rotation_axis_singular_ratio": 0.7159673585301902,
+            "thresholds": {
+              "maximum_translation_condition": 8.0,
+              "minimum_translation_normalized_singular": 0.02,
+              "minimum_rotation_axis_singular_ratio": 0.15
+            }
+          }
+        },
+        "residuals": {
+          "solver_success": true,
+          "translation_residual_mm": {
+            "median": 1.3048818736563852,
+            "rmse": 1.837462580700486,
+            "p95": 3.3793123731000962,
+            "max": 5.366350020852594
+          },
+          "rotation_residual_deg": {
+            "median": 0.3856399177068173,
+            "rmse": 0.4875630320810632,
+            "p95": 0.8697659321968368,
+            "max": 1.0739106602690165
+          },
+          "combined_residual_mm": {
+            "median": 1.5796121545392439,
+            "rmse": 2.024944021651073,
+            "p95": 3.5949514509432894,
+            "max": 5.369679466734319
+          }
+        }
+      }
+    ],
+    "translation_difference_mm": 3.7210973834639565,
+    "rotation_difference_deg": 1.782399564077398,
+    "thresholds": {
+      "minimum_translation_p95_m_per_half": 0.02,
+      "minimum_rotation_p95_deg_per_half": 8.0,
+      "maximum_translation_difference_mm": 10.0,
+      "maximum_rotation_difference_deg": 2.0
+    }
+  },
+  "inputs": {
+    "aprilgrid_camera_poses": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/script_reproduction/aprilgrid_camera_poses.csv",
+    "tracker": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/tracker.csv",
+    "d405_frames": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_125216/d405_frames.csv",
+    "body_camera_config": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml"
+  },
+  "acceptance_note": "Freeze only a PASS_CANDIDATE, then evaluate SLAM on separate recordings.",
+  "tracker_T_body": [
+    [
+      0.9931207747105925,
+      -0.11705073384987787,
+      -0.0032019593123438837,
+      0.01078876350813477
+    ],
+    [
+      0.11709447749648354,
+      0.9927254720320882,
+      0.02801821761806746,
+      0.0023063682750653234
+    ],
+    [
+      -0.00010088636358625107,
+      -0.02820040573950903,
+      0.9996022843801773,
+      0.03884257414255031
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "body_T_cam0": [
+    [
+      0.999978007689,
+      -0.006162851996,
+      0.002450182166,
+      -0.013558924583
+    ],
+    [
+      0.002275800784,
+      -0.028145157096,
+      -0.999601255932,
+      -0.023797818217
+    ],
+    [
+      0.006229355357,
+      0.999584848518,
+      -0.028130512695,
+      -0.00960802493
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ]
+}

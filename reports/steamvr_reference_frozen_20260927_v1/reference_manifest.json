@@ -1,0 +1,51 @@
+{
+  "schema": "steamvr_aprilgrid_reference_frozen_v1",
+  "result": "PASS_RELATIVE_MOTION_REFERENCE",
+  "reference_backend": "steamvr_official",
+  "reference_pose_frame": "steamvr_standing_tracker",
+  "target_frame": "docker2_vins_body",
+  "tracker_serial": "LHR-A2A59C7D",
+  "base_station_serials": ["LHB-6E49384F", "LHB-9D67E4BD"],
+  "timestamp_source": "host_query_midpoint_not_sensor",
+  "slam_supervision": false,
+  "production_applied": false,
+  "time_alignment": {
+    "camera_imu_td_ms": -9.109323000000002,
+    "imu_tracker_query_offset_ms": -3.6775389331619657,
+    "effective_camera_tracker_query_offset_ms": -12.786861933161967,
+    "formula": "t_tracker_query = t_camera + camera_imu_td + imu_tracker_query_offset",
+    "estimate_td": 0,
+    "replay_imu_shift_ms": 0
+  },
+  "artifacts": {
+    "calibration": {
+      "path": "reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/aprilgrid_time_contract_validated.json",
+      "sha256": "135e0fdb8862dc52871f1b0948c7d9495398ddefee1932490f293e97c8285519"
+    },
+    "calibration_capture": {
+      "path": "reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/capture_manifest.json",
+      "sha256": "9093149bd9d6d45e78c98ff2563b7a1373001a68cf47991166669ed0c847eb44"
+    },
+    "heldout_validation": {
+      "path": "reports/steamvr_umi_sessions/20260927_125745_steamvr_aprilgrid_take4_independent_validation/fixed_candidate_validation.json",
+      "sha256": "4d75c3e1ad3830af9b95573d81bbf8ba1a8b2a38752ff86e1e6d83d7ff2562d5"
+    },
+    "heldout_capture": {
+      "path": "reports/steamvr_umi_sessions/20260927_125745_steamvr_aprilgrid_take4_independent_validation/capture_manifest.json",
+      "sha256": "cfa9cdb59fe4b2a16f3cfc84e2f8641e07576ec23340bbc2f879f6ce48650128"
+    },
+    "original_validated_candidate": {
+      "path": "reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/aprilgrid_composed_clock_diagnostic.json",
+      "sha256": "9e1ac7bd881d45cde035f5664aaf2cd3df18400c408ce5660b7971f0822d2f6b"
+    }
+  },
+  "candidate_equivalence": {
+    "tracker_T_body_max_element_difference": 0.0,
+    "effective_offset_difference_ms": 1.7763568394002505e-15,
+    "equivalence_tolerance": 1e-12,
+    "note": "New timing-domain CLI reproduced the exact heldout-validated transform; only timing metadata changed."
+  },
+  "formal_configuration_sha256": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+  "validity": "Same rigid Tracker/UMI attachment and declared SteamVR body frame. Rerun checks after mount, reference setup or sensor timing changes.",
+  "limitations": "Heldout relative-motion consistency only, not absolute metrological accuracy or SLAM ATE. Board detection on heldout take was 93.74%; missing board poses were not evaluated. Legacy libsurvive scoring has not been silently switched."
+}

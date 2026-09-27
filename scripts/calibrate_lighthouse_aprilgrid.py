@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 from pathlib import Path
 
@@ -119,6 +120,55 @@ def load_body_T_cam0(path: Path) -> np.ndarray:
     return body_T_camera
 
 
+def resolve_tracker_query_offset(
+    camera_offset_ms: float | None,
+    imu_offset_ms: float | None,
+    body_camera_config_path: Path | None,
+) -> tuple[float | None, dict[str, object]]:
+    """Convert independent IMU timing into camera-domain lookup exactly once.
+
+    VINS processMeasurements uses t_imu = t_camera + td. Its published pose
+    stamp remains t_camera, so a raw AprilGrid timestamp needs the same td.
+    The legacy direct camera-domain argument must not receive td again.
+    """
+    if camera_offset_ms is not None and imu_offset_ms is not None:
+        raise ValueError("specify either camera-domain or IMU-domain offset, not both")
+    for value in (camera_offset_ms, imu_offset_ms):
+        if value is not None and not np.isfinite(value):
+            raise ValueError("Tracker query offset must be finite")
+    if imu_offset_ms is None:
+        return camera_offset_ms, {
+            "input_domain": "camera" if camera_offset_ms is not None else "legacy_search",
+            "effective_camera_tracker_query_offset_ms": camera_offset_ms,
+            "camera_imu_td_applied": False,
+        }
+    if body_camera_config_path is None:
+        raise ValueError("IMU-domain offset requires --body-camera-config with fixed td")
+    storage = cv2.FileStorage(str(body_camera_config_path), cv2.FileStorage_READ)
+    try:
+        if not storage.isOpened():
+            raise ValueError("cannot open formal camera/IMU timing configuration")
+        td_node = storage.getNode("td")
+        estimate_node = storage.getNode("estimate_td")
+        if td_node.empty() or estimate_node.empty():
+            raise ValueError("formal configuration requires td and estimate_td")
+        td_s = float(td_node.real())
+        if not np.isfinite(td_s) or estimate_node.real() != 0:
+            raise ValueError("camera/IMU td must be finite and estimate_td must be 0")
+    finally:
+        storage.release()
+    effective_ms = td_s * 1000.0 + imu_offset_ms
+    return effective_ms, {
+        "input_domain": "imu",
+        "camera_imu_td_ms": td_s * 1000.0,
+        "imu_tracker_query_offset_ms": imu_offset_ms,
+        "effective_camera_tracker_query_offset_ms": effective_ms,
+        "camera_imu_td_applied": True,
+        "formula": "t_tracker_query = t_camera + camera_imu_td + imu_tracker_query_offset",
+        "configuration_sha256": hashlib.sha256(body_camera_config_path.read_bytes()).hexdigest(),
+    }
+
+
 def calibrate(
     camera_pose_path: Path,
     tracker_path: Path,
@@ -129,7 +179,11 @@ def calibrate(
     max_gap_s: float,
     body_camera_config_path: Path | None = None,
     tracker_query_offset_ms: float | None = None,
+    imu_tracker_query_offset_ms: float | None = None,
 ) -> dict[str, object]:
+    tracker_query_offset_ms, time_alignment = resolve_tracker_query_offset(
+        tracker_query_offset_ms, imu_tracker_query_offset_ms, body_camera_config_path
+    )
     camera_times, camera_positions, camera_quaternions = load_camera_poses(
         camera_pose_path
     )
@@ -196,6 +250,8 @@ def calibrate(
         offset_ms = float(tracker_query_offset_ms)
         offset_boundary_margin_ms = None
         time_offset_policy = "fixed_from_independent_imu_tracker_sync"
+        if imu_tracker_query_offset_ms is not None:
+            time_offset_policy = "fixed_imu_tracker_sync_composed_with_camera_imu_td"
     _, tracker_T_target, profile = evaluate_offset(
         offset_ms / 1000.0,
         aligned_camera_times,
@@ -254,6 +310,7 @@ def calibrate(
         "clock_mapping": clock_mapping,
         "tracker_query_offset_ms": offset_ms,
         "time_offset_policy": time_offset_policy,
+        "time_alignment": time_alignment,
         "offset_semantics": (
             "interpolate Tracker at AprilGrid camera timestamp + "
             "tracker_query_offset_ms"
@@ -309,7 +366,11 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--d405-frames", type=Path)
     parser.add_argument("--body-camera-config", type=Path)
-    parser.add_argument("--tracker-query-offset-ms", type=float)
+    offsets = parser.add_mutually_exclusive_group()
+    offsets.add_argument("--tracker-query-offset-ms", type=float,
+                         help="Direct camera-domain Tracker query offset; td is not added again")
+    offsets.add_argument("--imu-tracker-query-offset-ms", type=float,
+                         help="Independent IMU-domain offset; compose with fixed camera/IMU td")
     parser.add_argument(
         "--tracker-time-source",
         choices=("host_monotonic", "host_realtime"),
@@ -329,6 +390,7 @@ def main() -> int:
         args.max_gap_ms / 1000.0,
         args.body_camera_config,
         args.tracker_query_offset_ms,
+        args.imu_tracker_query_offset_ms,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(

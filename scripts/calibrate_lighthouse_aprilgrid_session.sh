@@ -72,26 +72,42 @@ python3 "$repo_root/scripts/calibrate_lighthouse_aprilgrid.py" \
   --aprilgrid "$aprilgrid_yaml" \
   --d405-frames "$session_dir/d405_frames.csv" \
   --body-camera-config "$stereo_config" \
-  --tracker-query-offset-ms "$tracker_query_offset_ms" \
+  --imu-tracker-query-offset-ms "$tracker_query_offset_ms" \
   --tracker-time-source host_monotonic \
   --output "$calibration_json"
 
-python3 - "$calibration_json" "$camera_yaml" "$right_camera_yaml" "$stereo_config" "$aprilgrid_yaml" "$time_sync_json" <<'PY'
+python3 - "$calibration_json" "$camera_yaml" "$right_camera_yaml" "$stereo_config" "$aprilgrid_yaml" "$time_sync_json" "$session_dir" "$tracker_csv" <<'PY'
 import hashlib
 import json
 import sys
 from pathlib import Path
 
-calibration, left, right, stereo, grid, time_sync = map(Path, sys.argv[1:])
+calibration, left, right, stereo, grid, time_sync, session, tracker = map(Path, sys.argv[1:])
 payload = json.loads(calibration.read_text(encoding="utf-8"))
 if payload.get("result") != "PASS_CANDIDATE":
     raise SystemExit("refusing to freeze a calibration that did not pass")
 if payload.get("calibration_target_frame") != "docker2_vins_body":
     raise SystemExit("refusing to freeze a calibration not solved at the VINS body")
-if payload.get("time_offset_policy") != "fixed_from_independent_imu_tracker_sync":
-    raise SystemExit("refusing to freeze a calibration with coupled time offset")
+if payload.get("time_offset_policy") != "fixed_imu_tracker_sync_composed_with_camera_imu_td":
+    raise SystemExit("refusing to freeze a calibration without explicit IMU/camera time composition")
 if "tracker_T_body" not in payload:
     raise SystemExit("refusing to freeze a calibration without tracker_T_body")
+capture_manifest = tracker.parent / "capture_manifest.json"
+if not capture_manifest.is_file():
+    raise SystemExit("refusing to freeze a reference without capture backend/frame provenance")
+capture = json.loads(capture_manifest.read_text(encoding="utf-8"))
+if capture.get("status") != "PASS_CAPTURE_ONLY_NOT_CALIBRATED":
+    raise SystemExit("refusing to freeze a reference whose capture did not pass")
+if (capture.get("reference_backend") != "steamvr_official"
+        or capture.get("reference_pose_frame") != "steamvr_standing_tracker"
+        or capture.get("serial") != payload["tracker_serial"]
+        or Path(capture.get("d405_session", "")).resolve() != session.resolve()):
+    raise SystemExit("reference capture backend/frame/device/session mismatch")
+integrity = capture.get("tracker_integrity", {})
+if (integrity.get("status") != "PASS"
+        or integrity.get("hashes", {}).get("output_sha256")
+        != hashlib.sha256(tracker.read_bytes()).hexdigest()):
+    raise SystemExit("Tracker CSV no longer matches its accepted source capture")
 artifacts = {
     "calibration": calibration,
     "left_camera": left,
@@ -99,12 +115,21 @@ artifacts = {
     "stereo_extrinsic": stereo,
     "aprilgrid": grid,
     "time_sync": time_sync,
+    "capture_manifest": capture_manifest,
+    "tracker_csv": tracker,
+    "d405_frames": session / "d405_frames.csv",
 }
 manifest = {
     "schema": "lighthouse_d405_aprilgrid_frozen_manifest_v1",
     "result": "PASS",
     "independent_ground_truth": True,
     "slam_supervision": False,
+    "time_alignment": payload["time_alignment"],
+    "reference_backend": capture["reference_backend"],
+    "reference_pose_frame": capture["reference_pose_frame"],
+    "tracker_serial": capture["serial"],
+    "d405_session": str(session.resolve()),
+    "heldout_validation": "NOT_PERFORMED_BY_THIS_SESSION_WRAPPER",
     "artifacts": {
         name: {
             "path": str(path.resolve()),

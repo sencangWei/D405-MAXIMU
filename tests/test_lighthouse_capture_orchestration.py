@@ -80,11 +80,24 @@ def test_external_calibration_fixes_independent_imu_tracker_offset() -> None:
     text = CALIBRATION_SCRIPT.read_text(encoding="utf-8")
 
     assert "estimate_lighthouse_imu_time_offset.py" in text
-    assert '--tracker-query-offset-ms "$tracker_query_offset_ms"' in text
+    assert '--imu-tracker-query-offset-ms "$tracker_query_offset_ms"' in text
+    assert 'fixed_imu_tracker_sync_composed_with_camera_imu_td' in text
+    assert '"time_alignment": payload["time_alignment"]' in text
     assert '--body-camera-config "$stereo_config"' in text
     assert '"time_sync": time_sync' in text
     assert 'payload.get("calibration_target_frame") != "docker2_vins_body"' in text
     assert 'payload.get("time_offset_policy")' in text
+
+
+def test_freeze_preserves_official_source_identity_and_hashes() -> None:
+    text = CALIBRATION_SCRIPT.read_text(encoding="utf-8")
+    assert 'capture.get("reference_backend") != "steamvr_official"' in text
+    assert 'capture.get("reference_pose_frame") != "steamvr_standing_tracker"' in text
+    assert '"capture_manifest": capture_manifest' in text
+    assert '"tracker_csv": tracker' in text
+    assert '"d405_frames": session / "d405_frames.csv"' in text
+    assert 'hashlib.sha256(tracker.read_bytes()).hexdigest()' in text
+    assert 'NOT_PERFORMED_BY_THIS_SESSION_WRAPPER' in text
 
 
 def test_external_calibration_rejects_tracker_steps_before_extracting_or_freezing() -> None:

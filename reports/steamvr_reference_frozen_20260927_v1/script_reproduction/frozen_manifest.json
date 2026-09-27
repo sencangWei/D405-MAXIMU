@@ -1,0 +1,58 @@
+{
+  "schema": "lighthouse_d405_aprilgrid_frozen_manifest_v1",
+  "result": "PASS",
+  "independent_ground_truth": true,
+  "slam_supervision": false,
+  "time_alignment": {
+    "input_domain": "imu",
+    "camera_imu_td_ms": -9.109323000000002,
+    "imu_tracker_query_offset_ms": -3.6775389331619657,
+    "effective_camera_tracker_query_offset_ms": -12.786861933161967,
+    "camera_imu_td_applied": true,
+    "formula": "t_tracker_query = t_camera + camera_imu_td + imu_tracker_query_offset",
+    "configuration_sha256": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331"
+  },
+  "reference_backend": "steamvr_official",
+  "reference_pose_frame": "steamvr_standing_tracker",
+  "tracker_serial": "LHR-A2A59C7D",
+  "d405_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_125216",
+  "heldout_validation": "NOT_PERFORMED_BY_THIS_SESSION_WRAPPER",
+  "artifacts": {
+    "calibration": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/script_reproduction/lighthouse_d405_aprilgrid_calibration.json",
+      "sha256": "0858724aeb599d9c7c2ec639da2294b36d188aa2c6fb4bbb243f600cf9508503"
+    },
+    "left_camera": {
+      "path": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/left.yaml",
+      "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+    },
+    "right_camera": {
+      "path": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/right.yaml",
+      "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+    },
+    "stereo_extrinsic": {
+      "path": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml",
+      "sha256": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331"
+    },
+    "aprilgrid": {
+      "path": "/home/robot/ego_vio_humble/config/aprilgrid_6x6_35mm.yaml",
+      "sha256": "c88214b0ada61d9aee8e275e6eae093c64d9ff5cbc23b56732a9014d45b19cf1"
+    },
+    "time_sync": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/script_reproduction/lighthouse_imu_time_offset.json",
+      "sha256": "a126f535c9182c7bbfa2efb16c9d825cdd6ce2746c7ab03cdae22eb31ddbf134"
+    },
+    "capture_manifest": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/capture_manifest.json",
+      "sha256": "9093149bd9d6d45e78c98ff2563b7a1373001a68cf47991166669ed0c847eb44"
+    },
+    "tracker_csv": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/tracker.csv",
+      "sha256": "8c0504b5562698e043267df8eee38325077a519f796fa2d02912069d4716b8e4"
+    },
+    "d405_frames": {
+      "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_125216/d405_frames.csv",
+      "sha256": "26af27fdadf0a0afab4241ae80608e315b29f66a485c6301b2d5880d09f6cbe7"
+    }
+  }
+}

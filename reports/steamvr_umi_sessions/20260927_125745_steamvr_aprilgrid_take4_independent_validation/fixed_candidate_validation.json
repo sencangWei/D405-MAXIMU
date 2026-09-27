@@ -1,0 +1,49 @@
+{
+  "result": "PASS_FIXED_CANDIDATE_VALIDATION",
+  "method": "held-out AprilGrid relative AX-XB residual; no fit",
+  "calibration_source": "reports/steamvr_umi_sessions/20260927_125207_steamvr_aprilgrid_take3_two_rotation_rounds/aprilgrid_composed_clock_diagnostic.json",
+  "calibration_sha256": "9e1ac7bd881d45cde035f5664aaf2cd3df18400c408ce5660b7971f0822d2f6b",
+  "transform_refit": false,
+  "time_offset_refit": false,
+  "fixed_camera_domain_tracker_offset_ms": -12.786861933161966,
+  "fixed_camera_imu_td_ms": -9.109323,
+  "fixed_imu_tracker_offset_ms": -3.6775389331619657,
+  "tracker_serial": "LHR-A2A59C7D",
+  "camera_frames": 1199,
+  "detected_board_poses": 1124,
+  "board_detection_ratio": 0.9374478732276897,
+  "overlap_samples": 1123,
+  "overlap_ratio_of_detected_board_poses": 0.9991103202846975,
+  "relative_pairs": 694,
+  "translation_excitation_p95_m": 0.08182083061838812,
+  "rotation_excitation_p95_deg": 27.44835599358809,
+  "observability": "PASS",
+  "residuals": {
+    "translation_residual_mm": {
+      "median": 1.4031465825591587,
+      "rmse": 1.9021072817974076,
+      "p95": 3.6631973343179647,
+      "max": 6.397954540331264
+    },
+    "rotation_residual_deg": {
+      "median": 0.3166916722436761,
+      "rmse": 0.4647618476284071,
+      "p95": 0.9303185163255309,
+      "max": 1.474826481426403
+    },
+    "combined_residual_mm": {
+      "median": 1.5538551331424357,
+      "rmse": 2.0678483088254294,
+      "p95": 3.864116545667936,
+      "max": 6.413135915924727
+    }
+  },
+  "independent_imu_tracker_diagnostic_offset_ms": -3.4600519561432512,
+  "diagnostic_offset_difference_from_fixed_ms": 0.2174869770187145,
+  "diagnostic_offset_used_for_validation": false,
+  "raw_capture_integrity": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+  "tracker_branch_gate": "PASS",
+  "slam_supervision": false,
+  "production_applied": false,
+  "note": "Relative-motion consistency, not all-frame SLAM ATE or absolute Tracker accuracy. Undetected board frames are not evaluated. See validation_protocol.md for thresholds and fixed inputs."
+}
