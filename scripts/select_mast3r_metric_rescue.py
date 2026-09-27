@@ -10,11 +10,13 @@ from pathlib import Path
 
 
 DENSE = "mast3r/stereo_scale_dense10hz_report.json"
-RESCUE_REPORTS = (
+STEREO_REPORTS = (
     "mast3r/stereo_scale_bidirectional_report.json",
     "mast3r/stereo_scale_long_hops_report.json",
     DENSE,
     "mast3r/stereo_scale_multisecond_report.json",
+)
+RESCUE_REPORTS = STEREO_REPORTS + (
     "mast3r/imu_scale_report.json",
     "mast3r/graph_fusion_report.json",
     "fusion_report.json",
@@ -34,34 +36,42 @@ def load_report(path: Path) -> dict:
 
 
 def decide(baseline: Path) -> str:
-    dense = load_report(baseline / DENSE)
-    if dense.get("result") == "PASS":
-        continuity = dense.get("trajectory_continuity")
+    # Fusion stops at the first failed stage; later reports do not yet exist.
+    for name in STEREO_REPORTS:
+        path = baseline / name
+        if not path.is_file():
+            raise ValueError(f"baseline missing stereo stage, not eligible for metric rescue: {path}")
+        report = load_report(path)
+        if report.get("external_ground_truth_used") is not False or report.get("slam_supervision") is not False:
+            raise ValueError(f"baseline lacks supervision provenance: {path}")
+        continuity = report.get("trajectory_continuity")
         if continuity is not None and (
             continuity.get("result") != "PASS"
             or continuity.get("unverified_gap_count", 0) != 0
         ):
             raise ValueError("baseline has an unverified visual gap")
-        trajectory = baseline / "trajectory_fused.csv"
-        quality = baseline / "input_quality_report.json"
-        if not trajectory.is_file() or not quality.is_file():
-            raise ValueError("baseline passed dense stereo but final trajectory/quality is incomplete")
-        quality_report = load_report(quality)
-        if quality_report.get("result") != "PASS":
-            raise ValueError("baseline passed dense stereo but final trajectory/quality is incomplete")
-        if quality_report.get("external_ground_truth_used") is not False or quality_report.get("slam_supervision") is not False:
-            raise ValueError(f"baseline lacks supervision provenance: {quality}")
-        return "baseline"
-    failures = dense.get("failures")
-    if (
-        dense.get("result") == "FAIL"
-        and isinstance(failures, list)
-        and len(failures) == 1
-        and isinstance(failures[0], str)
-        and failures[0].startswith("stereo scale dispersion too high:")
-    ):
-        return "rescue"
-    raise ValueError(f"baseline failure is not eligible for metric rescue: {failures}")
+        if report.get("result") == "PASS":
+            continue
+        failures = report.get("failures")
+        if (
+            report.get("result") == "FAIL"
+            and isinstance(failures, list)
+            and len(failures) == 1
+            and isinstance(failures[0], str)
+            and failures[0].startswith("stereo scale dispersion too high:")
+        ):
+            return "rescue"
+        raise ValueError(f"baseline failure is not eligible for metric rescue: {path}: {failures}")
+    trajectory = baseline / "trajectory_fused.csv"
+    quality = baseline / "input_quality_report.json"
+    if not trajectory.is_file() or not quality.is_file():
+        raise ValueError("baseline passed stereo but final trajectory/quality is incomplete")
+    quality_report = load_report(quality)
+    if quality_report.get("result") != "PASS":
+        raise ValueError("baseline passed stereo but final trajectory/quality is incomplete")
+    if quality_report.get("external_ground_truth_used") is not False or quality_report.get("slam_supervision") is not False:
+        raise ValueError(f"baseline lacks supervision provenance: {quality}")
+    return "baseline"
 
 
 def select(baseline: Path, rescue: Path) -> Path:

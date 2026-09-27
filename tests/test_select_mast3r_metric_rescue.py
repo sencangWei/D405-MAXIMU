@@ -7,6 +7,13 @@ import pytest
 
 from scripts.select_mast3r_metric_rescue import DENSE, decide, select
 
+STEREO_STAGES = (
+    "mast3r/stereo_scale_bidirectional_report.json",
+    "mast3r/stereo_scale_long_hops_report.json",
+    DENSE,
+    "mast3r/stereo_scale_multisecond_report.json",
+)
+
 
 def report(path: Path, result: str, **extra):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -15,10 +22,13 @@ def report(path: Path, result: str, **extra):
 
 def baseline(tmp_path, *, dense_result="PASS", failures=None, complete=True):
     root = tmp_path / "baseline"
+    for name in STEREO_STAGES:
+        report(root / name, "PASS", external_ground_truth_used=False, slam_supervision=False)
     report(
         root / "mast3r/stereo_scale_dense10hz_report.json",
         dense_result,
         failures=failures or [],
+        external_ground_truth_used=False, slam_supervision=False,
     )
     if complete:
         report(
@@ -77,6 +87,45 @@ def test_other_baseline_failures_are_not_hidden(tmp_path):
     original = baseline(tmp_path, dense_result="FAIL", complete=False, failures=["tracker missing"])
     with pytest.raises(ValueError, match="not eligible"):
         decide(original)
+
+
+@pytest.mark.parametrize("stage_index", range(4))
+def test_first_failed_stereo_stage_can_rescue_without_downstream_reports(tmp_path, stage_index):
+    root = tmp_path / "early_failure"
+    for name in STEREO_STAGES[:stage_index]:
+        report(root / name, "PASS", external_ground_truth_used=False, slam_supervision=False)
+    report(
+        root / STEREO_STAGES[stage_index], "FAIL",
+        failures=["stereo scale dispersion too high: relative_p90_p10=0.523"],
+        external_ground_truth_used=False, slam_supervision=False,
+    )
+    assert decide(root) == "rescue"
+    assert select(root, rescue(tmp_path)) == tmp_path / "rescue/trajectory_fused.csv"
+
+
+def test_missing_report_is_not_evidence_of_scale_failure(tmp_path):
+    root = tmp_path / "missing"
+    root.mkdir()
+    with pytest.raises(ValueError, match="missing stereo stage"):
+        decide(root)
+
+
+def test_later_dispersion_does_not_hide_earlier_non_scale_failure(tmp_path):
+    root = baseline(tmp_path, dense_result="FAIL", complete=False,
+                    failures=["stereo scale dispersion too high: relative_p90_p10=0.523"])
+    report(root / STEREO_STAGES[0], "FAIL", failures=["insufficient stereo observations"],
+           external_ground_truth_used=False, slam_supervision=False)
+    with pytest.raises(ValueError, match="not eligible"):
+        decide(root)
+
+
+def test_dispersion_failure_requires_internal_only_provenance(tmp_path):
+    root = baseline(tmp_path, dense_result="FAIL", complete=False,
+                    failures=["stereo scale dispersion too high: relative_p90_p10=0.523"])
+    report(root / DENSE, "FAIL", failures=["stereo scale dispersion too high: relative_p90_p10=0.523"],
+           external_ground_truth_used=True, slam_supervision=False)
+    with pytest.raises(ValueError, match="provenance"):
+        decide(root)
 
 
 def test_rescue_with_unverified_visual_gap_is_not_published(tmp_path):
