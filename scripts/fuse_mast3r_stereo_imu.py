@@ -285,18 +285,26 @@ def cap_interpolated_position_corrections(
     interpolation_mode: str = "linear",
     node_indices: np.ndarray | None = None,
     frame_indices: np.ndarray | None = None,
+    base_correction: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, float]:
     """Limit graph corrections while preserving the requested cap policy."""
+    base_frames, base_nodes = (
+        base_correction if base_correction is not None
+        else (np.zeros((len(frame_left), 3)), np.zeros_like(node_corrections))
+    )
+    if base_frames.shape != (len(frame_left), 3) or base_nodes.shape != node_corrections.shape:
+        raise ValueError("base correction must match frame and node correction shapes")
+
     def interpolate(nodes: np.ndarray) -> np.ndarray:
         if interpolation_mode == "linear":
             return (
                 (1.0 - frame_alpha[:, None]) * nodes[frame_left]
                 + frame_alpha[:, None] * nodes[frame_right]
-            )
+            ) + base_frames
         if interpolation_mode == "pchip":
             if node_indices is None or frame_indices is None:
                 raise ValueError("pchip interpolation requires node and frame indices")
-            return PchipInterpolator(node_indices, nodes, axis=0)(frame_indices)
+            return PchipInterpolator(node_indices, nodes, axis=0)(frame_indices) + base_frames
         raise ValueError(
             f"unsupported correction interpolation mode: {interpolation_mode}"
         )
@@ -315,19 +323,21 @@ def cap_interpolated_position_corrections(
         )
         return scales[:, None] * requested, requested_norm, float(np.min(scales))
     if mode == "per-node":
-        node_norm = np.linalg.norm(node_corrections, axis=1)
+        node_norm = np.linalg.norm(node_corrections + base_nodes, axis=1)
         node_scales = np.minimum(
             1.0, maximum_norm_m / np.maximum(node_norm, 1e-12)
         )
-        capped_nodes = node_scales[:, None] * node_corrections
+        capped_nodes = node_scales[:, None] * (node_corrections + base_nodes) - base_nodes
         capped = interpolate(capped_nodes)
-        if interpolation_mode != "linear":
+        minimum_scale = float(np.min(node_scales))
+        if interpolation_mode != "linear" or base_correction is not None:
             capped_norm = np.linalg.norm(capped, axis=1)
             interpolation_scales = np.minimum(
                 1.0, maximum_norm_m / np.maximum(capped_norm, 1e-12)
             )
             capped = interpolation_scales[:, None] * capped
-        return capped, requested_norm, float(np.min(node_scales))
+            minimum_scale = min(minimum_scale, float(np.min(interpolation_scales)))
+        return capped, requested_norm, minimum_scale
     raise ValueError(f"unsupported correction cap mode: {mode}")
 
 
@@ -1951,6 +1961,7 @@ def refine_positions_visual_inertial(
     visual_position_sigma_m: float = 0.020,
     correction_cap_mode: str = "global",
     correction_interpolation_mode: str = "linear",
+    solve_metric_scale: bool = False,
 ) -> tuple[np.ndarray, dict]:
     """Jointly refine position, velocity, gravity and accelerometer bias.
 
@@ -1993,6 +2004,11 @@ def refine_positions_visual_inertial(
     body_from_camera = Rotation.from_matrix(body_t_camera[:3, :3])
     body_rotations = camera_rotations * body_from_camera.inv()
     body_positions = positions - body_rotations.apply(camera_position_in_body)
+    # Scale camera translation only. The physical camera-to-body lever is
+    # already subtracted above and must never be scaled with visual motion.
+    scale_basis = positions - positions[0]
+    sufficient_translation = bool(np.max(np.linalg.norm(scale_basis, axis=1)) > 0.001)
+    scale_active = solve_metric_scale and sufficient_translation
     if relative_motion_sigma_m <= 0.0:
         raise ValueError("relative motion sigma must be positive")
     if visual_position_sigma_m <= 0.0:
@@ -2040,7 +2056,8 @@ def refine_positions_visual_inertial(
     velocity_offset = 3 * node_count
     gravity_offset = 6 * node_count
     bias_offset = gravity_offset + 3
-    unknowns = bias_offset + 3
+    scale_offset = bias_offset + 3
+    unknowns = scale_offset + int(scale_active)
     smooth_sigma_m = 0.010
     imu_position_sigma_m = 0.008
     imu_velocity_sigma_mps = 0.080
@@ -2144,6 +2161,12 @@ def refine_positions_visual_inertial(
         alpha = float(frame_alpha[frame_index])
         return (1.0 - alpha) * values[left] + alpha * values[right]
 
+    def add_scale_delta(matrix, row: int, first: int, second: int, weight: float) -> None:
+        if scale_active:
+            matrix[row : row + 3, scale_offset] = (
+                weight * (positions[second] - positions[first])
+            ).reshape(3, 1)
+
     def build_system():
         row_count = (
             3 * node_count
@@ -2207,6 +2230,7 @@ def refine_positions_visual_inertial(
                     - relative_motion_positions_body[first]
                 )
                 visual_delta = body_positions[second] - body_positions[first]
+                add_scale_delta(design, row, first, second, weight)
                 target[row : row + 3] = (
                     reference_delta - visual_delta
                 ) * weight
@@ -2222,6 +2246,7 @@ def refine_positions_visual_inertial(
             add_identity(design, row, velocity_offset + 3 * node, -dt * position_weight)
             add_identity(design, row, gravity_offset, -0.5 * dt * dt * position_weight)
             design[row : row + 3, bias_offset : bias_offset + 3] = -position_jacobian * position_weight
+            add_scale_delta(design, row, first, second, position_weight)
             target[row : row + 3] = (
                 delta_position - (body_positions[second] - body_positions[first])
             ) * position_weight
@@ -2249,6 +2274,7 @@ def refine_positions_visual_inertial(
             visual_delta = positions[second] - positions[first]
             add_frame_correction(design, row, first, -weight)
             add_frame_correction(design, row, second, weight)
+            add_scale_delta(design, row, first, second, weight)
             target[row : row + 3] = (stereo_target - visual_delta) * weight
             row += 3
         add_identity(design, row, gravity_offset, 1.0 / gravity_sigma_mps2)
@@ -2274,6 +2300,10 @@ def refine_positions_visual_inertial(
         velocities = solution[velocity_offset:gravity_offset].reshape(-1, 3)
         gravity = solution[gravity_offset:bias_offset]
         bias = solution[bias_offset:bias_offset + 3]
+        scale_delta = float(solution[scale_offset]) if scale_active else 0.0
+        if not np.isfinite(scale_delta) or abs(scale_delta) > 0.15:
+            raise ValueError("joint metric scale exceeds the 15% consistency bound")
+        total_node_correction = position_correction + scale_delta * scale_basis[node_indices]
         if relative_motion_positions_body is not None:
             for node, (first, second) in enumerate(
                 zip(node_indices[:-1], node_indices[1:])
@@ -2282,9 +2312,9 @@ def refine_positions_visual_inertial(
                     continue
                 corrected_delta = (
                     body_positions[second]
-                    + position_correction[node + 1]
+                    + total_node_correction[node + 1]
                     - body_positions[first]
-                    - position_correction[node]
+                    - total_node_correction[node]
                 )
                 reference_delta = (
                     relative_motion_positions_body[second]
@@ -2301,9 +2331,9 @@ def refine_positions_visual_inertial(
             delta_position, delta_velocity, position_jacobian, velocity_jacobian = preintegration
             position_residual = (
                 body_positions[second]
-                + position_correction[node + 1]
+                + total_node_correction[node + 1]
                 - body_positions[first]
-                - position_correction[node]
+                - total_node_correction[node]
                 - velocities[node] * dt
                 - 0.5 * gravity * dt * dt
                 - delta_position
@@ -2331,6 +2361,7 @@ def refine_positions_visual_inertial(
             visual_delta = positions[second] - positions[first]
             residual = (
                 visual_delta
+                + scale_delta * visual_delta
                 + correction_at(second, position_correction)
                 - correction_at(first, position_correction)
                 - stereo_target
@@ -2350,11 +2381,14 @@ def refine_positions_visual_inertial(
             correction_interpolation_mode,
             node_indices,
             np.arange(len(positions)),
+            base_correction=(scale_delta * scale_basis, scale_delta * scale_basis[node_indices])
+            if scale_active else None,
         )
     )
     requested_correction = (
         (1.0 - frame_alpha[:, None]) * position_correction[frame_left]
         + frame_alpha[:, None] * position_correction[frame_right]
+        + scale_delta * scale_basis
     )
     correction_changed = (
         np.linalg.norm(correction - requested_correction, axis=1) > 1e-12
@@ -2404,6 +2438,15 @@ def refine_positions_visual_inertial(
         ),
         "node_policy": node_policy,
         "anchor_policy": "first_node_only",
+        "joint_metric_scale": {
+            "enabled": bool(solve_metric_scale),
+            "sufficient_translation": sufficient_translation,
+            "estimated_ratio": 1.0 + scale_delta,
+            "scale_domain": "camera_translation_about_first_camera_position",
+            "rigid_camera_lever_scaled": False,
+            "external_ground_truth_used": False,
+            "ratio_is_pre_correction_cap": True,
+        },
         "stationary_motion_guard": stationary_guard_report(
             stationary_segments, visual_times_mono
         ),
@@ -2802,6 +2845,7 @@ def run(args: argparse.Namespace) -> dict:
             visual_position_sigma_m=selected_visual_position_sigma_m,
             correction_cap_mode=args.joint_correction_cap_mode,
             correction_interpolation_mode=args.joint_correction_interpolation,
+            solve_metric_scale=getattr(args, "joint_metric_scale_optimization", False),
         )
     elif position_mode == "keyframe-graph":
         if args.keyframe_dir is None:
@@ -2837,6 +2881,7 @@ def run(args: argparse.Namespace) -> dict:
             visual_position_sigma_m=selected_visual_position_sigma_m,
             correction_cap_mode=args.joint_correction_cap_mode,
             correction_interpolation_mode=args.joint_correction_interpolation,
+            solve_metric_scale=getattr(args, "joint_metric_scale_optimization", False),
         )
     elif position_mode == "incremental":
         refined_positions, position_quality = refine_positions_incremental(
@@ -3128,6 +3173,10 @@ def main() -> int:
         default="linear",
     )
     parser.add_argument("--full-rate-imu-position-refinement", action="store_true")
+    parser.add_argument(
+        "--joint-metric-scale-optimization", action="store_true",
+        help="experimental: jointly solve camera translation scale from UMI metric factors",
+    )
     parser.add_argument("--full-rate-max-correction-mm", type=float, default=12.0)
     parser.add_argument(
         "--metric-scale-mode", choices=("imu", "joint", "stereo"), default="imu"
@@ -3164,6 +3213,10 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
+    if args.joint_metric_scale_optimization and args.position_mode not in {
+        "joint-inertial", "keyframe-graph"
+    }:
+        parser.error("joint metric scale requires a joint-inertial or keyframe-graph position mode")
     if args.orientation_node_stride < 1:
         parser.error("--orientation-node-stride must be positive")
     if args.position_node_stride < 1:
