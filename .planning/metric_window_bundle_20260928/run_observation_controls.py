@@ -37,6 +37,15 @@ def windows(count):
     return selections
 
 
+def tracking_frames(selection):
+    # LK propagation uses every recorded frame; only BA states are sampled.
+    # Skipping four intermediate images is not equivalent to full-rate tracking.
+    selection = np.asarray(selection,dtype=int)
+    if len(selection)<2 or np.any(np.diff(selection)<=0):
+        raise ValueError('invalid BA frame selection')
+    return np.arange(selection[0],selection[-1]+1)
+
+
 def gyro_factors(imu_times, gyro, camera_times, td_s, body_from_camera):
     """Right-tangent bias Jacobian of the actual trapezoidal raw-gyro integral.
 
@@ -79,20 +88,32 @@ def visual_initialization(data, calibration, train):
             data['observations'][index,mask,:2].astype(np.float32),
             matrix,None,iterationsCount=200,reprojectionError=2.,confidence=.999,
             flags=cv2.SOLVEPNP_EPNP)
-        if not ok or inliers is None or len(inliers)<20:
+        if not ok or inliers is None or len(inliers)<4:
             raise ValueError('training_only_PnP_failed')
-        admission[index,np.flatnonzero(mask)[inliers.ravel()]] = True
+        admitted = np.flatnonzero(mask)[inliers.ravel()]
+        if not node_geometry_supported(data['initial_points'][admitted]):
+            raise ValueError('training_PnP_node_geometry_degenerate')
+        admission[index,admitted] = True
         rotation = Rotation.from_rotvec(r.ravel()).inv()
         centers.append(-rotation.apply(t.ravel()))
         rotations.append(rotation.as_quat())
     return np.asarray(centers),Rotation.from_quat(rotations),admission
 
 
-def training_support(train, admission):
+def node_geometry_supported(points):
+    # EPNP needs at least four points. Joint stereo BA supplies metric depth,
+    # but collinear points still cannot initialize a complete camera pose.
+    if len(points)<4 or not np.all(np.isfinite(points)):
+        return False
+    singular = np.linalg.svd(points-np.mean(points,axis=0),compute_uv=False)
+    return singular[0]>1e-8 and singular[1]>singular[0]*1e-6
+
+
+def training_support(train, admission, points):
     # Remove only landmark variables with no temporal support; do not globally
     # discard a track merely because one observation was a PnP outlier.
     supported = train & (admission.sum(axis=0)>=2)
-    if np.any(admission[:,supported].sum(axis=1)<20):
+    if any(not node_geometry_supported(points[supported & row]) for row in admission):
         raise ValueError('training_support_collapsed_after_admission')
     return supported
 
@@ -150,7 +171,7 @@ def run_case(name, graph_path, output):
     assert abs(config['td_s']+.009109323)<1e-10
     body_from_camera = Rotation.from_matrix(np.asarray(graph['camera_extrinsics']['effective_body_T_trajectory_camera'])[:3,:3])
     left_numbers,right_numbers,_ = stereo.match_trajectory_to_stereo_frames(session/'d405_frames.csv',timestamps,trajectory_frame='infrared_left')
-    selected = np.concatenate(indices)
+    selected = np.concatenate([tracking_frames(row) for row in indices])
     left,right = stereo.load_selected_prepared_stereo_images(trajectory.parent/'dataset',session/'d405_frames.csv',
         {int(left_numbers[i]) for i in selected},{int(right_numbers[i]) for i in selected})
     image_hashes = {f'{stream}:{number}':hashlib.sha256(image.tobytes()).hexdigest()
@@ -162,21 +183,29 @@ def run_case(name, graph_path, output):
         row = dict(window=number,indices=selection.tolist(),
                    elapsed_s=(timestamps[selection]-timestamps[0]).tolist())
         try:
-            data = track_stereo_window([left[int(left_numbers[i])] for i in selection],
-                                      [right[int(right_numbers[i])] for i in selection],calibration,
+            dense = tracking_frames(selection)
+            row['temporal_tracking_frame_indices'] = dense.tolist()
+            data = track_stereo_window([left[int(left_numbers[i])] for i in dense],
+                                      [right[int(right_numbers[i])] for i in dense],calibration,
                                       initialize_poses=False)
             if not data['accepted']:
                 row.update(accepted=False,reason=data['reason'])
             else:
+                # Landmark identity follows all21 frames, while the same five
+                # BA nodes and gyro intervals remain unchanged.
+                node_indices = selection-dense[0]
+                data['observations'] = data['observations'][node_indices]
+                data['valid'] = data['valid'][node_indices]
                 heldout = np.arange(len(data['initial_points'])) % 5 == 0
                 train = ~heldout
                 centers,rotations,admission = visual_initialization(data,calibration,train)
                 original_train = train.copy()
-                train = training_support(train,admission)
+                train = training_support(train,admission,data['initial_points'])
                 deltas,jacobians = gyro_factors(imu_times,gyro,mono[selection],config['td_s'],body_from_camera)
                 row['initial_consistency'] = initial_consistency(data,calibration,original_train,centers,rotations,deltas)
                 row['admission'] = dict(
                     policy='training-only PnP per-observation inliers, fixed existing2px; source stereo retained',
+                    node_geometry_policy='at least4 non-collinear points; EPNP initialization only, joint postfit gates decide',
                     pre_count=data['valid'][:,original_train].sum(axis=1).tolist(),
                     post_count=admission[:,train].sum(axis=1).tolist(),
                     source_depth_bias_caveat='noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording')

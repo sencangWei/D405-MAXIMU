@@ -37,7 +37,14 @@ pose fitting. This checks geometric consistency, not calibrated accuracy.
  rather than discarded during initialization and reinstated in BA.
 - `controls_ten_v4_manifest`:same solver/admission, added input/frame and scoring
   source hashes. All37 endpoints repeat v3 bit-for-bit; all13 rejections repeat.
-  This is the final reproducibility artifact; no accuracy policy changed.
+  This reproducibility artifact repeats v3; no accuracy policy changed.
+- `controls_ten_v5_fullrate_tracking`:all intermediate recorded frames propagate
+  LK, unchanged five BA nodes.40/50 accepted; local median0.763→0.661mm,
+  max11.408→3.714mm. Only18/37 shared v4windows improve: not a universal gain.
+- `controls_ten_v6_joint_geometry`:review found the transplanted per-node20
+  inlier gate inappropriate for joint initialization. Fixed EPNP minimum4 plus
+  per-node non-collinear geometry, followed by unchanged joint consistency
+  gates. No supportthreshold sweep. This is the final observation prototype.
 
 The repair is per-observation geometric admission at the existing2px PnP
 threshold. Source stereo remains; a point may remain valid in other views.
@@ -45,45 +52,60 @@ No input frames are removed. No parameter/threshold sweep or GT-selected windows
 
 ## AFTER-estimation local external verification
 
-`controls_ten_v4_manifest/local_displacement_evaluation.json` uses the existing accepted
+`controls_ten_v6_joint_geometry/local_displacement_evaluation.json` uses the existing accepted
 official body reference and fixed body→leftIR extrinsic; no new td/SE3/scale fit.
 Only local endpoint differences are measured, after all observations are frozen.
 
-37 evaluated windows:26 improve relative to their image-only PnP initialization.
-Local displacement median0.721→0.392mm; maximum10.425→3.332mm.
+46 evaluated windows:36 improve relative to their image-only PnP initialization.
+Local displacement median1.005→0.878mm; maximum41.804→3.714mm.
 **These values are NOT the fused whole-trajectory ATE.** Initialization is not
-the production baseline.13 rejected windows remain and are not scored as zero.
+the production baseline.4 rejected windows remain and are not scored as zero.
 
 | Case | Accepted windows /5 | Local comparisons improving |
 |---|---:|---:|
-| dev1 |4|1|
-| dev2 |5|4|
+| dev1 |5|4|
+| dev2 |5|3|
 | heldout1 |3|2|
-| heldout2 |4|4|
-| heldout3 |5|3|
-| heldout4 |4|4|
-| fresh1 |2|2|
-| fresh2 |3|3|
-| fresh3 |3|1|
-| fresh4 |4|2|
+| heldout2 |5|4|
+| heldout3 |5|4|
+| heldout4 |5|4|
+| fresh1 |4|4|
+| fresh2 |5|4|
+| fresh3 |4|2|
+| fresh4 |5|4|
+
+## Original error-block coverage
+
+Source features180/180 in both original blocks. Fresh2w3 persistent177, five
+BA valid177/169/156/102/38, PnP inliers129/101/64/18. Fresh4w5 persistent133,
+BA valid133/116/89/46/43, PnP inliers75/35/19/16. The20point barrier was ours,
+not proof of bad raw data. Joint-geometry repair yields local comparisons:
+
+- fresh2w3 (589→609):initial41.804→optimized2.536mm.
+- fresh4w5 (1068→1088):initial6.522→optimized2.881mm.
+
+Existing graph residuals already consume full metric vectors, but weighting/
+local-scale machinery depends on learned-unit scale. Next use a distinct metric
+window factor interface, not fabricated MASt3Rscale metadata or oldweight sweeps.
 
 ## Remaining limitations / next decision
 
-1. The13 rejected windows are not evidence of damaged recordings. Low common
+1. The4 rejected windows are not evidence of damaged recordings (heldout1w2/w4,
+   fresh1w4, fresh3w4). Low common
    stereo support and training initialization can limit this estimator.
 2. SGBM both seeds/gates stereo LK; seeded reverse closure is not independent
    matching evidence. Longitudinal depth noise can reject valid temporal points.
 3. Small source-depth bias remains variable and is synthetically recoverable;
    large bias may fail admission. Diagnostic/noise gates are not covariance.
-4. Uniform windows do not establish coverage of original fresh2/fresh4 peak
-   blocks. Need coverage/consistency analysis before any full graph integration.
+4. Both original blocks now have usable local measurements, not a reconstructed
+   full trajectory. Need frozen all-ten graph validation before integration.
 5. No all-ten full-trajectory rerun with these constraints yet; prior frozen
    candidate still8/10 with max11.323/15.333mm on the two failures. Do not claim
    a10mmSLAM success or replace production.
 
 ## Verification
 
-140 targeted old/new stereo/fusion tests passed; new-only31 passed. Syntax checks
+146 targeted old/new stereo/fusion tests passed; new-only37 passed. Syntax checks
 and clean restore verification are recorded separately in the planning folder.
 No live hardware, full raw-data replay, or production deployment acceptance.
 

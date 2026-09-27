@@ -53,7 +53,10 @@ enter estimation. Image-pair PnP is used only for visual initialization.
 - PnP geometric inliers (existing fixed2px) admit each training observation,
   not a global track blacklist. Source stereo remains and other views retain
   a landmark when one view is rejected. Unsupported landmark variables are
-  omitted; require20 observations per frame and connected/non-collinear support.
+  omitted; require per-node four-point non-collinear geometry (EPNP minimum),
+  connected/temporal support and joint-model consistency. Initial20inlier
+  per-node admission incorrectly transplanted a pairwise gate into a joint
+  window; corrected after review and uniform all-ten validation, no sweep.
   Large source-depth errors can still reject valid temporal matches: this is a
   declared estimator limitation, not a justification to discard a recording.
 - Postfit consistency gates: stereo reprojection P95≤2px or95% within2px;

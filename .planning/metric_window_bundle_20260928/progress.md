@@ -56,3 +56,37 @@ graph/stereo/calibration/session/IMU hashes and selected decoded grayscale
 frame hashes.37 accepted endpoints equalv3 bit-for-bit, same13 rejections.
 New-only31tests and extended140testsPASS; syntaxPASS. Algorithm code remains
 isolated; plan phase5 (full graph integration/ten-case ATE) still pending.
+
+Ownedremote initialprototype commitd725776f restored into new empty repo:
+58filesbyte-identical,140testsPASS. Known error-block coverage check: fresh2
+window3=[589..609] fails trainingPnP, fresh4window5=[1068..1088] fails shared
+support; successful3.332mmlocalmaximumdoesNOT establish repair atthoseblocks.
+Next bounded consistency branch uses all21 recordedframes for LK propagation
+but samefiveBAnodes/calibration/gates.32newtestsPASS. Frozenallten_v5running;
+not a MASt3Rkeyframedensity sweep, no frontend rerun or trajectory filtering.
+
+Fullrate_v5 finished40/50;30 local comparisons improve. Medianlocal0.763→
+0.661mm,max11.408→3.714mm. On37 shared v4windows only18 improve; therefore
+fullrate alone is NOT a general accuracy improvement (sharedmedian0.392→0.529).
+Both original issueblocks remain refused. Read-only exactstage diagnosis:
+fresh2source180features,177persistenttracks, BAvalid177/169/156/102/38;
+trainingPnPinliers129/101/64/18. fresh4source180,133persistent, BAvalid
+133/116/89/46/43; PnPinliers75/35/19/16. Enoughsource depth pixels, notdamaged
+recording. Current blocker is newly introduced pairwise20-point initgate.
+
+Independent reviewer approved fixed joint-geometry boundary repair, NOT a
+supportthreshold sweep: EPNP mathematicalminimum4 plus per-node non-collinear
+XYZ rank, source retained, temporal/connectivity/cheirality/corepostfitguards.
+Window authority is joint BA, not independent20-point initialization tests.
+Tests4/16/18/19 support and collinear sparse-node rejection added;37newtestsPASS.
+Frozenallten controls_ten_v6_joint_geometry running; no productionpromotion.
+
+v6 finishedallten/50:46accepted,4persistent-track refusals. AFTER estimation,
+officialreference localdisplacement verification:36/46improve,median1.005→
+0.878mm,max41.804→3.714mm. Criticalfresh2w3initial41.804→2.536mm;
+fresh4w5initial6.522→2.881mm. These are initialization-vs-BA localcomparisons,
+NOT production full-trajectory ATE. Extended146testsPASS, new37PASS, syntaxPASS.
+Existing graph consumes fullmetric3D vector; confidence/local-scale is still
+learnedscale based. Need distinct rawmetricfactor interface, not fakescale or
+oldweightfamily sweeps. Phase5pending. One documentation patch context mismatch
+failed atomically, corrected after exacttext inspection; no partial edits.

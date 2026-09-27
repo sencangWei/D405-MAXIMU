@@ -38,6 +38,15 @@ def test_bias_derivative_sign_and_body_camera_conversion():
     np.testing.assert_allclose(jacobians@camera_bias,-delta.as_rotvec(),atol=1e-8)
 
 
+def test_tracking_keeps_all_intermediate_recorded_frames():
+    selection = controls.windows(1200)[0]
+    dense = controls.tracking_frames(selection)
+    np.testing.assert_array_equal(dense,np.arange(110,131))
+    np.testing.assert_array_equal(dense[selection-dense[0]],selection)
+    with pytest.raises(ValueError):
+        controls.tracking_frames([5,4])
+
+
 def test_td_applied_once_and_moving_gyro_jacobian_matches_reintegration():
     times = np.linspace(0,1,401)
     gyro = np.column_stack((times*.4,np.sin(times)*.3,np.full(len(times),.1)))
@@ -86,12 +95,13 @@ def test_pnp_admission_is_per_observation_and_never_uses_holdout(monkeypatch):
     assert not admission[:,~train].any()
     assert not admission[1,3]
     assert admission[0,3] and admission[2,3]
-    assert controls.training_support(train,admission)[3]
+    assert controls.training_support(train,admission,data['initial_points'])[3]
 
 
 def test_support_collapse_is_not_filled_or_repaired():
     with pytest.raises(ValueError,match='support_collapsed'):
-        controls.training_support(np.ones(30,bool),np.array([[True]*30,[False]*30,[True]*30]))
+        controls.training_support(np.ones(30,bool),np.array([[True]*30,[False]*30,[True]*30]),
+                                  np.random.default_rng(2).normal(size=(30,3)))
 
 
 def test_gross_pixel_outliers_do_not_reenter_bundle_after_pnp():
@@ -100,7 +110,7 @@ def test_gross_pixel_outliers_do_not_reenter_bundle_after_pnp():
     data['observations'][1:,::10] += [80.,30.,80.,30.]
     train = np.ones(60,bool)
     initial_centers,initial_rotations,admission = controls.visual_initialization(data,calibration,train)
-    supported = controls.training_support(train,admission)
+    supported = controls.training_support(train,admission,data['initial_points'])
     gyro = rotations[:-1].inv()*rotations[1:]
     result = controls.solve_stereo_window(data['observations'][:,supported],admission[:,supported],
         np.array([0.,.25,.5]),calibration['left_intrinsics'],calibration['right_intrinsics'],.018,
@@ -116,7 +126,7 @@ def test_small_source_depth_bias_can_remain_variable_in_bundle():
     data['initial_points'] *= 1.01
     train = np.ones(60,bool)
     initial_centers,initial_rotations,admission = controls.visual_initialization(data,calibration,train)
-    supported = controls.training_support(train,admission)
+    supported = controls.training_support(train,admission,data['initial_points'])
     assert supported.sum()==60  # modest depth bias must not delete whole tracks
     result = controls.solve_stereo_window(data['observations'],admission,np.array([0.,.25,.5]),
         calibration['left_intrinsics'],calibration['right_intrinsics'],.018,
@@ -125,3 +135,24 @@ def test_small_source_depth_bias_can_remain_variable_in_bundle():
     assert result['accepted'],result
     assert np.median(np.linalg.norm(result['landmarks']-true_points,axis=1))<.0001
     assert np.linalg.norm(result['centers'][-1]-centers[-1])<.0001
+
+
+@pytest.mark.parametrize('count',[4,16,18,19])
+def test_joint_node_support_is_geometry_not_pairwise_twenty_point_gate(count):
+    data,calibration,_,_ = pixel_scene()
+    admission = data['valid'].copy()
+    admission[1:] = False
+    admission[1:,:count] = True
+    supported = controls.training_support(np.ones(60,bool),admission,data['initial_points'])
+    assert supported.sum()==count
+
+
+def test_collinear_sparse_node_is_rejected_even_when_whole_window_is_not():
+    data,_,_,_ = pixel_scene()
+    data['initial_points'][:4] = np.array([[0.,0.,.3],[.01,0.,.3],[.02,0.,.3],[.03,0.,.3]])
+    admission = data['valid'].copy()
+    admission[1] = False
+    admission[1,:4] = True
+    assert controls.node_geometry_supported(data['initial_points'])
+    with pytest.raises(ValueError,match='support_collapsed'):
+        controls.training_support(np.ones(60,bool),admission,data['initial_points'])
