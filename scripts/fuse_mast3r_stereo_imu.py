@@ -677,6 +677,7 @@ def refine_positions_full_rate_imu(
     visual_sigma_base_m: float = 0.0015,
     visual_activation_gain: float = 5.0,
     dynamic_sigma_mps2: float = 0.75,
+    stationary_segments: list[tuple[int, int]] | None = None,
 ) -> tuple[np.ndarray, dict]:
     """Correct local visual spikes with full-rate IMU acceleration evidence."""
     if len(camera_positions) < 3:
@@ -728,9 +729,18 @@ def refine_positions_full_rate_imu(
     )
     anchor_sigma_m = 0.0001
     dynamic_weights = np.ones(len(body_positions) - 2)
+    stationary_segments = stationary_segments or []
+    static_pairs = [
+        (first, frame)
+        for first, last in stationary_segments
+        for frame in range(first + 1, last + 1)
+    ]
 
     def build_system() -> tuple:
-        row_count = 3 * len(body_positions) + 6 + 3 * len(dynamic_weights)
+        row_count = (
+            3 * len(body_positions) + 6 + 3 * len(dynamic_weights)
+            + 3 * len(static_pairs)
+        )
         unknowns = 3 * len(body_positions)
         design = lil_matrix((row_count, unknowns), dtype=float)
         target = np.zeros(row_count)
@@ -758,6 +768,10 @@ def refine_positions_full_rate_imu(
             target[row : row + 3] = (
                 target_center[index - 1] - visual_acceleration[index - 1]
             ) * scale
+            row += 3
+        for first, frame in static_pairs:
+            design[row : row + 3, 3 * first : 3 * first + 3] = -np.eye(3) / 0.0005
+            design[row : row + 3, 3 * frame : 3 * frame + 3] = np.eye(3) / 0.0005
             row += 3
         return design.tocsr(), target
 
@@ -792,6 +806,9 @@ def refine_positions_full_rate_imu(
     correction_norm = np.linalg.norm(correction, axis=1)
     return camera_positions + correction, {
         "mode": "full_rate_imu_acceleration_robust_position_refinement",
+        "stationary_motion_guard": stationary_guard_report(
+            stationary_segments, visual_times_mono
+        ),
         "frames": int(len(camera_positions)),
         "imu_rate_hz": float(imu_rate_hz),
         "visual_downweighted_frames": int(np.count_nonzero(activation >= 0.5)),
@@ -1808,6 +1825,112 @@ def estimate_gravity_prior(
     return gravity * (STANDARD_GRAVITY / gravity_norm), int(np.count_nonzero(static))
 
 
+def detect_stationary_segments(
+    times: np.ndarray,
+    body_positions: np.ndarray,
+    body_rotations: Rotation,
+    imu_times: np.ndarray,
+    gyro_body: np.ndarray,
+    accel_body: np.ndarray,
+    td_s: float,
+    relative_motion_positions_body: np.ndarray | None = None,
+    relative_motion_valid: np.ndarray | None = None,
+) -> list[tuple[int, int]]:
+    """Conservative UMI-only low-motion spans; quiet IMU alone is insufficient.
+
+    Both independent odometries must observe <=1mm motion for >=1s, with
+    continuous quiet IMU and <=1deg attitude change. A whole protected span is
+    bounded to 1mm too: overlapping windows cannot swallow slow translation.
+    These spans protect relative *corrections*, not absolute zero position.
+    """
+    if relative_motion_positions_body is None or relative_motion_valid is None:
+        return []
+    if len(times) < 2 or len(imu_times) < 2:
+        return []
+    if np.any(np.diff(times) <= 0) or np.any(np.diff(imu_times) <= 0):
+        return []
+    reference = np.asarray(relative_motion_positions_body)
+    valid = np.asarray(relative_motion_valid, dtype=bool)
+    quiet = np.zeros(len(times), dtype=bool)
+    quiet_edges = np.zeros(len(times) - 1, dtype=bool)
+
+    def small_motion(first: int, last: int) -> bool:
+        return all(
+            np.all(np.isfinite(values[first : last + 1]))
+            and np.linalg.norm(np.ptp(values[first : last + 1], axis=0)) <= 0.001
+            for values in (body_positions, reference)
+        )
+
+    def small_rotation(first: int, last: int) -> bool:
+        angles = (body_rotations[first].inv() * body_rotations[first : last + 1]).magnitude()
+        return bool(np.max(angles) <= np.deg2rad(1.0))
+
+    for first in range(len(times)):
+        last = int(np.searchsorted(times, times[first] + 1.0 - 1e-9))
+        if last >= len(times):
+            break
+        if not np.all(valid[first : last + 1]) or not small_motion(first, last):
+            continue
+        if np.max(np.diff(times[first : last + 1])) > 0.1 + 1e-9:
+            continue
+        if not small_rotation(first, last):
+            continue
+        start, end = times[first] + td_s, times[last] + td_s
+        if start < imu_times[0] or end > imu_times[-1]:
+            continue
+        left = max(0, int(np.searchsorted(imu_times, start, side="right")) - 1)
+        right = min(len(imu_times), int(np.searchsorted(imu_times, end)) + 1)
+        gyro = gyro_body[left:right]
+        accel = accel_body[left:right]
+        if right - left < 10 or np.max(np.diff(imu_times[left:right])) > 0.02:
+            continue
+        if not np.all(np.isfinite(gyro)) or not np.all(np.isfinite(accel)):
+            continue
+        if np.max(np.linalg.norm(gyro, axis=1)) > np.deg2rad(1.0):
+            continue
+        if np.max(np.abs(np.linalg.norm(accel, axis=1) - STANDARD_GRAVITY)) > 0.6:
+            continue
+        if np.max(np.std(accel, axis=0)) > 0.1:
+            continue
+        quiet[first : last + 1] = True
+        quiet_edges[first:last] = True
+
+    segments = []
+    first = 0
+    while first < len(times):
+        if not quiet[first]:
+            first += 1
+            continue
+        last = first
+        # Eligible endpoints alone do not prove the interval between them was
+        # observed. Require a validated window covering every merged edge.
+        while (
+            last + 1 < len(times) and quiet_edges[last]
+            and small_motion(first, last + 1) and small_rotation(first, last + 1)
+        ):
+            last += 1
+        if times[last] - times[first] >= 1.0 - 1e-9:
+            segments.append((first, last))
+        first = last + 1
+    return segments
+
+
+def stationary_guard_report(segments: list[tuple[int, int]], times: np.ndarray) -> dict:
+    return {
+        "external_ground_truth_used": False,
+        "policy": "visual_vins_imu_consensus_preserve_relative_motion",
+        "protected_frames": sum(last - first + 1 for first, last in segments),
+        "relative_correction_sigma_m": 0.0005,
+        "minimum_duration_s": 1.0,
+        "maximum_motion_range_m": 0.001,
+        "segments": [
+            {"first_index": first, "last_index": last,
+             "start_s": float(times[first]), "end_s": float(times[last])}
+            for first, last in segments
+        ],
+    }
+
+
 def refine_positions_visual_inertial(
     positions: np.ndarray,
     camera_rotations: Rotation,
@@ -1986,6 +2109,16 @@ def refine_positions_visual_inertial(
             0.008 / np.maximum(relative_motion_initial_residuals, 1e-12),
         )
     relative_motion_initial_weights = relative_motion_weights.copy()
+    stationary_segments = detect_stationary_segments(
+        visual_times_mono, body_positions, body_rotations, imu_times,
+        gyro_body, accel_body, td_s,
+        relative_motion_positions_body, relative_motion_valid,
+    )
+    static_pairs = [
+        (first, int(frame))
+        for first, last in stationary_segments
+        for frame in sorted(set(node_indices[(node_indices > first) & (node_indices <= last)]) | {last})
+    ]
 
     def add_identity(matrix, row: int, column: int, scale: float) -> None:
         matrix[row : row + 3, column : column + 3] = scale * np.eye(3)
@@ -2020,6 +2153,7 @@ def refine_positions_visual_inertial(
             + 6 * (node_count - 1)
             + 3 * len(accepted)
             + 6
+            + 3 * len(static_pairs)
         )
         design = lil_matrix((row_count, unknowns), dtype=float)
         target = np.zeros(row_count)
@@ -2121,6 +2255,13 @@ def refine_positions_visual_inertial(
         target[row : row + 3] = gravity_prior / gravity_sigma_mps2
         row += 3
         add_identity(design, row, bias_offset, 1.0 / bias_sigma_mps2)
+        row += 3
+        # Preserve observed relative positions through long low-excitation
+        # spans. Adjacent weak odometry factors otherwise allow cm-scale creep.
+        for first, frame in static_pairs:
+            add_frame_correction(design, row, first, -1.0 / 0.0005)
+            add_frame_correction(design, row, frame, 1.0 / 0.0005)
+            row += 3
         return design.tocsr(), target
 
     solution = np.zeros(unknowns)
@@ -2263,6 +2404,9 @@ def refine_positions_visual_inertial(
         ),
         "node_policy": node_policy,
         "anchor_policy": "first_node_only",
+        "stationary_motion_guard": stationary_guard_report(
+            stationary_segments, visual_times_mono
+        ),
         "visual_position_sigma_m": float(visual_position_sigma_m),
         "nodes": int(node_count),
         "node_stride": int(node_stride),
@@ -2728,6 +2872,10 @@ def run(args: argparse.Namespace) -> dict:
             config["td_s"],
             np.asarray(position_quality["gravity_solution_mps2"], dtype=float),
             max_correction_m=args.full_rate_max_correction_mm / 1000.0,
+            stationary_segments=[
+                (segment["first_index"], segment["last_index"])
+                for segment in position_quality["stationary_motion_guard"]["segments"]
+            ],
         )
     position_acceleration_quality = inertial_consistency(
         refined_positions,
