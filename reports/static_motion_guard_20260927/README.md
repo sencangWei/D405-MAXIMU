@@ -44,7 +44,7 @@ are retained; reference overlap100%. Algorithmic input/quality stages allPASS.
 
 ## What changed
 
-Only algorithm file `scripts/fuse_mast3r_stereo_imu.py`:
+Only production algorithm file `scripts/fuse_mast3r_stereo_imu.py`:
 
 1. Detect >=1s spans with <=1mm bounded body motion in both learned visual
    odometry and independently validated VINS relative odometry. Require IMU
@@ -98,5 +98,22 @@ needed to validate generalization. This bounded fix protects legitimate stops;
 it cannot guarantee arbitrary SLAM trajectories will meet max10mm. Further
 moving-segment scale/shape optimization must remain GT-free and multi-case.
 
-Backup and fetched-restore verification are tracked in the task plan; do not
-consider this report alone proof of a completed remote backup.
+## Verified recovery artifact
+
+Code/tests/protocol and six final outputs were committed to owned remote
+`sencang` (`https://github.com/sencangWei/D405-MAXIMU.git`), branch
+`codex/fusion-static-guard-20260927`, capability commit
+`27872422b60dad3d744a2ad851df1a0c632b4553`. No force push; no broad reports staging.
+
+Fresh fetched detached restore `/tmp/ego_vio_static_guard_restore_rECuQb`:
+
+-127changed files compared against active workspace: byte-identical.
+-115restored focused testsPASS, including graph/full-rate/static detection.
+- Six restored trajectory/reference rescores in
+  `/tmp/ego_vio_static_guard_rescore__g0by0pi`: all30numeric metrics per case
+  match originalwithin1e-12, same thresholds/failures/5PASS/1FAIL.
+- Restoredtrackedtreeunchanged after tests/rescoring.
+
+This recovery proves the capability and scoring evidence, not portability of
+the installed MASt3R toolchain or a backup of all raw recordings. The bounded
+static fix is accepted; moving-segment max10mm precision remains unresolved.

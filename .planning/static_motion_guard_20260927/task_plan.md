@@ -37,7 +37,7 @@ is a desired precision gate, not permission to change thresholds or use GT.
 ## Progress
 
 - Root-cause analysis complete; RED detector tests assigned to a bounded agent.
-- No algorithm changes yet. Source target clean against main HEAD a8f44e37.
+- Initial source target was clean against main HEAD a8f44e37 before this fix.
 - RED synthetic graph reproduced9.584mm false static motion; detector's4gap/
   rotation bridge tests reproduced failures before quiet-edge merge fix.
 - Implemented consensus detector + correction-difference factors in graph and
@@ -47,4 +47,12 @@ is a desired precision gate, not permission to change thresholds or use GT.
 - Failed take2's5–10s final static bbox range10.892→.241mm, reference.769mm.
 - Independent reviewer found no coreblockingissue; requestedqualityscript hash
   in runner. Added it; rerunning exact sixcachedcommands into verified_v1_six.
-- Review/backups/restoreverification pending. Globalmax10goal remainsunmet.
+- FinalreviewAPPROVEforboundedstaticfix,notuniversal10mm. Reviewerindependently
+  confirmedall6gates/inputs/sourcehashes andran219adjacenttestsPASS.
+- Code/tests/protocol/all6finaloutputs backedtoownedremote sencang branch
+  codex/fusion-static-guard-20260927 commit27872422b60dad3d744a2ad851df1a0c632b4553.
+  Freshfetchedrestore/tmp/ego_vio_static_guard_restore_rECuQb:127changedfiles
+  byteidentical,115restoredtestsPASS. All6restoredrescoresmatch30numericfields
+  eachwithin1e-12 andsamePASS/FAIL/thresholds. Restoredtrackedtreeunchanged.
+- Boundedstatic-motionfix COMPLETE. Globalmax10goal remainsunmet;heldout2's
+  remainingpeak11.707mm ismovingframe692 at23.063s,notthestatic5–10sinterval.
