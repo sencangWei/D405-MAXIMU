@@ -25,12 +25,14 @@ no regression of eight prior passes; fresh independent captures after freeze.
 3. Implemented, NOT production-accepted: isolated minimal estimator using shared landmark multi-frame left/
    right pixel reprojection with soft calibrated raw gyro constraints. Use
    existing scipy/OpenCV, no new dependency or frontend/GPU rerun.
-4. First controls complete; diagnosis in progress: uniform time-stratified window observation controls on ten cached
+4. Complete for prototype (v6,46/50): uniform time-stratified window observation controls on ten cached
    recordings before any single-case full trajectory promotion. Raw data and
    optimizer diagnostics first; scoring isolated afterward.
 5. Pending: only with supported metric observations, frozen graph integration
    candidate across all ten. Record any derived-confidence/interface effects.
-6. Pending: review/tests, explicit evidence backup to sencang; verify restore.
+6. Complete for prototype: review/tests146PASS, owned sencang backup commits
+   d725776f/8514a442; fresh remote restore83files byte-identical and146testsPASS.
+   Full graph integration/acceptance (phase5) remains pending, no target-PASS.
 
 ## Stop/decision conditions
 

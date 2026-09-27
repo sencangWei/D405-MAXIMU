@@ -17,6 +17,17 @@ Initial observation prototype backup:
 - Full raw recording/GPU frontend replay not performed; only explicitly listed
   prototype code/tests/selected diagnostic evidence are backed here.
 
-The subsequent full-rate feature-propagation experiment is pending and is not
-included in that initial commit. Do not treat140tests or37windows as a formal
-10mmSLAM acceptance.
+That initial commit did not include the later full-rate propagation / joint-
+geometry repair. The completed follow-up is backed separately:
+
+- Algorithm/evidence commit `8514a442d4877f7cf60c4a3e9f8e114101d47aa4`, same
+  owned remote branch, normal fast-forward push (no force push).
+- Remote fetched into the same initially-empty verification repo and checked
+  out. All83 prototype code/test/evidence files since `c68b2efb` match both the
+  backup commit and main workspace byte-for-byte. Remote/local IDs match.
+- Restored targeted suite146PASS. Local new-only37PASS; syntax checksPASS.
+- v6 observations46/50; local comparisons only, not whole-trajectory ATE.
+
+Any following documentation-only commit records this proof; it does not change
+estimator code, tests or recorded observation/evaluation data. Full raw-data/GPU
+replay and production deployment are still not verified.
