@@ -172,3 +172,12 @@ Fullcoverage local537scoredwindowerrors median1.129/P954.318/max18.578mm;
 pixel/internalguardspassing cannot guarantee metrictruth. Next scientifically
 bounded lane is endpoint observability/resampling/adjacent-window consistency,
 not GT-picked factors, per-recording weight tuning, or model-training guesses.
+
+Final independent read-only review confirms experimental9/10/30over-limit
+samples/no lostpriorpasses; no production acceptance. Fullcoverage uses fixed
+adapter, not base runner default. LocalP95usesNumPypercentile explicitly.
+Freshmain171testsPASS1.50s. Selectedbackup18c37c4a normalpushedownedsencang;
+remote-onlyrestore/tmp/ego-metric-graph-restore-0Wz3x7 fetched178changedfiles
+byteidentical to main/backup, restored171testsPASS1.35s. No work left running.
+Frozen current integration experiment complete, target not achieved. Next
+endpointobservability diagnostic is proposed, notimplemented or running.

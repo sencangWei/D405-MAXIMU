@@ -42,8 +42,9 @@ no regression of eight prior passes; fresh independent captures after freeze.
    old8passes retained. No per-case candidate selection or production promotion.
 6. Complete for prototype and first graph: review/tests171PASS, owned sencang backup commits
    d725776f/8514a442; fresh remote restore83files byte-identical and146testsPASS.
-   Graph integration verified on allten; final fullcoverage evidence backup
-   and clean remote restoration verification are being completed. No target-PASS.
+   Graph integration verified on allten; fullcoverage evidence backup18c37c4a
+   and clean remote restoration verified178changedfiles/171testsPASS.
+   Current bounded integration branch complete; overall accuracy goalNOTmet.
 
 ## Stop/decision conditions
 

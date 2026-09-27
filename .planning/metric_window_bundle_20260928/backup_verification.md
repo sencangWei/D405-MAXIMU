@@ -47,3 +47,18 @@ replay and production deployment are still not verified.
   byte-identical fromremote; restored171testsPASS in1.38s. Containsallten graph
   trajectories,precisionreports,command/hashmanifests androtatableplots.
   Laterdiagnostic additions and ongoingfullcoverageoutputs requirefollow-up.
+
+## Phase6 fullcoverage evidence restoration
+
+- Frozen all-ten controls/graph/evaluation/plots commit
+  `18c37c4a76685a71798ba60a5d9eeecf68e3e9ee` normally pushed to owned
+  `sencang/codex/stereo-window-bundle-20260928`.
+- Exact178changed files only: selected fullcoverage evidence folders and three
+  owned plan/report documents, not `git add reports/` or unrelated changes.
+- Remote fetched into clean `/tmp/ego-metric-graph-restore-0Wz3x7`; restoredHEAD
+  matches backupHEAD. All178files byte-identical with main and backup.
+- Restored171targetedtestsPASS1.35s; main171PASS1.50s. This validates source
+  restoration and tests, NOT production deployment, GPUfrontend rawrerun, or
+  new independentcapture generalization.
+- A subsequent documentation-only commit records this proof and clarifies the
+  fullcoverage adapter. It does not change frozen estimator or evidence data.

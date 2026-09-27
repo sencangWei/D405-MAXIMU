@@ -174,7 +174,9 @@ accepted and23 refused by unchanged internal guards. All21 raw frames are
 tracked per window; five poses share landmarks within each independent window.
 No external trajectory is used for estimation, rejection, or candidate selection.
 The unchanged graph/downstream/scoring pipeline completed allten cases in
-`graph_full_ten_v1`. No production source or weight/cap was changed.
+`graph_full_ten_v1`, via the fullcoverage adapter `run_full_coverage_graph.py`
+(the base runner defaults to five-probe controls). No production source or
+weight/cap was changed.
 
 | Case | Frozen previous max mm | Full-window max mm | Mean mm | Result |
 | --- | ---: | ---: | ---: | --- |
@@ -230,3 +232,12 @@ sweep or interpolation replacing genuine motion.
 No live hardware acceptance, new independent recording validation, or
 production promotion has been performed. The experimental candidate is kept
 separate so the existing production pipeline is not silently replaced.
+
+Verification: independent read-only evidence review agrees with the9/10 result;
+171 targeted old/new tests passed in both main workspace and clean remote-only
+restore. Selected fullcoverage outputs were backed in commit
+`18c37c4a76685a71798ba60a5d9eeecf68e3e9ee` on owned remote
+`sencang/codex/stereo-window-bundle-20260928`. All178 changed files were fetched
+from remote and compared byte-for-byte with main and backup. Normal push only;
+no unrelated dirty production work was staged. Later documentation changes do
+not alter that frozen algorithm/evidence commit.
