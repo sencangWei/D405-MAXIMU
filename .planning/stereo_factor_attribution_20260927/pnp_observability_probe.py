@@ -21,11 +21,15 @@ spec.loader.exec_module(stereo)
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--compare-imu-fixed', action='store_true')
     args = parser.parse_args()
     if args.output.exists():
         raise ValueError('Refuse to overwrite output')
     args.output.mkdir(parents=True)
     summary = []
+    trajectory_spec = importlib.util.spec_from_file_location('trajectory', ROOT / 'scripts/fuse_docker2_mast3r_complementary.py')
+    trajectory = importlib.util.module_from_spec(trajectory_spec)
+    trajectory_spec.loader.exec_module(trajectory)
     for take, center in [(2, 581), (4, 836), (4, 1071)]:
         directory = ROOT / f'reports/joint_scale_independent_four_20260927/take{take}/fusion/{"rescue" if take == 2 else "baseline"}/mast3r'
         graph = json.loads((directory / 'graph_fusion_report.json').read_text())
@@ -39,6 +43,11 @@ def main():
         body_rotation = Rotation.from_quat(trace['body_rotation_xyzw'])
         body_t_camera = np.asarray(graph['camera_extrinsics']['effective_body_T_trajectory_camera'])
         imu_camera_rotation = body_rotation * Rotation.from_matrix(body_t_camera[:3, :3])
+        vins_times, vins_body, vins_body_rotation = trajectory.load_trajectory(Path(graph['inputs']['relative_motion_trajectory']))
+        vins_camera = vins_body + vins_body_rotation.apply(body_t_camera[:3, 3])
+        alignment_rotation = Rotation.from_matrix(graph['relative_motion_alignment']['rotation'])
+        vins_camera_aligned = alignment_rotation.apply(vins_camera)
+        vins_at_frames = np.column_stack([np.interp(times, vins_times, vins_camera_aligned[:, axis]) for axis in range(3)])
         selected = []
         for report_path in [graph['inputs']['stereo_report']] + graph['inputs']['additional_stereo_reports']:
             report = json.loads(Path(report_path).read_text())
@@ -107,8 +116,21 @@ def main():
                     'bidirectional_vectors': list(vector_checks),
                     'cached_pnp_vs_imu_rotation_deg': rotation_error,
                     'rotation_depth_coupling_length_mm': float(edge['median_depth_m'] * np.radians(rotation_error) * 1000)}
+                if args.compare_imu_fixed:
+                    cv2.setRNGSeed(0)
+                    fixed = stereo.estimate_pair_scale(left[int(left_numbers[first])], right[int(right_numbers[first])],
+                        left[int(left_numbers[second])], right[int(right_numbers[second])], positions[first], positions[second],
+                        imu_camera_rotation[first], imu_camera_rotation[second], calibration, 128, 0.07, 1.5,
+                        trajectory_frame='infrared_left', pnp_rotation_mode='trajectory-fixed')
+                    item['imu_fixed_replay'] = fixed
+                    vins_delta = vins_at_frames[second] - vins_at_frames[first]
+                    for label, measurement in [('free', replay), ('imu_fixed', fixed)]:
+                        if measurement.get('accepted'):
+                            camera_delta_world = imu_camera_rotation[first].apply(measurement['metric_displacement_camera_i_m'])
+                            item[label + '_vs_vins_delta_mm'] = float(np.linalg.norm(camera_delta_world - vins_delta) * 1000)
                 summary.append(item)
-                print(take, center, first, second, replay.get('accepted'), 'rot_error_deg', round(rotation_error, 4), 'bidirectional_vectors', vector_checks, flush=True)
+                print(take, center, first, second, replay.get('accepted'), 'rot_error_deg', round(rotation_error, 4),
+                      'free/fixed_vs_vins_mm', item.get('free_vs_vins_delta_mm'), item.get('imu_fixed_vs_vins_delta_mm'), flush=True)
         finally:
             cv2.solvePnPRansac = original
             stereo.combine_bidirectional_scale = original_combine

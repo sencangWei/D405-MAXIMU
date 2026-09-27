@@ -1,32 +1,31 @@
-# Experimental bidirectional motion contract — 2026-09-27
+# Stereo observation diagnostics — 2026-09-27
 
-This branch backs up a tested, opt-in helper and reproducible diagnostic tools.
-It is NOT a production rollout or a claim that all trajectories meet10mm.
+This is an experimental/reproducibility branch, NOT production rollout and NOT
+a claim of stable all-frame10mm accuracy. Frozen production remains untouched.
 
-Concrete gap: accepted SIFT fallbacks bypass the reverse checks applied to LK;
-missing reverse disagreement is credited as zero by graph confidence. Existing
-bidirectional acceptance checks scalar scales, not inverse 3D displacement.
+Initial helper/harness backup e610973 was pushed to owned remote sencang on
+codex/stereo-bidirectional-contract-20260927, fetched into a clean restore, and
+verified by eight component hashes and41passing tests.
 
-New validate_bidirectional_motion helper checks the inverse displacement in a
-common camera_i frame. It keeps forward scale/vector intact and uses fixed
-relative0.20 AND absolute8mm gates; existing functions/defaults unchanged.
-The experimental harness additionally mirrors the existing LK scalar reverse
-gate for SIFT; it does not replace or loosen that old scalar contract.
+Concrete gap: accepted SIFT fallbacks bypass LK reverse acceptance; missing
+reverse disagreement is credited aszero. The opt-in inverse-vector helper keeps
+forward scale/vector intact. No existing function default or CLI was changed.
+Experimental harness mirrors existing LK scalar reverse gate plus vector gate;
+source scales/quality snapshots frozen, derived counts separately recorded.
 
-Fresh41 related unit tests pass on main and this isolated backup tree. New
-tests were failing-first (helper absent), then passing. No neural training,
-GT-guided correction, frame deletion, old weight sweeps, or baseline rollback.
+The complete ten-case experiment is REJECTED for production:8PASS/2FAIL, same as
+baseline. Fresh2 max16.151→14.382mm but average worsened4.164→4.648mm; fresh4
+max16.181→16.643mm. All original score samples/SE3-no-scale alignment preserved.
+No GT in optimization, no frame deletion, neural training, or closed-family sweep.
 
-All-ten candidate regression is in progress in the main worktree. First fresh
-case remainsPASS but max rises7.900→8.307mm, so improvement is not assumed.
-Original global scales and quality snapshots are intentionally frozen to
-isolate validation. Post-check observation counts are separate diagnostics;
-old robust-scale quality is NOT post-validation quality.
+Raw-gyro PnP diagnostic completed ten cases/166time-stratified measurements,
+using raw-calibrated-gyro delta, raw-MASt3R attitude control, and free-PnP control.
+Formal fixed td applied once. All frame/input/inlier assertions passed. Closure
+improves, but reprojection worsens and VINS disagreement is mixed; neither
+closure nor VINS is truth. No gyro-fixed production mode was introduced.
 
-Attribution: observational stage7 fresh2/fresh4 replay byte-identical. Fixed
-final-IRLS RHS decomposition shows take4 bad joint correction dominated by
-stereo, with full-rate contribution only0.674mm at the peak. Sum reconstructed
-position correction error <0.000026mm. This is not factor-removal ablation.
-
-Existing production baseline and its owned-remote backup stay unchanged.
-Independent fresh captures are needed after any future accepted optimization.
+41targeted tests freshly pass. The updated snapshot contains diagnostic sources
+and small explicit evidence paths; original recordings, image datasets, and full reports tree
+are intentionally NOT staged. These are required external inputs for replay.
+The new commit must be verified by fresh remote fetch and component comparison
+before reporting that this updated snapshot is backed up.
