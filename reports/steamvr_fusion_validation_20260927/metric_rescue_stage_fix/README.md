@@ -88,5 +88,16 @@ Selector, initial regression tests, and frozen protocol backed to
 `sencang/codex/steamvr-reference-probe-20260927`, commit
 `ab70f2b2d8e976d1b63f422d5cdf60eb92b4c551`. Fetched into fresh detached worktree
 `/tmp/ego_vio_metric_rescue_restore_zm5Nzg`: all three files byte-identical,
-14 selector+camera-prior tests PASS, clean tracked tree. Additional tests and
-completed candidate evidence require a subsequent backup.
+14 selector+camera-prior tests PASS, clean tracked tree.
+
+Final additional tests, control/candidate trajectories, all internal gate reports,
+official reference and precision artifacts backed in commit
+`c0a70fcfe697dff8a61851e25ce0bf4ac4ee7942` on the same writable remote branch.
+Fresh fetched restore `/tmp/ego_vio_metric_rescue_result_restore_JzntVB`:
+28 archived files byte-identical to active code/evidence; 16 selector+prior tests
+PASS; independent re-score from restored estimate/reference reproduced all
+30 numeric fields within 1e-12, identical PASS/thresholds; clean tracked tree.
+CSV evidence retains original CRLF bytes (whitespace check uses cr-at-eol).
+Only exact evidence paths were staged, never the reports root. Raw DB3/images
+remain on the original host; this archive verifies scoring reproducibility,
+not a self-contained full frontend rerun without source recordings/toolchain.
