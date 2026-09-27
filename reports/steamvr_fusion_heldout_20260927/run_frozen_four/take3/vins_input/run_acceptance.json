@@ -1,0 +1,459 @@
+{
+  "schema": "umi_docker2_run_acceptance_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "failure_scope": "SLAM",
+  "runtime_error": null,
+  "runtime_watchdog": {
+    "schema_version": 2,
+    "state": "SLAM_HEALTHY",
+    "product_usable": true,
+    "elapsed_s": 99.60990765795577,
+    "streams": {
+      "raw": {
+        "samples": 1143,
+        "last_timestamp_s": 1790493044.2274137,
+        "age_s": 0.00014122901484370232
+      },
+      "corrected": {
+        "samples": 1143,
+        "last_timestamp_s": 1790493044.2274137,
+        "age_s": 0.0
+      }
+    },
+    "raw_corrected_timestamp_skew_s": 0.0,
+    "max_raw_step_m": 0.008085757630406532,
+    "max_raw_step_limit_m": 0.05,
+    "max_corrected_step_m": 0.008085757630406532,
+    "last_allowed_corrected_step_m": 0.03,
+    "thresholds": {
+      "startup_grace_s": 3.0,
+      "stale_timeout_s": 0.5,
+      "max_stream_skew_s": 0.1,
+      "min_samples_healthy": 10,
+      "min_absolute_jump_m": 0.03,
+      "max_raw_step_m": 0.05,
+      "raw_step_multiplier": 3.5
+    },
+    "failures": []
+  },
+  "ros_domain_id": 77,
+  "ros_localhost_only": true,
+  "benchmark_environment": {
+    "schema_version": 1,
+    "result": "PASS",
+    "thresholds": {
+      "max_load_1m_per_cpu": 0.75,
+      "max_cpu_pressure_some_avg10_percent": 10.0,
+      "max_io_pressure_full_avg10_percent": 10.0,
+      "max_memory_pressure_full_avg10_percent": 1.0,
+      "min_memory_available_gib": 8.0,
+      "max_conflicting_processes": 0
+    },
+    "snapshot": {
+      "captured_at_utc": "2026-09-27T07:49:11.875830+00:00",
+      "hostname": "robot-MS-7E19",
+      "kernel_release": "6.8.0-138-generic",
+      "cpu_count": 24,
+      "load_average": {
+        "one_minute": 8.68603515625,
+        "five_minutes": 8.76318359375,
+        "fifteen_minutes": 8.06982421875,
+        "one_minute_per_cpu": 0.3619181315104167
+      },
+      "memory_available_gib": 39.274898529052734,
+      "pressure": {
+        "cpu": {
+          "some": {
+            "avg10": 8.96,
+            "avg60": 12.43,
+            "avg300": 13.1,
+            "total": 35606429663.0
+          },
+          "full": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 0.0
+          }
+        },
+        "memory": {
+          "some": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 297519490.0
+          },
+          "full": {
+            "avg10": 0.0,
+            "avg60": 0.0,
+            "avg300": 0.0,
+            "total": 254921582.0
+          }
+        },
+        "io": {
+          "some": {
+            "avg10": 0.09,
+            "avg60": 0.06,
+            "avg300": 0.16,
+            "total": 17848597466.0
+          },
+          "full": {
+            "avg10": 0.09,
+            "avg60": 0.04,
+            "avg300": 0.1,
+            "total": 16031415465.0
+          }
+        }
+      },
+      "conflicting_processes": [],
+      "resource_gated_processes": [
+        {
+          "pid": 3088996,
+          "command": "/opt/umi-ui/share/umi-collector/ros2_ws/install/lib/hik_camera/hik_camera_node --ros-args --params-file /opt/umi-ui/share/umi-collector/config/camera/hik_umi_fisheye_bayergb8_preview20.yaml --params-file /tmp/launch_params_ery11f4b"
+        }
+      ]
+    },
+    "checks": [
+      {
+        "name": "load_1m_per_cpu",
+        "value": 0.3619181315104167,
+        "operator": "<=",
+        "threshold": 0.75,
+        "result": "PASS"
+      },
+      {
+        "name": "cpu_pressure_some_avg10_percent",
+        "value": 8.96,
+        "operator": "<=",
+        "threshold": 10.0,
+        "result": "PASS"
+      },
+      {
+        "name": "io_pressure_full_avg10_percent",
+        "value": 0.09,
+        "operator": "<=",
+        "threshold": 10.0,
+        "result": "PASS"
+      },
+      {
+        "name": "memory_pressure_full_avg10_percent",
+        "value": 0.0,
+        "operator": "<=",
+        "threshold": 1.0,
+        "result": "PASS"
+      },
+      {
+        "name": "memory_available_gib",
+        "value": 39.274898529052734,
+        "operator": ">=",
+        "threshold": 8.0,
+        "result": "PASS"
+      },
+      {
+        "name": "conflicting_processes",
+        "value": 0,
+        "operator": "<=",
+        "threshold": 0,
+        "result": "PASS"
+      }
+    ],
+    "failures": []
+  },
+  "provenance": {
+    "files": {
+      "runner": {
+        "path": "/home/robot/ego_vio_humble/scripts/test_vins_auto_loop.py",
+        "sha256": "4a174a2076bdd1f0530fefbfa5d881dc231dfbdd3a65468164ded1023d27a996"
+      },
+      "run_config": {
+        "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/vins_input/vins_auto_loop_config.yaml",
+        "sha256": "40d160169dc664da9651b018c0ba0840119155c157b489cff6070246f15bb8cb"
+      },
+      "left_calibration": {
+        "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/vins_input/left.yaml",
+        "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+      },
+      "right_calibration": {
+        "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/vins_input/right.yaml",
+        "sha256": "52941d0724ecac8a59c3daeb494ecc5bbd94b7d063983f9b2944346d53f27b21"
+      },
+      "vins_executable": {
+        "path": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/vins_fusion_ros2_node",
+        "sha256": "5af167654b949e9944d93dc972d431f46b7a4fde4ffa976439ad1f5dcd950a3a"
+      },
+      "loop_executable": {
+        "path": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/loop_fusion/loop_fusion_node",
+        "sha256": "8c48398c6ac6f17d8753652cc1ec11507f1bfbaa0081c74dd00ddb743209464d"
+      },
+      "replay_executable": {
+        "path": "/home/robot/ego_vio_humble/build/vins_fusion_ros2/db3_replay_cpp",
+        "sha256": "41b380578fe28dd6c9a60b85df371925265dd564bcb060d3e0502d43ae283798"
+      },
+      "capture_acceptance": {
+        "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002/acceptance.json",
+        "sha256": "cc2cceb68b6b2f7123bbdb35bcbd6f72a6e3aca2772115bbe65fcc04ed584315"
+      },
+      "camera_timestamps": {
+        "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002/d405_frames.csv",
+        "sha256": "8037beb6bb0c04e972e57a211d420c3921e8d4f2aa229d49113349bf958949f4"
+      },
+      "imu_samples": {
+        "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002/external_imu/imu.bin",
+        "sha256": "34626cf7cf7d1a90a21f04e3aa78a95d5ef2db26b542bd65541bd8c1b6b520a8"
+      }
+    },
+    "git_revisions": {
+      "ego_vio_humble": "a8f44e376c589f9f480182fee586d8e8d6802b54",
+      "vins_fusion_ros2": "a8f44e376c589f9f480182fee586d8e8d6802b54"
+    },
+    "source_db3_hashed": false,
+    "source_db3_identity": "capture acceptance hash plus immutable manifest"
+  },
+  "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002",
+  "raw_trajectory": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/vins_input/vio_raw.csv",
+  "corrected_trajectory": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/vins_input/vio_corrected_stream.csv",
+  "replay_rate": 0.5,
+  "replay_backend": "cpp",
+  "imu_accel_calibration": null,
+  "raw_odometry_samples": 1143,
+  "corrected_odometry_samples": 1143,
+  "camera_frames": 1199,
+  "camera_frame_count_source": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002/d405_frames.csv",
+  "expected_pose_samples_after_skip": 1154,
+  "pose_coverage": 0.9904679376083189,
+  "automatic_loop_accepts": 6,
+  "automatic_loop_rejects": 999,
+  "automatic_correction_rejects": 0,
+  "automatic_spatial_rejects": 0,
+  "min_loop_spatial_support": 0.0,
+  "max_loop_candidates": 24,
+  "loop_retrieval": {
+    "frames": 308,
+    "returned": {
+      "min": 2,
+      "max": 24,
+      "mean": 22.814935064935064
+    },
+    "eligible": {
+      "min": 0,
+      "max": 24,
+      "mean": 9.678571428571429
+    },
+    "zero_eligible_frames": 12,
+    "top_score": {
+      "min": 0.00523,
+      "max": 0.28714,
+      "mean": 0.14648509740259746
+    }
+  },
+  "loop_stage_counts": {
+    "pending": 70,
+    "inconsistent": 0,
+    "correction_rejected": 0,
+    "cooldown": 5
+  },
+  "pnp_quality": {
+    "samples": 1082,
+    "finite_samples": 440,
+    "geometry_pass_samples": 85,
+    "accepted_edges": [
+      {
+        "current": 304,
+        "matched": 203,
+        "inliers": 21,
+        "rmse_px": 1.787,
+        "p95_px": 2.738,
+        "current_hull_fraction": 0.1537,
+        "old_hull_fraction": 0.1269
+      },
+      {
+        "current": 319,
+        "matched": 203,
+        "inliers": 20,
+        "rmse_px": 1.894,
+        "p95_px": 3.222,
+        "current_hull_fraction": 0.3003,
+        "old_hull_fraction": 0.213
+      },
+      {
+        "current": 331,
+        "matched": 198,
+        "inliers": 25,
+        "rmse_px": 1.97,
+        "p95_px": 3.127,
+        "current_hull_fraction": 0.2458,
+        "old_hull_fraction": 0.2635
+      },
+      {
+        "current": 344,
+        "matched": 188,
+        "inliers": 21,
+        "rmse_px": 1.823,
+        "p95_px": 2.862,
+        "current_hull_fraction": 0.1603,
+        "old_hull_fraction": 0.1676
+      },
+      {
+        "current": 377,
+        "matched": 141,
+        "inliers": 18,
+        "rmse_px": 1.991,
+        "p95_px": 3.775,
+        "current_hull_fraction": 0.2139,
+        "old_hull_fraction": 0.1865
+      },
+      {
+        "current": 388,
+        "matched": 128,
+        "inliers": 16,
+        "rmse_px": 1.661,
+        "p95_px": 2.501,
+        "current_hull_fraction": 0.1169,
+        "old_hull_fraction": 0.1191
+      }
+    ]
+  },
+  "pose_graph_health": {
+    "optimizations": 3,
+    "usable_optimizations": 3,
+    "rejected_optimizations": 0
+  },
+  "raw_trajectory_diagnostics": {
+    "max_step_m": 0.008085757630406532,
+    "z_span_m": 0.1491418958668912,
+    "endpoint_delta_m": 0.3010237478646752
+  },
+  "corrected_trajectory_diagnostics": {
+    "max_step_m": 0.008085757630406532,
+    "z_span_m": 0.1491418958668912,
+    "endpoint_delta_m": 0.3045605887866565
+  },
+  "z_span_retention_ratio": 1.0,
+  "loop_input_drop_events": 0,
+  "estimator_keyframe_queue_drop_events": 0,
+  "failures": [],
+  "health": {
+    "schema_version": 3,
+    "state": "SLAM_HEALTHY",
+    "product_usable": true,
+    "thresholds": {
+      "min_pose_coverage": 0.98,
+      "min_true_elevation_retention": 0.9,
+      "min_absolute_jump_limit_m": 0.03,
+      "max_raw_step_limit_m": 0.05,
+      "raw_step_multiplier": 3.5
+    },
+    "checks": [
+      {
+        "name": "declared_run_result",
+        "result": "PASS",
+        "measured": "PASS",
+        "threshold": "PASS"
+      },
+      {
+        "name": "failure_scope",
+        "result": "PASS",
+        "measured": "SLAM",
+        "threshold": "SLAM"
+      },
+      {
+        "name": "declared_failures_empty",
+        "result": "PASS",
+        "measured": [],
+        "threshold": []
+      },
+      {
+        "name": "runtime_complete",
+        "result": "PASS",
+        "measured": null,
+        "threshold": null
+      },
+      {
+        "name": "runtime_watchdog",
+        "result": "PASS",
+        "measured": "SLAM_HEALTHY",
+        "threshold": "SLAM_HEALTHY"
+      },
+      {
+        "name": "trajectory_sample_counts",
+        "result": "PASS",
+        "measured": {
+          "raw": 1143,
+          "corrected": 1143,
+          "expected": 1154
+        },
+        "threshold": "all positive integers"
+      },
+      {
+        "name": "pose_coverage_consistency",
+        "result": "PASS",
+        "measured": {
+          "reported": 0.9904679376083189,
+          "calculated": 0.9904679376083189
+        },
+        "threshold": {
+          "absolute_tolerance": 1e-12
+        }
+      },
+      {
+        "name": "pose_coverage",
+        "result": "PASS",
+        "measured": 0.9904679376083189,
+        "threshold": {
+          "minimum": 0.98
+        }
+      },
+      {
+        "name": "loop_input_drop_events",
+        "result": "PASS",
+        "measured": 0,
+        "threshold": {
+          "maximum": 0
+        }
+      },
+      {
+        "name": "estimator_keyframe_queue_drop_events",
+        "result": "PASS",
+        "measured": 0,
+        "threshold": {
+          "maximum": 0
+        }
+      },
+      {
+        "name": "pose_graph_rejected_optimizations",
+        "result": "PASS",
+        "measured": 0,
+        "threshold": {
+          "maximum": 0
+        }
+      },
+      {
+        "name": "raw_trajectory_jump",
+        "result": "PASS",
+        "measured": 0.008085757630406532,
+        "threshold": {
+          "maximum_m": 0.05
+        }
+      },
+      {
+        "name": "corrected_trajectory_jump",
+        "result": "PASS",
+        "measured": 0.008085757630406532,
+        "threshold": {
+          "maximum_m": 0.03
+        }
+      },
+      {
+        "name": "true_elevation_retention",
+        "result": "PASS",
+        "measured": 1.0,
+        "threshold": {
+          "minimum": 0.9
+        }
+      }
+    ],
+    "failures": []
+  }
+}
