@@ -942,3 +942,159 @@ essentially unchanged. Neither candidate promoted or meets10mm. Internal
 IMU-stereo scale agreement improved under drop but GT worsened, so not an
 accuracy gate. Report causal_drop_v1/README.md; next inspect actual
 keyframe pose/pointmap state around1042→1057→1074, not more edge deletion.
+
+2026-09-29 continuation: resumed with mandatory HANDOFF, repo rules, prior
+plan, and keyframe-update report. Agentmemory session listing was empty; disk
+handoff is the source of continuity. Existing 363-frame three-case observation
+already rules out weighted_pointmap formula/update magnitude as a discriminator;
+final raw MASt3R shape is slightly better than online. Native `save_full_traj`
+re-anchors stored Sim3 relative poses to final keyframes, then `as_SE3` strips
+the composed scale. No obvious coordinate-order bug from source reading.
+Product row IDs are shifted ~57 raw frames, so only timestamp-matched raw
+1053–1078 interval may be used. Fresh4 fused ATE climbs 4.77mm@raw1000,
+7.58@1040,9.97@1052,13.80 max in1053–1078; failing 1057→1074 edge occurs
+after onset and isolated removal worsens max. Next read-only test: inspect
+backend keyframe-pose transport over the whole broad hump with matching
+controls, then decide if any UMI-only structural repair has evidence. No
+estimator/production/GT gate change and all-ten target remains unmet.
+
+New tail retrieval hypothesis, no accuracy result yet: ran the pre-existing
+read-only D405 accepted-edge checker on saved matches at raw1121..1199 for
+fresh4/fresh1/heldout1. Results 3/5,8/8,2/4 accepted respectively. In fresh4,
+the 343-frame 792→1135 long loop passes bidirectional PnP (67.3%/83.5%
+inliers,0.583mm/0.072deg cycle), while nonconsecutive 1095→1135 retrieval
+fails both directions (24.0%/44.6% inliers). This distinction suggests testing
+only that stereo-rejected *retrieval* edge, not deleting a valid loop or all
+short edges. Source report SHA a3097072..., isolated selection report written
+with provenance. Existing hook tests2PASS. Full frozen frontend replay with
+single rejected retrieval edge running under exec session45212; source data
+reused and original config/td unchanged. Sitecustomize prints nonfatal
+`lietorch` errors from preparatory system-Python subprocesses, while MASt3R
+venv model loaded; verify actual drop and 1199 outputs before downstream.
+
+Tail retrieval causal test completed, NOT a fix. Frontend1199/1199, exactly
+one drop1095→1135, IMU scale0.489420941 (onboard-only), unchanged frozen seam
+stereo/VINS in downstream, all five chain stages finished; candidate estimate
+hashed before external score. Official same1142 samples max/P95/mean/rot
+13.811042/8.707831/5.572793mm/1.579192deg versus current product
+13.801442/8.714560/5.554484mm/1.529006deg. Both FAIL max10mm; effect
+tiny/worse. Do not promote retrieval-edge deletion, and no fresh1 frontend
+control rerun is needed after the target-case hypothesis failed. Report:
+causal_tail_retrieval_v1/README.md. Still no proven unique cause of broad
+fresh4 position hump; root-cause investigation must stay upstream of the
+offset and use independent UMI evidence rather than another threshold sweep.
+
+Post-score candidate-vs-frozen saved-position identity check: same timestamps;
+single-edge deletion moves 1199-row graph positions max1.140mm and1142-row
+fused positions max1.173mm. Needed max ATE reduction is3.811mm, so this
+particular edit lacks even the saved-position effect size. Report updated;
+seven small evidence files (not raw trajectories) selected into clean backup
+worktree branchcodex/feature-loss-diagnostic-20260928, normal-pushed owned
+sencang commit56d84e0b; remote-only restore seven files byte-identical.
+First focused test attempt under system Python failed collection because
+MASt3R package was absent; rerun with actual MASt3R venv/PYTHONPATH gave
+6PASS. The one-line README effect-size addition after commit remains to back up.
+
+Effect-size README follow-up normal-pushed as948ed539 to owned sencang branch.
+Fetched into prior clean detached restore and byte-compared README to main;
+restored HEAD948ed539/status clean. Selected evidence backup complete; raw
+large candidate trajectories remain only local, never claimed as remotely
+restorable. No production code or algorithm settings changed in this branch.
+
+2026-09-29 continuation: measured saved accepted MASt3R long retrievals against
+independent D405 stereo in failed fresh4 and passing fresh1/heldout1 (10/10/20
+checked;7/6/16 bidirectional accepted). Median visual-minus-stereo relative
+displacements11.15/3.52/4.08mm; median forward-reverse measurement spreads
+3.81/1.33/1.24mm. Fresh4 909→1085 and915→1085 disagree11.15/12.79mm,
+mainly direction for first (7.63° direction, -1.35mm length); PnP-relative
+attitude gap1.90°. Plausible local metric shape inconsistency, not GT/error
+oracle, and the measurement's own spread is several mm. Diagnostic selector
+predeclared exactly three coherent edges909→1085,915→1085,909→1095.
+
+Full1199-frame causal frontend replay confirms exactly3 drops, frozen config
+SHAac257706 and unchanged input, then onboard IMU scale and same current
+graph/complementary/quality/smooth/scorer. Official same1142 samples:
+current13.801/8.715/5.554mm max/P95/mean, deletion15.519/10.348/5.704mm.
+The onboard stereo/IMU scale selector switched from0.489421(onboard attitude)
+to0.473516(MASt3R attitude), so ran one prespecified scale-mode ablation on
+the SAME frontend with onboard orientation only (0.491770); max/P95/mean
+13.919/9.938/5.596mm, still fails and degrades. Three-edge deletion rejected,
+no production promotion. Report causal_long_loop_deletion_v1/README.md.
+New diagnostic geometry helper and selector tests5PASS. Need selected backup
+and independent remote-only restore; raw replay outputs remain local only.
+
+Selected 16 diagnostic source/test/small evidence paths (never `git add
+reports/`) committed84f8aa00 in clean backup worktree and normally pushed to
+owned sencang branch codex/feature-loss-diagnostic-20260928. Separate clean
+restore fetched remote commit84f8aa00, all16 paths byte-identical to backup,
+9 focused tests PASS and restore status clean. Two scorer precision JSON files
+were copied with a terminating newline added by apply_patch; parsed content
+matches the local scorer artifacts, and remote restore matches backup bytes.
+Large frontend/graph/fused trajectories remain local-only, not represented as
+remotely restorable. No production algorithm or selection rule promoted.
+
+Same saved D405 matched pixels rechecked against MASt3R ONLINE poses vs final
+poses at identical scale on fresh4/fresh1/heldout1. Accepted long-loop median
+visual-vs-bidirectional-stereo discrepancy online16.63/5.80/7.11mm, final
+11.15/3.52/4.08mm; paired median reduction9.46/3.38/3.96mm. Fresh4
+909→1085 online27.98→final11.15mm,915→1085 26.09→12.79,
+792→1135 22.88→5.05. Later global corrections mostly REPAIR the local
+metric inconsistency, rather than create it. `online` includes earlier backend
+events, so this locates error before later correction, not uniquely in model
+or tracking. No extra GT reads or estimator edits. Three online-vs-stereo
+JSONs and helper override need selected backup follow-up.
+2026-09-29 fresh4 metric-rescue frontend replay deterministic1199frames; four
+new stereo scales 0.959–0.972 and IMU0.989 allPASS, but native graph FAIL
+visual_gyro_rotation_inconsistent (after P95 1.388deg vs baseline0.290deg;
+unchanged1deg limit). Diagnostic rigid channel-composition rescue-position+
+baseline-attitude source-only graph/input gates PASS but official same1142
+max17.613mm (old plain16.181; current paired-seam13.801), same peak raw1071.
+GT-only postscore local1057→1074 vector error rescue25.73mm despite near-
+correct length160.30 vs GT160.39; baseline12.36mm, VINS9.84mm. Direct hybrid
+not promoted. Paired-seam wrapper correctly refused new trajectory with old
+source-bound controls; did not bypass. Single controlled frontend ablation
+without absolute VINS backend position prior launched (execsession72905),
+same prerecorded frames/model/stereo pointmap/short-term VINS. If source-only
+rotation still bad, reject without rescoring; if clean, recompute four stereo
+reports before frozen-score comparison. No production change.
+
+No-backend-position/log-scale frontend localizes attitude issue: absolute
+visual/VINS attitude P95 3.533deg vs full rescue8.098deg and baseline3.523deg.
+Fresh four stereo scales 1.040106/1.015550/1.052841/1.003520 allPASS;
+IMU1.081855 PASS; graph rotation afterP95.267deg PASS; input qualityPASS.
+Same1142 official plain score mean/P95/max5.806/10.771/14.893mm FAIL;
+estimate SHA before/after GT8ad9d72f identical. No promotion. Important
+code coupling: backend position sigma>0 toggles both position/logscale prior;
+single ablation did not separate them. Next predeclared scale-only weakening
+launched execsession18904 (position sigma4mm remains). If source-only attitude
+still bad, reject early; if clean, recompute native stereo reports and
+score frozen estimate. No source production edits.
+
+Second isolated frontend ablation keeps VINS backend position sigma4mm but
+weakens only log-scale sigma0.05→10.0. Fresh4 attitude P95 2.158deg vs
+both-strong8.098deg; 4 new stereo scales.978526/.976495/.978599/.973657
+allPASS; IMU1.020504; graph rot afterP95.272deg PASS; input qualityPASS.
+Official same1142 no-scale SE3 mean/P95/max3.400/6.983/8.828mm PASS;
+estimate SHA1033cb4f before/after scoring. NOT production: single-case and
+plain downstream differs from frozen paired-seam. Multi-case validation
+predeclared fresh1,heldout4,dev2; camera priors generated1143/1143/1144,
+fresh1 full fusion running execsession69910. Other cases have not started.
+All prior 23 specific diagnostic source/evidence files backed as commit
+d1e17f9fa46edca65aec5c09a69a1c7b388f9991 on sencang branch
+codex/feature-loss-diagnostic-20260928: remote-only restore clean,
+23/23 byte-identical,10 focused testsPASS. New fresh4 PASS report and this
+updated README not yet in that remote commit; back up after contrast results.
+
+Same frozen opt-in config now independently replayed on fresh1 and heldout4.
+Both onboard stereo/graph/input-quality PASS, but official same1143 scores
+FAIL: fresh1 mean/P95/max7.928/13.990/14.684mm (paired incumbent
+2.765/6.317/8.583), heldout4 5.084/10.004/14.552mm (paired incumbent
+3.361/4.947/8.907). New plain-fusion fresh4 remains single-case PASS
+3.400/6.983/8.828mm. Plain vs paired downstream differs; comparisons are
+admission targets, not one-parameter causal deltas. VINS-only fresh1 max
+21.621mm; absolute4mm VINS backend position prior can hurt. Source-only
+input-disagreement P95 fresh4/fresh1/heldout4 8.817/7.567/9.349mm, all
+PASS: current gate cannot choose safely. No production promotion. Dev2 third
+independent contrast running exec session5450. Finish, document, then only
+design a source-only selector with a measurable separate witness; never GT
+choose per-recording. Updated report still needs remote backup.

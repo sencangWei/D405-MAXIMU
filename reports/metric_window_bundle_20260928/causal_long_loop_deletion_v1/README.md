@@ -189,3 +189,72 @@ but misses the 10 mm gate and is worse than the current paired-seam max
 case. A second, already predeclared isolation retains the 4 mm backend
 position factor and makes only the log-scale residual negligible, to identify
 which subterm distorts attitude before any further full stereo work.
+
+### Position retained, backend log-scale weakened: first-case PASS only
+
+The second ablation keeps `vins_backend_position_sigma_m=0.004` and all other
+rescue inputs fixed, changing only `vins_backend_log_scale_sigma` from 0.05
+to 10.0. This effectively weakens the log-scale residual while preserving
+the position factor; the implementation's scalar factor is not literally
+removed. On fresh4, visual/VINS attitude difference P95 falls to **2.158°**
+from 8.098° with both terms strong. Four fresh D405 stereo scales are
+**0.978526 / 0.976495 / 0.978599 / 0.973657**, all PASS, versus IMU scale
+1.020504 (PASS). The unchanged graph rotation gate PASS at 0.272° P95,
+the input-quality gate PASS with stereo edge RMSE 1.995 mm, and the final
+joint scale is 0.999295 m/native unit. This is strong single-case evidence
+that the aggressive backend log-scale term, rather than the position term,
+caused the earlier attitude degradation. A full multi-case claim still needs
+independent recordings.
+
+The source-only estimate was hashed before external scoring; SHA256
+`1033cb4f90a288ebf518d3611c6a4971614dfba4c4695ba7616506d107efda57`
+was unchanged after scoring. The same official 1142-sample SE(3), no-scale
+fresh4 precision is **mean 3.400 mm, P95 6.983 mm, max 8.828 mm: PASS**.
+This beats the incumbent paired-seam fresh4 max 13.801 mm, but the downstream
+recipes differ, so the paired-seam figure is a frozen target, not a claim of
+one-parameter causal improvement in that exact graph. This is **one-cell
+proof of feasibility, not a production promotion**. Independent fresh1,
+heldout4, and dev2 contrast recordings are the next admission checks; their
+candidate selector and parameter must remain fixed, with Tracker reserved
+for post-estimate scoring only.
+
+### Independent contrast: backend-position prior is not production-safe
+
+The exact frozen ablation config above was replayed from recorded D405 and
+Docker2 streams on fresh1 and heldout4. Both onboard stereo, graph, and input
+quality checks PASS. The official scorer was run only after each source-only
+estimate was frozen; it uses the same 1143 samples per respective recording.
+
+| Recording | Current paired-seam mean/P95/max | This candidate plain-fusion mean/P95/max | Candidate result |
+| --- | ---: | ---: | --- |
+| fresh1 | 2.765 / 6.317 / 8.583 mm | **7.928 / 13.990 / 14.684 mm** | FAIL |
+| heldout4 | 3.361 / 4.947 / 8.907 mm | **5.084 / 10.004 / 14.552 mm** | FAIL |
+
+These rows use differing downstream recipes, so the paired-seam figures are
+incumbent targets, not a one-parameter causal contrast. Both *new* runs use
+the same plain-fusion code and frozen opt-in config as the fresh4 PASS. The
+fresh1 output SHA256 is `0580204ccb693cd4f82de14a8667a1339b75d6c7ed353d0bfc832ccaa7966c83`;
+heldout4 is `9e39be47f6e53f2bd7ed488b13cc8efa08b5890a9e0b11248bf159e6ea0c8f19`.
+Scoring did not modify the heldout4 estimate. A separate frozen VINS-only
+fresh1 score has max 21.621 mm, whereas fused fresh1 has max 14.684 mm;
+the absolute 4 mm VINS backend position factor plausibly drags this case
+toward a less accurate prior. That attribution is an inference, not a direct
+factor-level proof. Source-only quality metrics do **not** cleanly separate
+the successful fresh4 from failed fresh1/heldout4: input-disagreement P95 is
+8.817 / 7.567 / 9.349 mm, respectively, and all three pass the unchanged
+quality gate. A case-specific GT-selected switch would be leakage, so the
+candidate remains diagnostic only. The predeclared dev2 contrast is still
+processing; no production promotion is allowed regardless of its outcome.
+
+An additional source-only diagnostic compares valid VINS camera-prior chords
+against the *independent* D405 multisecond bidirectional PnP displacement
+vectors in the same first-camera frame, keeping accepted edges longer than
+10 mm. This does not use Tracker. The fresh4 / fresh1 / heldout4 edge counts
+are 56 / 67 / 32, vector-residual medians **5.876 / 5.586 / 6.809 mm**, and
+direction-error medians **2.599° / 1.691° / 6.262°**. Fresh4 and fresh1 are
+too similar for this scalar comparison to justify an enable/disable threshold;
+heldout4 has clearer directional mismatch. Thus neither the existing input
+quality P95 nor a naive VINS-vs-stereo vector threshold is an evidenced
+universal rescue selector. Diagnostic implementation is
+`.planning/metric_window_bundle_20260928/compare_vins_stereo_vectors.py`;
+its two synthetic geometry/floor tests PASS.
