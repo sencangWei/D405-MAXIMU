@@ -9,8 +9,13 @@ from pathlib import Path
 
 
 def rejected_pairs(report):
+    if report.get("schema") == "selected_backend_edge_causal_probe_v1":
+        if report.get("external_reference_used") is not False:
+            raise ValueError("selected edge probe must exclude external reference")
+        return {(int(row["first_raw"]), int(row["second_raw"]))
+                for row in report["selected_pairs"]}
     if report.get("schema") != "accepted_backend_edge_stereo_check_v1":
-        raise ValueError("unexpected stereo edge report schema")
+        raise ValueError("unexpected edge report schema")
     return {(int(row["first_raw"]), int(row["second_raw"]))
             for row in report["results"] if not row["accepted"]}
 

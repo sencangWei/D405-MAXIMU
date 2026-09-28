@@ -21,3 +21,13 @@ def test_only_onboard_geometry_rejections_are_selected():
 def test_unknown_report_schema_is_rejected():
     with pytest.raises(ValueError, match="schema"):
         module.rejected_pairs({"schema": "external_ground_truth", "results": []})
+
+
+def test_explicit_onboard_only_selected_pairs():
+    report = {"schema": "selected_backend_edge_causal_probe_v1",
+              "external_reference_used": False,
+              "selected_pairs": [{"first_raw": 909, "second_raw": 1085}]}
+    assert module.rejected_pairs(report) == {(909, 1085)}
+    report["external_reference_used"] = True
+    with pytest.raises(ValueError, match="external reference"):
+        module.rejected_pairs(report)

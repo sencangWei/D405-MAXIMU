@@ -1,0 +1,183 @@
+{
+  "schema": "edge_drop_current_chain_causal_probe_v1",
+  "diagnostic_only": true,
+  "external_gt_used_for_estimation": false,
+  "frozen_control_inputs": "stereo_seam_window_measurements_unchanged",
+  "frontend_inputs_sha256": {
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_metric_onboard_only/trajectory_imu_metric.csv": "18ef4caf0bc8b2dc2f3816114f18f859b54e4bf9d907bdb5d01d687a55e0da8c",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_metric_onboard_only/imu_scale_report.json": "7cb71ee935b07b61bb0687c0548287816fee03c5b01399c8f1180d086f233314",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_drop_v1/fresh4_current_chain/manifest.json": "ce38a8e1e62415164184008cd4b06deaa02f42061ef90d057e800fba7e779a54"
+  },
+  "commands": [
+    [
+      "graph",
+      [
+        "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python",
+        "/home/robot/ego_vio_humble/scripts/fuse_mast3r_seam_pair_windows.py",
+        "--session",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_182007",
+        "--trajectory",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_metric_onboard_only/trajectory_imu_metric.csv",
+        "--stream",
+        "infrared_left",
+        "--stereo-report",
+        "/home/robot/ego_vio_humble/reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1_measurements/fresh4/stereo/stereo_scale_bidirectional_report.json",
+        "--imu-scale-report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_metric_onboard_only/imu_scale_report.json",
+        "--vins-config",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml",
+        "--imu-calibration",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+        "--expected-td-s",
+        "-0.009109323",
+        "--orientation-node-stride",
+        "10",
+        "--position-node-stride",
+        "5",
+        "--minimum-stereo-sample-hop",
+        "1",
+        "--keyframe-dir",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_mast3r/mast3r_logs/keyframes/dataset",
+        "--relative-motion-trajectory",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/vins_input_retry1/vio_corrected_stream.csv",
+        "--relative-motion-report",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/vins_input_retry1/run_acceptance.json",
+        "--relative-motion-sigma-m",
+        "0.008",
+        "--auto-visual-position-sigma",
+        "--joint-max-correction-mm",
+        "25",
+        "--joint-correction-cap-mode",
+        "per-node",
+        "--full-rate-imu-position-refinement",
+        "--full-rate-max-correction-mm",
+        "20",
+        "--joint-metric-scale-optimization",
+        "--metric-scale-mode",
+        "joint",
+        "--scale-disagreement-policy",
+        "diagnose",
+        "--position-mode",
+        "keyframe-graph",
+        "--output",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/trajectory_graph.csv",
+        "--report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/graph_fusion_report.json",
+        "--additional-stereo-report",
+        "/home/robot/ego_vio_humble/reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1_measurements/fresh4/stereo/stereo_scale_long_hops_report.json",
+        "--additional-stereo-report",
+        "/home/robot/ego_vio_humble/reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1_measurements/fresh4/stereo/stereo_scale_dense10hz_report.json",
+        "--additional-stereo-report",
+        "/home/robot/ego_vio_humble/reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1_measurements/fresh4/stereo/stereo_scale_multisecond_report.json",
+        "--seam-window-controls",
+        "reports/metric_window_bundle_20260928/seam_full_ten_v1/summary.json",
+        "--seam-window-case",
+        "fresh4",
+        "--seam-window-mode",
+        "joint"
+      ]
+    ],
+    [
+      "complementary",
+      [
+        "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python",
+        "/home/robot/ego_vio_humble/scripts/fuse_docker2_mast3r_complementary.py",
+        "--mast3r",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/trajectory_graph.csv",
+        "--docker2",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/vins_input_retry1/vio_corrected_stream.csv",
+        "--docker2-report",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/vins_input_retry1/run_acceptance.json",
+        "--body-t-camera-yaml",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml",
+        "--scale-horizon-s",
+        "1",
+        "--smoothing-s",
+        "8",
+        "--docker2-local-weight",
+        "0",
+        "--docker2-scale-weight",
+        "0.25",
+        "--graph-report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/graph_fusion_report.json",
+        "--roughness-threshold-mm",
+        "9",
+        "--adaptive-weight-strength",
+        "0.45",
+        "--output",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/trajectory_fused_unsmoothed.csv",
+        "--report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/fusion_report.json"
+      ]
+    ],
+    [
+      "quality",
+      [
+        "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python",
+        "/home/robot/ego_vio_humble/scripts/assess_mast3r_fusion_input_quality.py",
+        "--graph-report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/graph_fusion_report.json",
+        "--fusion-report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/fusion_report.json",
+        "--output",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/input_quality_report.json"
+      ]
+    ],
+    [
+      "smooth",
+      [
+        "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python",
+        "/home/robot/ego_vio_humble/scripts/smooth_pose_trajectory.py",
+        "--input",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/trajectory_fused_unsmoothed.csv",
+        "--output",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/trajectory_fused.csv",
+        "--method",
+        "gaussian",
+        "--gaussian-sigma-s",
+        "0.025",
+        "--report",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/smoothing_report.json"
+      ]
+    ],
+    [
+      "score",
+      [
+        "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python",
+        "/home/robot/ego_vio_humble/scripts/score_steamvr_slam.py",
+        "--capture",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_182002_joint_scale_independent_take4_of4",
+        "--estimate",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/trajectory_fused.csv",
+        "--query-time-domain",
+        "camera",
+        "--output",
+        "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_long_loop_deletion_v1/fresh4_current_chain_onboard_only/official_score"
+      ]
+    ]
+  ],
+  "stages": [
+    {
+      "stage": "graph",
+      "returncode": 0
+    },
+    {
+      "stage": "complementary",
+      "returncode": 0
+    },
+    {
+      "stage": "quality",
+      "returncode": 0
+    },
+    {
+      "stage": "smooth",
+      "returncode": 0
+    },
+    {
+      "stage": "score",
+      "returncode": 3
+    }
+  ],
+  "estimate_sha256_before_gt": "404d900cb8b5b57d59eb4510dc38433e5e250813eb35d1b5d19a6f0dea2096a5",
+  "graph_sha256_before_gt": "dd1a0b46ca628d4f78f901324b808892740fe62b82f4bcf56585b7cefb9f37a7"
+}
