@@ -280,3 +280,21 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   composed CLI and runner source. Independent review permits source backup and
   no-run30command preflight ONLY. No actual grouped graph, new ATE, production
   promotion or 10mm accuracy claim is included.
+
+## Pose-transport audit and recording-quality limitations restoration
+
+- Exact11named paths normally backed as
+  `23526d54dd691d2fa18aaad9e6a5b940dcfdd331` on the same owned sencang branch:
+  read-only audit/test, retained v1/v2, current v3, local report, recording-quality
+  limitations and selected planning documents. No native estimator changes,
+  broad reports staging, force push or unrelated work was included.
+- Clean remote-only fetch/checkout matched that exact commit; all11files
+  byte-identical to both main and isolated backup. Fresh restored455testsPASS
+  11.13s; main455PASS11.38s; precommit backup455PASS11.12s. Independent final
+  review APPROVE for diagnostic source/evidence only.
+- v3 verifies10boundcases/257uniqueactualfiles with253accepted/37refused groups.
+  Also independently compared the existing30cameraCSV/graph/fusion report files
+  to the remote-restored a327e4d snapshot: unchanged byte-for-byte.
+- Neither the algebra audit nor recording PASS proves image quality, a unique
+  root cause or accuracy improvement. Current worst ATE remains13.801442mm.
+  No graph/optimizer/GT correction/new recording or production promotion.
