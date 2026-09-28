@@ -186,6 +186,25 @@ Do not infer full ATE PASS. Preserve/back up these results and obtain a separate
 graph interface review on gauge, linearization, objective scale and gyro reuse
 before integration; no GT selection or closed-family weight/density sweep.
 
+Separate design review permits only a pure grouped-row prototype next. Force
+all nine indices into graph correction nodes; represent one correlated affine
+block in the first-camera frame, including camera-only global scale derivative.
+Synthetic bowed-interior/correct-endpoint test, rigid world-frame invariance and
+finite-difference derivative checks must pass. Current profile remains explicitly
+pixel+gyro-conditioned and diagnostic-only. Do not insert it into the native
+endpoint observation list, append duplicate endpoint evidence or run real graphs
+without a further integration review.
+
+Pure row algebra now passes synthetic and all42 real-input construction checks;
+it does not produce estimator poses. Before a real consumer variant, capture the
+same diagnostic on fixed full uniform29pairs×allten (290 total), retaining eight
+or more refused groups without fallback. Underlying solver/gates/inputs must
+exactly reproduce the prior full census. Both summaries validate before either
+is annotated; strict independent optional-field contract, all source/input hash
+closure and exact uncropped full pose count retained. Back up/review the new
+adapter before launch, finish all290 before any external scoring. This is new
+correlated information capture, not a weight or density sweep.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

@@ -185,3 +185,16 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   now pass 27 targeted tests; expanded main regression suite **354 passed in
   4.49s**. They and the completed raw/finalized diagnostic evidence still need
   their own remote restoration; the source-only commit does not back them.
+
+## Completed sampled diagnostic and scorer restoration
+
+- Raw and finalized 50-pair outputs, original producer source snapshots,
+  aggregation fix, post-freeze scorer/tests and selected report/planning files
+  were normally pushed in `271622a3e7957f7a6a7514a84f81e398003969b1` to the
+  same owned sencang branch. Exactly 37 changed files, no reports-root staging.
+- Clean remote-only restore fetched that exact commit and compared all 37
+  against both main and backup byte-for-byte. Fresh restored regression suite:
+  352 passed (main 354 includes two pre-existing unselected IMU-scale tests).
+- Numeric diagnostic is local relative geometry only, not full ATE. Original
+  production source, all-ten source hashes and full-trajectory results remain
+  unchanged; the 10 mm accuracy target remains unmet.

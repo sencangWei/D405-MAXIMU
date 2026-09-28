@@ -462,3 +462,27 @@ joint graph 1.214525/0.547247/3.797679/12.542609 mm; only 146/336 improved and s
 case means regress. 141 evaluation hash bindings verified. Full ATE remains
 13.801442 mm and target NOT met. Report shape_geometry_report.md; grouped-factor
 graph design review underway, no native production changes or graph launch.
+
+Diagnostic/evaluation backup 271622a3e7957f7a6a7514a84f81e398003969b1 normally
+pushed to owned sencang. All 37 changed files restored from remote byte-identical
+to main and backup; restored 352 tests passed, main 354 (two existing unselected
+IMU-scale tests). Independent graph design review requests a separate grouped
+consumer, exact interior correction nodes, removal of duplicate same-source
+endpoint factors, explicit pixel+gyro-conditioned semantics, and linearization
+displacement diagnostics. No direct native graph insertion authorized.
+
+Bounded worker slice is now implementing a pure sparse grouped-row prototype
+and synthetic tests in two NEW files only. No native fusion edits, real graph
+run, GT selection, extra gyro residual, covariance claim or production promotion.
+
+Pure grouped-row prototype complete after fail-closed index/column/scale guards,
+strict frame/gauge flags, physical-oracle dense/affine derivative tests and
+local-relative final diagnostics. Independent review APPROVE bounded read-only
+all42 construction only. Root verified all42/10cases, max affine/physical delta
+1.167955e-12 and common translation residual2.807906e-14;111 hash bindings valid.
+No graph solve, GT read or pose write. Expanded main suite361PASS4.59s.
+
+Next bounded worker slice owns only NEW full-shape adapter and test. Reuse the
+already fixed uniform29pairs/case full schedule with the unchanged solver and
+diagnostic capture. No real290census launch until exact-schema review, hash closure,
+source backup/clean restoration and fresh tests. No native integration yet.

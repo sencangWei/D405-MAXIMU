@@ -53,3 +53,35 @@ Even solver-accepted factors declare available_for_graph=false.
 Only after this census freezes can a separately reviewed evaluation compare
 all retained interior states with external reference. Such relative-window
 errors would still not be full-trajectory ATE or permission to pick factors.
+
+## Pure grouped graph-row prototype, not native graph integration
+
+`scripts/stereo_window_shape_graph.py` represents one correlated group as
+`r(x) = b + A x`, retaining all nine exact camera-origin correction nodes.
+For eight relative centers, `q_i = R_first^-1(p_i - p_first)`, and each graph
+translation correction contributes `R_first^-1(d_i - d_first)`. Optional scale
+contributes `s R_first^-1(p_i - p_first)`, **not** a scaled body/camera lever.
+Then `b = affine_offset + W(q - q_BA)`; `A` retains the full coupled `W`.
+
+Negative indices, missing interior nodes, aliased translation columns, scalar
+scale overlap and invalid diagnostic/frame/gauge flags fail closed. No row is
+turned into independent per-node edges or weighted using the old 4 mm penalty.
+Candidate-state diagnostics report first-camera LOCAL displacement from BA and
+from the initial shape, not an absolute world-position correction certificate.
+
+The present factor is explicitly pixel+gyro-conditioned. This prototype does
+not insert extra gyro residuals or claim statistical independence from native
+attitude/preintegration inputs. Native production fusion is not edited. A real
+consumer must replace the same-source two seam endpoint factors, not append
+the grouped profile on top of them, and expose all nine correction nodes.
+
+Synthetic tests independently differentiate physical corrected camera centers
+with dense cross-node sensitivity, nonzero affine offset and nonidentity first
+rotation. Correct endpoints with a 12 mm bowed interior exercise the information
+that the old endpoint-only interface cannot represent. Common rigid transforms,
+common translation null space and rank-zero groups have explicit tests.
+
+This still represents only the frozen local linearized profile. Real graph
+integration, covariance calibration, nonlinear relinearization and production
+admission remain separate uncompleted work; no numeric ATE benefit is claimed
+from these row-construction tests.

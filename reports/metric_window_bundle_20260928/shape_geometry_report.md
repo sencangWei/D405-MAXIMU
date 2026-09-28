@@ -83,3 +83,30 @@ endpoint factors or search weights/densities based on Lighthouse scores.
 A sampled local diagnostic alone does not authorize graph integration or
 production promotion. The native solver, frozen source closure and current
 full-trajectory evidence remain unchanged pending that design review.
+
+## Grouped row prototype and real-input algebra check
+
+Separate review approved a pure sparse row constructor only. It enforces all
+nine exact indices, rejects negative indices/aliased columns/scale overlap,
+retains full cross-node sensitivity, and reports LOCAL displacement from the
+BA linearization. Nonzero affine, common translation, rigid world transforms,
+rank-zero groups and an independent physical derivative oracle are tested.
+
+All 42 accepted groups from all ten cases passed a read-only construction
+check against existing camera-frame joint graph poses. The affine row and
+physical evaluator maximum component difference was **1.167955e-12**; the
+common-translation residual norm maximum was **2.807906e-14**. These are
+normalized residual algebra checks, not millimeter accuracy. All 111 hash
+bindings were verified after the check. Evidence:
+`shape_rows_ten_v1_preflight.json`.
+
+The diagnostic probe applies a seeded synthetic state ONLY to evaluator arrays;
+there was no graph solve, GT read or estimator pose write. Expanded main
+regression suite: **361 passed in 4.59s**. This does not change the global ATE
+result or authorize production admission.
+
+Before any real consumer control, capture the same profile on the existing
+uniform full-coverage schedule (29 pairs per case, all ten cases), rather than
+assuming these five time-stratified pairs generalize to the remaining time.
+The next adapter must not alter the underlying solves or tail handling and
+must freeze the full census before external evaluation.
