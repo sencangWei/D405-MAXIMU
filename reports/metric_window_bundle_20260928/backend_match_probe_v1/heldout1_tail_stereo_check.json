@@ -1,0 +1,126 @@
+{
+  "schema": "accepted_backend_edge_stereo_check_v1",
+  "meaning": "offline diagnostic; does not change SLAM or use GT",
+  "dataset": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/dataset",
+  "manifest_sha256": "c1a2c937e32bf0e4d2a89fb4f4a27dd71a7d6b44753f3285c24a5a1d60a20c39",
+  "raw_second_frame_range": [
+    1121,
+    1199
+  ],
+  "checked_edges": 4,
+  "results": [
+    {
+      "first_raw": 699,
+      "second_raw": 1172,
+      "gap_frames": 473,
+      "forward": {
+        "accepted": true,
+        "candidate_points": 1805,
+        "inlier_points": 989,
+        "inlier_ratio": 0.5479224376731302,
+        "reprojection_median_px": 0.8531670570373535,
+        "reprojection_p95_px": 1.8422680854797362,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1805
+      },
+      "reverse": {
+        "accepted": false,
+        "reason": "metric_pnp_inliers_low",
+        "candidate_points": 1654,
+        "inlier_points": 808,
+        "inlier_ratio": 0.48851269649334944,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1654
+      },
+      "accepted": false,
+      "reason": "reverse_metric_pnp_failed",
+      "sample_sha256": "7b0fa06e2edbcb776ac0bdb530dc9abe79e3d7ab47f86912df7549ba570d2ad4"
+    },
+    {
+      "first_raw": 717,
+      "second_raw": 1172,
+      "gap_frames": 455,
+      "forward": {
+        "accepted": true,
+        "candidate_points": 1818,
+        "inlier_points": 1558,
+        "inlier_ratio": 0.856985698569857,
+        "reprojection_median_px": 0.7791932821273804,
+        "reprojection_p95_px": 1.6086299896240233,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1818
+      },
+      "reverse": {
+        "accepted": true,
+        "candidate_points": 1587,
+        "inlier_points": 1189,
+        "inlier_ratio": 0.7492123503465659,
+        "reprojection_median_px": 0.6938611268997192,
+        "reprojection_p95_px": 1.725901341438293,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1587
+      },
+      "accepted": true,
+      "cycle_translation_mm": 1.6608960598496576,
+      "cycle_rotation_deg": 0.23603234849095228,
+      "reason": "accepted",
+      "sample_sha256": "e0b45e5377b2f4b8fbb578727530184ea44d0d9e35db025642fd816b7d2ad8a2"
+    },
+    {
+      "first_raw": 378,
+      "second_raw": 1172,
+      "gap_frames": 794,
+      "forward": {
+        "accepted": false,
+        "reason": "metric_pnp_inliers_low",
+        "candidate_points": 2363,
+        "inlier_points": 1018,
+        "inlier_ratio": 0.4308082945408379,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 2363
+      },
+      "reverse": {
+        "accepted": false,
+        "reason": "metric_pnp_inliers_low",
+        "candidate_points": 1979,
+        "inlier_points": 551,
+        "inlier_ratio": 0.2784234461849419,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1979
+      },
+      "accepted": false,
+      "reason": "forward_metric_pnp_failed",
+      "sample_sha256": "adee95ad6eb7480a5243a39db0b78f77f72c8fa7cf3238ca9240904e59cd6afd"
+    },
+    {
+      "first_raw": 1042,
+      "second_raw": 1172,
+      "gap_frames": 130,
+      "forward": {
+        "accepted": true,
+        "candidate_points": 1610,
+        "inlier_points": 1339,
+        "inlier_ratio": 0.8316770186335404,
+        "reprojection_median_px": 0.8430467844009399,
+        "reprojection_p95_px": 1.7170560002326962,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1610
+      },
+      "reverse": {
+        "accepted": true,
+        "candidate_points": 1519,
+        "inlier_points": 1154,
+        "inlier_ratio": 0.7597103357472021,
+        "reprojection_median_px": 0.7687970399856567,
+        "reprojection_p95_px": 1.7040097594261168,
+        "sampled_matches": 5000,
+        "metric_depth_matches": 1519
+      },
+      "accepted": true,
+      "cycle_translation_mm": 1.6339359157961617,
+      "cycle_rotation_deg": 0.2792496596601584,
+      "reason": "accepted",
+      "sample_sha256": "a1fbdcfcd70ff729bd0861d024bdcdcfd370bbfcf971e7b70ba94f5aec8cb3aa"
+    }
+  ]
+}

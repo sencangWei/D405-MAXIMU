@@ -1,0 +1,25 @@
+{
+  "schema": "accepted_backend_edge_stereo_check_v1",
+  "meaning": "Single-edge causal diagnostic only; selected from onboard stereo failure before any candidate GT score; not a production gate",
+  "source_report": "fresh4_tail_stereo_check.json",
+  "source_report_sha256": "a3097072deff226f2de43433823a42b07cd2788df918cd2746f4e2cef736c4ce",
+  "results": [
+    {
+      "first_raw": 1095,
+      "second_raw": 1135,
+      "accepted": false,
+      "reason": "forward_metric_pnp_failed",
+      "forward": {
+        "candidate_points": 1374,
+        "inlier_points": 330,
+        "inlier_ratio": 0.24017467248908297
+      },
+      "reverse": {
+        "candidate_points": 1670,
+        "inlier_points": 745,
+        "inlier_ratio": 0.44610778443113774
+      },
+      "sample_sha256": "81daa6f51cdfd009034b5f024a9badfc0085ccedb02768729f681365f1fbc8aa"
+    }
+  ]
+}
