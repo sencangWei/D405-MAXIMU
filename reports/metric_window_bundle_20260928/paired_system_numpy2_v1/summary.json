@@ -1,0 +1,3022 @@
+{
+  "cases": [
+    {
+      "case": "dev1",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16686248779296875,
+            0.3333704471588135,
+            0.4995260238647461,
+            0.6653270721435547
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.364724340003614,
+              0.6445376582785788,
+              0.5964747321578355,
+              1.2487943117530855
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.025974025974025976,
+              0.01282051282051282,
+              0.0,
+              0.02531645569620253
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.11509777904132044,
+              0.07360699836128075,
+              0.025985022777500713,
+              0.07874312885286788
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              79,
+              77,
+              78,
+              78,
+              79
+            ],
+            "post_count": [
+              79,
+              75,
+              78,
+              78,
+              77
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 79,
+          "heldout_tracks": 20,
+          "initial_heldout_rmse_px": 0.672388602957646,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 30.755732557246457,
+            "nfev": 8,
+            "observed_pixels": 1548,
+            "valid_observations": 387,
+            "tracks": 79,
+            "frames": 5,
+            "pixel_rmse_px": 0.20376946661562595,
+            "pixel_p95_px": 0.553633119361072,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.11268630657323e-05,
+            "gyro_p95_rad": 0.00012971822100612485,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0006236088375812449,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.09318263340567365,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 261,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  7336.440812597696,
+                  5226.692257548879,
+                  3911.6308268737434
+                ],
+                "rank_tolerance_per_m": 7.357663495873483e-09,
+                "weak_axis_camera_i": [
+                  -0.6887054188942134,
+                  0.675275845386093,
+                  0.26398367113108223
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.2556478472175302,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 258,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  7245.8403273509375,
+                  4535.48155149741,
+                  2446.9655617636336
+                ],
+                "rank_tolerance_per_m": 7.2870525218247936e-09,
+                "weak_axis_camera_i": [
+                  -0.7071180865805252,
+                  0.6757195941882629,
+                  0.2082955632286624
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.40866942127262995,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                79,
+                75,
+                78,
+                78,
+                77
+              ],
+              "endpoint_tracks": 77,
+              "source_endpoint_common_tracks": 77,
+              "endpoint_depth_m_quantiles": [
+                0.2578186537731297,
+                0.42592060727286896,
+                0.5542456173165192
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                21.182006073766207,
+                27.563294377200283,
+                45.53935364136058
+              ],
+              "solver_optimality": 0.328123324833501
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 8,
+                "cost": 30.755732557246457,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -5.563299062487321e-05,
+                  -4.850410638721452e-05,
+                  -0.00010896330448265802
+                ]
+              },
+              "instrumented": {
+                "nfev": 8,
+                "cost": 30.755732557246457,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -5.563299062487321e-05,
+                  -4.850410638721452e-05,
+                  -0.00010896330448265802
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            -7.186319788885031e-05,
+            0.0001683134138093827,
+            -0.0006236088375812449
+          ],
+          "initial_endpoint_m": [
+            -0.0007756489237407874,
+            0.00039294122713932764,
+            1.7643590791321125e-05
+          ],
+          "endpoint_m": [
+            -5.563299062487321e-05,
+            -4.850410638721452e-05,
+            -0.00010896330448265802
+          ],
+          "endpoint_change_mm": 0.8540059908244538,
+          "optimized_heldout_rmse_px": 0.3520517048983948,
+          "runtime_s": 1.9247449240647256
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/graph_fusion_report.json": "c81039bca71227e07b9acf28ac12fdafa646d9306c364e1908472ffa4760ef1f",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "d98ad63c56d831d1cc53859025f5c80d699662d5caa660e7ed0ff2c042689ba9",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/trajectory_frames.csv": "15286caa585d014145c893b5f5017f6236d0e77692f9c38cdfe046c7e70c18d8",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133529/d405_frames.csv": "d5df624e91e7b418e961d9b6273e17048c4a5043d2e24e68444148ee5c0c094e",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133529/external_imu/imu.bin": "2333e74744aa4384ddb09bea45b02a1c06f59929996ed8a27cda0e08145d6c1e",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/dataset/frames.csv": "c390e62c2e9df20e15c3c459e212d506195bc9a3c6a1e3955542878c2446816b"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "63f8bf8107f3bdae9dd32400788265c58011937572b97ac14814ae526659b375",
+        "left:31": "2411eb579cb29b276c49a6787fc1bbb6fb39bbfd916dd0e5f3f68f96c69fc948",
+        "left:32": "d4b4045de502221afd70865ead54329dc0e0562acc7c5e3b912d74b60891af47",
+        "left:33": "e798cd085e33cd7ea556511cffc2c39e4de1d2dba6e27445ec80bf7bdd835b73",
+        "left:34": "5880530352229d0d185ef7b876bd92ba0ca52617537422d5a5ecf5e364ff962d",
+        "left:35": "139c715aeb131e1d6afb9653330711ce225f6523f9df1e503f1506433c81ebc1",
+        "left:36": "63926419ec5410f5874e92ae686b094f8f525a5645fe551d083e51cdaad08cdf",
+        "left:37": "a72f2c3077187c04fa1f13fa9e69d6caee48af4e7a484985d387dc6437dd5ed5",
+        "left:38": "75f869b6ccdd6f89893923235cc56fcadd91fbbcc47188f66e555b6668e387b8",
+        "left:39": "4e06ee2be001f2c08f6a2a894bf96453782f2ca71688e531a02694be7dfc9f84",
+        "left:40": "9145a45efe60ed7e2f087d85e648ee03d8b7fddd839c557bab8edd28851c7b50",
+        "left:41": "b01f8cae48eb58aacec8149968d127cc14cca2dc31d91875b28f73fce7edde42",
+        "left:42": "00ee88c5b9067b1c3cdfd6538f0e2f6bde90494351a957ddfdd46e1cff7353ad",
+        "left:43": "2ae014cf97234c39c7040ea63ddab97ee9479701faddcda59fa0490f9b92c5b0",
+        "left:44": "300201e2e79f059725c2a68008cc51a551b57875f2edf739c2f9c69203f4b8fa",
+        "left:45": "7c53a167d3b78c43b01456eff7acd6f68f6640432a8e57fe7340c86d250a74ee",
+        "left:46": "41b0de3da9eb01275170036629b6e98e43b0afbc72d581572e2cef3c8fd8ee9d",
+        "left:47": "9f626742a4558f5d016ed70a5f94bc66a6acb8d1c1cf43edf2ae6d031aade29d",
+        "left:48": "fd24eb3e1ce0508b3adf81534881d4edfe06ebbe13ae6c897341099af4b6e4e9",
+        "left:49": "d201c29dc8ca6f27488f50f432748c3513c0b200daace0698b02b24162eb7c0d",
+        "left:50": "65d9654ad316bded2085721e065c10572a58f546c9cdf76393c82bc0c0f8a465",
+        "right:30": "1b41b4a8d155cbe5e8e8c2c88f74eb696d6f91601b28f36a176ace4ebffcc2b5",
+        "right:31": "8f6d3065363d97e83ad8f5b92dbc86d1db507fd73f320ef8e4cc0860973bf974",
+        "right:32": "1eea629d00c90d3d585ddb8949adf5f741661ceece5b25b95202a0bf80ba01d1",
+        "right:33": "a317f9f0cd0130eb2723e72f38439e1b515f23e48fa600455803493acb9b167e",
+        "right:34": "2685c0b44cdc1d15c8a50520293d3899486dc3af91862537cca79eae8c8a89b1",
+        "right:35": "bdb003bde670d32e14cabbebd44d281997f7c4e5ea20c0ffe29894b1c0893154",
+        "right:36": "8dea1114e0aa0781f919ad2e70b8600dd257aae46e9ee02a3945a8f012f45ec8",
+        "right:37": "b07696b044c3c8e7aef37ec7d7ee39e65783cb18d873841761343680603a74bd",
+        "right:38": "7ccb7fd4df2bdca62041dad9280ea87efc22569786a730d2db7f3f1ac146cef6",
+        "right:39": "28e3e39f7ae7ce212e63c6c13bd0224717390bc6abf3f8e3de4c5c18dd8e5778",
+        "right:40": "78d1d9468c0e8d9715e655fe05623421c4a9d6e2967ad7e8ed312346fb092aa6",
+        "right:41": "ea9b66970ace0ebadf419389c1d46f03c9e34d9a5b485bde294fe8f33d387b8e",
+        "right:42": "2b5adfe8b06f8c91fb68cf6da08b907f8103c04e5556d08ff198ddb55a8cc293",
+        "right:43": "41c9e82034005b08ae774593168e1fd9df8cc882492f6a58da443c0e12225add",
+        "right:44": "35ec417adba3ac3c62f8bce4cc8eadeb5149f6e93cd5fb36108eb364168bf935",
+        "right:45": "3455c0f6667e1e47715164c36b3089813a5e860dc7d8dea5bc322fb8256420d7",
+        "right:46": "cfa0941c5f393d6882c5f86e14480272c94031fed81ad02d9975a487de5e18d6",
+        "right:47": "d1e5797181fe6cdd1ada53db82a8cf8f33551a46d2b0a42acee6bb9b6be9af1c",
+        "right:48": "6734dfccb775aaa773f4237d64a524a2859cf350f2ad0cb17a67fc9c8b1c590f",
+        "right:49": "f23d6c9180affc630196b44368ef29a307027ecf1b382c06040e876ee57b5849",
+        "right:50": "a19046fb7b1bd37f3a726702952ef63ae0b1cfbc6d943beac76116fe00838967"
+      }
+    },
+    {
+      "case": "dev2",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16677308082580566,
+            0.33317089080810547,
+            0.4991927146911621,
+            0.664837121963501
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              3.552713678800501e-14,
+              1.2641949129925392,
+              0.39332618411555537,
+              0.616496390844817,
+              1.1303744309659676
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.028199080698036706,
+              0.03245641121382178,
+              0.007990436234782794,
+              0.0431704750789788
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              76,
+              73,
+              69,
+              72,
+              71
+            ],
+            "post_count": [
+              75,
+              73,
+              69,
+              72,
+              68
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 75,
+          "heldout_tracks": 19,
+          "initial_heldout_rmse_px": 0.3485337867606718,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 35.49737695319536,
+            "nfev": 7,
+            "observed_pixels": 1428,
+            "valid_observations": 357,
+            "tracks": 75,
+            "frames": 5,
+            "pixel_rmse_px": 0.22962336170094627,
+            "pixel_p95_px": 0.6354566681221531,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 4.702770460551404e-05,
+            "gyro_p95_rad": 0.00010987375616697694,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0003500056539062601,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11616725673074152,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 249,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  11371.983155768938,
+                  8823.324253958694,
+                  8046.879297014595
+                ],
+                "rank_tolerance_per_m": 1.0688837882391682e-08,
+                "weak_axis_camera_i": [
+                  -0.6218412472440736,
+                  -0.6201087557834742,
+                  -0.47830805369197626
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.12427177829932178,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 246,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  11313.845031183931,
+                  8233.497710561047,
+                  7428.3782563813165
+                ],
+                "rank_tolerance_per_m": 1.057772730149364e-08,
+                "weak_axis_camera_i": [
+                  0.6732614788254854,
+                  0.5822929316619405,
+                  0.45569059993186456
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.13461888523796622,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                75,
+                73,
+                69,
+                72,
+                68
+              ],
+              "endpoint_tracks": 68,
+              "source_endpoint_common_tracks": 68,
+              "endpoint_depth_m_quantiles": [
+                0.13346580068210595,
+                0.2527508218741063,
+                0.4953313948070485
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                23.759618118924173,
+                46.44942144823655,
+                87.96226578897168
+              ],
+              "solver_optimality": 0.7308428069356289
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 7,
+                "cost": 35.49737695319536,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -5.1123829615937725e-06,
+                  3.086882622025758e-05,
+                  9.252816176778113e-06
+                ]
+              },
+              "instrumented": {
+                "nfev": 7,
+                "cost": 35.49737695319536,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -5.1123829615937725e-06,
+                  3.086882622025758e-05,
+                  9.252816176778113e-06
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            -0.00025127101793007806,
+            0.00021363463473893094,
+            -0.0003500056539062601
+          ],
+          "initial_endpoint_m": [
+            0.00010824889890514553,
+            0.00012045056704215672,
+            0.00013562323331921733
+          ],
+          "endpoint_m": [
+            -5.1123829615937725e-06,
+            3.086882622025758e-05,
+            9.252816176778113e-06
+          ],
+          "endpoint_change_mm": 0.19195090737974208,
+          "optimized_heldout_rmse_px": 0.31827619953711433,
+          "runtime_s": 1.992442867020145
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/graph_fusion_report.json": "ab846ccae995f7d966df2dad0a1c114371dbdb8f63cd321c42fbf762394ecd17",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_bidirectional_report.json": "4683ac674afe64e90105363d362640db2430e8355de62cdc961202fe70e9acfb",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/trajectory_frames.csv": "52528139b0b8c4df72931be5a09a3fed9ce6d7fa8eb56866e14637a8e66782e6",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133744/d405_frames.csv": "786781387360a15249c4079c6ddce936bdd2ecd927bdc0aa64b8a925a88bb11b",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133744/external_imu/imu.bin": "492990663553c3d1067ae6275daa01fec10808dc4de76623f658e790b3dd458b",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/dataset/frames.csv": "6609af90ca3b434d2f12f8af607bc257fb82ab3a2da9b776df9037a371ccc00f"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "2d3d5f5f285d45c3c11dc2fdbde27a5c0534ed4c9cd120d4f86daec5937b0778",
+        "left:31": "c10dc52079f5b680265dc6cc99768ef3d187c00608d8f5b44d43f637b8d1cfe5",
+        "left:32": "21930709772221e6c95827966834e6140a29fe61f74f687967b0fc2b77d23b51",
+        "left:33": "8ace123a61bfdc763e419584a13c1ffd7c2f1868aa70dc236395fa4659f31dbf",
+        "left:34": "a8ac14fda8f8c6efdb20ea4d1999e51f91a074cbe42b9c932214880f9a981d8e",
+        "left:35": "917472dd54f95ce67cd4b5c24af4b60611740afc83651875a33edfb3be98f280",
+        "left:36": "030a1ba10e8c404a32a8cb635515a81aea245dd6f6862cfd66cd2501e19efacf",
+        "left:37": "a726dbcebb1f8d36d97d7af0308663f2cc8da1b8cf9ab1bdec3a7aa46ee9ee48",
+        "left:38": "b96dd0a0a2800fe64c3962e108165d7c69dcc61c48bc4224de6247a999b7849a",
+        "left:39": "96b2e52c6d6e7608089f3a16e5e17accb724aa6dfdc91e5c997280054a2bc409",
+        "left:40": "06814df7c847f7b8ab0127d8913f2fca7b61a52c5660863b5c4cdc607b2ee454",
+        "left:41": "831af646622b75e4f9fce8bdc470c6b9f5420510c0f38732e2a6145de54b204e",
+        "left:42": "5d3cfe3a047cdb042c9057282b12be35caa7b380c79a6914d58ab7f441dc1d4f",
+        "left:43": "db9f70809b87afff4d9ce420b42a17093d662b1f949847a1ff3d1bd4d0a25cfc",
+        "left:44": "a799787171018e921837a5b2651e4bac0a8c9c51c8146dd8208203b57db77a54",
+        "left:45": "1385a958cf2d9b43ac7a83f5d815770f0436bcdccabf8aca21e6b62fb39074f8",
+        "left:46": "82cd803f46df81c23d5199265a7fe0bc7e9b47f9ee582d54fdf9f8114d3affa2",
+        "left:47": "7af69ea2f33d09227139160cd949d9f80f141b54f4a02d255ae5f5de138d33fa",
+        "left:48": "59de1fafe45a8c66332a0f08e0f56949af39de4fdad5d6b5dab474e29ee4b1a8",
+        "left:49": "a777189e9d28efe601598dd5cabd63c2dcebd84a322737ba86567ca2dc4b45c6",
+        "left:50": "976a57ee587c7b842d765e6016f0963b9ea2977f18ef218cc8f1feaa7b1ce45b",
+        "right:30": "71003121a358e8dbbfd6cff7925333be0016db470e607eb3079b578856cc5e66",
+        "right:31": "43ffe4903b3b2c961f1ca7bca4580b2492aa55857bf79adf91d3afa36f5269f3",
+        "right:32": "f964cbd15ee8ec23a5e2a8d4e2bf29492d6057247e76313668d49b4554720a7d",
+        "right:33": "e39a55cf698349f0c20d83f675c9610e20c212f6dc06e4ec9030feee90e890ca",
+        "right:34": "895dd5c617496db0ece3cd0fd3b0c1704b7857269b85d364cde6aa64d8c28dac",
+        "right:35": "1b5c31c37be6012916340c5a10342ea087554af5f1aefaaf4bd1aa90bbebb34b",
+        "right:36": "39dd0d8dbb0f1af5f4843cec54376dabf427068c6ca561205f18495c98de1916",
+        "right:37": "7975283909416d224e41455cd6a69cbef2d2943efbb1ba2635569600e5069ea2",
+        "right:38": "b672640d670ce2582009d708390b1f1a2fa40720575a071d7f29a7b29a5fb714",
+        "right:39": "3f0d2a103e0543b5fa6ca4eca30f5b9ab0e7109d3bc35cd14b255312267947a4",
+        "right:40": "ad7a9529b544d710cce720df1517d89aa50a47bdab7f825b14a1d86c7b66373b",
+        "right:41": "87bba2e578e37c895fbae33bf8b660973d2aa9b91417fac1eb2ebf0e20c02124",
+        "right:42": "ddc41aa153bb1c8b49229233b142e4c7087567d886e6edc917ec54e5d61b2fa4",
+        "right:43": "1a2a51f8e68d7b08410d00825b12f58e9c9b3c8ea21595da713808792143f10b",
+        "right:44": "2845231b00af422e911eef29ced5f64a48954ab3e90ffa9b4709e55fc3c6f966",
+        "right:45": "91ea1fa25f7d0bb7503005b7ea56830491ee77c53eeaa950eff47670d6063c15",
+        "right:46": "be0c04ad021d038621bf72ec4f4700115f16e363e886dd85ba9a1882a94fdaca",
+        "right:47": "0b7a2d29092154080c584d5e8d86b448c75318a1771f1f461907d27a04f45d11",
+        "right:48": "09c9fcc2801b0863e815c03913f27d267d735b1e237637e0b6e8b4ea59e1d35c",
+        "right:49": "0d15926c4e100cca1528f03c25cfb7dbd038f85b74dcd6577d795897018ffd4b",
+        "right:50": "850fc2bca7ca088948d04a339cba8d24f0596f105d36a32d2a257ab1bca880f8"
+      }
+    },
+    {
+      "case": "heldout1",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16677021980285645,
+            0.33316826820373535,
+            0.4991929531097412,
+            0.6648430824279785
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.3332188068916138,
+              0.45166515406785956,
+              0.6461727885341174,
+              0.7147647664835614
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.07316392823759543,
+              0.047923947910577414,
+              0.039255096913709736,
+              0.06980229181447294
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              91,
+              87,
+              87,
+              85,
+              85
+            ],
+            "post_count": [
+              87,
+              83,
+              87,
+              85,
+              85
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 87,
+          "heldout_tracks": 23,
+          "initial_heldout_rmse_px": 0.3962479837225543,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 39.65906355656323,
+            "nfev": 8,
+            "observed_pixels": 1708,
+            "valid_observations": 427,
+            "tracks": 87,
+            "frames": 5,
+            "pixel_rmse_px": 0.22232274400388158,
+            "pixel_p95_px": 0.6147678359546623,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 4.3987743866229096e-05,
+            "gyro_p95_rad": 9.24600007558513e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0005807351313169431,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11237915632415756,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 285,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  10332.164067583675,
+                  7868.621808822219,
+                  6425.821981517813
+                ],
+                "rank_tolerance_per_m": 1.1704141689552858e-08,
+                "weak_axis_camera_i": [
+                  0.08602718009007869,
+                  -0.9381576521866943,
+                  -0.33534988285266754
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.1556221138519301,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 282,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  10272.591902718934,
+                  7304.415345058632,
+                  5873.994876675187
+                ],
+                "rank_tolerance_per_m": 1.1602248407287453e-08,
+                "weak_axis_camera_i": [
+                  0.09700218566813536,
+                  -0.9489502504571982,
+                  -0.30013996423806344
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.17024189176106713,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                87,
+                83,
+                87,
+                85,
+                85
+              ],
+              "endpoint_tracks": 85,
+              "source_endpoint_common_tracks": 85,
+              "endpoint_depth_m_quantiles": [
+                0.22677878194586115,
+                0.33069243372115886,
+                0.4353310409799877
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                26.96779648212484,
+                35.5005856876575,
+                51.7676865511221
+              ],
+              "solver_optimality": 0.6743899975301956
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 8,
+                "cost": 39.65906355656323,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -5.808646723886483e-05,
+                  2.3409086323782445e-05,
+                  9.017815419882272e-07
+                ]
+              },
+              "instrumented": {
+                "nfev": 8,
+                "cost": 39.65906355656323,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -5.808646723886483e-05,
+                  2.3409086323782445e-05,
+                  9.017815419882272e-07
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            -3.6878087065103155e-05,
+            -9.502212939234918e-06,
+            -0.0005807351313169431
+          ],
+          "initial_endpoint_m": [
+            -0.00013471820441262908,
+            0.0003199814338793049,
+            0.00023842643788447163
+          ],
+          "endpoint_m": [
+            -5.808646723886483e-05,
+            2.3409086323782445e-05,
+            9.017815419882272e-07
+          ],
+          "endpoint_change_mm": 0.38761519945362993,
+          "optimized_heldout_rmse_px": 0.32150482721713786,
+          "runtime_s": 1.9466639820020646
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/graph_fusion_report.json": "30dc1e467397947f27cc3cc96bc81b0eb17a564de587337bc5362e2ec0b87f7f",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "a4857dda23e588906bd62f19bfae507c58187d0e1c3d3cf1c3251de6814607db",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/trajectory_frames.csv": "21706db3d78c0dbd6b4700ff7a5b006796b7e394644174d6e77cdc74b99979a4",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150523/d405_frames.csv": "aebb5385f54e581a044a2d35debabdb8a292df2b7056806ba6ff5ff421b89397",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150523/external_imu/imu.bin": "4e87133090a490a6038c0f3fed055fdae75ce298678a62e7ebd9937d67572cb9",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/dataset/frames.csv": "3c7d5a538621b5b50853fea997c0f290f4dd4779e67c3685b8a802fb6d374222"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "a3884a4a4e28a806af7cc29c98643bdf609606d6c06b27d928abcb1afa5490b5",
+        "left:31": "3297d34d3ded592caee02605c6c913ac1228e245fb4c6d66818f68f9d9378fad",
+        "left:32": "2c7cb842fbfdae82babdfe847e12f1620b30d0884e997852fcbf60bd5356681c",
+        "left:33": "873c816bb8f728e63d33e76728ee9bac62f7c0118b24fb6bd875570b3a59455a",
+        "left:34": "93d2a4f7c392b863cc5b49d4de6fa6996a44106e330b60e1de509b403f963e60",
+        "left:35": "ad0597d95aecab383ef6bfe32f389e718653f7665e6ed0c2326c0f786a0c2cd9",
+        "left:36": "8174777c4041cc420ef179aa562a900c8c95d9a852c69a3723afd909bd8b614e",
+        "left:37": "f8b260591671a1de4e6ff34fc2b7163564c783a6c222ef35089e59d3dd89215c",
+        "left:38": "5ae554f84af36d311e23747f237a24f3cf581d76c27ac21e47cf16283bb38a38",
+        "left:39": "467a6c493bafc6f86d81650e7defa434160389dcf3d77bc6611e2dda555cef5c",
+        "left:40": "eeb110d5a3003ee62485e4661281fa6b09f1360173e620d9403ff4a187e712b5",
+        "left:41": "98923e34a5d204d03ddecd41455dc859f447d9126c6a3bb7b26d0d60c94bc9ee",
+        "left:42": "848c89e427bf34c66ac7e75d9b165393874d9b9f5137c1c9e2d018a693e36289",
+        "left:43": "affc75a1ebfb60b9b4de856fee8171acca200e064a7a2625fcf38bc752bf83cb",
+        "left:44": "a81cfcdf3e1c4fb899dac8998ea75d4787ce3f2cc165d6a833c7d18530f8b86f",
+        "left:45": "425e5892967e638f520490283f02bf75edb387352f961297228a210a64bfb282",
+        "left:46": "ef2eda8b8aa0bef183fdce733834832433e55326e21a5f4055759eec967c7268",
+        "left:47": "6c53910df2b96c189ba7b1931eef8edd6d55f5863c306549f9e020a9ecccc3b2",
+        "left:48": "953c94a765691ff3ffc4057c533e8c175c8ea651efe7ad9d190a85c8e9a4ced4",
+        "left:49": "05e3def8d54731ad3385e53c49bc978c8b14e37d1aec05cf27158ce9275c7237",
+        "left:50": "5223528bafcb9f3012a70805063312ff607850508e94088d9d27882d2ddcc86a",
+        "right:30": "40cbace59082636f28d84c166465090eb8c05658cee03a44e34189ee1d108596",
+        "right:31": "f5d9c0284438c1e70f7ea08ec97036cfee41f2e77eaf6eac100ad19478d2ac46",
+        "right:32": "52aa5183bd0794bdb133bc04b825081679af30016793c8404dd5458203d84af4",
+        "right:33": "b55c5802596e2bb4254a14de05e693c94db73a7295de7b27c355d7dbdc0a5338",
+        "right:34": "5034003230252a4598b71f0877702668b63f2945c12f0ada329e596209726717",
+        "right:35": "9b8232e16e923549050c27f95ec4817d7ff7bddc6fbaf734f51c9d4451c36614",
+        "right:36": "e85c708acdbae6d2a68107c71a6635cf462ad99dde34dcc530c623af44a7fd12",
+        "right:37": "8e275aea025f6008c3e3f6372173cae7d3223e507edeb943e7ff8bf045004b92",
+        "right:38": "e2a92e23be056acfaf971cd946bfa2590083bb58ad062727b973dd7418390fc8",
+        "right:39": "39ab9a9e3938a571419abf26f365cc4137b44973df07b290014d622d5ddebb09",
+        "right:40": "8cb6898215fbe7cc13cb3fe0b2c6da00cd787f0291905f2e16c24f5de07fbd48",
+        "right:41": "4c250994037060c81f712888e15f060c425b14ce9c0d13a113f432659bf43750",
+        "right:42": "235c6dd4fdf6835706f52ce8e34abd0880d3fc0872ddcb6aa9a2bc45734ca096",
+        "right:43": "56839ed6eda00c76feb5292ab1232605f9b9675abe302921cd38b36da750fefd",
+        "right:44": "9fd8a4fa31f4dacf3229d0b4a39ef41bf6bd83b508c53ac39de4987b0b86fa54",
+        "right:45": "1533537d53b9cdc4f5a20c6c99cb7ce9ff42ebd59fa660717bb8ba0f397f919b",
+        "right:46": "4855821ad0bae8a6db8ba6b6e8f8f94dbf76089bea189fddd407745baec5a444",
+        "right:47": "33f0cd4cf9cf68024c10cd821d2b7afe532f2c3665319b125b02f65f9f5fe5aa",
+        "right:48": "ce2a65dd283ea6a0d908f4a1a443b51948e9b7831d31319d78e83a75892671ab",
+        "right:49": "798b1fab051fb09374c9d2b6c627787dc930f540bd804dcc12894ccc61e01a49",
+        "right:50": "2e2979bd039bfaca5eb094f5a625398536a4dacf81fca561dc121d4969141553"
+      }
+    },
+    {
+      "case": "heldout2",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16675853729248047,
+            0.33313894271850586,
+            0.49914050102233887,
+            0.6647617816925049
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              2.842170943040401e-14,
+              0.896575683267996,
+              1.3274525431161543,
+              0.5385394160364785,
+              0.5069733985181687
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.03906057075422278,
+              0.0970531233924354,
+              0.049943833653256116,
+              0.02502494115483983
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              83,
+              79,
+              76,
+              74,
+              74
+            ],
+            "post_count": [
+              80,
+              79,
+              76,
+              74,
+              74
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 80,
+          "heldout_tracks": 21,
+          "initial_heldout_rmse_px": 0.3268296897990272,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 33.605659308155204,
+            "nfev": 7,
+            "observed_pixels": 1532,
+            "valid_observations": 383,
+            "tracks": 80,
+            "frames": 5,
+            "pixel_rmse_px": 0.21514836793082226,
+            "pixel_p95_px": 0.5922108356075027,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 4.7433602562133075e-05,
+            "gyro_p95_rad": 0.0001284041550965808,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00038227997124620354,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11543787910524492,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 264,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  11131.600589789494,
+                  9677.252939635206,
+                  6875.673206314541
+                ],
+                "rank_tolerance_per_m": 1.0429227186288039e-08,
+                "weak_axis_camera_i": [
+                  -0.1303385571205136,
+                  -0.6609875223180368,
+                  -0.7389907684589876
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.1454403038064129,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 261,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  10971.564384323008,
+                  9198.783062890094,
+                  6514.398189354414
+                ],
+                "rank_tolerance_per_m": 1.0328103457914205e-08,
+                "weak_axis_camera_i": [
+                  -0.1312532207441357,
+                  -0.7008042883133865,
+                  -0.7011746868832752
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.153506121506997,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                80,
+                79,
+                76,
+                74,
+                74
+              ],
+              "endpoint_tracks": 74,
+              "source_endpoint_common_tracks": 74,
+              "endpoint_depth_m_quantiles": [
+                0.13335762612115815,
+                0.3251302925074768,
+                0.4536583368615604
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                25.89836652383741,
+                36.11324932079688,
+                88.03253093762554
+              ],
+              "solver_optimality": 0.694672601395439
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 7,
+                "cost": 33.605659308155204,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -2.702005076769069e-06,
+                  4.110061621869787e-06,
+                  2.4594467246654804e-05
+                ]
+              },
+              "instrumented": {
+                "nfev": 7,
+                "cost": 33.605659308155204,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -2.702005076769069e-06,
+                  4.110061621869787e-06,
+                  2.4594467246654804e-05
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            4.3220731450744574e-05,
+            8.017952313577617e-05,
+            -0.00038227997124620354
+          ],
+          "initial_endpoint_m": [
+            -3.4550671145812875e-05,
+            5.1694970434204596e-05,
+            9.548851877332958e-05
+          ],
+          "endpoint_m": [
+            -2.702005076769069e-06,
+            4.110061621869787e-06,
+            2.4594467246654804e-05
+          ],
+          "endpoint_change_mm": 0.0911297296107176,
+          "optimized_heldout_rmse_px": 0.24363512830121367,
+          "runtime_s": 1.8983889090595767
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/graph_fusion_report.json": "7ab3a874cc9577e37e0f0db822ba47f1d73092b257d646a2b323b95e468cd595",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "93a2f692626e075d9dc16a8351ab141f3b332bf246c0f2ff4fd6d628d0ccf06f",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/trajectory_frames.csv": "a583e2aabb921516c6832f7de4eca754acc5b3a01db26bc9d9cfa190d208a235",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816/d405_frames.csv": "0c8c6a1c3262ae33ebb170532e4c64d6344cbe4ee21ec2a9b17eea2e4806d58b",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816/external_imu/imu.bin": "82e8aa07478b78659c4cd3079132a1f897765e45549d0353bdbe0abfb8edad90",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/dataset/frames.csv": "6f5ec0aacbe34335a33fb9f22cc93188b759fb37a957d5a3ea1be6240abcf2a1"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "84bed51eb439d5162e96a183fdff1722861ff481b414917cae979874b26de988",
+        "left:31": "b6084fa595cdc45df0364730de69aadd3608f08de89d47dbf98034f04bd417b3",
+        "left:32": "c7fcdb2a1a237b352e21624f4158edf6ae393718acabb178c2575b072280c82d",
+        "left:33": "cf9d8dd63acd520d9bcf328990626ad751054156f534f50c22d2bd22fe77379d",
+        "left:34": "6bf43d59c0d324e4417c258b7de09ccc05c88c282718510a3b04a3d65c216614",
+        "left:35": "a7e797e01d8accb316efb7c2b9bfb4dd1639572a259829f328955a7fd57db4c2",
+        "left:36": "b0e4189be3ed26d0d516a13e110542dd53c5d06eec7d3cfa725946ab9a0a9d35",
+        "left:37": "dded53d3bb4236c3168238257229a80b421695d3d328d3d1046702d3f084340f",
+        "left:38": "be3a4f6b28b301e8cf1fbceac938daf340ebb0be18c6622bbe5ff38cd0e3156b",
+        "left:39": "07171b912f093558b1b4f2e29bb966f15ba366376ad0608c344bcd9afce7674b",
+        "left:40": "6e8687d6ae0147b57d3e6a6f62013e42c547d32c6d5230f34ca0b447affac5bd",
+        "left:41": "d73260f21bc09726fe39aca5b40e08b2841c429e50e2a88335edd214cec95690",
+        "left:42": "3f96f7b3d621a6f3e7176f964af466cfa03d602d6594ae7e3d35470fc268f56b",
+        "left:43": "5989939bf027243ec5d2808d16b73d9eaf7b93dbcbcd631fc0d4bc9d59ea674b",
+        "left:44": "992467e367b515eb4849c15329a228dc5bf6ce990316a0dda7f771a3bc9f282a",
+        "left:45": "0c00c80b9ba8e2478086a818de76a966b19a48a7dfd2512363eb483f82d2e993",
+        "left:46": "38894ceefff89869c6230971d547f8ee521b280326cb08986bb8206c2f3ada5e",
+        "left:47": "13085207737620bdae37322fdf2a3418e4188753ca1d47b703d634e5151203ee",
+        "left:48": "ffa576624dc9294b821efd29b7928e1896c04378581bb492e0db7f716cf6995d",
+        "left:49": "e263028d6f26d759a9d7bf80ae62cb10e0d72247aa98d8b340d1cdb254424ce8",
+        "left:50": "77e7f2e02720786b496e450e893a1db5cbf06c2b1120654c888af47c3956321e",
+        "right:30": "d244f03b19ac269840f203cb39e524dd224bac73a6bf7cbf71d2cf1166dc2415",
+        "right:31": "3a96677b7d1503d24c76840bd4a3d64f1177b2ad38262b12976c005232afb9a0",
+        "right:32": "4bfb5297df2a98a8d465624573e0b80d8b6320e7707e4a2ac321c93c872d099d",
+        "right:33": "59c6390b5c2ad9f0b2f7056da18b58b553eba94b9916e01560b86e29a925063c",
+        "right:34": "3467eaa78b6249fb1da72911b4876024f129336249341e2694eada6f803e2b47",
+        "right:35": "8e833653f850f47d1fa62f0040baa35e0f19a43cf764807862b526b1a0132d42",
+        "right:36": "1cf1b2965711b976b950e74c286a956f4384d279f60ea3888bf6f29d48226d8f",
+        "right:37": "d2419b363a7a45860625f847f02eae255e32f3dcd525238484434b68105d01d9",
+        "right:38": "829712a2e2e8749632b86e7ab36c66032c7b6617d0ee6d4e1ce98c57ba604a4b",
+        "right:39": "71ba64601a9498c489e376b9853544892ed02d91dc325a279402b5eb85bb47cd",
+        "right:40": "0b5a2d1d5fb95b47e4136dae43f966539d8ac3615b10dc2d6a04351e85b934dd",
+        "right:41": "3a565dacc0dd920f0bca7c8dbdc86bd34fca9c09255082e791c140a6ed536674",
+        "right:42": "318a1f0a97225add7c4d458311217e6599e75f7b9247df8bd36e3998b2a44711",
+        "right:43": "348b9087794725d20bdd4139cb42c6a304df9ecbfcd3c70d816d2f177b5ff702",
+        "right:44": "ae64353d46bb0e36c35407ced1f837f7126456ca23ee5760468c19123149778e",
+        "right:45": "94162d7a4a257d8f64c7f007bb69a42dd5965aadc31375fadb782401fb96c6af",
+        "right:46": "619816cb3b03cddefaa4802dd829ee2423dc4dfbbb1574e8b0f5291e752ae196",
+        "right:47": "a0d32e59c9613bebf802aaf7e5a9c6e64610f73bcdfad3f795496f7ef90ebed4",
+        "right:48": "a6ca6759734b56d8caf71391cf90e4414fcb6f2b2f5bdba3fcb959975e87a654",
+        "right:49": "59cdf6d07a0e5daa197226b77090f3de75778d80a0aa7cfea8fc727a13561eb1",
+        "right:50": "073e8c0586e94c6f0455033ed246b0fc0a2aaec46de8defa90e89b71c595b9a4"
+      }
+    },
+    {
+      "case": "heldout3",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.1668081283569336,
+            0.33325862884521484,
+            0.49935007095336914,
+            0.6650841236114502
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.5719547191204916,
+              0.34499793332031486,
+              0.6081948912671522,
+              1.0909633870776168
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.017494844064043915,
+              0.028624584349803854,
+              0.017843618750065356,
+              0.02515947554637532
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              94,
+              89,
+              89,
+              92,
+              85
+            ],
+            "post_count": [
+              92,
+              89,
+              89,
+              92,
+              85
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 92,
+          "heldout_tracks": 24,
+          "initial_heldout_rmse_px": 0.3125764304193893,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 42.255334655660405,
+            "nfev": 8,
+            "observed_pixels": 1788,
+            "valid_observations": 447,
+            "tracks": 92,
+            "frames": 5,
+            "pixel_rmse_px": 0.22273899093934835,
+            "pixel_p95_px": 0.579315027667826,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.573923273564945e-05,
+            "gyro_p95_rad": 0.00016863030621202683,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00010767301267998992,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11517092936519986,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 300,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  11282.84896679992,
+                  9168.31430143799,
+                  7833.100994470957
+                ],
+                "rank_tolerance_per_m": 1.26826551178956e-08,
+                "weak_axis_camera_i": [
+                  -0.15821266636478404,
+                  -0.7388867011702838,
+                  -0.6549925152514653
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.12766336099915682,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 297,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  11139.363035869166,
+                  8583.889472959028,
+                  7426.389944597895
+                ],
+                "rank_tolerance_per_m": 1.2577142180142725e-08,
+                "weak_axis_camera_i": [
+                  -0.1556430499122343,
+                  -0.7861491763785258,
+                  -0.5981176418509853
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.13465492755701847,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                92,
+                89,
+                89,
+                92,
+                85
+              ],
+              "endpoint_tracks": 85,
+              "source_endpoint_common_tracks": 85,
+              "endpoint_depth_m_quantiles": [
+                0.13409454162061493,
+                0.31333974722359176,
+                0.47351961968967254
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                24.810826102581782,
+                37.46660033909064,
+                87.54852378310949
+              ],
+              "solver_optimality": 0.5116141418664029
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 8,
+                "cost": 42.255334655660405,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -1.9161138554440695e-05,
+                  -1.0470434332313189e-05,
+                  6.057530092588222e-05
+                ]
+              },
+              "instrumented": {
+                "nfev": 8,
+                "cost": 42.255334655660405,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -1.9161138554440695e-05,
+                  -1.0470434332313189e-05,
+                  6.057530092588222e-05
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            3.221426781945189e-05,
+            0.00010767301267998992,
+            -9.492804755129994e-06
+          ],
+          "initial_endpoint_m": [
+            6.927755812325923e-05,
+            -0.00019426495022660794,
+            0.0001017570752875571
+          ],
+          "endpoint_m": [
+            -1.9161138554440695e-05,
+            -1.0470434332313189e-05,
+            6.057530092588222e-05
+          ],
+          "endpoint_change_mm": 0.20808115167511995,
+          "optimized_heldout_rmse_px": 0.29076226642792946,
+          "runtime_s": 2.0002708330284804
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/graph_fusion_report.json": "f54ba4336da055eba3d5e99d44f7f674aecaa69a779d2b1ea601da33735d4ede",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "2f2b55f782286d22bd9afea86940b4c7c7ba24c49411ed677cbbe701b88e1565",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/trajectory_frames.csv": "7e3acf1ef486933c14c076215ee23f70887070ba91aa8703be6dbcc5a4bfd140",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002/d405_frames.csv": "8037beb6bb0c04e972e57a211d420c3921e8d4f2aa229d49113349bf958949f4",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002/external_imu/imu.bin": "34626cf7cf7d1a90a21f04e3aa78a95d5ef2db26b542bd65541bd8c1b6b520a8",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/dataset/frames.csv": "e77b48ff076878e8a4ec2c4620116702eb969a803c2303b083f39841cc5c1e6e"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "eba13d2c3216973f2ff357cd95783bc2caa3b0804724258e19e8eb6c57fe215c",
+        "left:31": "99a6ac0118f7f783274caf13ce4da4525f494b7df445af431154d0a601df09cf",
+        "left:32": "1a0fedd0181aed54df3ec652298e4fb6ec047dc38ded26ec3e19d7e99d3d6128",
+        "left:33": "d125c2ab9087947c5cc3f8bc568d05f2c06bea3ff98660831d7fea114decd881",
+        "left:34": "dd7cc8f61e29290bc9516f856c37fa371906a144683107aab3518549592805f0",
+        "left:35": "f5c53320aa55c7ed6428426f765fb51e3f1afcf7990c039961430ac48b53c45c",
+        "left:36": "fa223c61b31460c6775b95faa9bed18a0c4e40e61be45ca12730c475cd976073",
+        "left:37": "223a89ce71c242721d477312dd85a7b1a7233f7929f8691ebbcf5981e2a03799",
+        "left:38": "b97e37554c753a10bf2dd42b4a49eb75886bdf2c88d7b3fa08e4db71fe3ab45b",
+        "left:39": "79040bf7945a65284a2f3f9488934df6ab4849c34829d9123429b03a93ad17cd",
+        "left:40": "c7c58e87bb48bfb0645a067cbf530008bd3fff235bcfa699566af7ea66a1dc70",
+        "left:41": "4ff5799af601beaf099b000c5e2d7241896cfbb0489e81d13ffca02778ac420e",
+        "left:42": "09c2f5e1cf4cbbcde43b2f0796d84a60432a15f714a3b7f734dfc76931d07d65",
+        "left:43": "2a43d586b42a4627f86bb56017b3432a388bc338d7069613c5f795d6dfb3da49",
+        "left:44": "721986ea7faa30f3c622597aa4c9a235df5fc0428b73628bb8c36c5beaa6cf1b",
+        "left:45": "1f46d6d9ffec8db6688539e24763a505c488d4e1a6fd1e9361bf38800fc62c63",
+        "left:46": "184d109a75e89ca4e8b98a368ce47535d16ee8f9265b852f4dd707b7de15cd28",
+        "left:47": "64606fa4e5a02789969e7e96b53d7793d650dcc3da4c8f9750f2b7cf4420501d",
+        "left:48": "d5933699674a8fd6437f406637aa16b5a21013269d64fd199169c057c71ca073",
+        "left:49": "4cbfee4eca3a35db648630f6588359fcff8e10e385b36d4eca5cc5958adccb7b",
+        "left:50": "3509180c2d7cb19dbe91e71be1ab23c4998bae8013fa550631f45e15df64f9d3",
+        "right:30": "eb2d14389efbc474fd6d7b90f8053dcce13d3472834202ea534eab70eafb4159",
+        "right:31": "32218b6c776734ff20f41493b73ba631b8e362dc15b92808e002c0da288b6dfa",
+        "right:32": "0fce08131b706b97b3fdcf91e8114d2bb69b423db9ca4dbbb03ecb32e6c59038",
+        "right:33": "89970abfd87f5d1a22fb94210d73a4c9f14820f59e75a39d68b1c00948bba565",
+        "right:34": "081001d2f3aa316ac3e98bd5c1b38ba06ff73de55fec419e05cf40ebe85464cc",
+        "right:35": "0f261d22d372e5b29d515e07602b63f8b92df778b3f774ca7fc8340b1a0756a2",
+        "right:36": "3c465e5a0595bac7a46da6c46b39de1d6cbeb702bda622f8c08d02b74c0854cd",
+        "right:37": "cf624952e6f057422f819a6ec44c087916f89569beb14cb65528c95a4aa450e3",
+        "right:38": "5f4ec61751b7d66b52a4e68ba22da03f2b00eb112361f42ed5e5526732f616b1",
+        "right:39": "fbca853ba5b58ecf379086a1966803e478eb24a1704d1fc0120a8672983d2df8",
+        "right:40": "d9dd10b4e44dd3d73ad3fbfcc8969103ddc302c8ad8b76bd9f781edb3f375eed",
+        "right:41": "a9e3ff657e5f8eb300038a80010f1a49d02116da8c4e0062ec1b72790248ba6e",
+        "right:42": "6b8b7f4096c16e9a448f1fb13329ccad74ddf07743bc8898b0c97c6e326adff3",
+        "right:43": "22eecb4b87f1a88b999d6ac1bc448a3d3f14660c36183f887f45c4f6265ab647",
+        "right:44": "6b3f5fa2f468b2893d6c6bc17bffbb9d0fd666ba1eee4f9f00c574057cc398b9",
+        "right:45": "250c578d2d1a2c29756c6aef5f2f4416c19b783dc6f7e998010b95e1c6781840",
+        "right:46": "c94a02b7f0a5e92c206c549c80b5ed37a320242a37a4f5afe90e5df28cc17b81",
+        "right:47": "1ffdbbe788b9de737dd8f80d6cf203ffc8b26224ace971f804b65db4922cfda1",
+        "right:48": "494c3cf556f845efe25c44297e663f2107a12995dd728ae8ce062b0bd1f4a296",
+        "right:49": "1758168975ec1662808520adf2c8a84b319dc8e313feb5f1a7ea4327169236ca",
+        "right:50": "736fb0c9528d2969a78e582bf648bb6493d5542cbec378b5614e28a4f191a6d9"
+      }
+    },
+    {
+      "case": "heldout4",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16681504249572754,
+            0.33327245712280273,
+            0.4993712902069092,
+            0.6651110649108887
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              0.5146768779423673,
+              1.0712377748379498,
+              0.3779041830308278,
+              0.6169898000573039
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.0,
+              0.011111111111111112,
+              0.0,
+              0.0
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.024524973899149982,
+              0.023180340658771365,
+              0.0403262473673859,
+              0.02320697132791861
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              92,
+              87,
+              90,
+              87,
+              90
+            ],
+            "post_count": [
+              91,
+              87,
+              89,
+              86,
+              90
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 91,
+          "heldout_tracks": 24,
+          "initial_heldout_rmse_px": 0.29405762696730653,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 34.2197130086387,
+            "nfev": 8,
+            "observed_pixels": 1772,
+            "valid_observations": 443,
+            "tracks": 91,
+            "frames": 5,
+            "pixel_rmse_px": 0.20048048128154292,
+            "pixel_p95_px": 0.5607310882062168,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 7.444989835288713e-05,
+            "gyro_p95_rad": 0.00019097553679269622,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0003873155141026924,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11570960173632105,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 297,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9552.902368443767,
+                  7924.956860158319,
+                  5474.688927767963
+                ],
+                "rank_tolerance_per_m": 1.0877920596375954e-08,
+                "weak_axis_camera_i": [
+                  -0.05532130168740224,
+                  -0.6321685753999126,
+                  -0.772853443970108
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.18265877992225965,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 294,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9396.05596500442,
+                  7606.337698559271,
+                  5132.429853040875
+                ],
+                "rank_tolerance_per_m": 1.0786611805695686e-08,
+                "weak_axis_camera_i": [
+                  -0.04006429837449225,
+                  -0.6750606162473309,
+                  -0.7366736159165287
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.19483948707209656,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                91,
+                87,
+                89,
+                86,
+                90
+              ],
+              "endpoint_tracks": 90,
+              "source_endpoint_common_tracks": 90,
+              "endpoint_depth_m_quantiles": [
+                0.2569176504715344,
+                0.38533109091082896,
+                0.4917682236238982
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                23.873850530822736,
+                30.467102166308084,
+                45.696455089056194
+              ],
+              "solver_optimality": 0.36254126415713017
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 8,
+                "cost": 34.2197130086387,
+                "solver_status": 2,
+                "endpoint_m": [
+                  5.1635594586879094e-06,
+                  2.576601396681032e-05,
+                  5.076149260311209e-05
+                ]
+              },
+              "instrumented": {
+                "nfev": 8,
+                "cost": 34.2197130086387,
+                "solver_status": 2,
+                "endpoint_m": [
+                  5.1635594586879094e-06,
+                  2.576601396681032e-05,
+                  5.076149260311209e-05
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            -0.00021364878978943382,
+            0.00014648318880527714,
+            -0.0003873155141026924
+          ],
+          "initial_endpoint_m": [
+            2.4297538040563442e-05,
+            7.321536081193091e-05,
+            0.00021584459462111762
+          ],
+          "endpoint_m": [
+            5.1635594586879094e-06,
+            2.576601396681032e-05,
+            5.076149260311209e-05
+          ],
+          "endpoint_change_mm": 0.17282933843617945,
+          "optimized_heldout_rmse_px": 0.2688419371165859,
+          "runtime_s": 2.012636931031011
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/graph_fusion_report.json": "184d839b1a286032ce689e69afe6101a88146be015ab74dece2644967224440c",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "d68512d0508201d98d14f857f06c55e6ee11c4edc3773df6b1fc19de04b4d4b6",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/trajectory_frames.csv": "c9273d7bb576fcfe798b17e84b3ab8a8cd5288a2677b63de567b233a7ed30306",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141/d405_frames.csv": "863387b120f8e6b9681d8e402965266fcf73de9d0e9f09efc3e34363e0bbeafa",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141/external_imu/imu.bin": "6d2514fb35a3c4b81eab783a48b1b575d8cdcdbf9e03100271b4bbcb4dcacef3",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/dataset/frames.csv": "30cf766dceb0ebaa912beb7e4ea61e5bf1a9fd89a4db63c963991d2dead24e69"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "b0780d08e6edb0756292960bfe5fc8fdb3472507fea3fbe1afe9d49c58889d7b",
+        "left:31": "6177a24ff75887a3028cb991766512f6bbb5d1c1325b2a3b914673426c447d9c",
+        "left:32": "ab88117160b60a97bc060d39f57c2376c78be60ea224228a8df72a6285eb2255",
+        "left:33": "cddddc1001b3e452900c846a82a51316f805528a24482dd2d13b051c99a74621",
+        "left:34": "6613e4e89296b0a658bbf0adba939f461101ecf4bbd49ecf8a7c23b1ed80b4f7",
+        "left:35": "475b0a1fb1ae88a5544d34ef628380204ed1261f759c0b4873cd94a18a20d7c1",
+        "left:36": "bb679507b3fdd8f76ed6aed35bbadbc68a23385e8bfd3af5127847104bb0fbf5",
+        "left:37": "28d026b144bef0767accf7c9b6be127f7cc3a8edc7a99feaa1c8be744147c0b9",
+        "left:38": "2e545aae78b6eba5c1c479122118296c2039f17dffa35ef105b6de2047df7380",
+        "left:39": "85062695ab8566955cb815508de70742cb9668ba14a1b053281023a80abf9d08",
+        "left:40": "8aa6f8cc9ba53973ae3b72421a843b5da97a8b15b25232c6bea037bb161b7cd9",
+        "left:41": "84bbc05661b13d46dc8ddb6c59e60d8f6de91868710159cc92cc3e699d1559cb",
+        "left:42": "90993eaafd549be1107f0b6d922a089acf221032828ef8e62374cab655c6574b",
+        "left:43": "00ff90f135215100b08d6673e20658a8513431075d585d63869ea9bb30e7bdf5",
+        "left:44": "28ef4b49a4038557b9e037facab4c7596fe95020c14db3a9f513c4fab3f3042d",
+        "left:45": "622c34a7398386c72fc762ea20721433e812e66782d1e47ce9e5464af058e11d",
+        "left:46": "a977bef44cbcc092811f9b49c4184fbe9b387ccaf745e8ce250dd86ea8b7ad55",
+        "left:47": "764e9a63ff6f38a6e9153eb9bbd1ba4e9b69ba36c0cd883caf363f731a948f17",
+        "left:48": "321c0cb271eff3c85adb73e9ef7778df9959bef65b9c3fe8be69b54d0d3fdbcd",
+        "left:49": "7faf8f5f614236fb32d7fd39cdc85aa93081b7acea7b879294855c7fcc5c3c2d",
+        "left:50": "40597e29353d908bbbc7e6a8f4e2c9eec5c890622715a975b9b222d055db4330",
+        "right:30": "e5abe64268f9a1dfb5abb5e656f2ac27425906d70ed9426f48b12d017730aad9",
+        "right:31": "bf597aa7f3ceee7c839fafae7b0fff04bff42fe962b7022f41c5613e7f001570",
+        "right:32": "7f6fc877f9427962584e1edb535d5de9a350d2af165730c325c675b414c97b90",
+        "right:33": "bec1bd8053dea95e6945e5f14695689e4dc48000ea1f11cca199cc94fba08a70",
+        "right:34": "a87c0197d30930ac3c3373e29f9d05e5778a11d7bceb7a2918a07d16ab5d4e73",
+        "right:35": "e5bd37e53de77d1153d655a7bad65f079e72e6a67f6dec850b04596e87dcb950",
+        "right:36": "32c700fd3db95fe6290bd9c3a587d275a1ab21eb954b5153c4aab739a786c0fe",
+        "right:37": "c06d2acf509582540232a3cbf8cb95c079e54d3a859e5605fba5829eeb7478b9",
+        "right:38": "0460644a72628446e1c63e34bd969dbf3cb0b322d1cab6e0587ed019bfa9637f",
+        "right:39": "e7fb6e4625a407e16a81393e8b0689d3ca535519a3a995e5f5c7f52b3935b7ae",
+        "right:40": "b30d562ef84a2edc6e7d80cfce73ae73347a568a42894f6993c41fb0dba0bfbd",
+        "right:41": "420e52150271e566d65be4923cca51846b106b34ad98d71c9391588d96f3c973",
+        "right:42": "58e100864300ef24d3f8262452ebc9384f7e3a51fff62e29e1506c050b60e104",
+        "right:43": "bc22cbaf464f89b16571a4bdf7c34a8687befb0d6e5c9f17c91c48f0b1afcf97",
+        "right:44": "bb4ed5cc1b4a85ead38e31e6b51c69625d7ee9fc655e70ec7e6b6010396944f8",
+        "right:45": "96c8cd30ba1d35e09097762f02639fa93327801364805aa6cd0b5afa7c44741d",
+        "right:46": "80fb303961f8b93253b3c64c9e0a0166fd7ad6872e8873ee77145ecf771b16e5",
+        "right:47": "d391dc57acea7fc2d82e7bd634fe6b6f26a5c64c7fe1b15bf4ab68687b026b75",
+        "right:48": "b885cb7c0fcd738b1ad70f0485d8ad3a239b12eed5a0b4f17989c3d928e08b40",
+        "right:49": "c88602e02de5315f327b3efbaebb73976b33b9fa0d0b1638090d83831456f950",
+        "right:50": "f0d936562df67d7f67399633cc4345cae3f9a7912d438aca6209400d1f6f6375"
+      }
+    },
+    {
+      "case": "fresh1",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16678690910339355,
+            0.3332078456878662,
+            0.49926209449768066,
+            0.6649489402770996
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.715622601314444,
+              1.8336863056062767,
+              1.8461523150645707,
+              1.4053408793074134
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.043478260869565216,
+              0.03076923076923077,
+              0.046153846153846156,
+              0.03225806451612903
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.09965043650158588,
+              0.15167285718449913,
+              0.006761575222448147,
+              0.05727999235582519
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              80,
+              69,
+              65,
+              65,
+              62
+            ],
+            "post_count": [
+              68,
+              64,
+              58,
+              63,
+              61
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 68,
+          "heldout_tracks": 21,
+          "initial_heldout_rmse_px": 0.8738447680370398,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 78.73455753909597,
+            "nfev": 12,
+            "observed_pixels": 1256,
+            "valid_observations": 314,
+            "tracks": 68,
+            "frames": 5,
+            "pixel_rmse_px": 0.38080326880114934,
+            "pixel_p95_px": 1.1016348714097124,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 0.00011165827799666033,
+            "gyro_p95_rad": 0.0002888561588866818,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00033826595716633054,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11672809628679785,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 228,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9804.456254588194,
+                  7886.6810333533795,
+                  5443.457618766701
+                ],
+                "rank_tolerance_per_m": 7.62868986081801e-09,
+                "weak_axis_camera_i": [
+                  -0.1408733350474086,
+                  -0.602678628869511,
+                  -0.7854509365813924
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.1837067669182231,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 225,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9661.550070131003,
+                  7410.566822143954,
+                  5138.050469591147
+                ],
+                "rank_tolerance_per_m": 7.538658115804423e-09,
+                "weak_axis_camera_i": [
+                  -0.12466753637553903,
+                  -0.6554059749098282,
+                  -0.7449167828868881
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.19462634824596683,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                68,
+                64,
+                58,
+                63,
+                61
+              ],
+              "endpoint_tracks": 61,
+              "source_endpoint_common_tracks": 61,
+              "endpoint_depth_m_quantiles": [
+                0.1337720682338077,
+                0.3241254593124708,
+                0.4660485279647241
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                25.19002716486769,
+                36.219848648977475,
+                87.75953930127733
+              ],
+              "solver_optimality": 1.2942040608740726
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 12,
+                "cost": 78.73455753909597,
+                "solver_status": 2,
+                "endpoint_m": [
+                  2.9993669150556124e-05,
+                  1.1429257945410527e-05,
+                  6.943450731373408e-05
+                ]
+              },
+              "instrumented": {
+                "nfev": 12,
+                "cost": 78.73455753909597,
+                "solver_status": 2,
+                "endpoint_m": [
+                  2.9993669150556124e-05,
+                  1.1429257945410527e-05,
+                  6.943450731373408e-05
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            -0.000200902738871068,
+            0.00033826595716633054,
+            -0.0003004967350467328
+          ],
+          "initial_endpoint_m": [
+            0.00016719805381893858,
+            -6.473221821573417e-05,
+            0.00014289583928698806
+          ],
+          "endpoint_m": [
+            2.9993669150556124e-05,
+            1.1429257945410527e-05,
+            6.943450731373408e-05
+          ],
+          "endpoint_change_mm": 0.1732690997222491,
+          "optimized_heldout_rmse_px": 0.7495266194807545,
+          "runtime_s": 1.977461764938198
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/graph_fusion_report.json": "c44d55a112218cd78af9b6249ececbd76cb14ebb9712094deabbc81d64f87b9b",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "595f04a6da64566e242900f1cf0c80f3c3b7c3c5403b11d83f9986ea004b08ab",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/trajectory_frames.csv": "f191e68a1732fc8880e2ef63b8644f5603a4f3829e8578abd9f2d401f10b997a",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181216/d405_frames.csv": "6db4cb3abda16e6347b98909ee22d5d71dd713424634a6940f8b5bfc1567c3d5",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181216/external_imu/imu.bin": "9ddf8c471d49d9e0d2463364a37cf19aae7d79b62c509046e5fd1d8becea40c5",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/dataset/frames.csv": "83ce35e359f286f4aa7233e2206b62b2e513853203c8c7b764e90d5f21547f5b"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "f8af22b904e76e7118aa47f1e1c04878d3174317533351f93569c715e5e7b8dd",
+        "left:31": "7198bb99e345519d34230c9525367d6851a2a6f96e7287a15cc3e9b5cb6a4565",
+        "left:32": "bb2189ad03a72023a319b5c6f5845f57553eb4d8cc20e205195666cc60250412",
+        "left:33": "0cad1c8ad0409691e24b0ccd2f9faa65342743cc5e225d6771703a0be00d7d65",
+        "left:34": "21c99ab3bdce4ed8dc76678147d6bf02cd187f163e4c51269c2a626095624695",
+        "left:35": "c0a2e7938c5f651df161b55f1b4a677c70bb0b8e75fe1d068b968e2812f9b62c",
+        "left:36": "229d1a8d7a7af854afe0721ca5e42c194a8f323764675f56fd5cda32df9948ad",
+        "left:37": "23c6c377d960af50bbda96f5f93906b4b17d1857fbf8b730d3aa9e3262a027c4",
+        "left:38": "8e35dc7d3719dfeaf560900448a72c0169ea4bdaa071a4cb7bc14f2fb23350db",
+        "left:39": "e004f3a70d152f643eb81bf0ffedbc0b51f0eebfe5a76ae8f3ef22c965932540",
+        "left:40": "6bcbe0a11adcd97755e3e9b7f566ae8f594351adc9394ad13912bb531b82377a",
+        "left:41": "1dc42a88b1f55f91957cd399220c4e462493e69abef12476489e737f4494aa73",
+        "left:42": "2fc0bbd049d240ebed02171a0b260a0142a70d7bbc7f23f01d18cc14235657f0",
+        "left:43": "e033ab0ea65f2a1f2acdf1971b413659fc47172b8b88801175b7a5287efaa788",
+        "left:44": "0339224686be7ef089ef149bce303783e28ca86ea72ba71aecb8dfbc20a5ade4",
+        "left:45": "204c5475666f2fdd555cabc1a13c78dc9a2158408e7104d8eeacdeff8d1cc72b",
+        "left:46": "2e49bc9a86e68c72569fad954ab7e28ee20346b0bda3382fd813f9cb79b9e73f",
+        "left:47": "a3b851b9f3ca5fc567b1634e58d900ed61426a3398e853c202cf04edd21901f1",
+        "left:48": "96fb273e5c6a163426c17825a77e716ae48b4ecf46d3f3f028feea4d7ab3ffa4",
+        "left:49": "577664e574645213de31fbf651be528afaf0bb4bb79b995b56d2c4e1abe69339",
+        "left:50": "5bed08d1889acd2982707f0ae6c5b741f81cf0a9633c644ee1947c9d60516e5f",
+        "right:30": "0626f34dc2188543963dac672d5d3d3c2ef31ee5b0102797ce8573f394f6dfb7",
+        "right:31": "41866113f563ead4ae664aa28da96d5dcdb770e3fcaf835fad0b32cb93b49b62",
+        "right:32": "7eac5dbc85470d93572363d9a1d93fc2b39d6fa114b386ffe0a2559830deb1f5",
+        "right:33": "073a585d47532d63adde9703b3b8c92e4d44089726fec982a9a02f19cfc85161",
+        "right:34": "fd381cc1c0a5b55c3690c910ec433d51bf7bccf9c962dd9e355d32b7cdabfeae",
+        "right:35": "1c4d89d5fc9399a9b663b0e6b04dcadabe64dacb88d8e434144e9ba1abe7d559",
+        "right:36": "1e7c06216cbf41f547683fc84f09a2e8b14bae6443f8cf3ccc583670f09e079e",
+        "right:37": "a6442c18863bdd42c4f59f992211c3d20c9126bc600e25c2e3677a8199d07dcf",
+        "right:38": "3ce8119010f2c5afe5e3d19246cea305e1b7452bf1c3514f72c86718969f7ea5",
+        "right:39": "7a43fb9191fa8b7fbdd92440e32978b682b4c7fe5b709c6fe0fb45f10c6e1618",
+        "right:40": "cf25d99f40f9f19e09247cff45039d38c283368807a2b7664ad000b5ebd4795c",
+        "right:41": "626174dd7cc962f8048a7fc45e1c4bca566cea9368f7f692a2122c3cea2bcccf",
+        "right:42": "5eb35cb4583dc8b564c5757c981cfcf8c4bb9c4811c08a4020f9930211631d5b",
+        "right:43": "18a517f4c250cff7cd07924f31bbcede61b2376aabfe281cbb6e8827dd7720dc",
+        "right:44": "5e195ffef92d89a6155c4a19757c56534dc2d3bba89893400ad1aecaa1508b63",
+        "right:45": "9db820016f1a6214a8424efa2e0abad64d7b1b2604f6dacd1f25190a2cf4d638",
+        "right:46": "cdc90b0bdf906e2d4941cc94f5f497627af385833b2300845992e7af9ba3a2bf",
+        "right:47": "82cb2c85e764666b962847d05a02ca6da1ef6afeb617181153b332d16d283265",
+        "right:48": "651450ca5d6063d39c73677e5d89dc0fbbe0546f519563a8f6f95d5a57cc6675",
+        "right:49": "1cfbdef7c2403d2180a159e9191571e5f32c7cbd8735ece9bea57152737f1696",
+        "right:50": "f84c39d15347ac77b9528f03c14e4f8d37b93dd8de29c33e54fa2e3cbcee54ee"
+      }
+    },
+    {
+      "case": "fresh2",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16676688194274902,
+            0.3331470489501953,
+            0.4991436004638672,
+            0.6647534370422363
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.8587801736200198,
+              2.36458110237175,
+              2.2981140746845834,
+              1.8561715477831138
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.03278688524590164,
+              0.06557377049180328,
+              0.08333333333333333,
+              0.05
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.04356460259267233,
+              0.0684060736110038,
+              0.03410317772380565,
+              0.03513288249704103
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              66,
+              61,
+              61,
+              60,
+              60
+            ],
+            "post_count": [
+              61,
+              58,
+              57,
+              56,
+              56
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 61,
+          "heldout_tracks": 17,
+          "initial_heldout_rmse_px": 2.2658796062688316,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 42.23979456921427,
+            "nfev": 8,
+            "observed_pixels": 1152,
+            "valid_observations": 288,
+            "tracks": 61,
+            "frames": 5,
+            "pixel_rmse_px": 0.28647966526283053,
+            "pixel_p95_px": 0.8730409211075661,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 4.3522438623441836e-05,
+            "gyro_p95_rad": 9.004949955825916e-05,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.00020424594754768046,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11538247326182262,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 207,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9568.2797257036,
+                  8449.66449072994,
+                  5648.909590034959
+                ],
+                "rank_tolerance_per_m": 7.0307608087997e-09,
+                "weak_axis_camera_i": [
+                  -0.011528046505940678,
+                  -0.7032007343374563,
+                  -0.7108979050264668
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.17702531507391522,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 204,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9409.323417879617,
+                  8072.507929802732,
+                  5224.388439602614
+                ],
+                "rank_tolerance_per_m": 6.940391132594048e-09,
+                "weak_axis_camera_i": [
+                  0.005841584044229369,
+                  -0.7379282672529458,
+                  -0.6748538718010881
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.19140996339775676,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                61,
+                58,
+                57,
+                56,
+                56
+              ],
+              "endpoint_tracks": 56,
+              "source_endpoint_common_tracks": 56,
+              "endpoint_depth_m_quantiles": [
+                0.13357789038902834,
+                0.28045391490460037,
+                0.45209363944463876
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                25.967706294279715,
+                41.86161434828207,
+                87.88745652625649
+              ],
+              "solver_optimality": 0.8474370093621609
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 8,
+                "cost": 42.23979456921427,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -2.5573116781222195e-05,
+                  5.411394784210128e-05,
+                  4.018076450468289e-06
+                ]
+              },
+              "instrumented": {
+                "nfev": 8,
+                "cost": 42.23979456921427,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -2.5573116781222195e-05,
+                  5.411394784210128e-05,
+                  4.018076450468289e-06
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            -0.00020424594754768046,
+            6.278592862344992e-05,
+            -4.6463672928593117e-05
+          ],
+          "initial_endpoint_m": [
+            0.00011504368788668327,
+            -9.525563924556154e-05,
+            -3.772179975508955e-06
+          ],
+          "endpoint_m": [
+            -2.5573116781222195e-05,
+            5.411394784210128e-05,
+            4.018076450468289e-06
+          ],
+          "endpoint_change_mm": 0.20529258972727985,
+          "optimized_heldout_rmse_px": 2.2575768780500303,
+          "runtime_s": 1.8789364269468933
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/graph_fusion_report.json": "1d42bb691259ae36ff0b17d59ec0b2d64dbeda9122cd5cb43b766431cca69920",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/stereo_scale_bidirectional_report.json": "49ba25655b4bf2457553db6a2d98021bd9b4d95ab7c17932620191ba78fe08ce",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/trajectory_frames.csv": "3aa84ecbd3acea5ebd7147bbc9f87d5f94c8304dd3e24be1469f385e7a39ac34",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_frames.csv": "cb69a553a35566d59d49238f36b69083287ada96c545ba33f907769be9717d43",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/external_imu/imu.bin": "afe98698246bdb8a72777f8084a3e4ad5984c7740a472cfa558ff4c2ac67b1a1",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/dataset/frames.csv": "3b3cb77d278f346bb1d7f90f187276e49288a619ae4ba1d3b20525322ab1c033"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "619685ce4dafee504bcbb1bac7335533b105f2f55d23c43d01d5a37ccdb1b61e",
+        "left:31": "25cac4cc8222ae0de7e551edc7335f7da80a50ac602204d95517d32c0cb352b4",
+        "left:32": "fbe6091425e2896724494656200778250d241bb9b6ad4f8ed4d100905b9b397a",
+        "left:33": "35f008595a03935e6ca11d461866b420e48ee5b25ccca1156de511fd29260ed8",
+        "left:34": "02863fbeb4ef5e28a83521a4716f22140378d5445a7114659c270793005d9a53",
+        "left:35": "19c094ab968cef5ed80c694f907feb2fdfabe9b0d1fa15bdb786ddd03ed26454",
+        "left:36": "8c4f2712800c3f1d3a07da6ba831295d7040149bcdbb48bb165aef0bca141507",
+        "left:37": "bdc2230239eae4868ce19f721afe5ada5cdbe990e063f860e84faa07ad9accf6",
+        "left:38": "ae1cee7c9d7465732d7e411676240ff77b9994ea06563f67b3759f365c69047e",
+        "left:39": "081e2125475401c17b634eb51944d6c4f2a3e199b708dcb44c74de3b964670da",
+        "left:40": "cc9cf14ef7c49d7a604f7f45f00345cb06bc54fcecfa74a949f598c9396b2c6d",
+        "left:41": "ff52190f4db0eb78d1c1a5d329705ccafa82754e5b48019981f8024d3192e67f",
+        "left:42": "dfae5104441ec89d12cc657d854818cf43f817882989cc6fd3f0ece53a421006",
+        "left:43": "3508e4da8889c2170fab5fe05299aa16f5a1b7a92bb8641420c192c680cc6bf1",
+        "left:44": "77798e9a251f1dba490192edf371a8a97a2da27b915ddb1110baf9f9a6852e87",
+        "left:45": "bc0f0750977a892d5a67650a54bb1306ac85be3c49ff4834b7f62634e2ad5913",
+        "left:46": "de3698bc08b413d293525ce03c12c30bb0a463955095831e03f0fd97129af851",
+        "left:47": "c929f909dc78ebfb14b03d22b09c1400fe6481cc4f8b7b79d2434ad060c6cbd2",
+        "left:48": "6570ffe7c042cc37d809072868586fe6d7d153e99c6bdb3467b4714119de88c0",
+        "left:49": "a17570184a05c650b3f072ee2d6c1eba16712d9fa4f21979fe1f120f16944c4e",
+        "left:50": "bcab2bafed16d616d5572885a9626615163a2bd4bfd44e44430c4f6063fce820",
+        "right:30": "c44da044e807626c9cb04200e942bd51ff167a26cf6ae11fa490d1425c1c6b8e",
+        "right:31": "7e139085dd3ebf82bfcbfbe4d17143785e9fdaa6e5017735c5c49903ea75b647",
+        "right:32": "adba534afb273e44b5c86731ff34a101fbc841e507505772c2512355dd57da7d",
+        "right:33": "73a8f04d371f5d7c216f0edee56a9f3f0e123cccea231c5e1de72a974452b48f",
+        "right:34": "518af83539d8b058dd601e52ce566f6dee728aeaba3145268a0b27b17901c775",
+        "right:35": "d0bdf8b84dbdbd32326b5971543eb991e09ae6beaf81f4a5828296e389a6655b",
+        "right:36": "99d92e5997f40a470c674aea3db4c47b0c8272e7b0ee68315163383be3165e9c",
+        "right:37": "961585c5bf677a41b1be97714f43f91aa684707ddc72b869666c4fc32abc6d2d",
+        "right:38": "0b9e8400b3881170f7bd96d2b278fc921e6b68cb39bd979186ad4e8a1cc29db0",
+        "right:39": "49f51e4aac6cea880fdaa7d69629ffef6ea3231fb058c75fde1f375938a3bf39",
+        "right:40": "e297eac066625dc63a93d759476507dc5b6052bcd69dc7f16d6a46bc34edaa32",
+        "right:41": "31f138d7358689b39bc80fd0d71544ce9fd829a7a69971030330546550ab3818",
+        "right:42": "b465c3e9ba7c83ff0947461652906c0c6d4633cf239f1843245ca2ae4548ae43",
+        "right:43": "3fc2fdebe27bbed30a55db26bf57a5adb1f31c9d10cee6dec3a8f0a75ec761a9",
+        "right:44": "cbe7e8e1ffa7ca55a594f927a8c7298f3a5cea400826eeef4d1eb38e846dd704",
+        "right:45": "4e85b2a6222553f83290a7c5768b5b2e822ed933134805c3a94ecaeb1a13e077",
+        "right:46": "b958c9a97b37f1180be7308f08c4278f1ef3a5e7d0515956d053ecb280df55b2",
+        "right:47": "3fa4b9c5a1d20b73bdb92df0e612f65fe71c88c1a86654b4590e5cc7103fa52b",
+        "right:48": "cee1ab6bbb9769d41fcf3d541f07da82732c6e2751833f15842eca84dd7070ed",
+        "right:49": "ff09a4e9e18a46045973537aec1bf8013bea18a99ca0cc3deb365ce9e00d67c4",
+        "right:50": "07a07800301a7914c95fcd1aa76612e865efc2c909a8dfccba780aee90670676"
+      }
+    },
+    {
+      "case": "fresh3",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16681265830993652,
+            0.3332552909851074,
+            0.4993302822113037,
+            0.6650354862213135
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              1.3846787859277385,
+              0.9136928539256322,
+              1.113674320431021,
+              3.7429042936845707
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.015873015873015872,
+              0.0,
+              0.0,
+              0.140625
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.03893338462250998,
+              0.016214173670861125,
+              0.01514620307783732,
+              0.09298066760014367
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              71,
+              63,
+              63,
+              63,
+              64
+            ],
+            "post_count": [
+              65,
+              62,
+              62,
+              63,
+              57
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 65,
+          "heldout_tracks": 18,
+          "initial_heldout_rmse_px": 0.4907148117025316,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 41.80469499516877,
+            "nfev": 10,
+            "observed_pixels": 1236,
+            "valid_observations": 309,
+            "tracks": 65,
+            "frames": 5,
+            "pixel_rmse_px": 0.2704575776226713,
+            "pixel_p95_px": 0.7959050871202731,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 6.87084277643616e-05,
+            "gyro_p95_rad": 0.00017542132350664315,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0006829990506721774,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11513119911634022,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 219,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  9089.946584227124,
+                  7803.9133977575675,
+                  4957.69524071808
+                ],
+                "rank_tolerance_per_m": 6.96033688968763e-09,
+                "weak_axis_camera_i": [
+                  -0.26269783400342833,
+                  -0.5329774255814689,
+                  -0.8043164251900224
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.20170663008627343,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 216,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  8907.701702273915,
+                  7107.32385699618,
+                  4529.573951881684
+                ],
+                "rank_tolerance_per_m": 6.8768796128328625e-09,
+                "weak_axis_camera_i": [
+                  -0.29166857174019506,
+                  -0.5687683124405347,
+                  -0.7690461956362449
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.2207713154974715,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                65,
+                62,
+                62,
+                63,
+                57
+              ],
+              "endpoint_tracks": 57,
+              "source_endpoint_common_tracks": 57,
+              "endpoint_depth_m_quantiles": [
+                0.13393515654772267,
+                0.3107992298432441,
+                0.48627338160122835
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                24.14517598239926,
+                37.772857691761715,
+                87.6528108783035
+              ],
+              "solver_optimality": 0.9694050860115846
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 10,
+                "cost": 41.80469499516877,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -4.696653498665542e-05,
+                  -0.00013659911387776813,
+                  1.8758974068081632e-05
+                ]
+              },
+              "instrumented": {
+                "nfev": 10,
+                "cost": 41.80469499516877,
+                "solver_status": 2,
+                "endpoint_m": [
+                  -4.696653498665542e-05,
+                  -0.00013659911387776813,
+                  1.8758974068081632e-05
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            0.0006829990506721774,
+            0.0002865777014630645,
+            -0.00043512685347118043
+          ],
+          "initial_endpoint_m": [
+            0.00027591975105077193,
+            -0.0006830296774387087,
+            -0.000244440707859606
+          ],
+          "endpoint_m": [
+            -4.696653498665542e-05,
+            -0.00013659911387776813,
+            1.8758974068081632e-05
+          ],
+          "endpoint_change_mm": 0.6871069691623032,
+          "optimized_heldout_rmse_px": 0.4696191621231159,
+          "runtime_s": 1.96072209905833
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/graph_fusion_report.json": "785bd287c42bbe0380c14538f2fe367b3a66e13d1ee937ae386b1c7f2d4127e3",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "4013990a7fe149f8763e0c0fab1b5d9cf283dd27e14b57aa6c0eb361b84362e8",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/trajectory_frames.csv": "ed4b0a6ad789d299070682a10657c45d8c9cd887bfb11f6fdcf0ad9ce398a981",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181740/d405_frames.csv": "5de495096afd5db26d98980884edde6ef6dfb2608ca962e0f42d9b3115c162a8",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181740/external_imu/imu.bin": "7f380e520285e476b3f1192d76ea9b269b5d4512f311ab0be947e86fe805c1b2",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/dataset/frames.csv": "9be6605be5803a3beb3f6f1c9c4a2d7e1268cd19330fe67cdf3bb7d63cad09c2"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "16a77517b420074801c66288dfaab111c82607773672bdef67ae8f5b37512193",
+        "left:31": "2a8e55350eac45e0c8a0e111f5d8edbecdf54d56f3bb7810ce068722e496a011",
+        "left:32": "24925b66a095bc6bcc6782ca78afd1ac051abd1d637161a13f1f0f8de10c6510",
+        "left:33": "4384ce5301fa4768cf9232af75fafdb86a8d26553335c45ffcdf827aa864e7ea",
+        "left:34": "a4a0b22a1b0913bb043402a5c996fd82c0da1f06e0f7bb907db773589f027a37",
+        "left:35": "2ffc98daa1b2d5fc871fb72bfcf558e4bb6365a7d8979fa000bef92298b0181b",
+        "left:36": "7637f723608b83520ed387fc9b7429590175190f14b6ceac353640b671f7bffe",
+        "left:37": "797e23d2d7957180cb490ccbfbeadbd66b5ba9dfe2cfb7a74a979a1c6eb781de",
+        "left:38": "5ddfa8045269f8db088f3552d60c657c06de96e0a4e2dfcd93c2cc5ac254c1bc",
+        "left:39": "63a22824feaad484c70576e5ee40e3c7468e18165b52d76cac205ff96df84b6b",
+        "left:40": "94d1d4815d74b243d4366d5d35313324b4547a1d139182a5ee0d7cd83e33c1ef",
+        "left:41": "c6e109d1fc61ff7380ac3465965d812271d2601eb0810610aa2103ab80fa82d8",
+        "left:42": "80601e90130f4ed683f40e25bb9afc5af8a003f384626a182087bd5ebb71efb9",
+        "left:43": "f264a38b578f43af00d0a7b05de685ab876a4f4d1049718801e77e81ec100d37",
+        "left:44": "bc9a7066d8632dbdeeb723c88ae5034ea6ebc2f0ccc496a594a42c254361b901",
+        "left:45": "d2b0ff0beb3e1ee52226c0597984742266254c8adf214651be3d2865de737d10",
+        "left:46": "1221770dfb8fe6938aadb832adce0dad22186d8989c7e9b46d6a5a5ba68909b4",
+        "left:47": "f038eb5a2d44d78ac5fe65e9ee09a952ce1b9d6f8e2b9c8293aebb434991f574",
+        "left:48": "983d9d88f545f342c170e0384fa6ef3b420c83d9357d837841b01bb34283ddf5",
+        "left:49": "7ac3e24d6f90852bfc2b4d4389d45f73f1522cd720ce112c143c1724003a49ca",
+        "left:50": "18b73f7e59b6802137ae23dfa38ef9c3dcc1b0844e0dc1d83041bee41fa28975",
+        "right:30": "9abdf622e6c8edc359a3a72b8f88aa9dab5a203d79e3822b6d85b98f41e29c37",
+        "right:31": "b23ac1013bb3b0b4b3c5c7e3e015c3e2ce946abef21fe9d8118f07162445a877",
+        "right:32": "0204515eff1152c0d290b8decec4f5f7c1b57aef4e42921ef5e8fdcc8173acde",
+        "right:33": "6932fa4fc43d2164d9dc9de9790705fa07c80dd34f042fab72ffce37c189023c",
+        "right:34": "e4628267a1b3e02ed66d413050a860548f4cb23a7cda73a98701208692366c8c",
+        "right:35": "3fe346b95d5f3a678e84dd361700822b6359f10af4a99b0aba87a163f2b901c2",
+        "right:36": "868bc304a0140fcbd735d01ef5404e2c8e3715bb6ed1c00c8d625c6d50e2e53b",
+        "right:37": "a5bf858bd9cd2bf6c752d675246cfa680ba83787e604628e0de08e96d43b6639",
+        "right:38": "28da7e9daac724fee2eb206272889da35c6f57da294c8545496bb66cfd1db667",
+        "right:39": "ba3516495a8eff98a4d40db2fdb7993b1bde671c57054a4b6b6d3b464228b9e9",
+        "right:40": "eaa31fceafcb28b1a2b482d143d3625ab743b58996a75c9e8564a4891a357977",
+        "right:41": "34115ec55f61267da22c8e46246d8c12f2df6844a1a6f53b73344b0eb468c69a",
+        "right:42": "34aa2c56c8e510a975b7ec7300e3b8807f05c26aa6f890767512d6090bddafb4",
+        "right:43": "2dc07ac4024d3af0446c2e1f1ab9a135bf3c499aa462b8e4d386d0c24a3cd659",
+        "right:44": "cb7b9b35d8dc9b7a126c31928c3d081cd1d111c4c5cec88061744f1a80872671",
+        "right:45": "74dedbd0d048fee2c40b322b139e4dce4e735588c1a9c5156285d0cffec966a9",
+        "right:46": "53317285ce2e0fe44689fff6d4ce9a01e34869a1923b9bb3faa5a1947479161c",
+        "right:47": "e15f86142fe8065e4781cdf0d1f2ff85da63254d5bd8d0118e55c6d48422aa4a",
+        "right:48": "0666be7ce7812f9f6951a4654e9a46285ae317b0e54ef548d923c00bdd94ea13",
+        "right:49": "4306a0df400fe4d9b921ddb79117213a489c8ecc51e7c8a1ddc6b46b8ab4d20b",
+        "right:50": "05da9592a05c055d48627f7ac4dd1d95e6da91925e2e0d650e807305335553a9"
+      }
+    },
+    {
+      "case": "fresh4",
+      "windows": [
+        {
+          "window": 1,
+          "indices": [
+            0,
+            5,
+            10,
+            15,
+            20
+          ],
+          "elapsed_s": [
+            0.0,
+            0.16677618026733398,
+            0.3331916332244873,
+            0.4992482662200928,
+            0.6649444103240967
+          ],
+          "temporal_tracking_frame_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "initial_consistency": {
+            "training_left_p95_px": [
+              5.684341886080802e-14,
+              2.6783203160056734,
+              2.169340225275717,
+              1.4740487093044394,
+              3.096160565205767
+            ],
+            "training_left_outlier_fraction_2px": [
+              0.0,
+              0.09523809523809523,
+              0.06976744186046512,
+              0.0,
+              0.11904761904761904
+            ],
+            "visual_raw_gyro_disagreement_deg": [
+              0.07598890982690013,
+              0.044911926829858444,
+              0.01609600311212689,
+              0.03133002959217794
+            ]
+          },
+          "admission": {
+            "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+            "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+            "pre_count": [
+              88,
+              84,
+              86,
+              87,
+              84
+            ],
+            "post_count": [
+              86,
+              78,
+              78,
+              86,
+              70
+            ],
+            "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+          },
+          "accepted": true,
+          "reason": "ok",
+          "train_tracks": 86,
+          "heldout_tracks": 22,
+          "initial_heldout_rmse_px": 0.5561284894749262,
+          "diagnostics": {
+            "solver_success": true,
+            "solver_status": 2,
+            "solver_message": "`ftol` termination condition is satisfied.",
+            "cost": 59.28392624906079,
+            "nfev": 9,
+            "observed_pixels": 1592,
+            "valid_observations": 398,
+            "tracks": 86,
+            "frames": 5,
+            "pixel_rmse_px": 0.2842167503730538,
+            "pixel_p95_px": 0.835933453576209,
+            "pixel_inlier_limit_px": 2.0,
+            "pixel_inlier_fraction": 1.0,
+            "minimum_pixel_inlier_fraction": 0.95,
+            "gyro_rmse_rad": 7.787707791621891e-05,
+            "gyro_p95_rad": 0.00016549382261982372,
+            "gyro_p95_limit_rad": 0.08726646259971647,
+            "gyro_p95_limit_deg": 5.0,
+            "gyro_bias_component_abs_max_rad_s": 0.0006056284596081378,
+            "gyro_bias_component_limit_rad_s": 0.01,
+            "minimum_depth_m": 0.11502282764868481,
+            "is_calibrated_covariance": false,
+            "pixel_loss": "soft_l1",
+            "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+            "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+            "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+            "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+            "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+            "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+            "gyro_bias_model_is_exact": false,
+            "gyro_noise_policy": "provisional_not_calibrated",
+            "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+            "diagnostic_only": false,
+            "endpoint_observability": {
+              "diagnostic_only": true,
+              "is_calibrated_covariance": false,
+              "gauge": "first_camera_center_zero_rotation_identity",
+              "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+              "uncalibrated_noise_assumption": true,
+              "normalized_pixel_sigma_px": 1.0,
+              "gyro_noise_density": 0.00103,
+              "gyro_bias_sigma": 0.0033333333333333335,
+              "conditional_on_current_solution": true,
+              "all_factors": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 282,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  10326.887940498464,
+                  8561.039754872392,
+                  5463.709256700483
+                ],
+                "rank_tolerance_per_m": 8.838849575555136e-09,
+                "weak_axis_camera_i": [
+                  0.008084978189491132,
+                  -0.6596488234378545,
+                  -0.7515304803297932
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.18302584435173566,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "pixel_rows_only": {
+                "diagnostic_only": true,
+                "is_calibrated_covariance": false,
+                "nuisance_rank": 279,
+                "endpoint_rank": 3,
+                "rank_deficient": false,
+                "singular_values_per_m": [
+                  10230.988069520206,
+                  8118.862277509654,
+                  5005.254799263071
+                ],
+                "rank_tolerance_per_m": 8.75634631255991e-09,
+                "weak_axis_camera_i": [
+                  0.044438306271387645,
+                  -0.6910281652655481,
+                  -0.7214605406711171
+                ],
+                "null_axes_camera_i": [],
+                "weak_response_mm_per_unit_normalized_residual": 0.19979002870088275,
+                "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+              },
+              "node_tracks": [
+                86,
+                78,
+                78,
+                86,
+                70
+              ],
+              "endpoint_tracks": 70,
+              "source_endpoint_common_tracks": 70,
+              "endpoint_depth_m_quantiles": [
+                0.13410953922183774,
+                0.3977130230210911,
+                0.5189706902582117
+              ],
+              "endpoint_fx_baseline_over_depth_px_quantiles": [
+                22.623371825067874,
+                29.518314711811215,
+                87.53871510170354
+              ],
+              "solver_optimality": 0.9525106546027757
+            },
+            "same_input_paired_proof": {
+              "accepted_reason_equal": true,
+              "original": {
+                "nfev": 9,
+                "cost": 59.28392624906079,
+                "solver_status": 2,
+                "endpoint_m": [
+                  3.3700023571095684e-05,
+                  8.612229204419565e-07,
+                  -0.00012185523901624591
+                ]
+              },
+              "instrumented": {
+                "nfev": 9,
+                "cost": 59.28392624906079,
+                "solver_status": 2,
+                "endpoint_m": [
+                  3.3700023571095684e-05,
+                  8.612229204419565e-07,
+                  -0.00012185523901624591
+                ]
+              },
+              "centers_bit_equal": true,
+              "centers_max_absolute_difference": 0.0,
+              "landmarks_bit_equal": true,
+              "landmarks_max_absolute_difference": 0.0,
+              "gyro_bias_bit_equal": true,
+              "gyro_bias_max_absolute_difference": 0.0
+            }
+          },
+          "gyro_bias_rad_s": [
+            0.00022867559574619322,
+            0.0005433197563789484,
+            -0.0006056284596081378
+          ],
+          "initial_endpoint_m": [
+            -5.062991372044435e-05,
+            6.685804010084406e-05,
+            -0.00021436184272591524
+          ],
+          "endpoint_m": [
+            3.3700023571095684e-05,
+            8.612229204419565e-07,
+            -0.00012185523901624591
+          ],
+          "endpoint_change_mm": 0.1415082680674041,
+          "optimized_heldout_rmse_px": 0.5328489651257967,
+          "runtime_s": 1.9732536799274385
+        }
+      ],
+      "input_sha256": {
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/graph_fusion_report.json": "fa0f2f441b9cf9f4d558ac90d924f13e690d2c3b7f488ddc1b550d7159b11068",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json": "dc518d21c7c143e408293bd38cc7b7f67712c431594b5d2d62d319a1e8f62d56",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/trajectory_frames.csv": "cbba480baece6b07349ba41b5da4de2f9a4caa69c9c62f43ff94fde6b6e17530",
+        "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+        "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_182007/d405_frames.csv": "cf7a145640fac89cd11b88944537fef300ba668a820a5355d55a7bea901e92bb",
+        "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_182007/external_imu/imu.bin": "187cecd7056a031c4299998a450f7291b47f145ef84c216e117a5988295bece0",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/dataset/frames.csv": "634c40884b293bc2e0e218bcdcf90059e09e44d500af5db3e0c196a47dbbcd86"
+      },
+      "decoded_grayscale_frame_sha256": {
+        "left:30": "412672a4dcec8dfe81151eec9e515a976cd489da3111b9fde73361b17fbf9037",
+        "left:31": "cba92216520f68d425df959bf3a3a0b03144caf321adaed16596d3a4e87c4e00",
+        "left:32": "228735a04177f8e5e492377c9fa05422bf6634107eec9af53a4c1c12d9cfaa48",
+        "left:33": "accee44bd47d94b9392968943c3657bb43431b65238620da8758e7b6ba0e0ec8",
+        "left:34": "1d609525df7a188f5730f7dced4d35acf09ad058ca0e67123c88268e433b740d",
+        "left:35": "1730b570e774b5f6e15d66bbec59b97f8a99b4b10f0d8f449a1f94e07e89946d",
+        "left:36": "f6f4d4eaaeff6617de312c1e1da66778a8069b5b0cc5457dd5ae41b9ae2ab9ae",
+        "left:37": "5626465547aba7bae3f8f37c01cc5ba577fb99b621214e0fb19aef9cc4b8004e",
+        "left:38": "5c1753f601119706478afb780f81617b9778b6b1075fc991d52b911a0cc77722",
+        "left:39": "6b8c8decc811affb7680bec66686f0f4e8a652d88c2684126adc09b92d58abb5",
+        "left:40": "6ebe333124937f238b9387ac397ed62b2100f82525d40f56400b43729c08b29a",
+        "left:41": "a29e7cec4a06d29325d548e4931158e280e8a2a7c60b34071b764a73894fdc73",
+        "left:42": "ba664057f1b644c7f5c1e83945ff3549ed916d7443dff351e499e13c63fa7701",
+        "left:43": "247683942600de5a7bb67a1bc3f1676023f3609d8d6e4743511c58a4a41139c6",
+        "left:44": "bff78138e86936dcd8394442b398b81ffa0333b0cf5048df2da887ef05b86b2e",
+        "left:45": "d17e70d1e2653fc849d459c93ed3fc86e04a71e70b6fa16a6b81bbb7ed78fa6e",
+        "left:46": "300b29266c57212a49e1f1093d610a5ef3b6c559b86258855d7647d07b5e6048",
+        "left:47": "13bb08c819e91f4d15567a9c552339cb065c583ca533d8a37666a05531b8cad6",
+        "left:48": "e55d3c5d13c2dc183ef9f6ed9472a0e3965670608030f8dd0ac4072468c25d44",
+        "left:49": "4e609aa663e85a90082aeeb49a71942a3cee4e4bc8000c605bf5fe151dc20825",
+        "left:50": "133dff9a23f28e846be2e738478aa2dd178ad672f508208a4733149226140827",
+        "right:30": "3f905a008e8c853ecf208d8d0903c29628f40d19331310a9c9e04bfbe51a84c8",
+        "right:31": "94cd5a9cf4e6f37200c818ff322f14c56b803fc32d9dda1158c79c7ff76e9a86",
+        "right:32": "b5a0c2486933f72aca4bd00b5638b17e8d179f84efd42024a982561924ce2de7",
+        "right:33": "162aa4bb36d9ccd278c2d4d9592f7a905ee66e0d9b67fee460f8ab648d3d593f",
+        "right:34": "a1973c72d3fa71b1d813a48ff3b892857c67dcb2e48028865635038e30ea11aa",
+        "right:35": "9da884f6b495d13dfa89882cb9e6918079a924e9cf71d0f33e39d7b8dd2529a1",
+        "right:36": "a396cd0bf7958e3086d4b080b3c34a2aa175d95485d67d710a2e172e1fb0a166",
+        "right:37": "bba2812e6dd1e76e5dbbfcf1969157b1a85ef881d7dd50ac642e328d49c3d838",
+        "right:38": "9427ac6306a70115b277009cb55bff89d61601dca5b180b6883cb265c9022c38",
+        "right:39": "33e2fd11ada93ef14816059f3a59a01c5a7e0a29d25688897013eb8b34c47335",
+        "right:40": "8999e5ecefdae39279158a9831c5a8ad611c51804f3dae82cb7346cf0faa87c6",
+        "right:41": "85d957c55231c362bd03006c8a503d13846046860731762814ef5ac1de49b242",
+        "right:42": "f6ff33eb3ba19b94c4eebeb3dbb1c477f1a03479aee2e1c78ef6a290851bc26b",
+        "right:43": "c9032215bb52062bc7f3566b1be49864124b51208a9518cdbe447bfb40f37f38",
+        "right:44": "f8bb5cf3c7ee68fbf77433ef133165425fbc9bb8d236aea7f67f9507f56732a5",
+        "right:45": "756241bd183fa2345162658877b99186c2be062428d2bb1cb82ffaed6b7f9db5",
+        "right:46": "7bb0979dbe451130cb90bf847216c532f74c983126a6aa6b331260f1f63c18b8",
+        "right:47": "ce53ba52d898e80ec790dd889666a1511cec496f0792a683e22392ba4814af74",
+        "right:48": "b8e116cea7f452c17073b421c57a6548cff21936e7723c76a3d80f08c14d5aae",
+        "right:49": "7847fd3be58ec36c15b611b678ae12eda5c63875dc178503684274098216ecee",
+        "right:50": "ebe3d9ebb0ff5bffe0a6a4a34013f6d589edac4da2a8f0bf8f3d937cc16335f5"
+      }
+    }
+  ],
+  "source_sha256": {
+    "/home/robot/ego_vio_humble/.planning/metric_window_bundle_20260928/run_observation_controls.py": "1fd8a781348840e6ecb8f3994d40437eda9e1cf2c189016e51ded00c9978e47f",
+    "/home/robot/ego_vio_humble/scripts/stereo_window_bundle.py": "6f756f6c9125a078c9339806c0aa637f2706d630bb3590d5d2c4160444d1f9df",
+    "/home/robot/ego_vio_humble/scripts/prepare_stereo_window_observations.py": "874eb1dc0790c324b65c91b6926d1c8dd6def4d9abc9f724a0d93dbcafb11813",
+    "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f",
+    "/home/robot/ego_vio_humble/scripts/fuse_mast3r_stereo_imu.py": "32256a156080cb18136c9d5de86dc5662c1abe183a05eecd4d37894c35562e57",
+    "/home/robot/ego_vio_humble/.planning/metric_window_bundle_20260928/verify_real_solver_identity.py": "42d1afae428b5e524fb1ec4f1ddcdcc5dfcbf2db632b52541943f9329b4268fa"
+  },
+  "external_reference_used": false,
+  "production_modified": false,
+  "interpretation": "Same-input original vs instrumented solver proof; uniform first window per recording, not accuracy",
+  "runtime": {
+    "executable": "/usr/bin/python3",
+    "numpy": "2.2.6",
+    "scipy": "1.14.1",
+    "opencv": "4.11.0",
+    "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]"
+  }
+}

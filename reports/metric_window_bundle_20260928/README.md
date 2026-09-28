@@ -241,3 +241,21 @@ restore. Selected fullcoverage outputs were backed in commit
 from remote and compared byte-for-byte with main and backup. Normal push only;
 no unrelated dirty production work was staged. Later documentation changes do
 not alter that frozen algorithm/evidence commit.
+
+## Endpoint observability census (diagnostic only)
+
+The approved all-ten diagnosis is complete:590 windows,567 accepted,23 refused,
+no missing accepted diagnostics. All accepted endpoint conditional ranks are3;
+strict unobservability is not established. After freezing UMI-only outputs,
+537 current local-displacement scores show sensitivity/error Spearman0.803,
+positive within every recording. Track loss and weak metric support contribute
+evidence, but counterexamples prevent a unique-cause claim.
+
+See [observability_report.md](observability_report.md) for exact inputs, the
+strict-vs-numerical replay boundary, per-case results, counterexamples and the
+next persistent-landmark joint-geometry experiment contract. Current evidence
+is `observability_full_ten_v1/diagnostic_summary_v2.json` and
+`reference_association_v2.json`; earlier v1 derived files are retained but
+superseded following stricter proof-binding validation. Core solver, production
+pipeline and graph trajectories were not changed. Expanded tests248PASS;
+the accuracy goal is still NOT met:9/10 PASS, fresh4 max14.016mm.

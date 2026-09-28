@@ -88,3 +88,34 @@ Scoped least_squares interception returns the identical original result before
 posthoc diagnostics; tests show endpoints/landmarks/bias byteidentical. Prior
 solver source hash still matches frozen590controls.186testsPASS; independent
 review requested before all-ten diagnostic census. No GT factor/gate selection.
+
+Actualpartialreplay revealedstrict1e-10cachedendpointidentityfails: max1.933e-7m
+infirstfourgroups, accepted/reason/admission/initialendpointsexactunchanged.
+Historicalcommand proof oldcensususes/usr/bin/python3 (NumPy2.2.6); current
+launch usedtoolchainvenv NumPy1.26.4; SciPy1.14.1/OpenCV4.11.0same. Initial
+endpointsremainexact; LS nfev differsin3–5windows/case. This is not a sensor
+failure or accuracygain. Realpairedproof10uniformfirstwindows inBOTHruntimes:
+originalvsinstrumented centers/landmarks/bias BITequal; system firstwindows
+matcholdcached EXACTLY; crossruntimeendpointdelta1e-11..8.415e-9m atfirstwindows.
+No cached identitycheck silentlyrelaxed. Addingexplicitoptional numericreplay
+proof mode with1e-6m bound (0.001mm), separatefromdefaultstrictidentity andATE.
+AFTERfreeze scoreCURRENTcontrols ratherthanreusepreviouscachedreferenceerrors.
+
+Completedcensus590windows,567accepted/23refused,0diagnosticmissing; all567
+allfactorconditionalendpoint ranks3. Strictunobservability NOTdemonstrated.
+Maxcrossruntimecomponentdelta2.113874232e-7m,Euclidean2.77886473e-7m; tiny
+numericreplaynotaccuracygain. Explicitopt-inproof checks exactinputhashmaps,
+decodedfirstwindowhashsubsets,allwindowadmission/initialendpointidentity;
+defaultstrict1e-10mstillfails. Same-input10casepairedproofBITequal BOTHruntimes.
+
+CURRENTlocalGTscoring537windows,30unscoredexplicit,median/P95/max
+1.129441/4.318094/18.577697mm. Frozenallten Spearman sensitivity/error
+0.802908(allfactors)/0.809269(pixelrows);within-caseallpositive0.774..0.896.
+Trackcount/errorrho-0.535227, fresh4-0.724425. Supportsweaksustainedmetric
+supportascontributingmechanism, notuniquecause orcalibrateduncertainty.
+fresh1w42 weakaxisprojection17.955mm of18.578mm localerror,10endpointtracks;
+fresh4w54 projection6.718of9.224mm,14tracks,indices1060..1080 includepeakarea.
+Counterexamplefresh4w53 59tracks/error7.845mm only0.938mmalongweakaxis:
+biasedobservations/referenceuncertainty/graphconsensus notexcluded.
+No GTthresholdfit/edgechoice,closedfamilysweep,modeltrainingorproductionedit.
+Detailedreport reports/metric_window_bundle_20260928/observability_report.md.

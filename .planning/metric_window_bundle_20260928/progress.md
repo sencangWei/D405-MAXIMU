@@ -204,3 +204,34 @@ changes from failedpatch. Instrumentation outputs diagnostics only.
 Independent read-only review: APPROVE diagnostic-only590windowcensus,0blockers.
 TwoLOW recommendations repaired beforelaunch: explicit scriptsimportpath,
 provenancecheckexplicitValueErrorinsteadassert. No optimizer equations changed.
+
+Alltenfullcoverage diagnosticcensus running execsession2929; first3groups
+complete,198/590windows latestcheck. Interceptiondoesnot change originalsolver.
+Core diagnosticbackup28e60086 fetchedcleanremote:7filesbyteidentical,
+restored186testsPASS1.42s. Addedpost-freeze-only localreferenceassociation
+5testPASS; workersummary correctedexactnames/schedule/nullrank/unavailable/
+quantile/provenanceguards14PASS. Freshcombined205PASS1.65s. Newsummary/
+associationreview active; no real externalscores read by diagnosticcensus.
+
+Review caughtlocalGTscore schema mismatchinassociationgeneric hashvalidator;
+fixedschema-specifictop-level hashes/flags + CLI regressiontests. Worker
+summarymetadata malformeddiagnostic guardsadded, producerfieldmismatchfixed.
+32summary/associationtestsPASS. Realpartialnumericalidentityfails by~1e-7m:
+tracedhistoricalcmd tosystemNumPy2.2.6 vscurrentvenv1.26.4, admissions/init same.
+Addeduniform10casefirstwindowpaired proofBOTHruntimes; allwithin-runtime
+instrumentationoriginalresults BITequal, originalsystemcachefirstwindowexact.
+Explicitnumericreproducibility mode pending; defaultstrictunchanged. NoGT
+associationlaunched; currentcensuscontinues, eightgroupscompletedlatestcheck.
+
+Allten590windowobservabilitycensusDONEexit0. NoGTreads duringestimation.
+Optionalnumericproofmode strictdefaultpreserved; reviewerMEDIUMinputbinding
+fixed withinputmap/decode-subset/admissionregressiontests. Anextendedtestrun
+duringworkeredit brieflyfailed2fixtures (differentold/newfakeinputhashmaps);
+fixturescorrectedsharedrealinput,notguardrelaxed. Finalexpanded248PASS2.33s.
+Realnumericproofmode 567accepted/0missing,strictidentityfalse;maxcomponent
+2.113874232e-7m. Allacceptedconditionalranks3,notstrictunobservability.
+CurrentcontrolslocalGT537scores/frozenassociationv2 completedexit0;rho0.803
+sensitivity/erroralltenpositive,tracklossproblemwindows butcounterexamples
+explicit. Earlierdiagnostic/associationv1 retainedsuperseded(helperhashchanged),
+sourcecensus/pairedproofunchanged. No newfusiontrajectories,goalstill9/10PASS
+fresh4max14.016mm. Phase7diagnosiscomplete; reportsobservability_report.md.

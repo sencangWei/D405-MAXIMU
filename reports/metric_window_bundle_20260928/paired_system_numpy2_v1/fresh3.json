@@ -1,0 +1,247 @@
+{
+  "case": "fresh3",
+  "windows": [
+    {
+      "window": 1,
+      "indices": [
+        0,
+        5,
+        10,
+        15,
+        20
+      ],
+      "elapsed_s": [
+        0.0,
+        0.16681265830993652,
+        0.3332552909851074,
+        0.4993302822113037,
+        0.6650354862213135
+      ],
+      "temporal_tracking_frame_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "initial_consistency": {
+        "training_left_p95_px": [
+          5.684341886080802e-14,
+          1.3846787859277385,
+          0.9136928539256322,
+          1.113674320431021,
+          3.7429042936845707
+        ],
+        "training_left_outlier_fraction_2px": [
+          0.0,
+          0.015873015873015872,
+          0.0,
+          0.0,
+          0.140625
+        ],
+        "visual_raw_gyro_disagreement_deg": [
+          0.03893338462250998,
+          0.016214173670861125,
+          0.01514620307783732,
+          0.09298066760014367
+        ]
+      },
+      "admission": {
+        "policy": "training-only PnP per-observation inliers, fixed existing2px; source stereo retained",
+        "node_geometry_policy": "at least4 non-collinear points; EPNP initialization only, joint postfit gates decide",
+        "pre_count": [
+          71,
+          63,
+          63,
+          63,
+          64
+        ],
+        "post_count": [
+          65,
+          62,
+          62,
+          63,
+          57
+        ],
+        "source_depth_bias_caveat": "noisy source depth can reject otherwise valid temporal pixels; not proof of corrupted recording"
+      },
+      "accepted": true,
+      "reason": "ok",
+      "train_tracks": 65,
+      "heldout_tracks": 18,
+      "initial_heldout_rmse_px": 0.4907148117025316,
+      "diagnostics": {
+        "solver_success": true,
+        "solver_status": 2,
+        "solver_message": "`ftol` termination condition is satisfied.",
+        "cost": 41.80469499516877,
+        "nfev": 10,
+        "observed_pixels": 1236,
+        "valid_observations": 309,
+        "tracks": 65,
+        "frames": 5,
+        "pixel_rmse_px": 0.2704575776226713,
+        "pixel_p95_px": 0.7959050871202731,
+        "pixel_inlier_limit_px": 2.0,
+        "pixel_inlier_fraction": 1.0,
+        "minimum_pixel_inlier_fraction": 0.95,
+        "gyro_rmse_rad": 6.87084277643616e-05,
+        "gyro_p95_rad": 0.00017542132350664315,
+        "gyro_p95_limit_rad": 0.08726646259971647,
+        "gyro_p95_limit_deg": 5.0,
+        "gyro_bias_component_abs_max_rad_s": 0.0006829990506721774,
+        "gyro_bias_component_limit_rad_s": 0.01,
+        "minimum_depth_m": 0.11513119911634022,
+        "is_calibrated_covariance": false,
+        "pixel_loss": "soft_l1",
+        "pixel_gate": "stereo_reprojection_p95_le_2px_or_95pct_2px_inliers",
+        "pixel_gate_source": "existing_pixel_pnp_2px_tolerance_not_accuracy_guarantee",
+        "gyro_delta_convention": "camera_to_window_R_i_inverse_R_j",
+        "gyro_factor": "soft_log_delta_measured_inverse_R_i_inverse_R_j_minus_Jb_bias",
+        "gyro_bias_model": "Delta(b)_approximately_Delta0_Exp_Jb_bias_right_tangent",
+        "gyro_bias_jacobian_source": "caller_supplied_right_tangent",
+        "gyro_bias_model_is_exact": false,
+        "gyro_noise_policy": "provisional_not_calibrated",
+        "bias_gate_source": "accepted_initialization_guard_0p01_rad_s",
+        "diagnostic_only": false,
+        "endpoint_observability": {
+          "diagnostic_only": true,
+          "is_calibrated_covariance": false,
+          "gauge": "first_camera_center_zero_rotation_identity",
+          "jacobian": "scipy_optimized_transformed_soft_l1_pixels_soft_gyro_bias_prior",
+          "uncalibrated_noise_assumption": true,
+          "normalized_pixel_sigma_px": 1.0,
+          "gyro_noise_density": 0.00103,
+          "gyro_bias_sigma": 0.0033333333333333335,
+          "conditional_on_current_solution": true,
+          "all_factors": {
+            "diagnostic_only": true,
+            "is_calibrated_covariance": false,
+            "nuisance_rank": 219,
+            "endpoint_rank": 3,
+            "rank_deficient": false,
+            "singular_values_per_m": [
+              9089.946584227124,
+              7803.9133977575675,
+              4957.69524071808
+            ],
+            "rank_tolerance_per_m": 6.96033688968763e-09,
+            "weak_axis_camera_i": [
+              -0.26269783400342833,
+              -0.5329774255814689,
+              -0.8043164251900224
+            ],
+            "null_axes_camera_i": [],
+            "weak_response_mm_per_unit_normalized_residual": 0.20170663008627343,
+            "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+          },
+          "pixel_rows_only": {
+            "diagnostic_only": true,
+            "is_calibrated_covariance": false,
+            "nuisance_rank": 216,
+            "endpoint_rank": 3,
+            "rank_deficient": false,
+            "singular_values_per_m": [
+              8907.701702273915,
+              7107.32385699618,
+              4529.573951881684
+            ],
+            "rank_tolerance_per_m": 6.8768796128328625e-09,
+            "weak_axis_camera_i": [
+              -0.29166857174019506,
+              -0.5687683124405347,
+              -0.7690461956362449
+            ],
+            "null_axes_camera_i": [],
+            "weak_response_mm_per_unit_normalized_residual": 0.2207713154974715,
+            "interpretation": "local linear sensitivity, not calibrated uncertainty or accuracy"
+          },
+          "node_tracks": [
+            65,
+            62,
+            62,
+            63,
+            57
+          ],
+          "endpoint_tracks": 57,
+          "source_endpoint_common_tracks": 57,
+          "endpoint_depth_m_quantiles": [
+            0.13393515654772267,
+            0.3107992298432441,
+            0.48627338160122835
+          ],
+          "endpoint_fx_baseline_over_depth_px_quantiles": [
+            24.14517598239926,
+            37.772857691761715,
+            87.6528108783035
+          ],
+          "solver_optimality": 0.9694050860115846
+        },
+        "same_input_paired_proof": {
+          "accepted_reason_equal": true,
+          "original": {
+            "nfev": 10,
+            "cost": 41.80469499516877,
+            "solver_status": 2,
+            "endpoint_m": [
+              -4.696653498665542e-05,
+              -0.00013659911387776813,
+              1.8758974068081632e-05
+            ]
+          },
+          "instrumented": {
+            "nfev": 10,
+            "cost": 41.80469499516877,
+            "solver_status": 2,
+            "endpoint_m": [
+              -4.696653498665542e-05,
+              -0.00013659911387776813,
+              1.8758974068081632e-05
+            ]
+          },
+          "centers_bit_equal": true,
+          "centers_max_absolute_difference": 0.0,
+          "landmarks_bit_equal": true,
+          "landmarks_max_absolute_difference": 0.0,
+          "gyro_bias_bit_equal": true,
+          "gyro_bias_max_absolute_difference": 0.0
+        }
+      },
+      "gyro_bias_rad_s": [
+        0.0006829990506721774,
+        0.0002865777014630645,
+        -0.00043512685347118043
+      ],
+      "initial_endpoint_m": [
+        0.00027591975105077193,
+        -0.0006830296774387087,
+        -0.000244440707859606
+      ],
+      "endpoint_m": [
+        -4.696653498665542e-05,
+        -0.00013659911387776813,
+        1.8758974068081632e-05
+      ],
+      "endpoint_change_mm": 0.6871069691623032,
+      "optimized_heldout_rmse_px": 0.4696191621231159,
+      "runtime_s": 1.96072209905833
+    }
+  ],
+  "external_reference_used": false
+}

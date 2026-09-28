@@ -1,0 +1,922 @@
+{
+  "schema": "stereo_window_observability_summary_v1",
+  "diagnostic_only": true,
+  "external_ground_truth_read": false,
+  "no_weights_or_trajectory_selection": true,
+  "accuracy_claim": false,
+  "cases": 10,
+  "windows_per_case": 59,
+  "source_sha256": {
+    "/home/robot/ego_vio_humble/.planning/metric_window_bundle_20260928/summarize_observability_controls.py": "685c9e186b930c4cd0f0e319253941486653b69d8c718e18cf89693e78e7a87e"
+  },
+  "input_summaries": {
+    "observability": {
+      "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/observability_full_ten_v1/summary.json",
+      "sha256": "d8f2de9ebe8e8542f941cd8cd9c50adefbc29e16338b4dcd4072abc20b07fcc3"
+    },
+    "previous": {
+      "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/controls_full_ten_v1/summary.json",
+      "sha256": "1a898e135dcb7492861bf41c46707ccced1035f9501d0ec970eace3d7852c3fc"
+    }
+  },
+  "endpoint_observability_adapter": {
+    "diagnostic_only": true,
+    "source_sha256": {
+      "/home/robot/ego_vio_humble/.planning/metric_window_bundle_20260928/run_observability_controls.py": "76898b79411d792763e2a01b483dbc14116e0d58ec936e91f99d23636b53ef97",
+      "/home/robot/ego_vio_humble/scripts/stereo_window_observability.py": "40ed01dd4e93910cf6f150e3097c9b57787a93d026a2cfa0b75a7adf6437294d"
+    },
+    "external_reference_used": false,
+    "used_for_selection_or_graph_weights": false,
+    "noise_assumption": "provisional normalized robust pixel/gyro/bias residuals",
+    "all_factors": "nuisance-marginalized optimized robust Jacobian",
+    "pixel_rows_only": "same solution and robust pixel weights; gyro/bias rows excluded"
+  },
+  "identity": {
+    "accepted_reason_indices_unchanged": true,
+    "endpoint_exact_identity": false,
+    "max_endpoint_difference_m": 2.113874232184676e-07,
+    "decoded_image_hash_identity": true,
+    "endpoint_tolerance_m": 1e-10,
+    "strict_bound_m": 1e-10,
+    "numeric_bound_m": 1e-06
+  },
+  "per_case": {
+    "dev1": {
+      "accepted_windows": 57,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.16831949107987737,
+            "p50": 0.5332869582111733,
+            "p90": 0.8245963272392162
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.17657025044515906,
+            "p50": 0.7051818987775106,
+            "p90": 1.9221060564074288
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 31.6,
+        "p50": 68.0,
+        "p90": 80.0
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 31.6,
+        "p50": 68.0,
+        "p90": 80.0
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.24593588945408565,
+            "p50": 0.27813583142544035,
+            "p90": 0.3544887062756596
+          },
+          "q1": {
+            "p10": 0.3272548387581913,
+            "p50": 0.40470990449072625,
+            "p90": 0.44176663848683045
+          },
+          "q2": {
+            "p10": 0.42988784621967335,
+            "p50": 0.5393136647280078,
+            "p90": 0.5513580225891251
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 21.293081040450133,
+            "p50": 21.777929386810467,
+            "p90": 27.318533650153864
+          },
+          "q1": {
+            "p10": 26.57470250534168,
+            "p50": 29.008945129138382,
+            "p90": 35.8810347629579
+          },
+          "q2": {
+            "p10": 33.117950684766456,
+            "p50": 42.20879122934542,
+            "p90": 47.73541957627012
+          }
+        }
+      }
+    },
+    "dev2": {
+      "accepted_windows": 55,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.11786257231314422,
+            "p50": 0.28426683973759537,
+            "p90": 0.7906539046192557
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.12546282001391793,
+            "p50": 0.34445534038793596,
+            "p90": 1.3227042306130232
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 35.4,
+        "p50": 65.0,
+        "p90": 91.60000000000001
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 35.4,
+        "p50": 65.0,
+        "p90": 91.60000000000001
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.13352583460814332,
+            "p50": 0.2013719857801108,
+            "p90": 0.32772945048848384
+          },
+          "q1": {
+            "p10": 0.24411934217542672,
+            "p50": 0.27591959192172066,
+            "p90": 0.4245625021301802
+          },
+          "q2": {
+            "p10": 0.32436241056189064,
+            "p50": 0.46821754032294594,
+            "p90": 0.5205371503989183
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 22.553512370544514,
+            "p50": 25.11804741041179,
+            "p90": 36.236268387645396
+          },
+          "q1": {
+            "p10": 27.652311193143785,
+            "p50": 42.54781256312025,
+            "p90": 48.10072076675989
+          },
+          "q2": {
+            "p10": 35.86691224588561,
+            "p50": 58.29895195011174,
+            "p90": 87.92293209446461
+          }
+        }
+      }
+    },
+    "fresh1": {
+      "accepted_windows": 57,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.14685147054361997,
+            "p50": 0.2532147090853807,
+            "p90": 0.9625147309386364
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.15568650549056273,
+            "p50": 0.3477539276189934,
+            "p90": 3.4680460811211296
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 18.6,
+        "p50": 58.0,
+        "p90": 73.4
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 18.6,
+        "p50": 58.0,
+        "p90": 73.4
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.12333093316235408,
+            "p50": 0.19870772128708417,
+            "p90": 0.3396022198441922
+          },
+          "q1": {
+            "p10": 0.27142864612459705,
+            "p50": 0.3031171957460748,
+            "p90": 0.4266358221026642
+          },
+          "q2": {
+            "p10": 0.332588833395947,
+            "p50": 0.47558036798360864,
+            "p90": 0.5526238915227828
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 21.24398128088134,
+            "p50": 24.693777364099848,
+            "p90": 35.31295450659867
+          },
+          "q1": {
+            "p10": 27.574488563568167,
+            "p50": 38.7301520478982,
+            "p90": 43.25653893984154
+          },
+          "q2": {
+            "p10": 34.57518139086001,
+            "p50": 59.29889583785763,
+            "p90": 95.47716823783166
+          }
+        }
+      }
+    },
+    "fresh2": {
+      "accepted_windows": 56,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.17897484156274668,
+            "p50": 0.309367235588511,
+            "p90": 0.8155862805432029
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.19426511180793027,
+            "p50": 0.3773057144950969,
+            "p90": 2.2267741660633895
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 26.0,
+        "p50": 58.0,
+        "p90": 73.5
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 26.0,
+        "p50": 58.0,
+        "p90": 73.5
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.13363973821987316,
+            "p50": 0.23308888667968009,
+            "p90": 0.3495784552075354
+          },
+          "q1": {
+            "p10": 0.27983087263370304,
+            "p50": 0.34193263496825066,
+            "p90": 0.4390109759304047
+          },
+          "q2": {
+            "p10": 0.33799919985753085,
+            "p50": 0.4556803802838284,
+            "p90": 0.5367328771165927
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 21.875089540380557,
+            "p50": 25.76720226522304,
+            "p90": 34.74893608024375
+          },
+          "q1": {
+            "p10": 26.74283678497934,
+            "p50": 34.33398733156136,
+            "p90": 41.95417008740179
+          },
+          "q2": {
+            "p10": 33.58783300873817,
+            "p50": 51.196653988774244,
+            "p90": 87.84665367773698
+          }
+        }
+      }
+    },
+    "fresh3": {
+      "accepted_windows": 54,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.20110004240180507,
+            "p50": 0.22688903659535947,
+            "p90": 0.7552588884363313
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.2190358610997573,
+            "p50": 0.2533878563483368,
+            "p90": 2.3404255350815575
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 30.6,
+        "p50": 54.0,
+        "p90": 62.400000000000006
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 30.6,
+        "p50": 54.0,
+        "p90": 62.400000000000006
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.12963250057265707,
+            "p50": 0.17413564123970876,
+            "p90": 0.30932928383187847
+          },
+          "q1": {
+            "p10": 0.29618079123902785,
+            "p50": 0.3224414011059133,
+            "p90": 0.38649613414715833
+          },
+          "q2": {
+            "p10": 0.36083459375442273,
+            "p50": 0.4671093343516642,
+            "p90": 0.5038143617405733
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 23.303856991526807,
+            "p50": 25.181849789491363,
+            "p90": 32.58333898046792
+          },
+          "q1": {
+            "p10": 30.375653063485593,
+            "p50": 36.41347820677701,
+            "p90": 39.655125995651396
+          },
+          "q2": {
+            "p10": 37.95331973565823,
+            "p50": 67.42147649282765,
+            "p90": 90.8544650875632
+          }
+        }
+      }
+    },
+    "fresh4": {
+      "accepted_windows": 58,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.16064811209088822,
+            "p50": 0.3945904973953288,
+            "p90": 1.108932454835032
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.16805516304628887,
+            "p50": 0.5065337578109796,
+            "p90": 2.5965928736574995
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 18.4,
+        "p50": 67.0,
+        "p90": 84.30000000000001
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 18.4,
+        "p50": 67.0,
+        "p90": 84.30000000000001
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.1598654125199822,
+            "p50": 0.26516948640992805,
+            "p90": 0.3619981931570367
+          },
+          "q1": {
+            "p10": 0.27539855558334997,
+            "p50": 0.40073464161101774,
+            "p90": 0.4524016374988757
+          },
+          "q2": {
+            "p10": 0.34721069701472596,
+            "p50": 0.5122048688694326,
+            "p90": 0.5741786328629661
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 20.446214924392564,
+            "p50": 22.970422754490006,
+            "p90": 33.83520361957597
+          },
+          "q1": {
+            "p10": 25.95421878603825,
+            "p50": 29.295672774344915,
+            "p90": 42.63964847694636
+          },
+          "q2": {
+            "p10": 32.43982492562818,
+            "p50": 44.318487049227784,
+            "p90": 78.925217273228
+          }
+        }
+      }
+    },
+    "heldout1": {
+      "accepted_windows": 57,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.1352769177450627,
+            "p50": 0.4345074139263186,
+            "p90": 0.9714387240286989
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.14421164485377164,
+            "p50": 0.5702266162510619,
+            "p90": 2.7634308798127027
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 18.6,
+        "p50": 60.0,
+        "p90": 90.0
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 18.6,
+        "p50": 60.0,
+        "p90": 90.0
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.1528754164358183,
+            "p50": 0.2399968623858291,
+            "p90": 0.3536799985267214
+          },
+          "q1": {
+            "p10": 0.2669972029629335,
+            "p50": 0.32361091354429006,
+            "p90": 0.4891239196293793
+          },
+          "q2": {
+            "p10": 0.3561614805041463,
+            "p50": 0.46055929855824196,
+            "p90": 0.5723306682285165
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 20.51242542493402,
+            "p50": 25.492169026134828,
+            "p90": 33.05914797894461
+          },
+          "q1": {
+            "p10": 24.002465795354176,
+            "p50": 36.27752829168645,
+            "p90": 43.97077220547794
+          },
+          "q2": {
+            "p10": 33.20768487502586,
+            "p50": 48.917754966691206,
+            "p90": 79.70773994777399
+          }
+        }
+      }
+    },
+    "heldout2": {
+      "accepted_windows": 59,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.14134729132540086,
+            "p50": 0.29269743811766374,
+            "p90": 0.7810904554976952
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.15039431745523918,
+            "p50": 0.3571263011155631,
+            "p90": 2.041114170881178
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 29.200000000000003,
+        "p50": 74.0,
+        "p90": 85.2
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 29.200000000000003,
+        "p50": 74.0,
+        "p90": 85.2
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.13353772915453296,
+            "p50": 0.2242901555467944,
+            "p90": 0.3536381481983576
+          },
+          "q1": {
+            "p10": 0.2767043631248348,
+            "p50": 0.33835127601583254,
+            "p90": 0.4894968263222515
+          },
+          "q2": {
+            "p10": 0.34603110108351604,
+            "p50": 0.4531541519938057,
+            "p90": 0.5772073096382945
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 20.3398445946724,
+            "p50": 25.9112679019544,
+            "p90": 33.99230251232683
+          },
+          "q1": {
+            "p10": 23.99509361751749,
+            "p50": 34.69700252890034,
+            "p90": 42.435604154181966
+          },
+          "q2": {
+            "p10": 33.238013056288395,
+            "p50": 52.3421396337109,
+            "p90": 87.91364052013208
+          }
+        }
+      }
+    },
+    "heldout3": {
+      "accepted_windows": 58,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.12842762642065325,
+            "p50": 0.37830198922830616,
+            "p90": 0.8362277201743976
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.135853936258245,
+            "p50": 0.5039907380350365,
+            "p90": 2.355802095618365
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 30.4,
+        "p50": 76.5,
+        "p90": 90.60000000000001
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 30.4,
+        "p50": 76.5,
+        "p90": 90.60000000000001
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.1341096478070424,
+            "p50": 0.2288973118895359,
+            "p90": 0.3347112798686167
+          },
+          "q1": {
+            "p10": 0.25977742637056994,
+            "p50": 0.32228519427416236,
+            "p90": 0.43126269854412047
+          },
+          "q2": {
+            "p10": 0.35802527852346705,
+            "p50": 0.4607420645050597,
+            "p90": 0.5194251822457225
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 22.603583956899914,
+            "p50": 25.492845347491137,
+            "p90": 32.81809705589537
+          },
+          "q1": {
+            "p10": 27.26140540204223,
+            "p50": 36.42671248905933,
+            "p90": 45.1937760626398
+          },
+          "q2": {
+            "p10": 35.210387589655035,
+            "p50": 51.28993683826224,
+            "p90": 87.53873192566296
+          }
+        }
+      }
+    },
+    "heldout4": {
+      "accepted_windows": 56,
+      "counts_diagnostic_unavailable": 0,
+      "all_factors": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.17643399253910885,
+            "p50": 0.526915872205783,
+            "p90": 1.017100873703586
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "pixel_rows_only": {
+        "endpoint_rank": {
+          "p10": 3.0,
+          "p50": 3.0,
+          "p90": 3.0
+        },
+        "weak_response_mm_per_unit_normalized_residual": {
+          "quantiles": {
+            "p10": 0.18756616587424613,
+            "p50": 0.8014647336251258,
+            "p90": 2.4283114105819807
+          },
+          "unavailable_rank_deficient": 0,
+          "unavailable_other": 0
+        }
+      },
+      "endpoint_tracks": {
+        "p10": 20.0,
+        "p50": 66.0,
+        "p90": 88.0
+      },
+      "source_endpoint_common_tracks": {
+        "p10": 20.0,
+        "p50": 66.0,
+        "p90": 88.0
+      },
+      "endpoint_depth_m_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 0.13691404564647525,
+            "p50": 0.25804987351346487,
+            "p90": 0.34436736124777234
+          },
+          "q1": {
+            "p10": 0.31722834405892064,
+            "p50": 0.38057099556100327,
+            "p90": 0.4622762503999972
+          },
+          "q2": {
+            "p10": 0.47793319868874096,
+            "p50": 0.5063150877943925,
+            "p90": 0.5498647030362878
+          }
+        }
+      },
+      "endpoint_fx_baseline_over_depth_px_quantiles": {
+        "distribution_of_window_quantiles": {
+          "q0": {
+            "p10": 21.350983377519455,
+            "p50": 23.18711566937091,
+            "p90": 24.60947069726488
+          },
+          "q1": {
+            "p10": 25.396998156295762,
+            "p50": 30.847834281183488,
+            "p90": 37.02227069463953
+          },
+          "q2": {
+            "p10": 34.091990352397474,
+            "p50": 45.4947643315343,
+            "p90": 86.61655390910529
+          }
+        }
+      }
+    }
+  },
+  "counts_diagnostic_unavailable": 0,
+  "interpretation": "raw local observability diagnostics only; no GT, no accuracy claim",
+  "numeric_runtime_proof": {
+    "label": "diagnostic_numerical_reproducibility_boundary",
+    "strict_bound_m": 1e-10,
+    "numeric_bound_m": 1e-06,
+    "proofs": [
+      {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/paired_system_numpy2_v1/summary.json",
+        "sha256": "7185a5381e9d551421be5c9827927e7b116a51b20a5993ba65b4bc0ab69c1c92",
+        "runtime": {
+          "executable": "/usr/bin/python3",
+          "numpy": "2.2.6",
+          "scipy": "1.14.1",
+          "opencv": "4.11.0",
+          "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]"
+        }
+      },
+      {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/paired_venv_numpy1_v1/summary.json",
+        "sha256": "b975cc8311a4cfa126a6486af1fa4bed8fe1cedbf516a45d8ba56f176b664195",
+        "runtime": {
+          "executable": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/.venv/bin/python",
+          "numpy": "1.26.4",
+          "scipy": "1.14.1",
+          "opencv": "4.11.0",
+          "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]"
+        }
+      }
+    ],
+    "numpy_versions": [
+      "2.2.6",
+      "1.26.4"
+    ],
+    "old_match_max_endpoint_delta_m": 0.0,
+    "new_match_max_endpoint_delta_m": 0.0
+  }
+}

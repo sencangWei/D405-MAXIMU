@@ -48,7 +48,7 @@ no regression of eight prior passes; fresh independent captures after freeze.
 
 ## Stop/decision conditions
 
-## Phase7 — approved endpoint observability diagnostic (in progress)
+## Phase7 — approved endpoint observability diagnostic (complete; not a correction)
 
 Hypothesis to test, not a proved root cause: some stereo endpoints fit pixels
 while motion is weakly constrained after landmark/rotation/bias freedom is
@@ -62,6 +62,17 @@ Report rank, endpoint weak axes, provisional unit-normalized-residual response,
 and endpoint track/depth support. This is not calibrated covariance or a
 millimetric confidence certificate; correlations with external error may be
 examined only AFTER freezing diagnostics and cannot set estimator selection.
+
+Completed590/590windows;567accepted/23refused,0diagnosticmissing. Allaccepted
+endpointconditionalranks3: strictunobservabilityhypothesis NOTconfirmed.
+Within-runtimerealpairedproofs alltenfirstwindows BITequal; crossNumPyreplay
+strictidentityfails,explicitproofmode reportsfalseexactidentity withmaxcomponent
+2.113874232e-7m (0.000211mm),no ATEgatechange. Currentfrozencensus537localGT
+scores show sensitivity/errorSpearman0.803, positiveallten; persistenttrack
+supportweakenedproblemwindows. Counterexamplesremain, notuniquecauseproof.
+Fresh248testsPASS; no trajectorychange orproductionpromotion. Repairdirection:
+cross-windowpersistent/reseededlandmarkjointgeometry, separatelyboundedand
+validatedbeforealltenfrozengraphreplay; notconfidence/weighttuningfromGT.
 
 Observation-only improvement is not SLAM acceptance. Reject an estimator that
 does not improve independent geometric consistency or is unobservable. Do not
