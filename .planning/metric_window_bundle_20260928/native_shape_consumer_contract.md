@@ -62,6 +62,12 @@ Do not invent a millimetric trust-radius pass gate from this uncalibrated affine
 profile or choose thresholds using GT. Describe linearization displacement;
 it does not certify nonlinear accuracy or eliminate shared gyro information.
 
+Distinguish the LSQR solution from the actually returned camera trajectory:
+native correction caps and the unchanged later full-rate refinement may alter
+local shapes. Report grouped residual/displacement at the uncapped solution,
+after native cap and at final camera output separately. Do not label the
+uncapped solution's residual as the final SLAM trajectory's residual.
+
 ## Before any real graph or score
 
 Freeze full290 summaries and hashes, prove unchanged solver endpoints and

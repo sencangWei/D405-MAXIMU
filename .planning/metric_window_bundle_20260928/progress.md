@@ -542,3 +542,26 @@ producer/62inputbindings reverified zero mismatch while live. ActualglobalATE
 unchanged. Newnative_shape_consumer_contract.md records row-level replacement,
 matchednodes, unchangedacceptedlist/ancillarypriors and descriptive(noGTtuned
 threshold) local-linearization diagnostics. No consumer source orgraph yet.
+
+Fullscorer source/test/design normally pushed as2aeaebaea85436d2a2f0558588879807d1d051f3.
+Remote-only restored5files byte-identicalmain/backup;fresh382testsPASS8.62s,
+restoreclean. Producer14/input62unchanged. Live290process still running,
+threecasescomplete/heldout2inprogress; no realGT score ornewglobaltrajectory.
+
+Independent review clarifies fullfreeze is NOT a dependency for pure synthetic
+row-splice scaffolding. Approved NEW helper/test ONLY while capture continues:
+nativeaccepted ordering/dimensions/groups guarded, replace only endpoint
+translationrows, append correlatedrankrows, otherpriors exact, noopidentity.
+Worker owns scripts/stereo_window_shape_system.py and its newtest only. No
+realcontrols/GT/graph/read orproducer changes. Realconsumer/runtime remains
+blocked on fullfreeze and separate review; this is not a graph-launch shortcut.
+
+Pure row-splice helper now implemented with strict nativecolumn/rowlayout,
+frozenacceptedorder/same-sourcepair mapping, allothermatrix/target rows EXACT,
+no-opobjectidentity, nuisance-column nonzero rejection and noinputmutation.
+Rootcaught nominal stored-zero test droppedzeros duringdense→CSR conversion;
+fixture nowexplicitly storeszeroandprovesstorageunchanged. Actualnine-state
+producer interoperability usesdensecoupledW/nonidentityR/affine/scale.14helper
+tests/31relatedPASS; expandedmain398PASS8.44s beforelastfixture strengthening.
+Independent reviewapprovedsourceonly; finalfix followup pending. Still no
+realnativeconsumer/graphlaunch. Livecensus7casescomplete/fresh2inprogress.

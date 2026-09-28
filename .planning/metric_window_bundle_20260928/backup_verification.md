@@ -223,3 +223,17 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - Independent prelaunch APPROVE applies ONLY to the UMI-only full290 diagnostic
   capture. Sources14/inputs62 and all ten actual raw frame counts were verified
   before launch. This backup does not contain completed full290 outputs yet.
+
+## Full-shape local evaluator source restoration
+
+- NEW evaluator/test, row-replacement design contract and selected proof/progress
+  documents were normally pushed in `2aeaebaea85436d2a2f0558588879807d1d051f3`,
+  five exact changed paths on owned sencang branch. Existing production and
+  live-census producer sources were not changed. No reports-root stage/force.
+- Clean remote-only fetch/checkout into `/tmp/ego-metric-graph-restore-0Wz3x7`
+  matched the exact commit; all five changed files byte-identical to main and
+  backup. Fresh restored382testsPASS8.62s; main384PASS9.32s includes the two
+  existing unselected IMU-scale tests. Restore working tree remained clean.
+- Rotating-lever BODY/camera regression was corrected before any realGT use by
+  this evaluator. Full290 capture remains running; this source backup does not
+  claim completed census/evaluation/new ATE, real grouped graph or promotion.
