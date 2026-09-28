@@ -2,13 +2,14 @@
 """Reuse frozen NPZs for same-ray propagation and independent right-image LK."""
 import hashlib
 import json
+import argparse
 from pathlib import Path
 
 import cv2
 import numpy as np
 
 from map_depth_propagation import compare_continuity, compare_update
-from right_temporal_consistency import summarize_right_temporal_consistency
+from right_temporal_consistency import summarize_right_temporal_consistency, summarize_right_temporal_chain
 from summarize_frontend_geometry_probe import CASES, ROOT, validate_trace
 
 
@@ -51,8 +52,28 @@ def right_points(sample, metadata):
     return mask, key[0].astype(np.float32), current[0].astype(np.float32)
 
 
+def split_raw_diagnostics(right):
+    right = dict(right)
+    keys = ("native_bounds_mask", "opencv_forward_success_mask", "opencv_backward_success_mask",
+            "finite_forward_mask", "finite_backward_mask", "forward_in_bounds_mask", "fb_closure_norm_px",
+            "forward_vs_expected_norm_px", "actual_projected_flow_px", "actual_current_points_right",
+            "forward_chain_valid_mask", "backward_chain_valid_mask", "backward_closed_key_points_right")
+    raw = {k: np.asarray(right.pop(k)) for k in keys if k in right}
+    for direction in ("forward_steps", "backward_steps"):
+        if direction in right:
+            right[direction] = [dict(step) for step in right[direction]]
+            for i, step in enumerate(right[direction]):
+                for key in ("opencv_success_mask", "finite_mask", "in_bounds_mask"):
+                    if key in step:
+                        raw[f"{direction}_{i}_{key}"] = np.asarray(step.pop(key))
+    return right, raw
+
+
 def main():
-    output = ROOT/"reports/metric_window_bundle_20260928/map_and_right_probe_v1"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--adjacent-chain", action="store_true", help="unseeded adjacent LK instead of direct keyframe LK")
+    args = parser.parse_args()
+    output = ROOT/"reports/metric_window_bundle_20260928"/("map_and_right_chain_v1" if args.adjacent_chain else "map_and_right_probe_v1")
     if output.exists():
         raise FileExistsError("refusing to overwrite diagnostic census")
     sources = [Path(__file__).resolve(), *[Path(__file__).with_name(name) for name in
@@ -109,11 +130,14 @@ def main():
             with np.load(path, allow_pickle=False) as saved:
                 sample = {key: saved[key].copy() for key in saved.files}
             mask, key, current = right_points(sample, metadata)
-            right = summarize_right_temporal_consistency(image(row["keyframe_id"]), image(row["frame_id"]), key, current)
-            keys = ("native_bounds_mask", "opencv_forward_success_mask", "opencv_backward_success_mask",
-                    "finite_forward_mask", "finite_backward_mask", "forward_in_bounds_mask", "fb_closure_norm_px",
-                    "forward_vs_expected_norm_px", "actual_projected_flow_px", "actual_current_points_right")
-            raw = {k: np.asarray(right.pop(k)) for k in keys if k in right}
+            if args.adjacent_chain:
+                if not 0 <= row["keyframe_id"] < row["frame_id"] < metadata["frames"]:
+                    raise ValueError("invalid chronological keyframe/current binding")
+                right = summarize_right_temporal_chain(
+                    [image(i) for i in range(row["keyframe_id"], row["frame_id"]+1)], key, current)
+            else:
+                right = summarize_right_temporal_consistency(image(row["keyframe_id"]), image(row["frame_id"]), key, current)
+            right, raw = split_raw_diagnostics(right)
             raw["keyframe_pixel_ids"] = sample["keyframe_pixel_ids"][mask]
             raw_path = sample_dir/f'{row["frame_id"]:04d}.npz'
             np.savez_compressed(raw_path, **raw)
@@ -128,7 +152,8 @@ def main():
     if any(digest(p) != v for p, v in {**hashes, **inputs}.items()):
         raise ValueError("source/consumed input changed during census")
     result = dict(diagnostic_only=True, external_ground_truth_used=False, estimator_changed=False,
-                  gpu_replay_used=False, fixed_input_scope=[1000, 1120], source_sha256=hashes,
+                  gpu_replay_used=False, adjacent_temporal_chain=args.adjacent_chain,
+                  fixed_input_scope=[1000, 1120], source_sha256=hashes,
                   input_sha256=inputs, cases=cases, runtime_versions=dict(numpy=np.__version__, opencv=cv2.__version__),
                   limitations=["same input indices are not matched actions", "stereo depth and LK are noisy consistency checks, not ground truth",
                                "NN lookup coordinate differs from resized image footprint; occlusions not certified",

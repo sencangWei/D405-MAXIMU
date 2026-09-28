@@ -775,3 +775,29 @@ fetch+detachedrestore /home/robot/ego-feature-loss-restore-J9l9eE verifiedall386
 changedfiles byte-identicalmain (all363sampleNPZ included),53testsPASS0.21s;
 backup53PASS0.22s. Rawrecordings/checkpoint NOTcopied. No activeGPUreplay remains.
 Boundedcommongeometry investigationcomplete, uniqueATEcauseand10mmgoalnot.
+
+User approved next investigation. Re-read fullhandoff/activeAGENTS/RTK/memory
+index and skills; dirtyexistinguser changes preserved. Reusing363NPZ for
+same-ray mapupdate/continuity and independentright-temporal LK closure. No
+newGPU/SLAM/model/capture or estimatorchange. Read-only native continuity audit
+delegated; rootowns new census/integration, no duplicate old14family sweeps.
+
+Read-only map/right direct census completed363/363frames, source/input hash
+closure intact, same-keyframe commonZexact0 all3cases. Bothcontrol andfailure
+direct-LK closurebad atlongerkeyframegaps: fresh4bad26median100.105px,
+PASSheldout1all121median74.040px. Cannot attribute disagreementtonativeMASt3R
+when diagnosticLK itselffails. Bad26centereddepthshape improves. Boundednext
+diagnosticunseeded adjacentimagechain followedbyreversechain, same363fixed
+scope/all3, no thresholds/GT/trajectorychange. Sixsources/tests backed985db16a
+toowned sencang, remote-onlyrestore6byte-identical/22testsPASS0.15s.
+
+Adjacentforward+reversechain363/363complete, allconsumedinputhashes closed.
+Bad26fresh4 directclosure100.105→chain2.396px, endpointdifference3.582px.
+PASScontrols sameindices have chainclosure3.888/4.975px andendpoint6.248/
+7.172px. Diagnosticcounterexamplesremain; nativelyincorrectcorrespondence
+orfeaturecollapse NOTuniquecause. Independentroot726rawNPZhasheschecked,
+chain15frame scalarrecomputations exact. ReviewerAPPROVEboundedchaincensus;
+83targetedtestsPASS0.53s. Sourceaudit identifies rawdecoderproposalXkf/Ckf,
+oldC andrawpostXYZ missing; weightedupdateinnovationcannotbedecomposedfrom
+rayconstrainedXk/Xk_after alone. Findingsreport added; no estimatorrepair,
+productionpromotion/newfullATErun;9/10PASS/fresh4max13.801442 unchanged.

@@ -32,6 +32,17 @@ def _textured_translation(shift=(3.0, -2.0)):
     return image, current, key_points, expected
 
 
+def _textured_chain(step_shift=(2.0, -1.0), frames=4):
+    key, _, points, _ = _textured_translation(shift=step_shift)
+    height, width = key.shape
+    images = []
+    for index in range(frames):
+        matrix = np.array([[1.0, 0.0, step_shift[0] * index], [0.0, 1.0, step_shift[1] * index]], dtype=np.float32)
+        images.append(cv2.warpAffine(key, matrix, (width, height), flags=cv2.INTER_LINEAR, borderValue=0))
+    expected = points + np.asarray(step_shift, dtype=np.float32) * (frames - 1)
+    return images, points, expected
+
+
 def test_exact_translated_texture_has_small_expected_and_closure_errors():
     key, current, points, expected = _textured_translation()
     out = rtc.summarize_right_temporal_consistency(key, current, points, expected)
@@ -41,6 +52,29 @@ def test_exact_translated_texture_has_small_expected_and_closure_errors():
     assert out["usable_expected_comparison_count"] == len(points)
     assert out["forward_vs_expected_norm_px_stats"]["median"] < 0.05
     assert out["fb_closure_norm_px_stats"]["median"] < 0.05
+
+
+def test_chain_two_images_matches_single_pair_synthetic_flow():
+    key, current, points, expected = _textured_translation()
+    pair = rtc.summarize_right_temporal_consistency(key, current, points, expected)
+    chain = rtc.summarize_right_temporal_chain([key, current], points, expected)
+    assert chain["status"] == "OK"
+    assert chain["initial_flow_seed_used"] is False
+    assert chain["usable_expected_comparison_count"] == pair["usable_expected_comparison_count"]
+    assert chain["forward_vs_expected_norm_px_stats"]["median"] == pytest.approx(pair["forward_vs_expected_norm_px_stats"]["median"], abs=1e-6)
+    assert chain["fb_closure_norm_px_stats"]["median"] == pytest.approx(pair["fb_closure_norm_px_stats"]["median"], abs=1e-6)
+
+
+def test_chain_translated_textured_three_plus_frames_closes():
+    images, points, expected = _textured_chain(frames=5)
+    out = rtc.summarize_right_temporal_chain(images, points, expected)
+    assert out["status"] == "OK"
+    assert out["frame_count"] == 5
+    assert len(out["forward_steps"]) == 4
+    assert len(out["backward_steps"]) == 4
+    assert out["usable_expected_comparison_count"] == len(points)
+    assert out["forward_vs_expected_norm_px_stats"]["median"] < 0.15
+    assert out["fb_closure_norm_px_stats"]["median"] < 0.15
 
 
 def test_deliberately_wrong_expected_points_show_discrepancy():
@@ -126,6 +160,50 @@ def test_backward_lk_only_receives_forward_status_finite_inbounds_points(monkeyp
     assert np.isnan(out["forward_vs_expected_norm_px"][3])
 
 
+def test_chain_never_passes_statusfalse_nan_or_outofbounds_to_next_or_backward(monkeypatch):
+    images = [np.zeros((20, 20), dtype=np.uint8) for _ in range(3)]
+    points = np.array([[2.0, 2.0], [4.0, 4.0], [6.0, 6.0], [8.0, 8.0]], dtype=np.float32)
+    expected = points.copy()
+    calls = []
+
+    def fake_lk(source, target, start, *args, **kwargs):
+        starts = np.asarray(start).reshape(-1, 2).copy()
+        calls.append(starts)
+        if len(calls) == 1:
+            forward = np.array(
+                [
+                    [[3.0, 2.0]],
+                    [[np.nan, 4.0]],
+                    [[30.0, 6.0]],
+                    [[9.0, 8.0]],
+                ],
+                dtype=np.float32,
+            )
+            status = np.array([[1], [1], [1], [0]], dtype=np.uint8)
+            return forward, status, None
+        if len(calls) == 2:
+            np.testing.assert_allclose(starts, [[3.0, 2.0]])
+            return np.array([[[4.0, 2.0]]], dtype=np.float32), np.array([[1]], dtype=np.uint8), None
+        if len(calls) == 3:
+            np.testing.assert_allclose(starts, [[4.0, 2.0]])
+            return np.array([[[3.0, 2.0]]], dtype=np.float32), np.array([[1]], dtype=np.uint8), None
+        np.testing.assert_allclose(starts, [[3.0, 2.0]])
+        return np.array([[[2.0, 2.0]]], dtype=np.float32), np.array([[1]], dtype=np.uint8), None
+
+    monkeypatch.setattr(rtc.cv2, "calcOpticalFlowPyrLK", fake_lk)
+    out = rtc.summarize_right_temporal_chain(images, points, expected)
+    assert len(calls) == 4
+    assert out["forward_steps"][0]["kept_count"] == 1
+    assert out["forward_steps"][1]["start_count"] == 1
+    assert out["backward_steps"][0]["start_count"] == 1
+    assert out["forward_chain_valid_mask"] == [True, False, False, False]
+    assert out["backward_chain_valid_mask"] == [True, False, False, False]
+    assert out["fb_closure_norm_px"][0] == 0.0
+    assert np.isnan(out["forward_vs_expected_norm_px"][1])
+    assert np.isnan(out["forward_vs_expected_norm_px"][2])
+    assert np.isnan(out["forward_vs_expected_norm_px"][3])
+
+
 def test_bounds_filter_prevents_invalid_points_reaching_opencv():
     key, current, points, expected = _textured_translation()
     points = points.copy()
@@ -176,3 +254,12 @@ def test_no_points_inside_native_bounds_returns_unknown_not_zero():
     assert out["status"] == "UNKNOWN"
     assert out["reason"] == "no_points_inside_native_bounds"
     assert out["native_bounds_count"] == 0
+
+
+def test_chain_missing_points_and_bad_image_list_are_unknown_or_fail_closed():
+    images, points, expected = _textured_chain(frames=3)
+    out = rtc.summarize_right_temporal_chain(images, points[:0], expected[:0])
+    assert out["status"] == "UNKNOWN"
+    assert out["reason"] == "no_points"
+    with pytest.raises(ValueError, match="at least two"):
+        rtc.summarize_right_temporal_chain(images[:1], points, expected)

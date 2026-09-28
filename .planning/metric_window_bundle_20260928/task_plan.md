@@ -4,6 +4,12 @@ User approved 2026-09-28: develop a UMI-only multi-frame metric candidate;
 formal production remains unchanged. Goal: all ten frozen regressions max<10mm,
 no regression of eight prior passes; fresh independent captures after freeze.
 
+Current 2026-09-28 continuation: fixed3×121 original geometry samples,
+same-ray map propagation and independent right-image temporal evidence.
+DirectkeyframeLK completed363frames but its own closurebadalsoinPASSheldout1;
+adjacentforward+reversechain diagnostic added to test this limitation. No
+diagnostic disagreement is an accuracygate or permissiontochange trajectories.
+
 ## Constraints
 
 - No SteamVR/robot poses in estimation, edge selection, or confidence.
@@ -315,6 +321,33 @@ frontend_geometry_probe_v1/geometry_findings.md. Selectedbackup76226fe6 normal
 pushedowned sencang;remote-onlyrestoration386selectedfiles(includingall363NPZ)
 byte-identicaland53testsPASS0.21s. Boundeddiagnosticbranchcomplete;overall10mm
 optimization/uniquecause identificationNOTcomplete.
+
+## Current continuation: shared-ray propagation versus independent correspondence
+
+User approved continuing the preceding causal investigation. Reuse saved363
+NPZ captures; no GPU/model/SLAM replay or production source changes initially.
+Success criterion for this bounded diagnostic: verified sample identity and
+same-ray semantics, fixed all121frames on each of threecases, independent checks
+that discriminate a map-update mechanism from temporal correspondence problems.
+None of these residuals may be relabeled ATE, covariance, or unique cause.
+
+1. Read native before/after point-map and shared-memory update semantics.
+2. Quantify before/after geometry on exactly the same finite stereo rays,
+   separating fixed-scale displacement and scale-free depth shape. Verify
+   successive same-keyframe samples at shared pixel IDs; unsupported intersections
+   remain UNKNOWN. No varying-cohort cumulative-error inference.
+3. Independent RIGHT-image temporal LK, unseeded by MASt3R, with forward/backward
+   closure diagnostics. Stereo depth supplies right pixel coordinates from
+   exact native NN sample positions and recording-specific focal/baseline;
+   compare predicted current right position to MASt3R-derived temporal link.
+   Retain all statuses/unknowns; LK disagreement alone is not proof of wrong SLAM.
+4. Synthetic translation/rotation/unit/gauge and source/coverage tests, review,
+   fixed363frame diagnostic census before any external ATE association. No GT
+   data read, optimized poses, threshold/weight/density sweeps or frame deletion.
+5. Only introduce an estimator repair if a discriminating mechanism is supported;
+   otherwise report the exact uncertainty/counterexample and next finite test.
+   Any repair must then pass the unchanged fullallten evaluation.
+6. Selected same-day backup to owned sencang, actual remote restore + tests.
 
 ## Errors
 

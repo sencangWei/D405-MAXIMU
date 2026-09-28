@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import sys
+import json
 
 import numpy as np
 import pytest
@@ -54,3 +55,16 @@ def test_missing_depth_is_empty_unknown_support_not_fabricated_point():
     sample["depth_keyframe_m"][:] = np.nan
     _, key, current = probe.right_points(sample, meta)
     assert key.shape == current.shape == (0, 2)
+
+
+def test_raw_nan_arrays_and_chain_masks_leave_only_json_safe_summary_without_mutating_input():
+    original = dict(fb_closure_norm_px=[float("nan"), 2.],
+                    backward_closed_key_points_right=[[float("nan"), 1.]],
+                    forward_steps=[dict(label="forward_0_1", kept_count=1, opencv_success_mask=[True, False])])
+    summary, raw = probe.split_raw_diagnostics(original)
+    json.dumps(summary, allow_nan=False)
+    assert np.isnan(raw["fb_closure_norm_px"][0])
+    np.testing.assert_array_equal(raw["forward_steps_0_opencv_success_mask"], [True, False])
+    assert "opencv_success_mask" not in summary["forward_steps"][0]
+    assert "opencv_success_mask" in original["forward_steps"][0]
+    assert "fb_closure_norm_px" in original

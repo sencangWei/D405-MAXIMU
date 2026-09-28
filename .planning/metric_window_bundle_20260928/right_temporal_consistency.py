@@ -63,6 +63,77 @@ def _stats(values: np.ndarray) -> dict[str, Any]:
     }
 
 
+def _images(values: Any) -> list[np.ndarray]:
+    images = [_image(f"images[{i}]", image) for i, image in enumerate(values)]
+    if len(images) < 2:
+        raise ValueError("images need at least two frames")
+    shape = images[0].shape
+    if any(image.shape != shape for image in images):
+        raise ValueError("image shape mismatch")
+    return images
+
+
+def _lk_step(
+    source: np.ndarray,
+    target: np.ndarray,
+    row_ids: np.ndarray,
+    points: np.ndarray,
+    total_count: int,
+    label: str,
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    success = np.zeros(total_count, dtype=bool)
+    finite = np.zeros(total_count, dtype=bool)
+    in_bounds = np.zeros(total_count, dtype=bool)
+    if len(row_ids) == 0:
+        return row_ids, points, {
+            "label": label,
+            "start_count": 0,
+            "opencv_success_count": 0,
+            "finite_count": 0,
+            "in_bounds_count": 0,
+            "kept_count": 0,
+        }
+    forward, status, _ = cv2.calcOpticalFlowPyrLK(
+        source,
+        target,
+        points.reshape(-1, 1, 2).astype(np.float32),
+        None,
+        flags=0,
+        **LK_OPTIONS,
+    )
+    if forward is None or status is None:
+        return np.array([], dtype=int), np.empty((0, 2), dtype=np.float32), {
+            "label": label,
+            "start_count": int(len(row_ids)),
+            "opencv_success_count": 0,
+            "finite_count": 0,
+            "in_bounds_count": 0,
+            "kept_count": 0,
+            "reason": "opencv_lk_unavailable",
+        }
+    next_points = forward.reshape(-1, 2)
+    local_success = status.ravel().astype(bool)
+    local_finite = np.all(np.isfinite(next_points), axis=1)
+    local_bounds = np.zeros(len(next_points), dtype=bool)
+    if np.any(local_finite):
+        local_bounds[local_finite] = _bounds(next_points[local_finite], target.shape)
+    keep = local_success & local_finite & local_bounds
+    success[row_ids] = local_success
+    finite[row_ids] = local_finite
+    in_bounds[row_ids] = local_bounds
+    return row_ids[keep], next_points[keep], {
+        "label": label,
+        "start_count": int(len(row_ids)),
+        "opencv_success_count": int(np.count_nonzero(local_success)),
+        "finite_count": int(np.count_nonzero(local_finite)),
+        "in_bounds_count": int(np.count_nonzero(local_bounds)),
+        "kept_count": int(np.count_nonzero(keep)),
+        "opencv_success_mask": success.tolist(),
+        "finite_mask": finite.tolist(),
+        "in_bounds_mask": in_bounds.tolist(),
+    }
+
+
 def summarize_right_temporal_consistency(
     key_right_image: Any,
     current_right_image: Any,
@@ -187,6 +258,98 @@ def summarize_right_temporal_consistency(
         forward_vs_expected_norm_px=expected_norm.tolist(),
         actual_projected_flow_px=(tracked - key_points).astype(float).tolist(),
         actual_current_points_right=tracked.astype(float).tolist(),
+        fb_closure_norm_px_stats=_stats(fb_norm),
+        forward_vs_expected_norm_px_stats=_stats(expected_norm),
+    )
+    return result
+
+
+def summarize_right_temporal_chain(
+    images: Any,
+    key_points_right: Any,
+    current_expected_right: Any,
+) -> dict[str, Any]:
+    """Track right points through adjacent frames, then close the chain backward."""
+
+    frames = _images(images)
+    key_points = _points("key_points_right", key_points_right)
+    expected = _points("current_expected_right", current_expected_right)
+    if expected.shape != key_points.shape:
+        raise ValueError("point length mismatch")
+    count = int(len(key_points))
+    key_in_bounds = _bounds(key_points, frames[0].shape)
+    expected_in_bounds = _bounds(expected, frames[-1].shape)
+    native_bounds = key_in_bounds & expected_in_bounds
+    result: dict[str, Any] = {
+        "diagnostic_only": True,
+        "external_ground_truth_used": False,
+        "pose_or_depth_used": False,
+        "initial_flow_seed_used": False,
+        "classification_threshold_used": False,
+        "frame_count": len(frames),
+        "input_count": count,
+        "native_bounds_count": int(np.count_nonzero(native_bounds)),
+        "native_bounds_mask": native_bounds.astype(bool).tolist(),
+        "semantic_limitations": [
+            "adjacent right temporal LK is diagnostic only, not an independent accuracy guarantee",
+            "continuous errors are reported without pass/fail thresholding",
+            "flows are never seeded with MASt3R endpoints, IMU, stereo, or pose priors",
+        ],
+    }
+    if count == 0:
+        result.update(status="UNKNOWN", reason="no_points")
+        return result
+    if not np.any(native_bounds):
+        result.update(status="UNKNOWN", reason="no_points_inside_native_bounds")
+        return result
+
+    row_ids = np.flatnonzero(native_bounds)
+    points = key_points[row_ids].copy()
+    forward_steps = []
+    for step in range(len(frames) - 1):
+        row_ids, points, info = _lk_step(frames[step], frames[step + 1], row_ids, points, count, f"forward_{step}_{step+1}")
+        forward_steps.append(info)
+        if len(row_ids) == 0:
+            break
+    endpoints = np.full_like(key_points, np.nan, dtype=np.float32)
+    endpoints[row_ids] = points
+    forward_chain_mask = np.zeros(count, dtype=bool)
+    forward_chain_mask[row_ids] = True
+
+    expected_norm = np.full(count, np.nan, dtype=float)
+    if len(row_ids):
+        expected_norm[row_ids] = np.linalg.norm(points - expected[row_ids], axis=1)
+
+    back_ids = row_ids.copy()
+    back_points = points.copy()
+    backward_steps = []
+    for step in range(len(frames) - 1, 0, -1):
+        back_ids, back_points, info = _lk_step(frames[step], frames[step - 1], back_ids, back_points, count, f"backward_{step}_{step-1}")
+        backward_steps.append(info)
+        if len(back_ids) == 0:
+            break
+    closure_points = np.full_like(key_points, np.nan, dtype=np.float32)
+    closure_points[back_ids] = back_points
+    backward_chain_mask = np.zeros(count, dtype=bool)
+    backward_chain_mask[back_ids] = True
+    fb_norm = np.full(count, np.nan, dtype=float)
+    if len(back_ids):
+        fb_norm[back_ids] = np.linalg.norm(back_points - key_points[back_ids], axis=1)
+
+    result.update(
+        status="OK",
+        forward_steps=forward_steps,
+        backward_steps=backward_steps,
+        forward_chain_valid_mask=forward_chain_mask.tolist(),
+        backward_chain_valid_mask=backward_chain_mask.tolist(),
+        usable_forward_endpoint_count=int(np.count_nonzero(forward_chain_mask)),
+        usable_forward_backward_count=int(np.count_nonzero(np.isfinite(fb_norm))),
+        usable_expected_comparison_count=int(np.count_nonzero(np.isfinite(expected_norm))),
+        actual_current_points_right=endpoints.astype(float).tolist(),
+        actual_projected_flow_px=(endpoints - key_points).astype(float).tolist(),
+        backward_closed_key_points_right=closure_points.astype(float).tolist(),
+        fb_closure_norm_px=fb_norm.tolist(),
+        forward_vs_expected_norm_px=expected_norm.tolist(),
         fb_closure_norm_px_stats=_stats(fb_norm),
         forward_vs_expected_norm_px_stats=_stats(expected_norm),
     )
