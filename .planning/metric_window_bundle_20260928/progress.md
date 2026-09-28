@@ -881,3 +881,21 @@ counterexample reject simple scale/confidence clamp. No estimator edit or new
 10mm claim. Reviewer APPROVE with window-local/provenance caveats; three new
 tests pass. Report metric_boundary_findings.md, comparison JSON plus nine
 official stage-eval JSONs. Selected same-day backup/remote restore pending.
+
+Metric boundary diagnostic was selected-backup committed00be3b6c normally
+pushed to owned sencang, restored remote-only;15changedfiles byte-identical
+main/backup/remote and48testsPASS in clean restore. Next read-only all-ten
+saved-stage census found failed fresh4 middle-band graph correction17.54mm,
+passing fresh3 40.70mm; fresh4 dense-stereo before→after3.62→1.06mm vs
+passing fresh3 10.40→3.08mm. So neither correction nor stereo residual
+magnitude discriminates. Native solver profile tracer then replayed all10
+frozen joint graph commands with only output destinations changed; all10 graph
+trajectory CSVs byte-identical, 1704-edge fresh4 count matched report.
+Fixed signed-factor census fresh4 middle IMU position0.66mm, VINS-relative
+2.47mm, stereo1.54mm median; passing fresh3 IMU1.02mm/stereo2.66mm.
+Fresh4 relative residual rises0.50→2.47mm (~5x) within recording, but fixed
+whole-recording rolling scan has eight passing cases with still larger ratios
+somewhere. No GT or estimator changes, no universal internal gate; exact
+upstream MASt3R correspondence/loop influence remains unknown. Evidence in
+native_solver_trace_v2/README.md and two JSONs. New source/tests/evidence
+backup/remote restore pending before close.

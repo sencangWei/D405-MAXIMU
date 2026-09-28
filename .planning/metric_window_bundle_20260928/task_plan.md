@@ -403,6 +403,18 @@ on all ten frozen cases, followed by UMI-only cross-sensor discrimination;
 no GT-driven admission or per-case weights. Back up this diagnostic to owned
 remote and verify clean restoration before extending it.
 
+Completed that bounded test: an external profile hook captured native solver
+state in ten full frozen graph replays, with byte-identical graph trajectories.
+The fixed all-ten factor census and 5-frame-stride rolling scan show fresh4's
+relative-motion residual grows ~5x in the failed interval, but eight passing
+cases exhibit larger same-schedule ratios somewhere; fresh4 is not worst on
+IMU/stereo residual or correction magnitude either. No reliable UMI-only gate
+from these tested magnitudes; do not promote a threshold/interpolation fix.
+Evidence: native_solver_trace_v2/README.md, factor census and scan JSON.
+Next separate branch must observe MASt3R upstream correspondence/loop constraint
+influence directly, with controls and unchanged all-ten official gate after a
+source-supported structural fix. Precision goal remains 9/10, not complete.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used
