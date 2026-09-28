@@ -38,6 +38,13 @@ symptom, but deleting it is not a demonstrated accuracy repair. Do **not**
 promote this edge rule, the prior four-short-edge deletion, or outlier masking.
 The 792→1135 long loop passed the onboard stereo check and was retained.
 
+The candidate is not a no-op: row-wise positions change by up to **1.140 mm**
+in the 1199-row metric graph and **1.173 mm** in the 1142-row fused estimate
+(no new alignment; timestamps match). This bounds what this isolated deletion
+actually changed in the saved product and is well short of the **3.811 mm**
+maximum-error reduction required to cross the 10 mm gate. The bound applies
+to this intervention, not to all possible frontend repairs.
+
 This result does not prove the remaining error is in the model, the raw video,
 or the backend. The event's final keyframe correction can alter earlier poses,
 but neither an event's correction magnitude nor an edge's failed PnP gate is
