@@ -1,0 +1,52 @@
+{
+  "samples": 1142,
+  "alignment": "SE3_estimate_to_external_ground_truth_no_scale",
+  "ate_translation_rmse_m": 0.00601425998859403,
+  "ate_translation_mean_m": 0.0056631003129852435,
+  "ate_translation_min_m": 0.0009583139833921108,
+  "ate_translation_median_m": 0.005982218074888079,
+  "ate_translation_p95_m": 0.009036589836489932,
+  "ate_translation_max_m": 0.013961496368909504,
+  "ate_translation_within_5mm_ratio": 0.3380035026269702,
+  "ate_translation_within_10mm_ratio": 0.9728546409807356,
+  "ate_translation_within_20mm_ratio": 1.0,
+  "ate_rotation_rmse_deg": 1.5102074300182038,
+  "attitude_aligned_ate_translation_rmse_m": 0.006767297581058912,
+  "attitude_aligned_ate_rotation_rmse_deg": 0.9092711370068516,
+  "position_vs_attitude_alignment_rotation_deg": 1.2058182847153631,
+  "rpe_delta_samples": 30,
+  "rpe_translation_rmse_m": 0.0034362543840842663,
+  "rpe_rotation_rmse_deg": 0.4396479272148941,
+  "ground_truth_path_length_m": 2.5765361657510057,
+  "endpoint_drift_m": 0.01250478803544069,
+  "endpoint_drift_percent_of_path": 0.48533330141693587,
+  "z_rmse_m": 0.004664061901591183,
+  "z_p95_abs_m": 0.0063889593516546946,
+  "sim3_diagnostic_scale_gt_per_estimate": 1.0123304988307136,
+  "sim3_diagnostic_ate_rmse_m": 0.005456480033643994,
+  "sim3_diagnostic_ate_p95_m": 0.00830126826797032,
+  "scope": "external_ground_truth_product_evaluation",
+  "estimate": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/independent/fresh4/trajectory_fused.csv",
+  "ground_truth": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/independent/fresh4/official_score/steamvr_body_reference.csv",
+  "max_interpolation_gap_s": 0.05,
+  "estimate_frame": "as_recorded",
+  "ground_truth_frame": "as_recorded",
+  "estimate_samples_total": 1142,
+  "ground_truth_samples_total": 1142,
+  "timestamp_overlap_samples": 1142,
+  "timestamp_overlap_ratio": 1.0,
+  "result": "FAIL",
+  "thresholds": {
+    "max_ate_rmse_mm": 10.0,
+    "max_ate_p95_mm": 10.0,
+    "max_ate_max_mm": 10.0,
+    "min_within_10mm_ratio": 0.95,
+    "max_rotation_rmse_deg": 2.0,
+    "min_timestamp_overlap_ratio": 0.98
+  },
+  "failures": [
+    "ate_translation_max_over_limit"
+  ]
+}
+/home/robot/.local/lib/python3.10/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "

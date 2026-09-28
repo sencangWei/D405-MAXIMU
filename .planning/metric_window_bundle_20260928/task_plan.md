@@ -149,6 +149,26 @@ checked, and all-ten outcomes retained including failures.
 Read-only foreground diagnostic did not support a jaw-track root cause for
 fresh4 in the uniform last-pair B-half. No input masks or estimator change.
 
+### Phase8 completed full graph outcome; Phase9 bounded shape contract
+
+All30 baseline/joint/independent graphs and downstream scores completed.
+Baseline8/10PASS/max15.333417mm, joint9/10/max13.801442, independent9/10/
+max13.961496; baseline replaymaxdelta0 inallten. Alloriginaleightpassesretained,
+notuniformimprovement, 10mmgoalNOTmet/no promotion. Finalfresh4joint26frame
+continuous mostlyZ offset33.198..34.031s. Reportseam_full_graph_report.md.
+
+Review confirmed discardedintermediateinformation: nine local BA centers and
+landmarkcoupling reduce to two endpoint displacements. Next approved bound:
+standalone single correlated9-center nuisance-projected sensitivity prototype,
+syntheticcorrectendpoints/bowedinterior test and exactsolveridentity tests.
+No existingcore edits or graphweight/density sweep; no GT inputs or covariance
+claim. Expose rank/nullaxes and firstcamera frame/gauge; preservecorrelation.
+Zero-centered sensitivity alone is not exact nonlinear profiling (baseline
+projectedresidual/gradient absent), so prototype cannot be promoted as exact
+Schur measurement. Subsequent all-ten UMI-only diagnostic and graph interface
+would need separate review/freeze/evaluation. Back up currentcompletedgraph
+evidence before newestimator integration work; overallgoal still active.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

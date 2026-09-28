@@ -145,3 +145,10 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   and isolated backup byte-for-byte; fresh restored28 targeted testsPASS0.31s.
   Native fusion, existing metric wrapper and complementary algorithm hashes
   also match the backup sources. This is still LOCAL evaluation, not new ATE.
+
+- New isolated seam-pair wrapper, all-ten three-branch graph runner, tests and
+  two proof/progress documents backed in `4a9d4b0a54dfb7a6bf07bdd8ca28faf8066f143f`.
+  Six exact changed paths, same owned branch, normal push. Remote-only clean
+  restore matched all6 byte-for-byte against main and backup; fresh324 tests
+  PASS4.11s. Main326 includes two existing unselected imu-scale tests. No new
+  full-trajectory result was included in this source-only backup commit.

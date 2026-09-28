@@ -1,0 +1,79 @@
+{
+  "schema": "umi_docker2_mast3r_complementary_v1",
+  "result": "PASS",
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "algorithm": "MASt3R long-term pose + Docker2 high-pass local metric motion",
+  "inputs": {
+    "mast3r_camera_trajectory": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/trajectory_graph.csv",
+    "docker2_body_trajectory": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/vins_input/vio_corrected_stream.csv",
+    "body_camera_calibration": "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml"
+  },
+  "samples": 1143,
+  "timestamp_overlap_s": 38.06334328651428,
+  "scale": {
+    "horizon_s": 1.0,
+    "hop_samples": 30,
+    "candidate_windows": 746,
+    "robust_inliers": 699,
+    "ratio_median": 1.0195261072294766,
+    "ratio_p10": 0.9905160768489921,
+    "ratio_p90": 1.0466690220420334,
+    "ratio_mad": 0.013288484828210878,
+    "docker2_to_mast3r_ratio": 1.0195261072294766,
+    "stereo_reference_ratio": 1.0,
+    "selected_joint_ratio": 1.004846184596666,
+    "relative_disagreement": 0.01933731597682964,
+    "selection_policy": "weighted_log_mean_of_stereo_and_docker2",
+    "docker2_scale_weight": 0.25,
+    "automatic_selection": null
+  },
+  "fusion": {
+    "smoothing_s": 8.0,
+    "local_weight": 0.0,
+    "adaptive_local_weight": false,
+    "roughness_threshold_mm": 9.0,
+    "adaptive_weight_strength": 0.45,
+    "injection_limit_mm": null,
+    "injection_clipped_frames": 0,
+    "effective_local_weight_min": 0.0,
+    "effective_local_weight_median": 0.0,
+    "effective_local_weight_max": 0.0,
+    "input_disagreement_p95_mm": 6.2956435473449215,
+    "injected_correction_median_mm": 0.0,
+    "injected_correction_p95_mm": 0.0,
+    "injected_correction_max_mm": 0.0,
+    "alignment_rotation": [
+      [
+        0.9997450912524701,
+        -0.010072401482681424,
+        0.020206415935593816
+      ],
+      [
+        0.01523540972622596,
+        -0.35952519721597853,
+        -0.9330109939637827
+      ],
+      [
+        0.016662376993231337,
+        0.9330810143257571,
+        -0.35928009393473526
+      ]
+    ],
+    "alignment_translation_m": [
+      0.01176331461504812,
+      0.007302367732067166,
+      -0.02359422416476723
+    ]
+  },
+  "docker2_position_policy": {
+    "source_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/vins_input/run_acceptance.json",
+    "source_result": "PASS",
+    "source_failures": [],
+    "local_translation_allowed": true,
+    "policy": "accepted_run_local_translation_enabled"
+  },
+  "orientation_prior": null,
+  "output_frame": "body_imu_origin",
+  "output": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/trajectory_fused_unsmoothed.csv"
+}

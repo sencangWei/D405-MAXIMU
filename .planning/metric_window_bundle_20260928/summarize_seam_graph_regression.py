@@ -30,6 +30,8 @@ def summarize(candidate: Path) -> dict:
     if status.get('gt_scoring_started_after_all_graphs') is not True:
         raise ValueError('all-graph freeze barrier not confirmed')
     for row in records:
+        if not isinstance(row.get('completed'), bool):
+            raise ValueError('all thirty outcomes must be finalized; pending is not failure')
         if (row.get('experiment_status') != 'research_fixedcost_not_promoted'
                 or row.get('calibrated_covariance') is not False
                 or row.get('statistical_independence_claimed') is not False):

@@ -62,13 +62,15 @@ def test_all_thirty_report_is_analysis_only_and_refuses_overwrite(tmp_path, monk
         summary.main(['--candidate', str(candidate)])
 
 
-@pytest.mark.parametrize('mutation', ['duplicate', 'barrier', 'covariance'])
+@pytest.mark.parametrize('mutation', ['duplicate', 'barrier', 'covariance', 'pending'])
 def test_rejects_incomplete_or_unfrozen_contract(tmp_path, monkeypatch, mutation):
     candidate, status = fixture(tmp_path, monkeypatch)
     if mutation == 'duplicate':
         status['cases'][-1] = status['cases'][0]
     elif mutation == 'barrier':
         status['gt_scoring_started_after_all_graphs'] = False
+    elif mutation == 'pending':
+        status['cases'][0].pop('completed')
     else:
         status['cases'][0]['calibrated_covariance'] = True
     (candidate / 'batch_status.json').write_text(json.dumps(status))

@@ -381,3 +381,32 @@ all30entryhash/schedulepreflightPASS84frozenpathsclosure, nooutputs/processes.
 RealalltenfactorbuildpreflightPASS506joint/540independentendpoints, full1199/
 1200timestampsunchanged, independent6partialpairs explicitlyrepresented.
 Finalindependentprelaunchreviewpending; no realgraphlaunchedyet.
+
+FinalprelaunchreviewAPPROVE/no blockers forNON-promoted oldfixed4mmpenalty/
+conf1 allten30attempts; no covariance correctness/selector/production claim.
+Main326testsPASS4.19s. Code4newfiles+2docsnormalpushed4a9d4b0a54dfb7a6bf07
+bdd8ca28faf8066f143f (6changedexactpaths);cleanremote-onlyrestoreall6byteequal
+main/backup,restored324testsPASS4.11s (existing2imu-scale testsnotselected).
+Graphallten×baseline/joint/independent RUNNINGsession50951; output
+seam_graph_full_ten_v1. AllgraphscompleteBEFORE downstreamGTscoring; no edits
+tohashedsourceswhilebatchruns. New fullATE stillNOTavailable.
+
+Fullgraphsession50951 DONEexit0. All30graph/complementary/quality/smoothstages
+rc0; officialscore26rc0/fourrc3 thresholdfailures retained, not executionbugs.
+Frozencomparison allbaseline maxreplaydeltasEXACT0.0, allscoringhashesvalid.
+Baseline8/10worst15.333417mm; joint9/10worst13.801442; independent9/10worst
+13.961496. Priorfullmetric9/10worst14.016499. No lostbaselinepasses but several
+per-case maxima regress; targetNOTmet, no promotion. Graph1199/dev21200;
+unchangeddownstreamVINSoverlap1142/dev21143, no new crop/drop. Independentreview
+APPROVEevidence/no blockers; correctedrc3wording. Summarypending-recordguard
+testREDthen6PASS: pending is not finalizedfailure. Reportseam_full_graph_report.md.
+
+Read-onlyofficialresidualfresh4joint26consecutiveover10frames996..1021,
+33.197901..34.031315s; maxidx1014vector[6.697527,-1.963217,-11.906666]mm.
+Baseline63over10 in3blocks, independent31infinalblock. Not isolatedspikes.
+Review confirms nine localBA centers/rotations are solved but ONLYtwoendpoint
+displacements reachnativegraph; interiorgeometry/coupling discarded. Hypothesis
+notprovedrootcause. GO isolatedsingle-group correlated9-center sensitivity
+prototype/tests; NO more independentedges/4mm densityweightfamily. Marginalize
+rotation/landmark/bias, expose rank/gauge/frame/IMUreuse/no covariance claims;
+no production graph integration or realbatch until separate review.
