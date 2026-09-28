@@ -152,3 +152,22 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   restore matched all6 byte-for-byte against main and backup; fresh324 tests
   PASS4.11s. Main326 includes two existing unselected imu-scale tests. No new
   full-trajectory result was included in this source-only backup commit.
+
+## Full graph control evidence preserved
+
+- Completed all-ten/three-variant graph evidence, all 180 logs, official scores,
+  final trajectories, full report and pending-status guard backed in
+  `afc8af6e30e7c8bba0bf697d26e9edfa87d07269`. 628 exact changed paths,
+  including only the owned `seam_graph_full_ten_v1` subtree (622 files,
+  26,849,477 bytes), never the reports root. Normal fast-forward push to the
+  same owned sencang branch.
+- Clean remote-only restore fetched that exact hash; all628 changed files
+  byte-identical to current main and isolated backup. Fresh restored325 tests
+  PASS4.00s; main327 PASS4.22s (two existing imu-scale tests not selected).
+- A broad staged whitespace check stopped before commit because raw CSV files
+  have their original CRLF line endings. No frozen evidence was normalized:
+  code/docs whitespace checks and byte-identity checks passed instead. This
+  operational check failure was not a solver/data failure.
+- Numeric result remains joint9/10PASS/max13.801442mm, targetNOTmet; four
+  official threshold-failure exit3 outcomes retained. This backup is not a
+  production promotion or new learned model.

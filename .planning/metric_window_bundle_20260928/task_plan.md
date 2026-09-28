@@ -169,6 +169,14 @@ Schur measurement. Subsequent all-ten UMI-only diagnostic and graph interface
 would need separate review/freeze/evaluation. Back up currentcompletedgraph
 evidence before newestimator integration work; overallgoal still active.
 
+Phase9 affine prototype/tests+all-ten50pairadapter implemented. Captured fun/Jac
+also retain projectedbaselinegradient via affine_offset+droppedconstant, not
+onlyzero-centeredWdelta. Syntheticexplicitnuisance-lstsqprofile/gradienttests
+verify LOCALlinearquadratic only, neverexactnonlinearprofile/covariance. Final
+independentreviewAPPROVE boundedUMI-onlyten50pairdiagnostic, no graph/GT/selector.
+17newtargetedPASS; sameformaltd/gates/nativecore. Contractshape_contract.md.
+Back up source beforelaunch; freezeall50 before any externalgeometryevaluation.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

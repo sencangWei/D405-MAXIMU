@@ -138,3 +138,30 @@ Still2geometry/2model/1solve/3rawpairfailures; doesnotestablish10mmwholeSLAM.
 Reviewerapprovesfullpaired40stride40alltenUMI-only next, NOTgraphpromotion.
 Endpointpairs correlated,notcalibratedcovariance; graphcontractneedsseparate
 reviewwithpaircounts,endpointcoverageandfailures,neverGT-admissionselection.
+
+Full290paircensus weakens small-v2 extrapolation: same470endpoint localmaximum
+18.578->13.287mm; mean1.393->1.348,median.889->.837,P954.281->4.079mm,
+261/470improve. Fullgraphs (sameofficialSE3/time/reference, all30beforeGT):
+baseline8/10max15.333417, joint9/10max13.801442, independent9/10max13.961496.
+BaselinereplaymaxdifferenceEXACT0allten. Previous9/10max14.016499. No claimed
+10mmSLAM, covariancecorrectness, generalization or promotion. Allfailureoutputs
+retained; jointfresh4remaining26consecutiveframesmostlyZoffset, notsinglespikes.
+
+Read-only code review confirmed structuralcompression: nine localBA states are
+solved in a sharedpixel+gyro model, but downstream receives onlytwo20-frame
+endpointvectors. Interiorbow can satisfybothendpointconstraints. This proves
+informationloss, NOTcauseoffresh4error. Bounded nextdiagnostic retainsone
+correlated9-center factor, notmore independentlyweightededges/densitysweep.
+
+Affine local-profile algebra reviewapproved: original transformedresidualr,
+centerJacobianJc,nuisance(rotation/landmark/bias)Jn. NormalizednuisanceSVD spanQ:
+C=(I-QQT)Jc, b=(I-QQT)r. C=UsVt; W=sVt, a=UTb. Groupedresidual a+Wdelta
+preserveslinearizedprofilecost gradient/Hessian; leftover ||b-Ua||² isconstant.
+Keepconstantifreportingprofilecost. ThinSVDavoidslargepixel-row MxM matrices.
+Zero-centeredWdelta alone losesbaselineprojectedgradient; capturingresult.fun
+now avoids anothercensuslater. This is NOTexact nonlinearprofiling, rawpixel
+covariance or 4mm meter-sigma: original_residuals manuallysoftrobustifypixels,
+least_squaresuseslinear loss, and result.fun/result.jac describe THATtransformed
+objective. Ranknullaxes/gauge/IMUreuse explicit, no statisticindependenceclaim.
+Syntheticexplicitnuisance-lstsqprofileidentity/rankdeficiency/gradient tests
+requiredbeforealltenfixedfivepairdiagnostic. No graphintegrationauthorityyet.

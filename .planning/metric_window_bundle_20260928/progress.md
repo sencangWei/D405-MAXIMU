@@ -410,3 +410,33 @@ notprovedrootcause. GO isolatedsingle-group correlated9-center sensitivity
 prototype/tests; NO more independentedges/4mm densityweightfamily. Marginalize
 rotation/landmark/bias, expose rank/gauge/frame/IMUreuse/no covariance claims;
 no production graph integration or realbatch until separate review.
+
+Fullgraph628exactchangedpathsbackupafc8af6e30e7c8bba0bf697d26e9edfa87d07269
+normalpushedownedsencang. Cleanremote-onlyrestoreall628byteidenticalmain/backup;
+restored325PASS4.00s, main327PASS4.22s. Firstbroadstagedwhitespacecheckstopped
+onoriginalrawCSVCRLF; preservedfrozenbytes, scopedcode/docscheckinstead. Not a
+SLAMfailure. All180logs/30scoreplots retainedinowned26.8MBevidencesubtree.
+
+NewshapeprototypeTDD6testsinitial; reviewREQUESTCHANGES2HIGH(rank0/gauge)
+and4MEDIUM(SVDallocation/rejectionmetadata/countcoercion/bothendpointtest).
+Fixedstrictfirstcameragauge/thinSVDlargepixelrows/rank0emptyresidual/strict
+integers/rejectionnotgraphmetadata;9testsPASS. Remainingrank0gradientreturned
+scalarandtestbroadcastmaskedshape; fixqueuedbeforefreeze. No realrun/integration.
+IndependentreviewGO fixed5pairs×allten UMI-onlydiagnostic afterfix, notgraph;
+append9centergeometry+sensitivity/noselector/noGT, retainrefusals/source/input/
+decodedhashes/finallyhooks. Adapterimplementationboundednew2files underway.
+
+Shapeaffineprofileextension complete: capturedresult.fun withJacobian,
+singlecorrelatedWdelta+a anddroppedconstant; purelinearnuisancelstsqidentity/
+gradientfinite-difference tests. NOTnonlinearprofile/covariance/4mmsigma.
+Rank0gradientshape fixed andstrictfinite/count/gauge guards. Adapterexactten/
+50pairscoped9nodesolve, original5nodesindependent unchanged. Fixeddeletedinput
+failopen, duplicatecasecollapse, independentrowidentity, sourcehashconflicts
+beforewrites, endpointvsuniquepaircounts. A mid-fix test brieflyfailed2fake
+fixtures; realtempfileSHAfixtures now17targetedPASSroot0.46s. Staledocstring
+correctedafterworkerREADY. Finalread-onlyprelaunchreviewpending; no realrun.
+Contractshape_contract.md; then sourcebackup beforeuniformdiagnosticcensus.
+
+FinalprelaunchreviewAPPROVE0blockers diagnosticALLTEN50pairs ONLY;17testsPASS
+review0.37s. No graph/GTduringrun/selector/productionpromotion. Actualsource
+backupandfreshremote-restoredtests prerequisites remain beforelaunch.
