@@ -740,3 +740,31 @@ fields exact;1199priorcumulationverified. Addedpreflight2398PNGcoverage and
 formaltd/estimate_td binding, and explicitfull-vs-sampledoptvalidcounts.
 Anapply_patch multi-file call rejected incorrectprogresscontext; confirmedno
 partialchanges, then reappliedwithcorrectcontext. No originaltrajectorychange.
+
+Geometry firstGPUreplay completed with exactfull+online1199byteidentity. Exit1
+solely becausepuremath rejected legitimate negativeborder;121samples retained,
+121knownfinisherrors/0rows. Worker correctednegativeborder/native strictbounds
+afterGPUfinished; recoveryhelper/tests added, separatelyreconstructed121rows
+withoutGPUpose rerun. Originalfailedtrace remains unchanged. ReviewerAPPROVE
+boundedrecovery+puremathfix, notaccuracy/productionrepair. Root43PASS0.22s.
+
+Fourexactsource/testfixfiles committedf37b0673 andnormalpushedownedremote
+sencang codex/feature-loss-diagnostic-20260928. Existingpersistentremote-only
+restoration advancedbyfetch+detachedcheckout;all4byte-identicalmain,43PASS0.26s.
+Fresh1 diagnosticreplay completed1199frames:121rows/0errors,bothfull/online
+byteidentitytrue/0delta. Heldout1 samefrozenproducer replayinprogress. Pure
+comparisonhelper+2tests added;45targetedPASS0.24s. NoCLI/productionmodel,
+estimator, formaltd orcalibration changes;fullmax13.801442unchanged.
+
+BothcontrolGPUreplaysfinished exit0. Eachfull+online1199byte/arrayidentity,
+121rows/0errors. Purecomparisoncreated geometry_comparison_v1.json afterexact
+NPZhash/framebindingguards;reviewer3MEDIUMgapsfixedbeforeoutput (sourceclosure,
+explicitrecoveryvsnormalcase,121uniqueframe-boundpaths),added8guardtests.
+Final53targetedPASS0.20s, reviewerAPPROVE. Sourcegridlookup no grossK/cropbug,
+NNdepth-boundarylimits retained. Findingsreport writtenwithcontrolcounterexamples
+andexplicitunderidentifiedcause;no newaccuracyclaim. Finalselectedbackup next.
+
+Finalbackup whitespacecheck stopped on preservedoriginalCSVCRLF (notcodebug).
+Noevidence rewritten; per-command core.whitespace=cr-at-eol check used next,
+withoutchanging globalconfiguration. Independentroot363NPZhashes/12pixel
+formularecomputations PASS;finalreportreviewAPPROVEfactsandcauseboundaries.

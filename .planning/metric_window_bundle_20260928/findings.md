@@ -283,3 +283,43 @@ T_WC*delta. Rootcumulation testusesnoncommutingX/Zrotations torejectwrongorder.
 Existingconfig/model/toolchain/dirtydiff/lietorch exactfrozenproducer verified
 beforeGPUlaunch; correctlietorchsourceis thirdparty/lietorch (notroot/lietorch).
 Full/online trajectoryidentity required, notonlyfinalpostgraphoutputs.
+
+Geometry probe runtime: firstfresh4 fullfrontend completed1199frames, bothfull/
+online originalCSV byte/arrayidentical,maxdelta0. All121NPZ saved but pure
+diagnostic mistakenly rejected native合法pixel_border=-10; originaltrace has
+121finish errors/0rows and is preserved asFAILED. Fixed pureprojection only:
+anyfiniteborder accepted, bounds exactnative >border and <width-1-border.
+Recovery binds originalfailedtrace+121NPZ+frontendlog+correctedmath, checks all
+originalhashes except math unchanged; separate recovered_v1 has121rows/0errors.
+NoGPU/pose rerun. Samplehashes firstfrozen at recoveryentry, not atGPUcapture.
+
+Fresh4 bad26frames showpost pixelmedian(framewise)0.663668px, visual-vs-integrated
+gyro relativeR median0.306343/max1.587843deg, commonstereo3D translation-centered
+residual median11.472458mm. Currentcorrespondences numerous; somegeometric
+inconsistency exists but doesNOTidentify uniqueATEcause. Learnedtranslation
+vsstereo robustmedian max2.791431mm inbad26frames, not13.801442ATE. Gauge-dependent
+comparison mustNOT be substituted forglobaltrajectoryprecision. ActualSim3
+scale2.084at1053 is compensated bypointmap-to-metricdepthscale; metricconsistency
+1.000965, so rawSim3scale isNOT proof ofworldtrajectoryscalejump.
+
+Fresh1control frontend finished1199frames, full+onlinebyteidentical/0delta,
+121capture rows/0errors. Samefixed1000..1120 relativeRmax1.088712deg andindividual
+common3Dresidualframe medianmax12.769365mm despitewholetrajectoryPASSmax8.582967.
+Thiscounterexample means isolatedcount/rotation/3D residual peaks notunique
+failure detectors. Heldout1control running; no estimator changes ornewATEclaim.
+
+Heldout1controlcompleted1199frames,121diagnosticrows/0errors,full+onlinebyte
+identicaloriginal. Fixed121frames relativeRmedian0.618878deg (higherthanfailed
+fresh4.198264deg) butfullATEPASSmax6.026661mm. Keyframeagemedian36vfailed4,
+anothercounterexample tooldkeyframealonecause. Three-case frozencomparison
+created;53targetedPASS. Reviewerrequested sourceclosure/recoverysemantics/
+unique frame-boundNPZpathguards; allrepairedandreviewAPPROVE. Thisisdiagnostic
+notoptimizerchange, no10mmgain. Currentalltenstill9/10,fresh4max13.801442mm.
+
+Pixel-grid audit: native1280x720->512x288no crop, Kscale2.5 consistent;actual
+K[[259.6828,0,255.376],[0,259.6828,141.8192],[0,0,1]]. StereoNNnominalsampling
+diff<=.5nativepx/axis; depth-edge/occlusionerror notbounded. No grossK/gridbug
+found;NNfootprintdiff alone NOTATErootcauseproof. Currentbadblockcommondepth
+median.399m vsfresh1sameindex.301/heldout1.309; actualmotiondiffers, no direct
+crosscasecausalityclaim. Nextindependent correspondence/stereodepth consistency
+testmust separate depthnoise frompriorstate propagation beforeestimatorrepair.

@@ -303,6 +303,17 @@ GT supervision/selection, td/calibration/threshold/model/weight change.
    No fix/promotion until causal source identified plus fullallten validation.
 6. Same-day exact selected code/evidence backup to sencang with remote restore.
 
+Bounded commongeometry diagnostic completedthreecases: fresh4 savedNPZpure
+recovery (originalnativeSLAM completed butdiagnostic borderbug retainedFAILED),
+fresh1/heldout1 successfulcaptures. Each121samples/full+online1199byteidentity.
+Source/math/summaryreviewAPPROVE;53targetedPASS. Pixelresiduals small while
+metricgeometry imperfect; controls also have3D/rotation disagreement, so unique
+causeNOTidentified and neitherlowcurrentcount noroldkeyframealone explainsFAIL.
+Nominaldepth/frameK gridconsistent;NNdepth-edge error notbounded. No production
+fix/estimatorchanges/fullATErerun;fresh4max13.801442 and9/10unchanged. Report
+frontend_geometry_probe_v1/geometry_findings.md. Finalselectedevidencebackup
+andremote-onlyrestorationverification pendingbeforehandoff.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used
