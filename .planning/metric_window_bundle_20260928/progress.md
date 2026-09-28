@@ -768,3 +768,10 @@ Finalbackup whitespacecheck stopped on preservedoriginalCSVCRLF (notcodebug).
 Noevidence rewritten; per-command core.whitespace=cr-at-eol check used next,
 withoutchanging globalconfiguration. Independentroot363NPZhashes/12pixel
 formularecomputations PASS;finalreportreviewAPPROVEfactsandcauseboundaries.
+
+Selectedsource/evidencebackup76226fe6114fc16f0ea36a6a57b84a974dd0118d normal
+pushed owned sencang branchcodex/feature-loss-diagnostic-20260928. Remote-only
+fetch+detachedrestore /home/robot/ego-feature-loss-restore-J9l9eE verifiedall386
+changedfiles byte-identicalmain (all363sampleNPZ included),53testsPASS0.21s;
+backup53PASS0.22s. Rawrecordings/checkpoint NOTcopied. No activeGPUreplay remains.
+Boundedcommongeometry investigationcomplete, uniqueATEcauseand10mmgoalnot.

@@ -311,8 +311,10 @@ metricgeometry imperfect; controls also have3D/rotation disagreement, so unique
 causeNOTidentified and neitherlowcurrentcount noroldkeyframealone explainsFAIL.
 Nominaldepth/frameK gridconsistent;NNdepth-edge error notbounded. No production
 fix/estimatorchanges/fullATErerun;fresh4max13.801442 and9/10unchanged. Report
-frontend_geometry_probe_v1/geometry_findings.md. Finalselectedevidencebackup
-andremote-onlyrestorationverification pendingbeforehandoff.
+frontend_geometry_probe_v1/geometry_findings.md. Selectedbackup76226fe6 normal
+pushedowned sencang;remote-onlyrestoration386selectedfiles(includingall363NPZ)
+byte-identicaland53testsPASS0.21s. Boundeddiagnosticbranchcomplete;overall10mm
+optimization/uniquecause identificationNOTcomplete.
 
 ## Errors
 
