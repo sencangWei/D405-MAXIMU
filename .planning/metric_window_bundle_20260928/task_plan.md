@@ -74,6 +74,34 @@ Fresh248testsPASS; no trajectorychange orproductionpromotion. Repairdirection:
 cross-windowpersistent/reseededlandmarkjointgeometry, separatelyboundedand
 validatedbeforealltenfrozengraphreplay; notconfidence/weighttuningfromGT.
 
+## Phase8 — approved adjacent-window shared geometry (in progress)
+
+Minimal structure experiment, NOT a closed-family density/weight sweep:
+two adjacent20-frame windows use all41raw frames and nine BA states. Existing
+source trackers/solver remain frozen. Second-window stereo detection supplies
+new birth landmarks; mutual one-to-one boundary stereo pixels link repeated
+landmarks across both windows. Boundary pose/pixel observations are single-count.
+Joint gauge=A start; B newborn initialxyz/pose transformed by A INITIAL PnP end,
+not optimized/learned/GT pose. B heldouts matching A inherit A labels; train-only
+PnP before solve. Heldout depths anchored at their birth stereo, never fitted.
+
+1. Pure merger + tests first: nonzero rotation/translation, birth visibility,
+   one-to-one ambiguity, single-count, inherited holdout and geometry contracts.
+2. Fixed5time-stratified PAIRS×allten raw-observation controls, no GT reads;
+   compare same input independent solves against joint solve. Joint failure is
+   explicit, no fallback claiming joint success. Shared training landmarks must
+   span both sides; native four noncollinear geometry support before solve.
+3. Freeze hashes/admission/diagnostics before separate localGT evaluation;
+   do not pick windows or cases by scores. Correlated two endpoint factors are
+   explicit, not calibrated independent confidence. Same noise/td/solver gates.
+4. Only if internal consistency supports the architecture, full all-ten coverage
+   and old-parameter graph replay; max<10mm and no lost priorpasses required.
+5. Independent review, selected same-day backup and remote-only restoration.
+
+No production promotion or confidence reweighting. Birth points behind A gauge
+remain explicit nativeguard rejection, not silently deleted. Full-rate outputs
+and unchanged external evaluation contract preserved.
+
 Observation-only improvement is not SLAM acceptance. Reject an estimator that
 does not improve independent geometric consistency or is unobservable. Do not
 run a large graph batch solely on a successful example. Record blocked data or
@@ -83,3 +111,5 @@ mathematical assumptions; ask only for meaningful new authority/input.
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used
   installed executor role for the same bounded read-only lookup; no model sweep.
+- Phase8 initial lookup used nonexistent stereo_window_observations.py; correct
+  source is prepare_stereo_window_observations.py, found from existing runner.

@@ -244,3 +244,24 @@ absentselectedbackup. Firstbackupcheckexited4missingthose2tests(no tests ran),
 correctedselectedsuite246PASSbeforecommitandafterrestore. No scope/gatechange.
 No computation orlivecaptureleft running. Nextrepairrequires actualpersistent
 cross-windowlandmarkobservations, not claimingthisdiagnosticfixedtrajectory.
+
+UserapprovedPhase8. Readskills/AGENTS/HANDOFF/memoryindex/currentcontracts;
+plannedtwoadjacent20framewindows withsingleboundarypose/mergedlandmarks/newB
+birthstereo. Puremerger/tests delegatedexecutor, mainowns matchedrawcontrols.
+Pre-reviewacceptsdirectionwithheldoutinheritance/single-count/frame/gauge/
+no-fallback/factor-correlation hardchecks. No productioncore/tracker edits.
+Initialwrongobservationfilename corrected; .codegraph/nestedAGENTSentriessabsent.
+
+Testsfirst mainjointcontrolsREDmissingdriver; implementedfixed5pairs schedule,
+camera_i endpointconversion,birth-anchoredheldoutprediction/nojointfallback;
+4PASS. Executor puremerge8PASSincludesreal9nodeborn-landmarkBA/gauge/depth/
+singlecount/holdoutinheritance. Independentreviewactivebeforerealcensus.
+Jointpreparationfailurepreservesalreadycomputedindependentcontrols (initial
+callerwouldotherwiseoverwrite aspreparationfailed); no acceptancefallback.
+
+Phase8finalreviewAPPROVEfixed5pairs×alltenUMI-onlycensus, NOTgraphpromotion.
+Jointsupport/solvefailuresalsopreserveindependentcontrols; withhelddiagnostic
+errorsrecordnull/reasonwithoutchangingtrainacceptance. Ambiguitydiagnosticnow
+countsArowsandBcolumns; matchingunchanged. Fresh265PASS3.20s includes17new
+join/controltests. Frozenalltenrunstartedsession20158,outputjoint_pairs_ten_v1.
+Sameoriginaltracker/solver/noise/td; noGTreads, no productionedits ornewATEyet.
