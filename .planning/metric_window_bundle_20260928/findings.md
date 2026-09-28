@@ -242,3 +242,30 @@ IMU recorderdrops0, exposuremedian7954usALL. heldout1/2/3+fresh1/2/3 have
 samegainmedian246asfailingfresh4 yetpasscurrentjoint10mmmaxgate. Therefore
 exposure/highgain alone NOTsufficientcause. Needtemporal/spatialsupport and
 algorithmphysicalmodel distinctions; do not simplycall darkimagecorruptdata.
+
+Newfeature-loss investigation: sourceproves143→19 are supplementalwindow
+`admitted_train` counts after train-only PnP, not MASt3R frontend dense matches.
+Windowtracks use cumulative temporal validity (one temporal failure persists),
+per-frame stereo/depth/epipolar gates, train/heldout split and PnP-inlier admission.
+Counts alone cannot separate these stages. Frozenmemory also includes a DIFFERENT
+09-20 recording where frontendmatchcollapse hypothesis was falsified; do not
+re-use either that older negative or currentwindowcounts as proof about latest
+fresh4actualMASt3Rmatches. Investigate actualcurrentfrontend logs independently.
+
+Final30stage-trace completed:26pre-BAaccepted/4raw-windowrefusals, all26count
+identity;8input/14source/82decodedframe hashes perrow verified; root68uniqueactual
+filehashes and30exactcoverage checksPASS. fresh4pair27 secondhalf180initial
+points atlastnode:58cumulative temporal/32LR/2stereoLK/8epipolar/19depth
+exclusivefirstgate failures,61pass. Joinedlastnode56trainvalid->19PnPadmitted.
+Middle199=60A+106B+33seam; final19=0A+16B+3seam, notsamecohortsurvival.
+Shadow originalarrays identity preserved, noBA/graphthreshold change.
+
+Threelogging-only frontend replays all1199CSVbyte-identical originals, elapsed
+306/265/286s. Actualfresh4 bad26raw1053..1078 noptmin77983/median101231
+of147456, i.e.min52.89%/median68.65%. Prior1000..1052 min8774 (5.95%);
+passedfresh1 lastfixedwindowmin8.18%. Counts alone NOTcausal/failedblockcollapse.
+Do not confuse diagnosticSim3relative_scale or canonicalpointmapdepthscale
+withglobalmetretrajectory drift. Needcommonlandmark geometric consistency and
+keyframe-state propagation investigation, notblindmodeltraining/re-recordrequest.
+Finalreport feature_loss_findings.md distinguishes knownlossmechanism from
+unproveduniqueATEcause; fullmax13.801442 unchanged.229testsPASSnotaccuracyPASS.

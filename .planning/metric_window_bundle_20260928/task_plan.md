@@ -24,7 +24,7 @@ no regression of eight prior passes; fresh independent captures after freeze.
    hard fixed; no-MASt3R-shape or GT dependency.
 3. Implemented, NOT production-accepted: isolated minimal estimator using shared landmark multi-frame left/
    right pixel reprojection with soft calibrated raw gyro constraints. Use
-   existing scipy/OpenCV, no new dependency or frontend/GPU rerun.
+   existing scipy/OpenCV, no new dependency or frontend/GPU rerun for this prototype.
 4. Complete for prototype (v6,46/50): uniform time-stratified window observation controls on ten cached
    recordings before any single-case full trajectory promotion. Raw data and
    optimizer diagnostics first; scoring isolated afterward.
@@ -236,6 +236,45 @@ Do not launch a new graph/weight/scale sweep merely because infrastructure now
 exists. Next architectural intervention must identify actual new translation
 information and be reviewed against existing downstream accel constraints.
 No final optimizer/pose changes or 10mm claim in this audit branch.
+
+## Current request: identify why effective features are lost
+
+User explicitly asks to investigate, not merely restate uncertainty. Execute
+bounded image/track diagnostics; do not modify estimator behavior. No full
+frontend/BA/VINS rerun or GT-based selection. Critically,143→19 belongs to NEW
+stereo-window training/PnP support, not MASt3R dense matching count. Trace both
+subsystems independently before assigning causality.
+
+1. Read actual tracking/filtering/initialization and current frontend evidence.
+2. Build isolated observation-only instrumentation, preserving original return
+   arrays/thresholds and finally-restoring hooks. Tests for exact identity,
+   overlapping/first-gate reasons, rejection retention and source/input binding.
+3. Independently review source, then run fixed pairs26/27/28 (1000..1120)
+   in ALL10frozenrecordings, retaining every refusal. No local BA optimizer.
+4. Freeze all30 traces; compare loss stages, spatial/disparity support and newly
+   detectable points. Report direct facts vs hypotheses and missing metrics.
+5. Same-day selected backup with remote restoration. Root cause of full ATE
+   is established only by a discriminating intervention, not point-count
+   correlation. Any actual algorithm repair requires causal evidence plus
+   all-ten full official validation; 14closedfamilies remain closed.
+
+### Feature investigation completion and bounded replay exception
+
+Original frontend logs lacked dense-match metrics. To answer the actual current
+recording question, performed three narrow same-config/model/toolchain/data
+frontend replays with EXISTING logging hooks: fresh4, fresh1, heldout1. This
+overrides only the diagnostic no-frontend-rerun line above; no parameter sweep,
+training, closed-family rerun, VINS/BA/graph rerun or GT-based selection. All
+three 1199-frame output CSVs byte-identical to originals, maxpose delta0.
+
+Fixed10x3 tracing complete:30/30 unique rows,26pre-BAprepared/4rawtracking
+refusals retained, all26counts exactly frozen-summary identical. Root independently
+verified all30 coverage/arrays/provenance fields and68uniqueactualfile hashes.
+Bad26frames raw1053..1078 min77983/median101231 dense optimized matches; prior
+raw1000..1052 min8774. Feature-count-collapse IN the bad block falsified;
+preceding weak-state propagation/geometric bias NOT distinguished or repaired.
+229regressiontestsPASS; fullmax13.801442 unchanged, accuracygoalNOTcomplete.
+Selected same-day source/evidence remote backup and clean restoration next.
 
 ## Errors
 

@@ -669,3 +669,45 @@ orgraphbatch. Algorithmvsvideoquestion remainsunresolvedcausally; provenfacts
 andcounterexamples writtenwithnofalsequality/10mmclaim. Existingestimatorand
 allfrozenposesunchanged. Nextdiscriminatingphysical/inputtest requiresdefined
 observationcriteria orpairedcapture, notanotherclosedfamilysweep.
+
+Userasksactualinvestigationoffeatureloss. Startedbounded observational tracing
+ofrawstereo stages/PnP and independentcurrentMASt3Rloglookup. Not changing
+production/gates/td/frames/weights. Sourcewindowcounts vsfrontenddensecounts
+distinction explicitly corrected to user; fixedall10pairs26/27/28 planned.
+
+Root independently censused actual native bidirectional stereo reports on all
+10 cases x fixed pairs26/27/28, checked all10 frozen hashes. Fresh4 pair27 has
+28/30 generated edges accepted,8/8 short edges,medianPnPinliers104.5; passing
+fresh3 same fixed indices has22/30 andmedian38. This does not prove same actions
+or factor independence, but rejects claiming143->19 equals native collapse.
+New stage tracer scaffold needed actual prep runner; worker continuing it.
+One prior shell inspection exited1 because rg found no nestedAGENTS, not a
+source/test failure; branch separately verified unchanged.
+
+Opened EXISTING frontend log hooks on unchanged frozen producer/data, first
+fresh4 thenfresh1/heldout1. Allthree1199poseCSVs byte-identicaloriginal;
+elapsed306/265/286secs(total857; instrumentationstereodiagnosticsaddsCPUcost).
+Actualexistingofficialfailure26raw1053..1078(maxraw1071=13.801442mm) has
+noptmin77983/median101231; earlier1000..1052min8774. Thisrulesout current
+badblocklowcount, NOTprecedingweakstatepropagationorwronggeometry.
+All10nativebidirectional census remainsstagegeneration,notallusedindependent
+graphinformation. Reviewer approvedbounded30stage trace after failclosedhash
+andshadowidentityfixes; rootlaunchedit. Targeted23PASS, broader229PASS4.73s,
+backupworktree229PASS4.26s. No pose/model/gate/weight change.
+
+Old /tmp backup and clean-restore directories no longer existed (worktree
+records prunable), but previous commit a627772 remains locally and remotely.
+Created separate persistent /home/robot/ego_vio_feature_loss_backup_20260928
+branch codex/feature-loss-diagnostic-20260928 fromthatcommit; no old records
+pruned, no reset/forcepush/unrelateduseredits overwritten. Current new sources
+copied narrowly, evidence backup pending completion of30trace.
+
+Completed30trace:26pre-BAprepared/4expectedraw-windowrefusals,26frozen count
+identities; source/input/82decodedframe hashes perrow checked beforetrace.
+Root independentexact30coverage/literalindices/allrowprovenance/identity and
+68uniqueactualfile hashes PASS. Initialrootchecker used nonexistent `verified`
+key, corrected to actual per-source/input/decoded counts; no tracefailure.
+Report updatedwith stage/cohort explanations and3byte-identicalfrontendreplays.
+Explicitly correct prior143->19attribution: NEWwindowPnPadmission, notcurrent
+MASt3Rdensematches. Bad26frame matching high; precedingweakphase vsbiased
+geometry remain unresolved. No estimator correction/fullATEchange claimed.
