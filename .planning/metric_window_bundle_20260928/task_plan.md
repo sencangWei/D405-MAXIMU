@@ -126,6 +126,29 @@ orGT; combined train-onlyPnP9poses, fixedGFTTidmod5 withheld labels. No oldjoint
 successfallback on newfailure. Independent controls remain exactlyv1 inputs.
 First fixed5pairs×allten, UMI-only freeze BEFORE localreferenceevaluation.
 
+### V2 all-ten result and full fixed-cost graph control
+
+V2 fixed5pairs×allten freezes84/100 endpoints (42pairs) vs independent91.
+Same78 v1/v2 local displacement max7.171→4.520mm,48/78 improved. Same84
+independent/v2 max7.182→6.028mm,42/84 improved. This is LOCAL displacement,
+not full ATE. Review approves full UMI-only40raw/stride40 census,29pairs/case;
+true38/39 tail frames receive no new factor but are NOT removed from SLAM.
+
+After full census freeze and independent local scoring: separately reviewed
+engineering control uses unchanged native0.004m fixed penalty/confidence1,
+allten×(baseline,joint,independent), no GT-selected weights or windows. Finish
+all30graphs before any GT scoring. New wrapper must verify exact all-ten inputs,
+schedule, calibration, all full-trajectory timestamps/rows, and preserve refusals.
+Joint two-endpoint groups are correlated; independent controls declare separate
+solves. Count endpoint factors and pair groups, never claim a calibrated
+covariance or independent information count. This experiment is NOT promotion
+authority even if numeric max passes: covariance-correct integration needs its
+own design/evidence review. Baseline replay and full official ATE contract are
+checked, and all-ten outcomes retained including failures.
+
+Read-only foreground diagnostic did not support a jaw-track root cause for
+fresh4 in the uniform last-pair B-half. No input masks or estimator change.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

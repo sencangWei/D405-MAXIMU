@@ -345,3 +345,28 @@ Newpairwrapper/all-ten baseline-joint-independent replay/tests delegated, no
 existingwrapper/native/core changes. Metadatawillcountendpointfactors and
 pair_level_group_count withstatistical_independence_claimedFalse, not falsely
 certified effectiveindependentcovariance. All30graphsfinish BEFORE GT scoring.
+
+310expandedmain testsPASS4.07s. Selfdiagnosticv1/supersession/v2/helper/tests/
+report backed19b5c4fd088f64f432f146a97aa451b732d86f1e (8exactchangedpaths),
+normalpushsencang; cleanremote-onlyrestoreall8byteequalmain/backup,
+restored62targetedtestsPASS1.88s. No mask/estimator/datachanges.
+
+Graphprelaunch reviewREQUESTCHANGES: missingall-entry hashpreflight before
+processes, wrappernonemptyhash/exactcase/schedule/modechecks, truthfulseparate
+independent-solve metadata and full-row/time checks. Workerfixingown4files;
+no graphlaunch. Mainanalysis-only30outcome summarizerTDDREDmissingfile→5PASS,
+reviewapprovedafterfailureidentitytests tightenednamedlookup/secondnonfirst
+variantfailure/reversedstatus order. GT scoring and summary stillNOT run.
+Fullcensus223/290pairs atlatestcheck, remains frozen/running.
+
+FullcensusDONEexit0 all290pairs/580endpoints;253acceptedpairs/506endpoints,
+independent540/580accepted. AFTER freeze fullscoringhelperexit0,476joint/
+510independentscored;both30acceptedoutsideexistingGTcoverage;470mutual:
+mean1.393→1.348,median.889→.837,P954.281→4.079,max18.578→13.287mm,
+261/470improved. Severalcasesregresslocally; thisNOTATE/nopromotion. Report
+seam_full_local_report.md;fullsourcehashesvalid. No trajectories trimmed.
+
+Operationalerror: workerreviewfixmessageswere sentvia send_messageafteragent
+completed, so fixesqueuedbutnotrunning. Detectedbylist_agents and explicitly
+followup_task restarted fixturn. No graph was launched with unreviewed code.
+This is orchestration error, not a data/SLAM fault; originalcensus ran normally.

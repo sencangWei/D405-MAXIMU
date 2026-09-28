@@ -131,3 +131,10 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   owned branch. Remote-only restore compared all4 changed files byte-for-byte
   with main and isolated backup; freshly restored56 targeted testsPASS2.35s.
   This does not claim the running full census has completed or scored yet.
+
+- Read-only self-track diagnostic, invalid v1 retained with explicit supersession,
+  corrected v2 evidence/tests/report and selected documents backed in commit
+  `19b5c4fd088f64f432f146a97aa451b732d86f1e`. Eight exact changed paths,
+  normal push to owned sencang branch; clean remote-only restore matched all8
+  byte-for-byte against both main and backup. Restored62 targeted testsPASS1.88s.
+  No foreground mask or estimator modification is claimed.
