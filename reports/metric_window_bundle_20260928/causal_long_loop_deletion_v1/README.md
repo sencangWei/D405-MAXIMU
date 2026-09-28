@@ -233,6 +233,11 @@ estimate was frozen; it uses the same 1143 samples per respective recording.
 These rows use differing downstream recipes, so the paired-seam figures are
 incumbent targets, not a one-parameter causal contrast. Both *new* runs use
 the same plain-fusion code and frozen opt-in config as the fresh4 PASS. The
+frozen earlier *plain* fusion (same VINS streams, no paired-seam additions)
+also passes: fresh1 mean/P95/max **2.462/5.990/7.809 mm** and heldout4
+**3.373/5.032/8.913 mm**. The contrast is a real regression under broadly
+matching downstream controls, but still changes multiple frontend priors
+together, so it does not isolate one offending factor. The
 fresh1 output SHA256 is `0580204ccb693cd4f82de14a8667a1339b75d6c7ed353d0bfc832ccaa7966c83`;
 heldout4 is `9e39be47f6e53f2bd7ed488b13cc8efa08b5890a9e0b11248bf159e6ea0c8f19`.
 Scoring did not modify the heldout4 estimate. A separate frozen VINS-only
@@ -258,3 +263,73 @@ quality P95 nor a naive VINS-vs-stereo vector threshold is an evidenced
 universal rescue selector. Diagnostic implementation is
 `.planning/metric_window_bundle_20260928/compare_vins_stereo_vectors.py`;
 its two synthetic geometry/floor tests PASS.
+
+The predeclared dev2 contrast has **no precision score**. With the same
+opt-in config and valid 1144-frame camera-prior stream, its first attempt
+remained at frontend `[1/8]` after printing `VINS metric factor inside
+calibrated keyframe GN 1`; main and backend processes were waiting and GPU
+utilization was 0% for over 20 minutes. A serial retry with the same inputs
+and an explicit `MAST3R_VINS_CAMERA_POSES` again reached the same print, then
+the same waiting state with no later phase output. Both were interrupted;
+neither created a scoreable fused trajectory. An intermediate retry that
+forgot this environment variable failed immediately and was discarded before
+scoring. This is a separate repeatable frontend execution defect or deadlock,
+**not** evidence that dev2's image recording failed or that its ATE exceeds a
+threshold. It further blocks promoting the opt-in frontend to production.
+
+Decision for this candidate: **REJECT global rollout**. The sole fresh4 PASS
+does not compensate for two independently scored regressions and one
+unscored execution failure. Keep the existing 9/10 paired-seam incumbent;
+no per-case Lighthouse-selected switch is permitted. The next bounded work
+is to isolate the backend factor's execution stall and find a source-only
+visual/stereo witness that separates useful correction from damage. The
+simple VINS/stereo vector statistics above do not supply that witness.
+
+### ★ Correction: dev2 stall localized; separate numerical failure exposed
+
+An opt-in SIGUSR1 stack dump of the *same* dev2 freeze showed the main thread
+at `main.py:514`, waiting for `reloc_sem` to clear, while the backend was at
+`main.py:191`, waiting for ordinary global-optimizer work. This refutes the
+earlier inference that the metric solver itself was hanging. The code set
+`Mode.RELOC` before constructing/queuing its request; the backend could
+process the mode early, return to TRACKING, and leave a later queued request
+orphaned. A minimal backend guard now requires a pending relocation request
+before processing that mode. Its request-handshake unit test and all existing
+upstream tests PASS (9/9 before additional hardening). On dev2 the repaired
+frontend advanced to frame-rate updates and >130 keyframes, whereas both
+previous attempts stopped before any frame-rate line.
+
+The repaired replay then exposed a *second* problem: at keyframe 130 the
+backend raised `RuntimeError: nonfinite metric keyframe pose` from the
+opt-in `gauss_newton_calib_metric`. This is an explicit numerical failure of
+the experimental metric frontend, **not** a precision score and not proof of
+bad video. Previously the main process could wait indefinitely after any
+backend crash. It now checks the backend exit code in both single-threaded
+request waits and raises an explicit error; the targeted test and whole
+upstream unit suite PASS (10/10). The experiment remains rejected. These
+robustness fixes do not relax the 10 mm precision gate or affect default
+frontend trajectory math.
+
+The exact dev2 opt-in replay with both handshake and exit checks advanced
+through the old stall, then logged repeated `Cholesky failed` from raw frame
+666 onward. Its backend ultimately raised the same nonfinite-pose error;
+the main process reported `MASt3R backend exited with exit code 1` and the
+command returned nonzero instead of running to its timeout. That integration
+run confirms the failure is surfaced, not repaired. An additional liveness
+check now runs at the top of each frontend frame as well as inside the two
+single-thread waits; this last one-line hardening has unit-suite 10/10 PASS
+but has not yet been separately replayed end-to-end. The fork fix is backed
+up on `sencangWei/MASt3R-SLAM` branch
+`codex/reloc-request-race-20260929`, commit `c0c63efa7f21484fa19dca67b70948ba71dd066c`;
+a clean remote clone restored all three edited source/test files byte-for-byte
+and passed 10/10 tests.
+
+A different source-only potential selector was also falsified: on frozen
+baseline trajectories, accepted D405 multisecond PnP edges with at least
+10 mm motion have median *visual-vs-stereo* displacement-vector residual
+12.36 mm on the **passing** fresh1 recording and only 6.43 mm on the
+**failing** fresh4 recording. These are not the VINS-vs-stereo statistics
+above. Broad stereo residual magnitude therefore has the wrong ordering to
+explain or automatically route the fresh4 failure. The remaining useful
+signal is likely specific to retrieved MASt3R backend edges/local geometry,
+not a global stereo-quality scalar.

@@ -1098,3 +1098,49 @@ PASS: current gate cannot choose safely. No production promotion. Dev2 third
 independent contrast running exec session5450. Finish, document, then only
 design a source-only selector with a measurable separate witness; never GT
 choose per-recording. Updated report still needs remote backup.
+
+Diagnostic source-only VINS-camera-vs-D405 multisecond-PnP vectors with
+minimum10mm measured chords: fresh4/fresh1/heldout4 accepted edges56/67/32,
+median vector residual5.876/5.586/6.809mm, direction median
+2.599/1.691/6.262deg. Fresh4 and fresh1 overlap, so no justified scalar
+enable gate. New diagnostic script and2 synthetic testsPASS. Same normal
+fusion baseline heldout4 max8.913/fresh1 max7.809mm; new candidate 14.552/
+14.684mm, so regression is not a paired-seam artifact.
+
+dev2 independent replay has NO ATE result. First parallel attempt reached
+"VINS metric factor inside calibrated keyframe GN 1" then main/child waited,
+GPU0 for>20m. A serial retry first omitted the prior env and failed explicitly
+(discarded); corrected serial retry with exact1144 valid camera priors again
+stalled after first metric factor, main/child waiting and GPU0. Interrupted
+both stalled attempts without deleting artifacts. This is repeatable frontend
+execution defect, not proof of bad recording. Opt-in backend VINS absolute
+factor candidate REJECTED: fresh4 PASS, fresh1/heldout4 FAIL, dev2 unscored.
+Keep 9/10 incumbent, no GT-selected routing. Further work: isolate frontend
+stall and source-only witness; do not sweep closed14 families.
+
+★ Correction to dev2 attribution: SIGUSR1 Python stacks at the stall showed
+main waiting reloc_sem at main.py:514 and backend idle task queue at :191.
+This is an early-RELOC handling race, not proven GN-solver deadlock. Backend
+now waits for explicit queued relocalization request. New test + upstream
+suite9/9 PASS, and same dev2 replay progressed >130 keyframes with FPS logs.
+At keyframe130 the opt-in compiled metric GN raised `nonfinite metric keyframe
+pose`; still NO ATE. Added backend-exit fail-fast in both single-thread waits;
+upstream suite10/10 PASS, full fail-fast replay pending. Experimental metric
+candidate remains rejected. MASt3R fork fix committed84cb6c4 on separate
+codex/reloc-request-race-20260929 branch at writable sencang-fork; remote
+clean clone restored3/3 changed files byte-identical and9/9 testsPASS. New
+fail-fast follow-up is not yet backed up; do after verification.
+
+Dev2 fail-fast integration reproduced numeric failure: after earlier race fix,
+replayed raw frames into high800s; `Cholesky failed` began666, backend threw
+`nonfinite metric keyframe pose` at keyframe130, main raised `MASt3R backend
+exited with exit code 1` and command returned nonzero, not timeout. Added
+one extra top-of-frame liveness check afterward (unit10/10 PASS; not yet
+separately end-to-end replayed). MASt3R fork final fix commit c0c63ef on
+sencang-fork branch codex/reloc-request-race-20260929; clean remote clone
+restored3/3 changed files byte-identical, suite10/10 PASS, worktree clean.
+Unscored dev2 remains algorithmic opt-in numeric failure, not GT fail or
+recording FAIL. No promotion. Baseline source-only stereo multisecond vector
+residual median fresh1 pass12.36mm vs fresh4 fail6.43mm, wrong direction
+for a generic stereo-quality selector. More precise backend retrieval-edge
+geometry needed. Latest report/progress/stackprobe still need selected backup.
