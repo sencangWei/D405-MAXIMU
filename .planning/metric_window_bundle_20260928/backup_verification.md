@@ -198,3 +198,15 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - Numeric diagnostic is local relative geometry only, not full ATE. Original
   production source, all-ten source hashes and full-trajectory results remain
   unchanged; the 10 mm accuracy target remains unmet.
+
+## Pure grouped row prototype restoration
+
+- Two new source/test files, local affine contract, all42 real-input algebra
+  preflight and selected report/planning updates were normally pushed in
+  `4ff4514241c4d41174dc7435da3ca91bf4f92547`, eight exact changed paths, to
+  the same owned sencang branch. No native production algorithm file changed.
+- Clean remote-only restoration compared all eight against main and backup
+  byte-for-byte. Fresh restored expanded suite: 359 passed; main 361 includes
+  two existing unselected IMU-scale tests.
+- This backs up grouped-row construction, not a real graph solution, new ATE,
+  covariance calibration or production admission. Full target remains unmet.

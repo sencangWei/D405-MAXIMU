@@ -181,3 +181,10 @@ adapter aggregation assumption, not a data/trajectory fault. Preserved raw
 producer outputs and pre-fix source snapshot; new finalized clone explicitly
 names producer and finalizer hashes and computation_rerun=False. No repeat
 estimator computation was needed to recover annotations.
+
+The full-shape adapter must distinguish recording raw count from pair count:
+1181–1198 frames also yield29 complete stride40 pairs, so merely checking29
+would falsely label them1199. This was caught before launch. Allten actual
+timestamp counts and the literal29×9 schedule are now checked before any solver;
+unknown/extra/cropped/nonmonotonic input and shifted-but-still29 schedules fail.
+No accepted trajectory is cropped to make its graph/window contract fit.

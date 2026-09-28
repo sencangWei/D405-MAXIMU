@@ -486,3 +486,22 @@ Next bounded worker slice owns only NEW full-shape adapter and test. Reuse the
 already fixed uniform29pairs/case full schedule with the unchanged solver and
 diagnostic capture. No real290census launch until exact-schema review, hash closure,
 source backup/clean restoration and fresh tests. No native integration yet.
+
+Pure-row source/tests/real-input preflight backed in 4ff4514241c4d41174dc7435da3ca91bf4f92547.
+Normal push; eight exact changed files byte-identical after clean remote-only
+restoration, restored359testsPASS4.52s. Still no native graph solve or new ATE.
+Read-only prior case completion spans: old full290census1925.7s between first
+and last case completion; sample50census344.9s. Full diagnostic capture is a
+bounded tens-of-minutes CPU task, not another learned model training run.
+
+Full-shape adapter built in NEW source/test files only. Review/root caught and
+fixed postflight-only raw-count assumption, len29-only schedule guard and stale
+five-pair label. Actual all-ten raw count/timestamps, exact literal29×9 schedule,
+62 input hashes and14source hashes now verify BEFORE any solver. Known independent
+optional-field contract and full29 cached schema have tests. Final17adapter tests,
+36relatedPASS; final independent launch review pending. No full batch launched.
+
+Final independent review APPROVE full290 UMI-only diagnostic capture ONLY after
+backup/remote-restoration. Root actual preflight14sources/62inputs/exact10counts
+PASS, expanded main378testsPASS4.65s. Prelaunch prooffull_shape_prelaunch_v1.json
+frozen; no realcensus/GT scoring/graphintegration launched yet.
