@@ -43,6 +43,12 @@ its temporal stereo scale observability; first measure it against passing
 controls, then test a source-supported structural change on all ten frozen
 cases with GT reserved for scoring.
 
+One immediate pointmap sanity check already rules out another simple trigger:
+over raw 1043–1057, the mean per-frame P95 relative keyframe-depth update is
+1.95% in failed fresh4 but 2.87% in passing fresh1 (different physical
+motions). Therefore update *magnitude* alone is not a discriminator; the
+next test must concern temporal pose/scale consistency, not a magnitude cap.
+
 For audit: [frozen score](../seam_graph_full_ten_v1/joint/fresh4/official_score/precision.json),
 [drop score](fresh4_current_chain/official_score/precision.json),
 [inlier score](fresh4_inlier_current_chain/official_score/precision.json).
