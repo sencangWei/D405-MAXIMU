@@ -373,6 +373,14 @@ instead raises backend re-anchoring as an underidentified next boundary;
 prior cases show some online errors too. Findings: keyframe_update_probe_v1/
 findings.md. Owned backup/remote-only restore remains to finish this branch.
 
+Post-freeze evaluation-only same-reference raw-MASt3R check: all three final
+Sim(3) shape P95 values are better than online; fresh4 bad-block median final
+4.32 versus online 5.97 mm after separate global Sim(3) fits. MASt3R itself
+has nonmetric scale, so none of these is fused ATE. Reject direct backend
+disable/online switch. Next diagnostic must distinguish local MASt3R motion
+from independent raw stereo/IMU metric constraints before estimator changes;
+the current product is still 9/10 PASS with fresh4 max 13.801442 mm.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

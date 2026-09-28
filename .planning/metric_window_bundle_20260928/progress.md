@@ -849,3 +849,14 @@ Read-only online-vs-final alignment shows fresh4 midblock15.051mm difference
 vs controls3.929/0.421mm. This is notGT error nor backend culpability proof;
 next finite boundary is exact backend re-anchoring/accepted-constraint tracing.
 Selected owned-remote backup and remote-only restore pending this continuation.
+
+Post-freeze evaluation-only official scorer on raw MASt3R full/online and same
+SteamVR body reference/fixed body_T_cam0 across three cases: no-scale SE3
+ATE grossly nonmetric (GT/estimate Sim3 scales .27-.47), so it is NOT fused
+precision. Shape-only Sim3 P95 final/online fresh4 18.37/18.87mm, fresh1
+26.57/29.39, heldout1 11.93/13.63; fresh4 bad26 median4.32/5.97mm.
+Final slightly better in allthree. Direct disable-backend hypothesis rejected;
+isolated local final-online difference doesnot prove backend-caused ATE.
+Evaluation files saved under backend_boundary_eval, report updated. Next
+boundary compares frozen MASt3R local motion with independent stereo/IMU
+metric evidence, without GT-selected admission or production changes.

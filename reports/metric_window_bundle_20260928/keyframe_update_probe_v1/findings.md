@@ -72,13 +72,28 @@ backend re-anchoring/loop correction separately, not declaring it the cause.
 Prior take1/take3 evidence found some distortions already in online poses, so
 switching to online or disabling the backend is not an established fix.
 
-Next finite test: capture exact per-keyframe online and final Sim(3) poses,
-relative tracked poses, and accepted backend constraints for these same three
-frozen cases; verify reconstruction identities and identify when any local
-deformation enters. Compare both streams under one common **evaluation-only**
-alignment after freezing the UMI-only diagnostic. Do not tune or replace the
-production backend unless the correction is independently shown harmful and
-the unchanged all-ten gate improves without losing existing passes.
+After the UMI-only comparison was frozen, an **evaluation-only** check used the
+same SteamVR body reference, fixed `body_T_cam0` calibration and 0.05 s
+interpolation gap to compare raw MASt3R final/online poses. Raw MASt3R is not
+metric on these recordings: the diagnostic GT/estimate Sim(3) scales are about
+0.27–0.47, and its no-scale SE(3) ATE is hundreds of millimetres. Neither is
+the fused product's ATE. As a shape-only diagnostic, final versus online
+Sim(3)-aligned P95 is fresh4 18.37/18.87 mm, fresh1 26.57/29.39 mm, and
+heldout1 11.93/13.63 mm. For fresh4 frames 1053–1078, the corresponding
+median shape residual is 4.32/5.97 mm. Final is modestly *better* in all three
+comparisons. Thus the large final–online difference alone does not justify
+disabling the backend; the local metric/fusion error remains underidentified.
+Evaluation outputs are in `backend_boundary_eval/` and were not used by the
+capture, diagnostic comparison, or estimator.
+
+Next finite test: isolate whether the 26-frame error enters the fused metric
+trajectory through MASt3R local shape or the stereo/IMU-to-MASt3R scale
+interface. Compare frozen full/online local relative motions to raw independent
+stereo/IMU evidence in all three cases, without GT-based factor admission or
+threshold fitting. If backend re-anchoring is revisited, capture exact
+per-keyframe online/final Sim(3), relative tracked poses and accepted constraints
+first; no direct online switch. Any repair must pass the unchanged all-ten gate
+without losing the existing nine passes.
 
 ## Limitations
 
