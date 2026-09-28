@@ -165,3 +165,19 @@ least_squaresuseslinear loss, and result.fun/result.jac describe THATtransformed
 objective. Ranknullaxes/gauge/IMUreuse explicit, no statisticindependenceclaim.
 Syntheticexplicitnuisance-lstsqprofileidentity/rankdeficiency/gradient tests
 requiredbeforealltenfixedfivepairdiagnostic. No graphintegrationauthorityyet.
+## Nine-center diagnostic: local information is mixed, not ATE completion
+
+All ten cases/fifty fixed pairs computed, 42 accepted. The capture preserves
+original estimator acceptance/reasons and endpoints exactly against cached v2;
+every accepted grouped diagnostic has numerical rank 24, but this is not a
+calibrated uncertainty or correctness claim. Post-freeze local relative geometry
+max is 9.167750 mm versus existing joint graph 12.542609, but only 146/336 centers
+improve and six case means regress. Final fresh4 pair also has mixed interior
+improvements; local endpoint maximum differs from full-ATE peak location.
+Full-trajectory worst ATE remains 13.801442 mm. No promotion, no GT correction.
+
+Operational fault: mandatory joint_pair on independent normal rows was a new
+adapter aggregation assumption, not a data/trajectory fault. Preserved raw
+producer outputs and pre-fix source snapshot; new finalized clone explicitly
+names producer and finalizer hashes and computation_rerun=False. No repeat
+estimator computation was needed to recover annotations.

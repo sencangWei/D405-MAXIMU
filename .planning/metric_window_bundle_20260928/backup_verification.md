@@ -171,3 +171,17 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - Numeric result remains joint9/10PASS/max13.801442mm, targetNOTmet; four
   official threshold-failure exit3 outcomes retained. This backup is not a
   production promotion or new learned model.
+
+## Nine-center prototype source restoration
+
+- Original diagnostic core, fixed-schedule adapter, tests and selected planning
+  documents were normally pushed in `fd55c29db0efe9e417c4d4a9a31793171c1712c2`,
+  nine exact changed paths on the same owned sencang branch. Remote-only clean
+  restore matched all nine against main and isolated backup byte-for-byte.
+- Fresh restored regression suite: 342 passed; main: 344 passed, including two
+  existing unselected IMU-scale tests. No production or calibrated covariance
+  claim. This source commit preceded the 50-pair computations.
+- Later optional independent joint_pair aggregation fix and post-freeze scorer
+  now pass 27 targeted tests; expanded main regression suite **354 passed in
+  4.49s**. They and the completed raw/finalized diagnostic evidence still need
+  their own remote restoration; the source-only commit does not back them.

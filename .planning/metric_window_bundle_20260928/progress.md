@@ -440,3 +440,25 @@ Contractshape_contract.md; then sourcebackup beforeuniformdiagnosticcensus.
 FinalprelaunchreviewAPPROVE0blockers diagnosticALLTEN50pairs ONLY;17testsPASS
 review0.37s. No graph/GTduringrun/selector/productionpromotion. Actualsource
 backupandfreshremote-restoredtests prerequisites remain beforelaunch.
+
+## Completed nine-center sampled diagnostic
+
+Prototype source was normally pushed in fd55c29db0efe9e417c4d4a9a31793171c1712c2.
+Clean remote-only restoration compared all nine changed files byte-for-byte;
+restored 342 tests passed, main 344 (two existing unselected IMU-scale tests).
+
+All 50 local pair computations finished. The postflight adapter exited 1 because
+normal independent rows omit optional joint_pair. Preserved producer snapshots
+and raw outputs; fixed only aggregation with a real-schema regression. Finalized
+a NEW clone with explicit recovery provenance and no estimator rerun. Raw case
+files byte-identical; 100 acceptance/reason entries and all accepted endpoints
+exactly match prior v2 (maximum delta 0.0 m). 42 accepted groups, eight refused;
+all accepted conditional ranks 24, zero unavailable/missing accepted diagnostics.
+
+Independent review approved bounded post-freeze geometry scoring only, not
+graph integration/promotion. Score completed: 336 non-anchor local centers,
+bundle mean/median/P95/max 1.182284/0.622824/3.544572/9.167750 mm versus current
+joint graph 1.214525/0.547247/3.797679/12.542609 mm; only 146/336 improved and six
+case means regress. 141 evaluation hash bindings verified. Full ATE remains
+13.801442 mm and target NOT met. Report shape_geometry_report.md; grouped-factor
+graph design review underway, no native production changes or graph launch.

@@ -53,17 +53,23 @@ def case_rows(name: str):
     return pairs, windows
 
 
-def write_fake_outputs(output: Path):
+def write_fake_outputs(output: Path, *, independent_joint_pair: str = "present"):
     output.mkdir(parents=True, exist_ok=True)
     cases = []
     for name in CASE_NAMES:
         input_path = output / f"{name}_input.txt"
         input_path.write_text(f"input:{name}")
         pairs, windows = case_rows(name)
+        independent_windows = [dict(row) for row in windows]
+        if independent_joint_pair == "missing":
+            for row in independent_windows:
+                row.pop("joint_pair", None)
+        elif independent_joint_pair == "bad":
+            independent_windows[0]["joint_pair"] = 99
         case = {
             "case": name,
             "windows": windows,
-            "independent_windows": [dict(row) for row in windows],
+            "independent_windows": independent_windows,
             "pairs": pairs,
             "input_sha256": {str(input_path): sha(input_path)},
             "decoded_grayscale_frame_sha256": {f"left:{name}:0": "d" * 64},
@@ -260,6 +266,31 @@ def test_schedule_validation_rejects_extra_case_or_shifted_window(tmp_path):
     independent["cases"][0]["windows"][0]["indices"] = [1, 2, 3, 4, 5]
     with pytest.raises(ValueError, match="independent summary windows"):
         adapter._validate_pair_summaries(joint, independent)
+
+    output_missing = tmp_path / "shape_missing_joint_pair"
+    write_fake_outputs(output_missing, independent_joint_pair="missing")
+    adapter._validate_pair_summaries(
+        json.loads((output_missing / "summary.json").read_text()),
+        json.loads((output_missing / "independent_summary.json").read_text()),
+    )
+
+    output_bad = tmp_path / "shape_bad_joint_pair"
+    write_fake_outputs(output_bad, independent_joint_pair="bad")
+    with pytest.raises(ValueError, match="independent joint_pair"):
+        adapter._validate_pair_summaries(
+            json.loads((output_bad / "summary.json").read_text()),
+            json.loads((output_bad / "independent_summary.json").read_text()),
+        )
+
+
+def test_real_raw_shape_pairs_schema_validates_optional_independent_joint_pair():
+    raw = ROOT / "reports" / "metric_window_bundle_20260928" / "shape_pairs_ten_v1"
+    if not (raw / "summary.json").exists():
+        pytest.skip("real raw shape-pairs summary not present")
+    adapter._validate_pair_summaries(
+        json.loads((raw / "summary.json").read_text()),
+        json.loads((raw / "independent_summary.json").read_text()),
+    )
 
 
 def test_source_hash_conflict_rejected(tmp_path):

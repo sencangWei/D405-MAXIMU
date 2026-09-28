@@ -177,6 +177,15 @@ independentreviewAPPROVE boundedUMI-onlyten50pairdiagnostic, no graph/GT/selecto
 17newtargetedPASS; sameformaltd/gates/nativecore. Contractshape_contract.md.
 Back up source beforelaunch; freezeall50 before any externalgeometryevaluation.
 
+Phase9 sampled diagnostic complete and frozen. Aggregation-only optional-field
+bug recovered in a new explicitly-provenanced output directory, no solver rerun.
+42/50 accepted pairs expose full-rank 24 grouped geometry. Post-freeze evaluation
+of all eight non-anchor centers per accepted group is mixed, not a production
+accuracy result: local max 9.168 versus graph 12.543 mm, 146/336 points improve.
+Do not infer full ATE PASS. Preserve/back up these results and obtain a separate
+graph interface review on gauge, linearization, objective scale and gyro reuse
+before integration; no GT selection or closed-family weight/density sweep.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

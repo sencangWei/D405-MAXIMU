@@ -107,7 +107,7 @@ def _validate_case(case: dict) -> None:
                 raise ValueError(f"{case.get('case')} independent window ids are not exact 1..10")
             if windows[row_index].get("joint_pair") != index + 1:
                 raise ValueError(f"{case.get('case')} joint_pair ids are not exact 1..5")
-            if "joint_pair" in independent[row_index] and independent[row_index].get("joint_pair") != index + 1:
+            if independent[row_index].get("joint_pair") != index + 1:
                 raise ValueError(f"{case.get('case')} independent joint_pair ids are not exact 1..5")
             if windows[row_index].get("indices") != expected_indices:
                 raise ValueError(f"{case.get('case')} joint endpoint indices mismatch")
