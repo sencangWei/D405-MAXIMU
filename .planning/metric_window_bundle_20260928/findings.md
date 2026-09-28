@@ -205,3 +205,40 @@ Rootrecheckedrobustresidual/Jacobian consistency suspicion. OfficialSciPy toy
 indeedmismatches Jmodified.T@rawfun whenlosssoft_l1, butOURbundle explicitly
 manuallytransforms residual andusesdefaultLINEARloss. This NEGATES thehypothesis
 forourmodel, agreeingwiththeearlieraffinealgebranoteabove. No frozenfileedit.
+
+## Recording integrity is not a millimetric image-quality certificate
+
+User asks whether a day without accuracy improvement really establishes an
+algorithm fault rather than video quality. It does NOT establish that dichotomy.
+Root freshly read fresh4 raw session `d405_720p_rgb_stereo_ir_20260927_182007`:
+acceptance.json PASS, authoritative DB3 counters no skipped/repeated/reset/
+regressed frames; IMU16001samples/399.993998Hz/zero recorder drops. This is
+recording transport integrity, not a visual-information guarantee.
+
+IR metadata: exposure min/median/P95/max7954us; gain median/P95/max246, min237,
+configured limit8000us/248. Close to those operational limits is descriptive,
+not proof of blur or unusability. Root viewed existing dataset raw1040/1070/1080
+leftIR PNGs: near-object/patterned mat view changes into wider dark desk/wall
+view with repeated mat texture and largely blank surfaces. Visual assessment
+only; no quantified blur/noise-depth causal claim. All frames remain retained.
+
+Actual samegroup27 support143/113/107/101/199/122/75/34/19, heldout pixelRMSE
+1.727452->1.642413, but local BA does not solve its metric geometry discrepancy.
+Thus lost persistent metric support/observation-model mismatch remains plausible;
+no basis to certify video perfect or solely blame the trained model/algorithm.
+Earlier sensitivity/error association and fewer tracks support investigation,
+not causation or a GT-selected frame-removal rule. Do not discard recordings
+merely because full ATE fails. Need a discriminating physical/internal test or
+paired acquisition intervention before attributing the unique root cause.
+
+Source audit confirms local BA includes stereo pixels+gyro/bias ONLY; no
+accel-preintegration/velocity/gravity/accelbias state. Native downstream graph
+already includes those translation equations. Missing local accel coupling is
+an architecture hypothesis, not proof of the current error cause and not an
+excuse to repeat closed graph-weight/scale-mode sweeps.
+
+Rootfurtherchecked all10rawacceptance reports: allPASS, left/rightskipped0,
+IMU recorderdrops0, exposuremedian7954usALL. heldout1/2/3+fresh1/2/3 have
+samegainmedian246asfailingfresh4 yetpasscurrentjoint10mmmaxgate. Therefore
+exposure/highgain alone NOTsufficientcause. Needtemporal/spatialsupport and
+algorithmphysicalmodel distinctions; do not simplycall darkimagecorruptdata.

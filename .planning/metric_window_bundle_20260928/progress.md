@@ -634,3 +634,30 @@ expanded446PASS11.06s. Actualall30commandpreflight10cases110bindings/entry,
 unchangedformaltd/capsPASS, noGTopened/nooutputscreated. PureUMI-onlyall253
 relativeattitude+worldrigidinvarianceaudit next; avoid mistakingthe gauge or
 mathematicalconditional limitations for a demonstratedimplementationbug.
+
+Researchconsumer/fullLOCALevidence13pathbackup a327e4d45fea0fb61a3732acdb3d749a8bba9032
+normallypushed ownedsencang; remote-onlycleanrestore all13byte-identicalmain/
+backup, fresh444PASS12.71s (backup444PASS10.95s). InitialTLS handshakefailure
+resolvedbynormalHTTP/1.1retry, notforceorcertificateweakening. Source/no-run
+approvalONLY; fullATE13.801442unchanged.
+
+FirstUMIposeaudit preserved253accepted/37refused andpassed worldrigidinvariance
+maxdelta1.972e-12. Relativeattitudemax-pergroupmedian.170747deg/P95.741991,
+fresh4pair27max1.155289deg; theseareconsistencyNOTATEorrootcauseproof.
+Independentreviewcaught actualinputhashverification andfrozengraphbinding
+gaps, plusbool/scheduleguards; v1retained, provenancefix+v2rerununderway.
+
+v3 now fixes realinputhash/framebinding/literalbool/scheduleandunboundcount
+guards; all290rows retained,253accepted/37refused;10boundcases/257uniqueactual
+files verifiedbeforeafter. WorldSE3 residualmaxdelta1.972e-12unchanged. Fresh4
+pair27 relativeRmax1.155289deg/BA-native localdelta6.933210mm, notATE/Cov/causal
+proof. Rootcmp30actualoldnativeCSV+graphreports+fusionreports byte-identical
+cleanremotea327e4d. No solver/GT/threshold/graph/productionchange.
+
+All10rawrecordings freshlychecked PASS, noIRskips/noIMU recorderdrops. Exposure
+median7954usALL, gainmedian246infailedfresh4andsixpassedcases. Rootviewed3
+failedblockframes; dark/wide/repetitivetextureandloss143→19visualtracks plausible,
+butbrightnessalone notcauseproof. Userexplicitquestionansweredwiththese
+limitations, notcertifyingperfectvideosoruniquelyblamingalgorithm. v3final
+independentreviewAPPROVEsource/evidencediagnosticonly,11targetedPASS; selected
+source/evidencebackup stillpending, no accuracygainclaim.

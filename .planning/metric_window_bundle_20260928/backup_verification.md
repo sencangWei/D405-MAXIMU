@@ -263,3 +263,20 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - This backs the complete253accepted/37refused capture and1046endpoint-vector
   bitidentity proof. It is NOT a grouped native graph run or an ATE improvement.
   Evaluation-only final reviewAPPROVE; actual local scoring starts afterward.
+
+## Full local evidence and isolated consumer restoration
+
+- Exact13named source/test/evidence/planning paths normally committed as
+  `a327e4d45fea0fb61a3732acdb3d749a8bba9032` on the same owned sencang branch.
+  Actual algorithm files remain humble/scripts and humble/.planning; unrelated
+  dirty production work and the reports root were not staged.
+- First HTTPS push failed with a TLS handshake error. A normal HTTP/1.1 retry
+  succeeded; remote branch hash was independently checked. No force push,
+  remote change, or relaxed TLS certificate check was used.
+- Clean remote-only fetch into `/tmp/ego-metric-graph-restore-0Wz3x7` matched
+  the exact commit. All13files compared byte-for-byte against both main and
+  isolated backup. Fresh restored444testsPASS12.71s; backup444PASS10.95s.
+- Backs completed full LOCAL geometry evaluation and research-only refiner,
+  composed CLI and runner source. Independent review permits source backup and
+  no-run30command preflight ONLY. No actual grouped graph, new ATE, production
+  promotion or 10mm accuracy claim is included.

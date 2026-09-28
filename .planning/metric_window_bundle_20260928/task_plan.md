@@ -215,6 +215,28 @@ andactualrigid-world invariance, UMI-only nooptimizer/noGT/no thresholds. Gauge
 orposeconditioning remains a hypothesis, notprovenrootcause. Separateevidence
 review needed before spending another fullgraph batch.
 
+Completed the bounded all253 UMI-only pose audit. The first-camera local gauge
+is world-SE3 invariant (max residual change1.972e-12); the implementation is
+not disproved by rotation marginalization alone. Relative BA/native rotations
+max-pergroup median.170747deg/P95.741991, fresh4pair27max1.155289deg. These are
+not ATE or causality. v1/v2 are preserved pre-guard audit artifacts; use v3 with
+actualfile checks, formal frame/td/session/rawcounts/timestamps, strict accepted
+bools and exact29pair schedule. All10boundcases,257uniqueactualfiles verified.
+
+Latest user asks whether the failure is algorithm rather than video quality.
+All10rawcapture PASS/noIRskips/noIMU recorderdrops. Sixpassingcases share failed
+fresh4exposure7954us/gain246, so neither recording integrity nor highgain alone
+establishes the cause. Keep video/observational quality as an unresolved factor;
+do not discard videos because they fail ATE. Read-only report
+recording_integrity_vs_visual_information.md separates integrity, visual support
+and causal limitations. A paired acquisition/light/exposure intervention would
+need user physical participation; no newcapture or exposure change is assumed.
+
+Do not launch a new graph/weight/scale sweep merely because infrastructure now
+exists. Next architectural intervention must identify actual new translation
+information and be reviewed against existing downstream accel constraints.
+No final optimizer/pose changes or 10mm claim in this audit branch.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used
