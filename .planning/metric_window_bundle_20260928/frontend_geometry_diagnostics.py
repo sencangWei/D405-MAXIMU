@@ -88,7 +88,7 @@ def _projection_options(capture: dict[str, Any]) -> tuple[tuple[int, int] | None
             raise ValueError("image_shape nonpositive")
     pixel_border = float(capture.get("pixel_border", 0.0))
     depth_eps = float(capture.get("depth_eps", 0.0))
-    if not np.isfinite(pixel_border) or pixel_border < 0.0:
+    if not np.isfinite(pixel_border):
         raise ValueError("pixel_border invalid")
     if not np.isfinite(depth_eps) or depth_eps < 0.0:
         raise ValueError("depth_eps invalid")
@@ -140,10 +140,10 @@ def _visual_residuals(
     if image_shape is not None:
         height, width = image_shape
         inside = (
-            (projected_all[:, 0] >= pixel_border)
-            & (projected_all[:, 0] < width - pixel_border)
-            & (projected_all[:, 1] >= pixel_border)
-            & (projected_all[:, 1] < height - pixel_border)
+            (projected_all[:, 0] > pixel_border)
+            & (projected_all[:, 0] < width - 1.0 - pixel_border)
+            & (projected_all[:, 1] > pixel_border)
+            & (projected_all[:, 1] < height - 1.0 - pixel_border)
         )
         finite &= inside
     if not np.any(finite):

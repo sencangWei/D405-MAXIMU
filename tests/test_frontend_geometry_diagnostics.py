@@ -49,6 +49,29 @@ def _capture(n=40, *, alpha_current=2.0, alpha_keyframe=4.0, rotation=None, tran
     }
 
 
+def _projected_uv_capture(uv: np.ndarray, *, image_shape=(10, 10), pixel_border=0.0):
+    uv = np.asarray(uv, dtype=float)
+    z = np.ones(len(uv), dtype=float)
+    xyz = np.column_stack((uv, z))
+    K = np.eye(3)
+    return {
+        "Xf": xyz.copy(),
+        "Xk": xyz.copy(),
+        "valid": np.ones(len(uv), dtype=bool),
+        "pixel_current": uv.copy(),
+        "pixel_keyframe": uv.copy(),
+        "depth_current_m": z.copy(),
+        "depth_keyframe_m": z.copy(),
+        "K": K,
+        "T_pre": np.r_[np.zeros(3), Rotation.identity().as_quat(), 1.0],
+        "T_post": np.r_[np.zeros(3), Rotation.identity().as_quat(), 1.0],
+        "quat_current_xyzw": Rotation.identity().as_quat(),
+        "quat_keyframe_xyzw": Rotation.identity().as_quat(),
+        "image_shape": list(image_shape),
+        "pixel_border": pixel_border,
+    }
+
+
 def test_exact_known_sim3_and_stereo_geometry():
     out = diag.summarize_geometry(_capture())
     assert out["optimization_run"] is False
@@ -139,6 +162,33 @@ def test_project_calib_border_filter_only_affects_visual_not_common_metric():
     assert out["visual_residuals"]["post"]["candidate_count"] == 40
     assert out["common_metric_geometry"]["status"] == "OK"
     assert out["common_metric_geometry"]["count"] == 40
+
+
+def test_negative_pixel_border_matches_native_expanded_fov_semantics():
+    uv = np.array([[-5.0, 5.0], [5.0, -5.0], [15.0, 5.0], [5.0, 15.0], [5.0, 5.0]])
+    cap = _projected_uv_capture(uv, image_shape=(10, 10), pixel_border=-10.0)
+    out = diag.summarize_geometry(cap)
+    assert out["visual_residuals"]["pre"]["status"] == "OK"
+    assert out["visual_residuals"]["pre"]["count"] == 5
+    assert out["visual_residuals"]["pre"]["projection_filter"]["pixel_border"] == -10.0
+
+
+def test_project_calib_bounds_are_strict_native_endpoints():
+    uv = np.array(
+        [
+            [1.0, 5.0],
+            [1.0001, 5.0],
+            [8.0, 5.0],
+            [7.9999, 5.0],
+            [5.0, 1.0],
+            [5.0, 8.0],
+            [5.0, 5.0],
+        ]
+    )
+    cap = _projected_uv_capture(uv, image_shape=(10, 10), pixel_border=1.0)
+    out = diag.summarize_geometry(cap)
+    assert out["visual_residuals"]["pre"]["count"] == 3
+    assert out["visual_residuals"]["pre"]["candidate_count"] == 7
 
 
 def test_depth_eps_excludes_visual_nonprojectable_but_not_positive_stereo_common_metric():
