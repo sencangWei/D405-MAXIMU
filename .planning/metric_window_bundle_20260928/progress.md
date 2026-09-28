@@ -860,3 +860,11 @@ isolated local final-online difference doesnot prove backend-caused ATE.
 Evaluation files saved under backend_boundary_eval, report updated. Next
 boundary compares frozen MASt3R local motion with independent stereo/IMU
 metric evidence, without GT-selected admission or production changes.
+
+Selected evidence/source backup commits80bb0339 anddc1b7281 normally pushed
+to owned remote sencang branchcodex/feature-loss-diagnostic-20260928. Fresh
+remote-only detached restoration in /home/robot/ego-feature-loss-restore-J9l9eE
+verified388 changedfiles byte-identical main/backup/remote and41 focused tests
+PASS0.20s; restore status clean. Dataset symlinks/rawrecordings/modelcheckpoint
+were NOT copied. This diagnostic branch is complete; all-ten accuracy goal
+remains 9/10 PASS, fresh4 max13.801442mm, no production change.

@@ -381,6 +381,12 @@ disable/online switch. Next diagnostic must distinguish local MASt3R motion
 from independent raw stereo/IMU metric constraints before estimator changes;
 the current product is still 9/10 PASS with fresh4 max 13.801442 mm.
 
+Backup done: selected code/evidence normal-pushed to owned `sencang` in
+commits 80bb0339/dc1b7281 and independently restored from the remote.
+All 388 changed files match main/backup/restored bytes; 41 focused tests pass
+in the clean restored checkout. Current observation-only branch closed;
+overall precision objective continues at the next metric-motion boundary.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used
