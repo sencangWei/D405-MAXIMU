@@ -331,3 +331,17 @@ B-halves. Main review found signed ray-intersection denominator bug before
 interpreting results; worker fixing winding/near-boundary regressions and
 will preserve initial output as superseded. No self-mask or estimator change;
 running full census hashed sources remain unchanged.
+
+Postfreeze-score helper/docs commit fe0e98534d92db663bcfc71a8b56ae07088a72e3
+normalpushed ownedsencang; remote-onlyrestore4changedfilesbyteequalmain/backup,
+restored56targetedtestsPASS2.35s. Signedpolygonbugfixedbeforeinterpretingv1;
+supersessionmetadataretainsv1andv2regeneratedallten,6testsPASS. Independent
+reviewAPPROVE/hashesvalid. Fresh4sourceinsidepolygon0;otheracceptedcases1–7,
+so NO supportedforegroundrootcause/no maskchange. Census stillrunning.
+
+Reviewer permits separate NON-promoted fixed-native-penalty graph experiment
+after fullcensus freeze/scoring; cannot claim covariance-correct integration.
+Newpairwrapper/all-ten baseline-joint-independent replay/tests delegated, no
+existingwrapper/native/core changes. Metadatawillcountendpointfactors and
+pair_level_group_count withstatistical_independence_claimedFalse, not falsely
+certified effectiveindependentcovariance. All30graphsfinish BEFORE GT scoring.

@@ -125,3 +125,9 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   fast-forward push. Remote-only clean restore compared all4 changed files
   byte-for-byte to main and isolated backup; fresh restored50 targeted tests
   PASS1.79s. The running full census is not complete/backed by this commit.
+
+- Post-freeze local scoring helper/tests and selected progress/proof documents
+  backed in `fe0e98534d92db663bcfc71a8b56ae07088a72e3`, normal push to the same
+  owned branch. Remote-only restore compared all4 changed files byte-for-byte
+  with main and isolated backup; freshly restored56 targeted testsPASS2.35s.
+  This does not claim the running full census has completed or scored yet.
