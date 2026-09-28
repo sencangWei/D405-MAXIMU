@@ -107,6 +107,25 @@ does not improve independent geometric consistency or is unobservable. Do not
 run a large graph batch solely on a successful example. Record blocked data or
 mathematical assumptions; ask only for meaningful new authority/input.
 
+### Phase8 v1 decision and v2 continuation
+
+Fixed5pairs×allten v1 completed: joint78/100 endpoints, independent91/100.
+After freeze, same78 local-reference displacement comparisons: independent
+median/P95/max .553/3.160/6.218mm, joint .767/3.490/7.171mm,33/78 improved.
+Not full-trajectory ATE; NO graph or production promotion. Geometry refusals
+often0–3 shared train points, including fresh4 lastpair1. Separate corner
+detection plus near-pixel merging failed to ensure physical track continuity.
+
+Continue approved shared/replenishment direction with fixed seam-born points:
+detect NEW stereo corners at rawseam20 after7px exclusion of ALL existing seam
+pixels (trainandheldout), then samepointIDs tracked backwards20/forwards20raw.
+Supplementary rawpre+post support, then sampledBApre+seam+postfour-noncollinear
+train gate. Original primary rawtracker20points gates/noise/td/core untouched.
+Initialize new3D through A INITIAL trainPnP seam pose, never optimized/learned
+orGT; combined train-onlyPnP9poses, fixedGFTTidmod5 withheld labels. No oldjoint
+successfallback on newfailure. Independent controls remain exactlyv1 inputs.
+First fixed5pairs×allten, UMI-only freeze BEFORE localreferenceevaluation.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

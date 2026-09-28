@@ -265,3 +265,25 @@ errorsrecordnull/reasonwithoutchangingtrainacceptance. Ambiguitydiagnosticnow
 countsArowsandBcolumns; matchingunchanged. Fresh265PASS3.20s includes17new
 join/controltests. Frozenalltenrunstartedsession20158,outputjoint_pairs_ten_v1.
 Sameoriginaltracker/solver/noise/td; noGTreads, no productionedits ornewATEyet.
+
+Phase8v1alltenDONEexit0. Joint39/50pairs=78endpoints, independent91/100.
+Frozenlocalreferenceevalsame78: med/P95/maxindependent .553/3.160/6.218mm,
+joint .767/3.490/7.171mm;33/78improved. Reviewrejectsgraphpromotion. Boundary
+posthocmatchinghas0–3sharedtrainingpoints; fresh4pair5only1. v1code6changed
+filesnormalpushed52de61983363a0657d18c1b1db31732e26ee0307, remote-onlyrestore
+byteidenticalall6; restored263PASS3.02s (main265includes2unbackedexistingtests).
+Firstbackupguard -d.git failedcleanly becauseisolatedrepo isgitworktree(.git
+file); fixedrev-parse validationbeforeanycopy. No overwrite/destructiveaction.
+
+Phase8v2pre-reviewapprovesseam-bornbidirectionalcontinuousLKnewphysicalIDs,
+mask7pxexistingALLlabelsbeforeGFTT. Newhelper/main/testswritten;32targetedPASS
+includingactual9nodeBArecoverysynthetic. Workerremovedtest-onlyglobalruntime
+state/unusedalias; source>=20matchesprimarysourcegate,supplementary>=4only.
+Twofixturefailures(missingaccepted,Noneimagelist)fixedtestdata notgate. Failed
+planpatchheaderanchors made no edits; correctedexactErrorsanchor. Awaiting
+implementationreviewbeforev2alltenrun. v1frozencode/evidenceremainsunchanged.
+
+V2implementationreviewAPPROVEUMI-onlycensus/noHIGHMEDIUMblockers; alltenfactory
+rectifiedintrinsicsequalverified. LOWstalemerge-metadata fixedexplicit geometry
+outputkeys/test;32targetedPASS1.72s, expanded280PASS3.91s beforethattinytidy.
+Frozenv2alltenstartedsession50696, seam_pairs_ten_v2; noGTscore/promotionyet.
