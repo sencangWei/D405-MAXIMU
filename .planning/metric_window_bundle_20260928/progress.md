@@ -711,3 +711,14 @@ Report updatedwith stage/cohort explanations and3byte-identicalfrontendreplays.
 Explicitly correct prior143->19attribution: NEWwindowPnPadmission, notcurrent
 MASt3Rdensematches. Bad26frame matching high; precedingweakphase vsbiased
 geometry remain unresolved. No estimator correction/fullATEchange claimed.
+
+Independent finalreportreviewAPPROVE: countstages/cohorts/threefrontend
+identities andknownvsunprovedrootcause claims verified.27selectedpaths committed
+2473057d275738c8d1772b9d45a275dff08aaebc in persistentisolatedbranch
+codex/feature-loss-diagnostic-20260928, normalpushedownedsencang. Newremote-only
+fetch/checkout /home/robot/ego-feature-loss-restore-J9l9eE: all27selectedfiles
+byte-identicalmain/backup/remote,229testsPASS3.83s (backup229PASS3.45s).
+First gitdiffcheck flagged originalCSVCRLF as trailingwhitespace; kept evidence
+bytes unchanged, reran with core.whitespace=cr-at-eol PASS. No globalgit setting.
+Added explicitinputindex-vs-hardwareframe numbering note to report; raw means
+zero-based1199fullrateinput, source_frame_number starts30inthisrecording.
