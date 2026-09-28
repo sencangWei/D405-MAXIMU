@@ -370,3 +370,14 @@ Operationalerror: workerreviewfixmessageswere sentvia send_messageafteragent
 completed, so fixesqueuedbutnotrunning. Detectedbylist_agents and explicitly
 followup_task restarted fixturn. No graph was launched with unreviewed code.
 This is orchestration error, not a data/SLAM fault; originalcensus ran normally.
+
+Completedfull-local evidence +analysis summarizer normalpushed49301b32f198e351
+915871bd1232e24d21201580,22exactchangedpaths. Cleanremote-onlyrestoreall22
+byteequalmain/backup;28targetedtestsPASS. Existingmain315PASS4.02s. Fullcore
+nativefusion/metricwrapper/complementarysource SHA256 matchesbackup bytewise.
+
+Finalgraphguardfixesnowlanded11targetedPASS;newcombined33PASS0.63s. Dryreal
+all30entryhash/schedulepreflightPASS84frozenpathsclosure, nooutputs/processes.
+RealalltenfactorbuildpreflightPASS506joint/540independentendpoints, full1199/
+1200timestampsunchanged, independent6partialpairs explicitlyrepresented.
+Finalindependentprelaunchreviewpending; no realgraphlaunchedyet.

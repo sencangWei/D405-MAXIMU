@@ -138,3 +138,10 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   normal push to owned sencang branch; clean remote-only restore matched all8
   byte-for-byte against both main and backup. Restored62 targeted testsPASS1.88s.
   No foreground mask or estimator modification is claimed.
+
+- Full all-ten seam control/local-evaluation evidence and analysis summary tool
+  backed in `49301b32f198e351915871bd1232e24d21201580`, 22 exact named changed
+  paths, normal push. Clean remote-only restoration compared all22 with main
+  and isolated backup byte-for-byte; fresh restored28 targeted testsPASS0.31s.
+  Native fusion, existing metric wrapper and complementary algorithm hashes
+  also match the backup sources. This is still LOCAL evaluation, not new ATE.
