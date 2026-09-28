@@ -62,3 +62,31 @@ replay and production deployment are still not verified.
   new independentcapture generalization.
 - A subsequent documentation-only commit records this proof and clarifies the
   fullcoverage adapter. It does not change frozen estimator or evidence data.
+
+## Phase7 all-ten observability diagnosis restoration
+
+- Code, tests, both real runtime-paired proofs, all590 raw diagnostics, current
+  local evaluation, currentv2 association and diagnosis report were normally
+  pushed to owned `sencang/codex/stereo-window-bundle-20260928` in commit
+  `112452548721035561bdbb0d9bfa4c609609c0b3`. Only53 explicitly named selected
+  files copied;49 changed in this commit. Never staged the reports root.
+- Actual code lives in humble scripts and the isolated planning directory;
+  calib-kit is not the algorithm repo. Backup repo checked clean on intended
+  branch; sencang URL is `https://github.com/sencangWei/D405-MAXIMU.git`.
+  Dead origin and unrelated dirty production work were untouched.
+- Clean remote-only restore `/tmp/ego-metric-graph-restore-0Wz3x7` fetched that
+  branch. Remote/local commitIDs matched; all49 changed files byte-identical
+  to both main workspace and isolated backup. No local-copy restore.
+- Fresh restored source/regression suite246PASS2.06s. Main expanded248PASS2.33s
+  includes two pre-existing `test_mast3r_imu_scale.py` tests absent from this
+  selected backup; do not claim those two were remotely restored.
+- First backup-suite invocation mistakenly named that absent test and exited4
+  without running tests. Corrected selected suite246PASS before commit and
+  again from remote. No test or algorithm gate was weakened.
+- Independent final reviewAPPROVE/no blockers. Strict identity staysfailed
+  across NumPy versions; opt-in numerical reproducibility explicitly reports
+  false exactidentity. No production deployment, rawGPU rerun or new recording
+  generalization is claimed. Accuracy target still9/10PASS/fresh4max14.016mm.
+
+A subsequent documentation-only commit records this completed restoration;
+it does not alter hashed census, paired proofs, helper code or trajectories.

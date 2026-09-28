@@ -235,3 +235,12 @@ sensitivity/erroralltenpositive,tracklossproblemwindows butcounterexamples
 explicit. Earlierdiagnostic/associationv1 retainedsuperseded(helperhashchanged),
 sourcecensus/pairedproofunchanged. No newfusiontrajectories,goalstill9/10PASS
 fresh4max14.016mm. Phase7diagnosiscomplete; reportsobservability_report.md.
+
+Finalread-onlyreviewAPPROVE/no blockers; v2sourcehashesvalid. Selected49changed
+code/test/evidencefiles committed112452548721035561bdbb0d9bfa4c609609c0b3,
+normalpushedownedsencangbranch, fetchedcleanremote-onlyrestore49filesbyteequal
+main/backup. Restored246PASS2.06s; main248PASS includes2existingimu-scaletests
+absentselectedbackup. Firstbackupcheckexited4missingthose2tests(no tests ran),
+correctedselectedsuite246PASSbeforecommitandafterrestore. No scope/gatechange.
+No computation orlivecaptureleft running. Nextrepairrequires actualpersistent
+cross-windowlandmarkobservations, not claimingthisdiagnosticfixedtrajectory.
