@@ -200,3 +200,7 @@ SHA matches prior590controls, no edits. Awaiting independent read-only review
 before realcensus; all-ten/frozen fullcoverage schedule unchanged. A failed
 appendpatch tofindingsused incorrectheader anchor; rereadtail/repaired, no file
 changes from failedpatch. Instrumentation outputs diagnostics only.
+
+Independent read-only review: APPROVE diagnostic-only590windowcensus,0blockers.
+TwoLOW recommendations repaired beforelaunch: explicit scriptsimportpath,
+provenancecheckexplicitValueErrorinsteadassert. No optimizer equations changed.

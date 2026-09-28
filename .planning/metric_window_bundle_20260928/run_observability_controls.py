@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'scripts'))
 import run_full_coverage_controls as coverage
 import stereo_window_bundle as bundle
 import stereo_window_observability as diagnostic
@@ -27,8 +28,9 @@ def main(argv=None):
         result = coverage.main(argv)
     finally:
         coverage.base.solve_stereo_window = original
-    assert all(hashlib.sha256(Path(p).read_bytes()).hexdigest() == h
-               for p, h in hashes.items()), 'diagnostic source changed during census'
+    if any(hashlib.sha256(Path(p).read_bytes()).hexdigest() != h
+           for p, h in hashes.items()):
+        raise ValueError('diagnostic source changed during census')
     summary = args.output/'summary.json'
     report = json.loads(summary.read_text())
     report['source_sha256'].update(hashes)
