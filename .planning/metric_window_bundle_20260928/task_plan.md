@@ -349,6 +349,30 @@ None of these residuals may be relabeled ATE, covariance, or unique cause.
    Any repair must then pass the unchanged fullallten evaluation.
 6. Selected same-day backup to owned sencang, actual remote restore + tests.
 
+## Current continuation: raw keyframe update proposal (approved)
+
+Capture missing native update boundary, not an estimator intervention. Use
+fresh4/fresh1/heldout1 frozen producers, each full1199frames but diagnostic
+inputscope1000..1120 anduniform2048 optimizevalid pixelIDs. Log raw oldXYZ/C,
+native matched/working decoderXkf/Ckf, actual transformed proposalXYZ/C,
+raw newXYZ/C and updateN. Verify native weighted_pointmap formula and preserve
+full+online trajectories byte-for-byte. No production/model/td/config/weights
+changes, no external poses or GT-selected interpolation. Firstcase then both
+controls before attributing rootcause. If logging changes produceroutput or
+coverage, reject the diagnostic rather than presenting a fix. Freeze/hashes,
+synthetic tests/review, separate saved-sample statistics, same-day ownedremote
+backup+actualrestoration. Overall allten10mm criterion remains unmet.
+
+Completed first three-case native replay and uniform 363-sample comparison:
+all traces/noerrors/source and prior-array identities/full+online byteidentity
+PASS; 0 weighted-formula or boundary-transform failures. Passing fresh1 has
+larger actual map update and worse depth-shape error than fresh4's failed block.
+Reject simple keyframe weighted-update corruption as a discriminating cause;
+no estimator fix or accuracy gain. Read-only online/final anchored comparison
+instead raises backend re-anchoring as an underidentified next boundary;
+prior cases show some online errors too. Findings: keyframe_update_probe_v1/
+findings.md. Owned backup/remote-only restore remains to finish this branch.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

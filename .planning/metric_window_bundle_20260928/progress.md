@@ -807,3 +807,45 @@ normalpushedowned sencang. Remote-onlyrestore738changedfiles byte-identical,
 83testsPASS0.52s; olderdirectsourcehashes matchbacked985db16a. NoGPUorSLAM
 jobremains. Boundeddiagnosticcomplete; rawupdateproposal/confidencecapture
 notyetexecuted andoverall10mmgoal/causalrepairstillincomplete.
+
+User asked continue. Re-readhandoff/activeAGENTS/RTK/memoryindex anddebugging/
+karpathy/planning skills; priorbranchfacts preserved. Next boundednative
+pointmap-update proposal/weight logging replay, original3cases1199fullrate,
+fixed121samples; zero production change. No VINSreplay/hardware/pkill needed.
+
+Rawupdatepuremath14syntheticchecks added: weightedformula/nativeN/confidence,
+actualproposal-versusderivedboundarySim3, metricgauge, scale-free old/proposal/
+afterdepthshape, rawXYZprojectedraydisagreement (optimizerreconstraintmustnot
+hideit), missingdepthUNKNOWN/malformedcapturefailclosed. Adapterimplementation
+delegatednewinstalledexecutor due priorfollowup returnedoldtaskresult; explicit
+newfileownership no nativeproductionedits. Capture/failurecontrolsnotyetrun.
+
+Preflightfound realchildyaml inherits tracking.filtering_mode from native
+config/base.yaml; adapterinitial guard read childonly and would falseFAIL.
+Worker nowfixing effective config resolution/test. Root combined37test run hit
+concurrent mid-edit mismatch(1 test old signature), not producer issue;
+will rerun after workerDONE. One apply_patch onprogress usedwrongcontext and
+rejected atomically; reapplied correctcontext. No replay launched yet.
+
+Firstreal fresh4 adapter launch aborted PRE-GPU/preoutput at preflight:
+RecursionError in adapter.frozen_inputs calling base.frozen_inputs after
+adapter.main monkeypatched that symbol to itself. This is instrumentation
+wrapper bug, not dataset/SLAM failure. Worker owns fix + active-monkeypatch
+regression; no trace/output directory was created, no source/model run.
+
+Raw-update adapter recursion fixed with captured original preflight and real
+active-monkeypatch regression. Reviewer approved bounded replay. Fresh4,
+fresh1, heldout1 native 1199-frame replays finished; each121 captured frames,
+errors[], full+online1199 CSVs byte-identical to frozen originals. New vs
+previous geometry arrays, input/producer/keyframe/hash identities pass all363;
+363 weighted-formula and derived-boundary proposal checks pass, 0 unknown
+stereo frames. Targeted41 tests PASS. Report and source-linked statistics:
+reports/metric_window_bundle_20260928/keyframe_update_probe_v1/findings.md
+and comparison.json. Fresh4 bad26 actual update median2.101mm vs passing fresh1
+5.588mm; depth shape fresh4 improved proposal relative old, while fresh1
+passes despite larger shape discrepancy. Weighted-map corruption hypothesis
+NOTsupported; no estimator modification and frozen9/10/max13.801442 unchanged.
+Read-only online-vs-final alignment shows fresh4 midblock15.051mm difference
+vs controls3.929/0.421mm. This is notGT error nor backend culpability proof;
+next finite boundary is exact backend re-anchoring/accepted-constraint tracing.
+Selected owned-remote backup and remote-only restore pending this continuation.
