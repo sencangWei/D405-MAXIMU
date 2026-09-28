@@ -210,3 +210,16 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   two existing unselected IMU-scale tests.
 - This backs up grouped-row construction, not a real graph solution, new ATE,
   covariance calibration or production admission. Full target remains unmet.
+
+## Full-census runner source restoration before launch
+
+- New full-shape adapter/test, prelaunch evidence and selected planning files
+  were normally pushed in `c0e9c41b7636d1562c7c58e2e5abcbbce43730bb`, six exact
+  changed paths, same owned sencang branch. Actual code location checked in
+  humble/.planning; no origin push, reports-root staging or force push.
+- Clean remote-only restoration compared all six byte-for-byte against main
+  and backup; freshly restored regression suite 376 passed in4.54s, main378
+  passed in4.65s (two existing unselected IMU-scale tests).
+- Independent prelaunch APPROVE applies ONLY to the UMI-only full290 diagnostic
+  capture. Sources14/inputs62 and all ten actual raw frame counts were verified
+  before launch. This backup does not contain completed full290 outputs yet.

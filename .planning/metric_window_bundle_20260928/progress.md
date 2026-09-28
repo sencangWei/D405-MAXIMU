@@ -505,3 +505,40 @@ Final independent review APPROVE full290 UMI-only diagnostic capture ONLY after
 backup/remote-restoration. Root actual preflight14sources/62inputs/exact10counts
 PASS, expanded main378testsPASS4.65s. Prelaunch prooffull_shape_prelaunch_v1.json
 frozen; no realcensus/GT scoring/graphintegration launched yet.
+
+Sourcebackupc0e9c41b7636d1562c7c58e2e5abcbbce43730bb normally pushed. Clean remote
+restoreall6changedfiles byte-identicalmain/backup;376testsPASS4.54s. Full290
+UMI-only diagnostic census now RUNNING unifiedexecsession16309. Output
+reports/metric_window_bundle_20260928/shape_full_ten_v1, log sibling .log.
+Keep14hashedsources immutable until process completes; no native trajectory
+change/no newATE/no realGT evaluation yet. Purepostfreeze fullscorer source/test
+slice underway in TWO NEW files only; cannot score until fullcensus freezes.
+
+Continuation review: full-census process remains live (at least63/290 completed),
+not stalled. NEW full scorer initially passed49related tests but identity-lever
+fixtures hid a BODY-versus-camera comparison bug: officialtrajectory_fused.csv
+is BODY, while localtruth is leftIRcamera. Requested rotating-lever/nonidentity
+extrinsic red-green regression and exactly-one body-to-camera conversion on
+both sides. No realGT was opened/scored by the new evaluator, so this is a
+pre-execution evaluation-code defect, NOT a demonstratedSLAM error or change
+to old13.801442mm ATE. Existing sampled scorer reads camera graphposes and is
+unmodified. Also tightening persistedcounts, name-keyed inputmaps and unchanged
+formaltd/referenceinterpolation contract in the twoNEWfiles only.
+
+Consumer review GO for sourceprototype design AFTER full290 freezes, NO-GO
+for realgraph yet. Additional question: removing seam observations upstream
+also changes native scale-derived priors. Prefer an exact-row replacement
+contract if it can preserve all ancillary priors, rather than silently confound
+correlation information with prior-weight changes. No new weight/cap/schedule
+sweep, no production integration and no GT-based candidate choice authorized.
+
+NEW full-scorer red-green regression reproduced68.404mm synthetic mismatch
+with a rotating100mm lever under oldbody/camera mix; corrected estimate and
+reference bothcamera exactlyonce nowagree nearzero. Six newtestsPASS, full
+expandedmain384PASS9.32s. Independent reviewAPPROVE evaluation-only AFTER full
+freeze. Reordered independent arrays intentionally validate by keyed case
+identity (notzip); output nowdeclares this explicitprovenance semantic. All14
+producer/62inputbindings reverified zero mismatch while live. ActualglobalATE
+unchanged. Newnative_shape_consumer_contract.md records row-level replacement,
+matchednodes, unchangedacceptedlist/ancillarypriors and descriptive(noGTtuned
+threshold) local-linearization diagnostics. No consumer source orgraph yet.
