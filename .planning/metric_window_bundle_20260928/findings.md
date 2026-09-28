@@ -71,3 +71,20 @@ accountforremainingdisplacementgap; acceptedrawmetricmeasurement has better
 relativeGTagreement thanoptimizedgraph. This is evidence ofgraphconsensusgap,
 notproofwhich individual oldedge ordataiswrong. Fresh2w3 basis2.849deg makes
 metriclocal2.536mm→world4.243mm; orientationuncertaintystillmatterselsewhere.
+
+# Phase7 diagnostic contract (not a correction)
+
+Endpoint columns of the fixed-gauge BA state are21..23 for fiveposes and3..5
+for twoposes. Every other pose/landmark/bias column is nuisance; use SVD span
+projection rather than normal-equation inversion. Column normalization removes
+parameter-unit scaling without changing nuisance span. Rank tolerance uses
+pre-projection endpoint scale, preventing fully cancelled columns from being
+misreported as observable because their numerical residue is nonzero.
+Allfactor vs pixelrow-only sensitivity uses the SAME optimized robust Jacobian,
+no gyro refit or pixel model swap. Units are mm/unitNORMALIZEDrobustresidual,
+not calibrated mm/px covariance. Null axes have responseNone/rankdeficient,
+not finite overconfidence. Provisional noise and local-linear assumptions noted.
+Scoped least_squares interception returns the identical original result before
+posthoc diagnostics; tests show endpoints/landmarks/bias byteidentical. Prior
+solver source hash still matches frozen590controls.186testsPASS; independent
+review requested before all-ten diagnostic census. No GT factor/gate selection.

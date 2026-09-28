@@ -181,3 +181,22 @@ remote-onlyrestore/tmp/ego-metric-graph-restore-0Wz3x7 fetched178changedfiles
 byteidentical to main/backup, restored171testsPASS1.35s. No work left running.
 Frozen current integration experiment complete, target not achieved. Next
 endpointobservability diagnostic is proposed, notimplemented or running.
+
+User approved next endpointobservability diagnostic. Skills/rootcontract/
+HANDOFF/memoryindex read; closedfamilies avoided. Main implementing standalone
+diagnostic and adapter; independent read-only mathematical reviewer active.
+No core mutation, no GT input, no production promotion. Same590uniformwindows
+will be surveyed after synthetic and unchanged-endpoint/acceptance tests.
+
+Tests-first diagnostic collectionRED missingmodule. Added standalone SVD
+nuisance marginalization + scoped optimizedJacobian capture. First12tests:
+11PASS/1fail due unjustified2x short-baseline response expectation (temporal
+parallax also constrains depth); repaired direction-only physical contract.
+No empirical estimator gate/weight changed. Added diagnostic failure preserving
+solver acceptance and fullcoverage adapter restoration/source provenance tests.
+
+New15diagnostic/adaptertestsPASS; extended186PASS1.40s, syntaxPASS. Nativecore
+SHA matches prior590controls, no edits. Awaiting independent read-only review
+before realcensus; all-ten/frozen fullcoverage schedule unchanged. A failed
+appendpatch tofindingsused incorrectheader anchor; rereadtail/repaired, no file
+changes from failedpatch. Instrumentation outputs diagnostics only.

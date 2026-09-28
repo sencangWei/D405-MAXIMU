@@ -48,6 +48,21 @@ no regression of eight prior passes; fresh independent captures after freeze.
 
 ## Stop/decision conditions
 
+## Phase7 — approved endpoint observability diagnostic (in progress)
+
+Hypothesis to test, not a proved root cause: some stereo endpoints fit pixels
+while motion is weakly constrained after landmark/rotation/bias freedom is
+marginalized. Implement isolated Jacobian diagnostics, not new trajectory gates.
+Success: synthetic rank/unit/nuisance tests; identical solver endpoints and
+acceptance with/without instrumentation; frozen all-ten uniform-window census
+before any external-reference association. No weights/thresholds/frame deletion.
+Use the existing fullcoverage window schedule; capture optimized Jacobians via
+an isolated adapter, leaving previously hashed core/production source intact.
+Report rank, endpoint weak axes, provisional unit-normalized-residual response,
+and endpoint track/depth support. This is not calibrated covariance or a
+millimetric confidence certificate; correlations with external error may be
+examined only AFTER freezing diagnostics and cannot set estimator selection.
+
 Observation-only improvement is not SLAM acceptance. Reject an estimator that
 does not improve independent geometric consistency or is unobservable. Do not
 run a large graph batch solely on a successful example. Record blocked data or
