@@ -912,3 +912,17 @@ and1057→1074. Passing controls have scale>2 elsewhere and long gaps, so
 no causal false-loop/clamp claim. Metric-loop gate absent/false in frozen
 config. Report backend_constraint_probe_v1/README.md and event census.
 Selected source/evidence backup and clean remote restore pending.
+
+Read-only accepted-edge stereo probe complete. Five fresh/frozen 1199-frame
+replays with two observation-only hooks preserved final+online CSV bytes and
+reported zero capture errors. D405 dual-IR geometry on long accepted edges
+targeting raw900..1120: fresh4 14/17 PASS, fresh1 8/12 PASS, heldout1 11/12
+PASS, so failed long edges alone do not discriminate. On short edges targeting
+raw1000..1120: failed fresh4 73/77 pass, passing fresh1 142/142 pass.
+Fresh4 all70 short edges before1057 pass; 1057→1074 reverse metric PnP
+779/1933=40.3% inliers vs existing 50% criterion, and three later short
+edges also fail. This is an onboard-only local-geometry candidate, not proven
+ATE cause. Existing native metric-loop gate skips consecutive edges and has no
+depth in frozen config; enabling flag alone is invalid. Evidence README and
+five stereo-check JSONs under backend_match_probe_v1. No production change;
+frozen goal remains9/10. Selected backup/remote restore then causal test.
