@@ -276,6 +276,33 @@ preceding weak-state propagation/geometric bias NOT distinguished or repaired.
 229regressiontestsPASS; fullmax13.801442 unchanged, accuracygoalNOTcomplete.
 Selected same-day source/evidence remote backup and clean restoration next.
 
+## Current request: common-landmark geometry and state-propagation probe
+
+User explicitly asks to carry out the next investigation, not another plan.
+Systematic-debugging + karpathy + existing file-backed plan apply. Hypotheses:
+prior weak observations alter propagated keyframe state, versus current accepted
+matches having biased geometry. Neither is yet established. No production edits,
+GT supervision/selection, td/calibration/threshold/model/weight change.
+
+1. Read actual calibrated tracking/map-update boundaries and unit/frame semantics.
+2. Isolated runpy/monkeypatch diagnostic wrapper: same opt arguments/return objects,
+   fixed raw input indices1000..1120, uniformly sampled optimizevalid pixel rows.
+   Capture pre/post/final relativeSim3, exact corresponding current/keyframe pixel
+   IDs and learned XYZ, both-view independent stereo depths, and post-update
+   keyframe XYZ. Record IMU relativeR from existing prepared priors, not GT.
+3. Pure diagnostic maths/tests: calibrated pixel/log-depth residuals, relativeR
+   consistency, metric common-point 3D residuals and learned-map update. Canonical
+   scale diagnostics must not be called global metre drift or absolute accuracy.
+   Missing stereo evidence remains UNKNOWN, notzero. No optimizer correction.
+4. Review/test/freeze wrapper/source/config/model/dataset hashes; same-config full
+   frontend replay first fresh4 then fresh1/heldout1 controls. Require1199full-rate
+   trajectory and byte-identical original before treating logged state as original.
+   Stop causal attribution if identity/provenance fails. No BA/VINS/fusion rerun.
+5. Compare same landmarks pre/post/final and update; retain all121frames/case,
+   not only ATEpeaks. Distinguish direct facts from underidentified causal claims.
+   No fix/promotion until causal source identified plus fullallten validation.
+6. Same-day exact selected code/evidence backup to sencang with remote restore.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

@@ -722,3 +722,21 @@ First gitdiffcheck flagged originalCSVCRLF as trailingwhitespace; kept evidence
 bytes unchanged, reran with core.whitespace=cr-at-eol PASS. No globalgit setting.
 Added explicitinputindex-vs-hardwareframe numbering note to report; raw means
 zero-based1199fullrateinput, source_frame_number starts30inthisrecording.
+
+Userrequestsactualnextstageinvestigation. Rootread calibratedopt/mapupdates:
+tracking changeslastkeyframe weightedcanonicalpointmap aftereachsuccess; current
+pointmapandkeyframepointmaps canonicalnotmetres. Existinglogs counts/median
+scale only, insufficientcommonpoint/statepropagation evidence. Bounded wrapper
+andpuremath slice planned withpre/post/finalrelativeSim3 andsamepixelIDs/stereo
+depths. Read-onlysourcehelperdone, puremathworkerownsseparate2files; rootwrapper
+ownership. No estimator/model/td/calibration/gateschanged. Initiallookupof
+toolchain/run_frontend.sh failed: correctrunner is mainworkspace
+scripts/mast3r_slam_precision_workflow.sh; no furthernonexistentpath retries.
+
+Isolatedwrapper+puremath+tests implemented and reviewed APPROVE boundedGPU
+diagnostic only. Roottargeted30PASS0.19s beforeworkerprojectionfollowup;
+reviewertargeted18PASS0.17s afterfollowup. Originalproduceridentityallfive
+fields exact;1199priorcumulationverified. Addedpreflight2398PNGcoverage and
+formaltd/estimate_td binding, and explicitfull-vs-sampledoptvalidcounts.
+Anapply_patch multi-file call rejected incorrectprogresscontext; confirmedno
+partialchanges, then reappliedwithcorrectcontext. No originaltrajectorychange.

@@ -269,3 +269,17 @@ withglobalmetretrajectory drift. Needcommonlandmark geometric consistency and
 keyframe-state propagation investigation, notblindmodeltraining/re-recordrequest.
 Finalreport feature_loss_findings.md distinguishes knownlossmechanism from
 unproveduniqueATEcause; fullmax13.801442 unchanged.229testsPASSnotaccuracyPASS.
+
+Commongeometrysourceaudit: calibratedget_points_poses returnsXf[idx_f2k],Xk;
+rowkey iskeyframepixelID, idx_f2k selects currentpixelID. optcalib solves
+CURRENT->KEYFRAME Sim3 andmeas_k=[griduv,logXkz]. ThenIMUblendupdatesrotation,
+followedby keyframepointmapupdate(Xkk,Ckf). Existingcanonicalpoints notmetres.
+Rootwrapper snapshots same2048uniform optimizevalidrows/pre/post/finalposes and
+postupdatekeyframeZ; nooriginalargs/results mutated. Puremathworkeradds
+stereo backprojection/relativeR/residuals, notoptimizerorGT.
+
+IMUpriorCSV rows arePER-FRAMEincrement notabsoluteorientation; main rightmultiplies
+T_WC*delta. Rootcumulation testusesnoncommutingX/Zrotations torejectwrongorder.
+Existingconfig/model/toolchain/dirtydiff/lietorch exactfrozenproducer verified
+beforeGPUlaunch; correctlietorchsourceis thirdparty/lietorch (notroot/lietorch).
+Full/online trajectoryidentity required, notonlyfinalpostgraphoutputs.
