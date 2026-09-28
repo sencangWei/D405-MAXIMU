@@ -90,3 +90,25 @@ replay and production deployment are still not verified.
 
 A subsequent documentation-only commit records this completed restoration;
 it does not alter hashed census, paired proofs, helper code or trajectories.
+
+## Phase8 adjacent-window and seam-born observations
+
+- First six changed join/control/test/plan files backed in commit
+  `52de61983363a0657d18c1b1db31732e26ee0307`, normally pushed to the same
+  owned `sencang/codex/stereo-window-bundle-20260928` branch. Clean remote-only
+  restore compared all six against both main and isolated backup byte-for-byte;
+  freshly restored263testsPASS3.02s (main265includes the existing two tests not
+  selected for this backup).
+- New seam-born helper/harness/tests and frozen v1 all-ten census/evaluation,
+  plus selected documentation, backed in commit
+  `a55962f3e659daf8d3a835a6832548632f3b1bcd`. Exactly22changed named paths,
+  not reports root. Normalpush, no force. Remote-only clean restore compared all
+  22 against main and isolated backup byte-for-byte; restored278PASS3.82s.
+- Algorithm files actually live in humble/scripts and humble/.planning;
+  calib-kit is not the algorithm repo. Targetbranch and writable remote checked
+  before copying/staging. Initial `.git` directory guard failed cleanly because
+  backup is a git worktree with a `.git` FILE; corrected to git rev-parse before
+  any write. No unrelated working tree changes were staged or reset.
+- V1 refused promotion; v2 census is still running at this proof snapshot.
+  This backup does NOT claim completed v2 evidence, full-trajectory accuracy,
+  production deployment, GPUfrontend rerun or independent fresh capture.

@@ -119,3 +119,22 @@ Counterexamplefresh4w53 59tracks/error7.845mm only0.938mmalongweakaxis:
 biasedobservations/referenceuncertainty/graphconsensus notexcluded.
 No GTthresholdfit/edgechoice,closedfamilysweep,modeltrainingorproductionedit.
 Detailedreport reports/metric_window_bundle_20260928/observability_report.md.
+
+Phase8v1 disproves automaticbenefitfrommergingtwoindependentwindowfeatures:
+joint78/100 vsindependent91/100 acceptedendpoints; same78local med/P95/max
+.767/3.490/7.171mm vsindependent .553/3.160/6.218. No graphpromotion.
+Posthocboundarypixelmatching yields0–3sharedtraininglandmarksinseveralpairs.
+
+Fixedseam-bornbidirectionalcontinuousLKv2 improvesactualsharedsupport:
+fresh4lastpair1058..1098 commontrain1->9 rank3,19added(14train/5withheld).
+Alltenv284/100acceptedvs78v1,independent91. Same78v1/v2local med/P95/max
+.767/3.490/7.171 -> .593/3.203/4.520mm;48/78better. Same84independent/v2:
+.815/4.342/7.182 -> .743/3.417/6.028mm;42/84better. Coverage/refusalsretained.
+Inputs/decodedpixels/independentinitial+optimized endpoints EXACTLYunchanged
+alltenverifiedbyfrozencomparison.json. NoGTreads duringestimation,scoreonly
+afterfreeze,unchangedcalibration/timelever. ThesearelocaldisplacementsNOTATE.
+
+Still2geometry/2model/1solve/3rawpairfailures; doesnotestablish10mmwholeSLAM.
+Reviewerapprovesfullpaired40stride40alltenUMI-only next, NOTgraphpromotion.
+Endpointpairs correlated,notcalibratedcovariance; graphcontractneedsseparate
+reviewwithpaircounts,endpointcoverageandfailures,neverGT-admissionselection.

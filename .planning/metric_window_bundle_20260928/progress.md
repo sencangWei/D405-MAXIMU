@@ -287,3 +287,11 @@ V2implementationreviewAPPROVEUMI-onlycensus/noHIGHMEDIUMblockers; alltenfactory
 rectifiedintrinsicsequalverified. LOWstalemerge-metadata fixedexplicit geometry
 outputkeys/test;32targetedPASS1.72s, expanded280PASS3.91s beforethattinytidy.
 Frozenv2alltenstartedsession50696, seam_pairs_ten_v2; noGTscore/promotionyet.
+
+V2alltenDONEexit0,84endpoints/42pairsaccepted, matchedindependent91/100.
+FreezeTHENlocaleval/comparison,alltenexactinput/decoded/independentcoreidentity
+PASS. Same78v1-v2localmax7.171->4.520mm,48improved; same84independent-v2max
+7.182->6.028mm,42improved. FullATEUNCHANGED9/10PASSfresh4max14.016mm.
+287expandedtestsPASS3.96s (restoredprior278before7comparator tests); comparator
+reviewAPPROVE. FullUMIpaired40stride40alltenapproved, adapter/testsdelegated,
+no graphpromotion. Fullcase-count/sourcehash/tailcoverage boundariesexplicit.
