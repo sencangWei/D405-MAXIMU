@@ -34,7 +34,8 @@ def replace_flag(command, flag, value):
     return result
 
 
-def commands_for(manifest, old, target, candidate, keyframes):
+def commands_for(manifest, old, target, candidate, keyframes,
+                 extra_stereo_report=None, candidate_stereo_dir=None):
     commands = []
     for stage, original in manifest["commands"]:
         if stage not in STAGES:
@@ -48,6 +49,15 @@ def commands_for(manifest, old, target, candidate, keyframes):
                 ("--keyframe-dir", keyframes),
             ):
                 command = replace_flag(command, flag, path)
+            if candidate_stereo_dir is not None:
+                report_positions = [i + 1 for i, item in enumerate(command)
+                                    if item in ("--stereo-report", "--additional-stereo-report")]
+                if len(report_positions) != 4:
+                    raise ValueError("expected four source stereo reports")
+                for index in report_positions:
+                    command[index] = str(candidate_stereo_dir / Path(command[index]).name)
+            if extra_stereo_report is not None:
+                command += ["--additional-stereo-report", str(extra_stereo_report)]
         commands.append((stage, command))
     if tuple(stage for stage, _ in commands) != STAGES:
         raise ValueError("frozen command stage order changed")
@@ -59,28 +69,48 @@ def main():
     parser.add_argument("--frozen", type=Path, required=True)
     parser.add_argument("--candidate-mast3r", type=Path, required=True)
     parser.add_argument("--candidate-keyframe-dir", type=Path, required=True)
+    parser.add_argument("--extra-stereo-report", type=Path)
+    parser.add_argument("--candidate-stereo-dir", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     frozen = args.frozen.resolve()
     candidate = args.candidate_mast3r.resolve()
     keyframes = args.candidate_keyframe_dir.resolve()
     target = args.output.resolve()
+    extra_stereo_report = (args.extra_stereo_report.resolve()
+                           if args.extra_stereo_report is not None else None)
+    candidate_stereo_dir = (args.candidate_stereo_dir.resolve()
+                            if args.candidate_stereo_dir is not None else None)
     if target.exists():
         parser.error("refusing to overwrite candidate output")
     source = frozen / "manifest.json"
     manifest = json.loads(source.read_text())
-    commands = commands_for(manifest, frozen, target, candidate, keyframes)
+    commands = commands_for(manifest, frozen, target, candidate, keyframes,
+                            extra_stereo_report, candidate_stereo_dir)
     required = [candidate / "trajectory_imu_metric.csv",
                 candidate / "imu_scale_report.json",
                 keyframes]
     if not all(path.exists() for path in required):
         parser.error("candidate metric-stage inputs are incomplete")
+    if extra_stereo_report is not None and not extra_stereo_report.is_file():
+        parser.error("extra stereo report does not exist")
+    if candidate_stereo_dir is not None:
+        for flag, path in zip(commands[0][1], commands[0][1][1:]):
+            if flag in ("--stereo-report", "--additional-stereo-report") and not Path(path).is_file():
+                parser.error(f"candidate stereo report does not exist: {path}")
     target.mkdir(parents=True)
     provenance = {str(path): digest(path) for path in required[:2]}
+    if extra_stereo_report is not None:
+        provenance[str(extra_stereo_report)] = digest(extra_stereo_report)
+    if candidate_stereo_dir is not None:
+        for flag, path in zip(commands[0][1], commands[0][1][1:]):
+            if flag in ("--stereo-report", "--additional-stereo-report"):
+                provenance[path] = digest(path)
     provenance[str(source)] = digest(source)
     record = dict(schema="edge_drop_current_chain_causal_probe_v1",
                   diagnostic_only=True, external_gt_used_for_estimation=False,
                   frozen_control_inputs="stereo_seam_window_measurements_unchanged",
+                  candidate_stereo_reports_recomputed=candidate_stereo_dir is not None,
                   frontend_inputs_sha256=provenance, commands=commands, stages=[])
     (target / "manifest.json").write_text(json.dumps(record, indent=2) + "\n")
     for stage, command in commands:

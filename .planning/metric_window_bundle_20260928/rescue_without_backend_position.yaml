@@ -1,0 +1,6 @@
+inherit: /home/robot/ego_vio_humble/config/mast3r_slam_d405_vins_metric_rescue.yaml
+
+# Diagnostic ablation only: keep stereo pointmap and short-term onboard VINS
+# translation priors, but remove the absolute keyframe position/log-scale GN.
+tracking:
+  vins_backend_position_sigma_m: 0.0

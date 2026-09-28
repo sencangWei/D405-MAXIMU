@@ -1,0 +1,6 @@
+inherit: /home/robot/ego_vio_humble/config/mast3r_slam_d405_vins_metric_rescue.yaml
+
+# Diagnostic ablation only: retain the 4 mm VINS keyframe-position factor;
+# make its coupled log-scale factor negligible without changing other priors.
+tracking:
+  vins_backend_log_scale_sigma: 10.0

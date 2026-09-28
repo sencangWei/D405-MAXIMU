@@ -34,3 +34,35 @@ def test_missing_or_repeated_input_flag_rejected():
     with pytest.raises(ValueError, match="exactly one"):
         module.replace_flag(["python", "--trajectory", "a", "--trajectory", "b"],
                             "--trajectory", "c")
+
+
+def test_extra_stereo_report_only_changes_graph_command():
+    old, new = Path("/repo/frozen"), Path("/repo/candidate")
+    graph = ["python", "graph.py", "--trajectory", "raw.csv",
+             "--imu-scale-report", "raw.json", "--keyframe-dir", "raw_kf"]
+    manifest = {"commands": [("graph", graph)] + [(name, ["python", name])
+                      for name in module.STAGES[1:]]}
+    commands = module.commands_for(manifest, old, new, Path("/repo/front"),
+                                   Path("/repo/kf"), Path("/repo/loop.json"))
+    assert commands[0][1][-2:] == ["--additional-stereo-report", "/repo/loop.json"]
+    assert all("--additional-stereo-report" not in command
+               for _, command in commands[1:])
+
+
+def test_candidate_stereo_reports_rewrite_exact_four_graph_sources():
+    old, new = Path("/repo/frozen"), Path("/repo/candidate")
+    graph = ["python", "graph.py", "--trajectory", "raw.csv",
+             "--imu-scale-report", "raw.json", "--keyframe-dir", "raw_kf",
+             "--stereo-report", "/old/stereo_scale_bidirectional_report.json"]
+    for name in ("long_hops", "dense10hz", "multisecond"):
+        graph += ["--additional-stereo-report", f"/old/stereo_scale_{name}_report.json"]
+    manifest = {"commands": [("graph", graph)] + [(name, ["python", name])
+                      for name in module.STAGES[1:]]}
+    commands = module.commands_for(manifest, old, new, Path("/repo/front"),
+                                   Path("/repo/kf"), candidate_stereo_dir=Path("/new/stereo"))
+    rewritten = [value for i, value in enumerate(commands[0][1]) if i and
+                 commands[0][1][i - 1] in ("--stereo-report", "--additional-stereo-report")]
+    assert len(rewritten) == 4
+    assert all(value.startswith("/new/stereo/") for value in rewritten)
+    assert all("--stereo-report" not in command and "--additional-stereo-report" not in command
+               for _, command in commands[1:])
