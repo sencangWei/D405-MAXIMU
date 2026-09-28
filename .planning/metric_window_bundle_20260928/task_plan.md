@@ -415,6 +415,17 @@ Next separate branch must observe MASt3R upstream correspondence/loop constraint
 influence directly, with controls and unchanged all-ten official gate after a
 source-supported structural fix. Precision goal remains 9/10, not complete.
 
+Started upstream observation-only backend hook (no toolchain source edit):
+fresh4/fresh1/heldout1 1199-frame replays all preserve final+online CSV bytes,
+zero capture errors. Accepted graph edges and keyframe pre/post Sim3 poses are
+saved in backend_constraint_probe_v1. Fresh4 shows 15/17-frame keyframe gaps,
+relative Sim3 scale1.294→2.720 over anchored frames1043..1057, and older
+retrieval edges near1085; however passing controls also exhibit long gaps,
+large pose steps or relative scale>2 at other times. No false-edge causality
+proved. Next inspect the *accepted matched pixels* with onboard stereo and
+bidirectional temporal geometry in fixed failed+passing cases. Only then test
+one structural edge-admission repair all ten, no GT-selected edges.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

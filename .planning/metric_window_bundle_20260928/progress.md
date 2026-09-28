@@ -899,3 +899,16 @@ somewhere. No GT or estimator changes, no universal internal gate; exact
 upstream MASt3R correspondence/loop influence remains unknown. Evidence in
 native_solver_trace_v2/README.md and two JSONs. New source/tests/evidence
 backup/remote restore pending before close.
+
+Factor trace package committed98931853 normally pushed owned sencang and
+remote-only restored;56files byte-identical main/backup/remote,56testsPASS,
+clean restore. New upstream MASt3R backend hook via spawned-process
+sitecustomize (no toolchain edit) traced accepted edges and pre/post keyframe
+poses in fresh4/fresh1/heldout1. All three full1199 final+online CSVs remain
+byte-identical to frozen sources; geometry capture errors0. Event counts
+fresh4 223/299accepted, fresh1 207/273, heldout1 95/131. Fresh4 anchored
+tracking relative scale rises1.294(frame1043)→2.720(1057), gaps1042→1057
+and1057→1074. Passing controls have scale>2 elsewhere and long gaps, so
+no causal false-loop/clamp claim. Metric-loop gate absent/false in frozen
+config. Report backend_constraint_probe_v1/README.md and event census.
+Selected source/evidence backup and clean remote restore pending.
