@@ -130,17 +130,83 @@ def _original_graph_path(case: dict) -> Path:
     return paths[0]
 
 
-def _check_elapsed(times: np.ndarray, case: dict) -> None:
+def _check_elapsed(raw_times: np.ndarray, case: dict) -> None:
     for row in case["windows"]:
         indices = np.asarray(row["indices"], dtype=int)
         elapsed = np.asarray(row["elapsed_s"], dtype=float)
-        if indices.shape != (5,) or elapsed.shape != (5,) or not np.allclose(times[indices] - times[0], elapsed, atol=1e-9, rtol=0):
-            raise ValueError(f"{case.get('case')} window elapsed times differ from official estimate")
+        if indices.shape != (5,) or elapsed.shape != (5,) or not np.allclose(raw_times[indices] - raw_times[0], elapsed, atol=1e-9, rtol=0):
+            raise ValueError(f"{case.get('case')} window elapsed times differ from raw census input")
+
+
+def _strict_count(value, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{name} must be strict integer")
+    return int(value)
+
+
+def _validate_estimate_sample_count(name: str, precision: dict, estimate_count: int, fusion: dict) -> None:
+    if "estimate_samples_total" not in precision:
+        raise ValueError(f"{name} official estimate sample count metadata missing")
+    if _strict_count(precision["estimate_samples_total"], "estimate_samples_total") != estimate_count:
+        raise ValueError(f"{name} official estimate sample count metadata mismatch")
+    if "samples" in precision and _strict_count(precision["samples"], "precision samples") != estimate_count:
+        raise ValueError(f"{name} official estimate sample count metadata mismatch")
+    if _strict_count(fusion.get("samples"), "fusion samples") != estimate_count:
+        raise ValueError(f"{name} fusion report sample count metadata mismatch")
+    for key in ("common_coverage_samples", "common_timestamp_samples", "common_pose_count"):
+        if key in fusion and _strict_count(fusion[key], key) != estimate_count:
+            raise ValueError(f"{name} fusion report common coverage mismatch")
+
+
+def _validate_fusion_body_report(
+    name: str,
+    folder: Path,
+    fusion: dict,
+    original: dict,
+    raw_times: np.ndarray,
+    hashes: dict[str, str],
+) -> None:
+    for key in ("external_ground_truth_used", "slam_supervision"):
+        if key in fusion and fusion[key] is not False:
+            raise ValueError(f"{name} fusion {key} must be strict false when present")
+    if fusion.get("output_frame") != "body_imu_origin":
+        raise ValueError(f"{name} official body output frame mismatch")
+    inputs = fusion.get("inputs")
+    original_inputs = original.get("inputs", {})
+    if not isinstance(inputs, dict):
+        raise ValueError(f"{name} fusion inputs missing")
+    camera_path = Path(inputs.get("mast3r_camera_trajectory", ""))
+    if camera_path.resolve() != (folder / "trajectory_graph.csv").resolve():
+        raise ValueError(f"{name} official camera trajectory input mismatch")
+    camera_times, _, _ = geom.pose_snapshot(camera_path, hashes)
+    expected_count = full_shape.EXPECTED_RAW_COUNTS[name]
+    if len(camera_times) != expected_count:
+        raise ValueError(f"{name} official camera trajectory pose count mismatch")
+    if camera_times.shape != raw_times.shape or not np.array_equal(camera_times, raw_times):
+        raise ValueError(f"{name} official camera trajectory timestamps differ from raw input")
+    if inputs.get("body_camera_calibration") != original_inputs.get("vins_spatiotemporal_calibration"):
+        raise ValueError(f"{name} body/camera calibration binding mismatch")
+
+
+def _raw_to_subset_map(name: str, raw_times: np.ndarray, subset_times: np.ndarray, label: str) -> np.ndarray:
+    if len(subset_times) == 0:
+        raise ValueError(f"{name} {label} timestamps empty")
+    positions = np.searchsorted(raw_times, subset_times)
+    ok = positions < len(raw_times)
+    matched = np.zeros(len(subset_times), dtype=bool)
+    matched[ok] = raw_times[positions[ok]] == subset_times[ok]
+    ok &= matched
+    if not np.all(ok):
+        raise ValueError(f"{name} {label} timestamps are not an exact raw-time subset")
+    mapping = np.full(len(raw_times), -1, dtype=int)
+    mapping[positions] = np.arange(len(subset_times), dtype=int)
+    return mapping
 
 
 def _score_case(case: dict, graph_root: Path, hashes: dict[str, str]) -> dict:
     folder = Path(graph_root) / case["case"]
     graph = geom.json_snapshot(folder / "graph_fusion_report.json", hashes)
+    fusion = geom.json_snapshot(folder / "fusion_report.json", hashes)
     precision = geom.json_snapshot(folder / "official_score" / "precision.json", hashes)
     original = geom.json_snapshot(_original_graph_path(case), hashes)
     extrinsic = np.asarray(graph.get("camera_extrinsics", {}).get("effective_body_T_trajectory_camera"), dtype=float)
@@ -156,21 +222,22 @@ def _score_case(case: dict, graph_root: Path, hashes: dict[str, str]) -> dict:
     ):
         raise ValueError(f"{case['case']} official contract mismatch")
     _validate_time_alignment(case["case"], graph, original, precision)
-    times, positions, quats = geom.pose_snapshot(estimate_path, hashes)
-    expected_count = full_shape.EXPECTED_RAW_COUNTS[case["case"]]
-    if len(times) != expected_count:
-        raise ValueError(f"{case['case']} official estimate raw pose count differs from census")
     stereo = geom.json_snapshot(Path(original["inputs"]["stereo_report"]), hashes)
-    input_times, _, _ = geom.pose_snapshot(Path(stereo["trajectory"]), hashes)
-    if not np.array_equal(times, input_times):
-        raise ValueError(f"{case['case']} official estimate timestamps differ from census input")
-    _check_elapsed(times, case)
+    raw_times, _, _ = geom.pose_snapshot(Path(stereo["trajectory"]), hashes)
+    expected_count = full_shape.EXPECTED_RAW_COUNTS[case["case"]]
+    if len(raw_times) != expected_count:
+        raise ValueError(f"{case['case']} raw census input pose count differs from full controls")
+    _check_elapsed(raw_times, case)
+    estimate_times, positions, quats = geom.pose_snapshot(estimate_path, hashes)
+    _validate_estimate_sample_count(case["case"], precision, len(estimate_times), fusion)
+    _validate_fusion_body_report(case["case"], folder, fusion, original, raw_times, hashes)
+    raw_to_estimate = _raw_to_subset_map(case["case"], raw_times, estimate_times, "official estimate")
     gt_times, gt_pos, gt_quats = geom.pose_snapshot(Path(precision["ground_truth"]), hashes)
     inside, valid, reference, attitudes = geom.evaluation.interpolate_ground_truth(
-        times, gt_times, gt_pos, gt_quats, precision["max_interpolation_gap_s"]
+        raw_times, gt_times, gt_pos, gt_quats, precision["max_interpolation_gap_s"]
     )
-    mapping = np.full(len(times), -1, dtype=int)
-    mapping[np.flatnonzero(inside)[valid]] = np.arange(len(reference))
+    raw_to_gt = np.full(len(raw_times), -1, dtype=int)
+    raw_to_gt[np.flatnonzero(inside)[valid]] = np.arange(len(reference))
     camera_pos, camera_rot = geom.camera_reference(reference[:, 1:], Rotation.from_quat(attitudes), extrinsic)
     estimate_pos, estimate_rot = geom.camera_reference(positions, Rotation.from_quat(quats), extrinsic)
     rows, ba_all, estimate_all = [], [], []
@@ -185,15 +252,20 @@ def _score_case(case: dict, graph_root: Path, hashes: dict[str, str]) -> dict:
                 row["score_reason"] = "shape_diagnostic_missing_or_unavailable"
             else:
                 indices = np.asarray(pair["indices"], dtype=int)
-                selected = mapping[indices]
-                if np.any(selected < 0):
+                selected_estimate = raw_to_estimate[indices]
+                selected_gt = raw_to_gt[indices]
+                if np.any(selected_estimate < 0):
+                    row["score_reason"] = "missing_official_estimate_coverage"
+                    row["missing_official_raw_indices"] = indices[selected_estimate < 0].tolist()
+                elif np.any(selected_gt < 0):
                     row["score_reason"] = "outside_unchanged_reference_coverage"
+                    row["missing_reference_raw_indices"] = indices[selected_gt < 0].tolist()
                 else:
-                    truth, truth_rot = camera_pos[selected], camera_rot[selected]
+                    truth, truth_rot = camera_pos[selected_gt], camera_rot[selected_gt]
                     centers = np.asarray(factor["optimized_centers_m"])
                     rotations = Rotation.from_rotvec(factor["optimized_rotvecs_camera_to_window"])
                     ba = geom.relative_errors(centers, rotations, truth, truth_rot)
-                    estimate = geom.relative_errors(estimate_pos[indices], estimate_rot[indices], truth, truth_rot)
+                    estimate = geom.relative_errors(estimate_pos[selected_estimate], estimate_rot[selected_estimate], truth, truth_rot)
                     row.update(
                         scored=True,
                         ba_local_node_errors_mm=ba.tolist(),
@@ -203,6 +275,33 @@ def _score_case(case: dict, graph_root: Path, hashes: dict[str, str]) -> dict:
                     estimate_all.extend(estimate.tolist())
         rows.append(row)
     return {"case": case["case"], "pairs": rows, "_ba": ba_all, "_estimate": estimate_all}
+
+
+def validate_official_inputs_no_gt(controls_dir: Path, graph_root: Path) -> dict:
+    """Validate all full-shape controls and official fused/raw bindings without opening GT."""
+    joint, _independent, hashes = validate_full_controls(Path(controls_dir))
+    rows = []
+    for case in joint["cases"]:
+        folder = Path(graph_root) / case["case"]
+        graph = geom.json_snapshot(folder / "graph_fusion_report.json", hashes)
+        fusion = geom.json_snapshot(folder / "fusion_report.json", hashes)
+        precision = geom.json_snapshot(folder / "official_score" / "precision.json", hashes)
+        original = geom.json_snapshot(_original_graph_path(case), hashes)
+        estimate_path = Path(precision.get("estimate", ""))
+        if estimate_path.resolve() != (folder / "trajectory_fused.csv").resolve():
+            raise ValueError(f"{case['case']} official estimate path mismatch")
+        stereo = geom.json_snapshot(Path(original["inputs"]["stereo_report"]), hashes)
+        raw_times, _, _ = geom.pose_snapshot(Path(stereo["trajectory"]), hashes)
+        estimate_times, _, _ = geom.pose_snapshot(estimate_path, hashes)
+        if len(raw_times) != full_shape.EXPECTED_RAW_COUNTS[case["case"]]:
+            raise ValueError(f"{case['case']} raw census input pose count differs from full controls")
+        _validate_estimate_sample_count(case["case"], precision, len(estimate_times), fusion)
+        _validate_fusion_body_report(case["case"], folder, fusion, original, raw_times, hashes)
+        _raw_to_subset_map(case["case"], raw_times, estimate_times, "official estimate")
+        _check_elapsed(raw_times, case)
+        rows.append({"case": case["case"], "raw_pose_count": int(len(raw_times)), "official_estimate_pose_count": int(len(estimate_times))})
+    geom.verify_hashes(hashes)
+    return {"cases": rows, "provenance_sha256": hashes, "external_reference_opened": False}
 
 
 def score(controls_dir: Path, graph_root: Path) -> dict:

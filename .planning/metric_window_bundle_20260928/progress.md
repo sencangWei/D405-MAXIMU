@@ -565,3 +565,48 @@ producer interoperability usesdensecoupledW/nonidentityR/affine/scale.14helper
 tests/31relatedPASS; expandedmain398PASS8.44s beforelastfixture strengthening.
 Independent reviewapprovedsourceonly; finalfix followup pending. Still no
 realnativeconsumer/graphlaunch. Livecensus7casescomplete/fresh2inprogress.
+
+Finalsource-onlyreviewAPPROVE; main398PASS6.86s. Exact5changedfiles normally
+pushed cc9d6c708199bd8186aaf92d8ba4ed41ae244205. Remote-only cleanrestore
+byte-identicalall5/main/backup;396testsPASS6.75s. Full290capture stilllive,
+atleast222completed, no realGT geometry score/newATE/nativeconsumer yet.
+
+Actualdisk pre-score check found NEWfullscorer rawcount assumption wrong:
+dev1 rawcamera1199poses butofficialfusedBODY1143poses (unchanged VINS overlap).
+The full1199 syntheticfixture hid this. Existingoldsample scorer read fullcamera
+graph and is unaffected; newfullscorer has NOT readrealGT orproducedscores.
+Requested explicitraw→fused timestamp-subsetmapping, unchangedofficialcount
+binding, rawwindowelapsed checks and unavailablecoverage retention. No new
+cropping/padding/tdshift; all290rawgroups remainreported. TwoNEWscorerfiles
+only maychange. Full290census9casescomplete/fresh4running, producer14 immutable.
+
+FULL290 completed/unifiedsession16309 EXIT0. Exact10cases/290pairs/580joint
+endpointrows;253accepted/37refused; all253available conditionalrank24, zero
+acceptedmissing/unavailable. Source14/input62 frozenbindings zero mismatch.
+No newnativegraph/GTscore. Fullold/new solveridentity proof started, then
+separatecorrectedfullscorer prereview/backup requiredbeforelocalGT evaluation.
+
+Completed identity proof:290pair admissions/reasons/indices and1160joint-plus-
+independent rows unchanged;1046accepted endpoint vectors BITIDENTICAL, maximum
+component delta0.0m. Old/new input/decoded-image maps identical;80proofbindings
+verified. All253accepted groups retain complete rank24 shape diagnostics;37
+refusals retained. This proves instrumentation identity, NOT improvedATE.
+
+NEWfullscorer now handles unchangedraw→official BODY timestamp-subset coverage
+and requires actualfusion_report.json bodyorigin/count/camera/calibration
+metadata (nativegraph_report is camera metadata, cannot declareBODY). Official
+1142/1143/1144counts remainunchanged versusraw1199/1200. Worker11targeted and
+56relatedtestsPASS;actualcorrectjointroot noGTpreflight121hashesPASS. Rootfresh
+suite andindependent final review underway; no realGTscore/newgraph yet.
+
+Rootfresh403testsPASS11.21s;actualcorrectjointroot noGTpreflight121bindings
+PASS andidentity80bindings zero mismatch. Newnativewrapper firstprototype uses
+fake-native tests only; rootrequested actualfrozennative syntheticcall coverage,
+nonidentitylever andactualcap diagnostics beforeapproval. No actualgraph launch.
+
+Finalfullscorer reviewAPPROVE evaluation-only afterbackupchecks;13standalone
+testsPASS6.62s, actualnoGTpreflight131hashes nowalsoincludesfullCAMERAsource
+trajectory count/exactrawtimestamps andstrictFalse supervisionflagswhenpresent.
+Source/censusselectedbackup underway. Newnativewrapper actualfrozennative
+syntheticcalls added, standalone27PASS/adjacent48PASS afterimport/order/four-
+iterationguardfixes; independentrecheckpending. No realconsumergraph yet.

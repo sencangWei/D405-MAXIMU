@@ -237,3 +237,16 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - Rotating-lever BODY/camera regression was corrected before any realGT use by
   this evaluator. Full290 capture remains running; this source backup does not
   claim completed census/evaluation/new ATE, real grouped graph or promotion.
+
+## Pure native-system row-splice source restoration
+
+- NEW row-splice helper/test plus selected contract/progress/proof documents
+  normally pushed as `cc9d6c708199bd8186aaf92d8ba4ed41ae244205` on the same owned
+  sencang branch, five exact changed paths. No native/producer edits, reports-root
+  stage or force push. Source-only independent review APPROVE.
+- Remote-only clean fetch/checkout matched the exact commit. All five changed
+  files byte-identical to main and isolated backup. Restored396testsPASS6.75s;
+  main398PASS6.86s includes the existing two unselected IMU-scale tests.
+- Includes actual nine-state producer interop, explicitly stored sparse-zero
+  nonmutation and no-op identity. This is NOT real native consumer execution,
+  new graph trajectories/ATE, completed full290 evidence or production promotion.

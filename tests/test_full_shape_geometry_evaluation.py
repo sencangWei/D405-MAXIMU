@@ -20,11 +20,12 @@ SPEC.loader.exec_module(score)
 CASES = ["dev1", "dev2", "heldout1", "heldout2", "heldout3", "heldout4", "fresh1", "fresh2", "fresh3", "fresh4"]
 
 
-def write_pose_csv(path: Path, count: int, *, offset=0.0, rotation_step_deg=0.0):
+def write_pose_csv(path: Path, count: int, *, offset=0.0, rotation_step_deg=0.0, start_index=0):
     with path.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["t_sec", "x", "y", "z", "qx", "qy", "qz", "qw"])
         writer.writeheader()
-        for index in range(count):
+        for local in range(count):
+            index = start_index + local
             quat = Rotation.from_euler("z", rotation_step_deg * index, degrees=True).as_quat()
             writer.writerow(
                 {
@@ -141,17 +142,18 @@ def write_controls(tmp_path: Path, monkeypatch, *, mutate=None, source_conflict=
     return controls
 
 
-def write_graph_root(root: Path, *, extrinsic=None, rotation_step_deg=0.0):
+def write_graph_root(root: Path, *, extrinsic=None, rotation_step_deg=0.0, fused_start=0, fused_count_by_case=None):
     graph_root = root / "graphs"
     for name in CASES:
         folder = graph_root / name
         folder.mkdir(parents=True)
         count = score.full_shape.EXPECTED_RAW_COUNTS[name]
+        fused_count = count - fused_start if fused_count_by_case is None else fused_count_by_case.get(name, count - fused_start)
         fused = folder / "trajectory_fused.csv"
         gt = folder / "gt.csv"
-        write_pose_csv(fused, count, rotation_step_deg=rotation_step_deg)
+        write_pose_csv(fused, fused_count, rotation_step_deg=rotation_step_deg, start_index=fused_start)
         write_pose_csv(folder / "trajectory_graph.csv", count, offset=99.0)
-        write_pose_csv(gt, count, rotation_step_deg=rotation_step_deg)
+        write_pose_csv(gt, fused_count, rotation_step_deg=rotation_step_deg, start_index=fused_start)
         matrix = np.eye(4) if extrinsic is None else np.asarray(extrinsic, dtype=float)
         extrinsic_payload = matrix.tolist()
         original_dir = folder / "original"
@@ -161,9 +163,10 @@ def write_graph_root(root: Path, *, extrinsic=None, rotation_step_deg=0.0):
         raw_traj = folder / "raw_trajectory.csv"
         write_pose_csv(raw_traj, count, rotation_step_deg=rotation_step_deg)
         stereo_report.write_text(json.dumps({"trajectory": str(raw_traj)}) + "\n")
-        original_graph.write_text(json.dumps({"inputs": {"session": f"session:{name}", "stereo_report": str(stereo_report)}, "camera_extrinsics": {"effective_body_T_trajectory_camera": extrinsic_payload}, "time_alignment": {"estimate_td": 0, "td_s": -0.009109323}}) + "\n")
+        original_graph.write_text(json.dumps({"inputs": {"session": f"session:{name}", "stereo_report": str(stereo_report), "vins_spatiotemporal_calibration": f"calib:{name}"}, "camera_extrinsics": {"effective_body_T_trajectory_camera": extrinsic_payload}, "time_alignment": {"estimate_td": 0, "td_s": -0.009109323}}) + "\n")
         (folder / "graph_fusion_report.json").write_text(json.dumps({"inputs": {"session": f"session:{name}"}, "camera_extrinsics": {"effective_body_T_trajectory_camera": extrinsic_payload, "trajectory_observation_frame": "infrared_left_camera_i"}, "time_alignment": {"estimate_td": 0, "td_s": -0.009109323}}) + "\n")
-        precision = {"alignment": "SE3_estimate_to_external_ground_truth_no_scale", "estimate": str(fused), "ground_truth": str(gt), "max_interpolation_gap_s": 0.05, "estimate_frame": "as_recorded", "ground_truth_frame": "as_recorded"}
+        (folder / "fusion_report.json").write_text(json.dumps({"samples": fused_count, "output_frame": "body_imu_origin", "inputs": {"mast3r_camera_trajectory": str(folder / "trajectory_graph.csv"), "body_camera_calibration": f"calib:{name}"}, "common_coverage_samples": fused_count}) + "\n")
+        precision = {"alignment": "SE3_estimate_to_external_ground_truth_no_scale", "estimate": str(fused), "ground_truth": str(gt), "max_interpolation_gap_s": 0.05, "estimate_frame": "as_recorded", "ground_truth_frame": "as_recorded", "estimate_samples_total": fused_count, "samples": fused_count}
         (folder / "official_score").mkdir()
         (folder / "official_score" / "precision.json").write_text(json.dumps(precision) + "\n")
     return graph_root
@@ -243,6 +246,87 @@ def test_score_uses_official_fused_body_estimate_and_scores_eight_nonanchors(tmp
         score.score(controls, graphs)
 
 
+def test_actual_style_fused_subset_keeps_all_pairs_explicit_and_reports_missing_official(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path, fused_start=56)
+    bind_original_graphs(controls, graphs)
+
+    report = score.score(controls, graphs)
+    dev1 = next(case for case in report["cases"] if case["case"] == "dev1")
+    assert len(dev1["pairs"]) == 29
+    first = dev1["pairs"][0]
+    assert first["scored"] is False
+    assert first["score_reason"] == "missing_official_estimate_coverage"
+    assert first["missing_official_raw_indices"] == [0, 5, 10, 15, 20, 25, 30, 35, 40]
+    assert report["ba_local_geometry"]["count"] == 0
+
+
+def test_no_gt_preflight_reports_raw_and_official_counts(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path, fused_start=56)
+    bind_original_graphs(controls, graphs)
+    report = score.validate_official_inputs_no_gt(controls, graphs)
+    by_name = {row["case"]: row for row in report["cases"]}
+    assert by_name["dev1"] == {"case": "dev1", "raw_pose_count": 1199, "official_estimate_pose_count": 1143}
+    assert by_name["dev2"] == {"case": "dev2", "raw_pose_count": 1200, "official_estimate_pose_count": 1144}
+    assert report["external_reference_opened"] is False
+
+
+def test_internal_missing_official_point_rejects_only_that_group(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path)
+    fused = graphs / "dev1" / "trajectory_fused.csv"
+    rows = list(csv.DictReader(fused.open()))
+    with fused.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer.writeheader()
+        for row in rows:
+            if row["t_sec"] != "20.000000000":
+                writer.writerow(row)
+    precision = graphs / "dev1" / "official_score" / "precision.json"
+    data = json.loads(precision.read_text())
+    data["estimate_samples_total"] -= 1
+    data["samples"] -= 1
+    precision.write_text(json.dumps(data) + "\n")
+    fusion_path = graphs / "dev1" / "fusion_report.json"
+    fusion = json.loads(fusion_path.read_text())
+    fusion["samples"] -= 1
+    fusion["common_coverage_samples"] -= 1
+    fusion_path.write_text(json.dumps(fusion) + "\n")
+    bind_original_graphs(controls, graphs)
+
+    report = score.score(controls, graphs)
+    first = next(case for case in report["cases"] if case["case"] == "dev1")["pairs"][0]
+    assert first["scored"] is False
+    assert first["score_reason"] == "missing_official_estimate_coverage"
+    assert first["missing_official_raw_indices"] == [20]
+
+
+def test_shifted_official_timestamp_and_count_metadata_fail_closed(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path)
+    fused = graphs / "dev1" / "trajectory_fused.csv"
+    rows = list(csv.DictReader(fused.open()))
+    rows[0]["t_sec"] = "0.123456789"
+    with fused.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+    bind_original_graphs(controls, graphs)
+    with pytest.raises(ValueError, match="exact raw-time subset"):
+        score.score(controls, graphs)
+
+    controls = write_controls(tmp_path / "count_controls", monkeypatch)
+    graphs = write_graph_root(tmp_path / "count")
+    precision = graphs / "dev1" / "official_score" / "precision.json"
+    data = json.loads(precision.read_text())
+    data["estimate_samples_total"] += 1
+    precision.write_text(json.dumps(data) + "\n")
+    bind_original_graphs(controls, graphs)
+    with pytest.raises(ValueError, match="sample count"):
+        score.score(controls, graphs)
+
+
 def test_score_converts_official_body_estimate_to_camera_before_relative_errors(tmp_path, monkeypatch):
     extrinsic = np.eye(4)
     extrinsic[:3, :3] = Rotation.from_euler("x", 25, degrees=True).as_matrix()
@@ -284,6 +368,93 @@ def test_time_alignment_and_precision_contracts_fail_closed(tmp_path, monkeypatc
     precision.write_text(json.dumps(data) + "\n")
     with pytest.raises(ValueError, match="precision"):
         score.score(controls, graphs)
+
+
+def test_body_metadata_must_come_from_fusion_report_not_native_graph(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path)
+    bind_original_graphs(controls, graphs)
+    graph_path = graphs / "dev1" / "graph_fusion_report.json"
+    graph = json.loads(graph_path.read_text())
+    graph["output_frame"] = "body_imu_origin"
+    graph["samples"] = 1199
+    graph_path.write_text(json.dumps(graph) + "\n")
+    fusion_path = graphs / "dev1" / "fusion_report.json"
+    fusion = json.loads(fusion_path.read_text())
+    fusion.pop("output_frame")
+    fusion_path.write_text(json.dumps(fusion) + "\n")
+    with pytest.raises(ValueError, match="body output frame"):
+        score.validate_official_inputs_no_gt(controls, graphs)
+
+    controls = write_controls(tmp_path / "missing_count_controls", monkeypatch)
+    graphs = write_graph_root(tmp_path / "missing_count")
+    bind_original_graphs(controls, graphs)
+    precision = graphs / "dev1" / "official_score" / "precision.json"
+    data = json.loads(precision.read_text())
+    data.pop("estimate_samples_total")
+    precision.write_text(json.dumps(data) + "\n")
+    with pytest.raises(ValueError, match="sample count metadata missing"):
+        score.validate_official_inputs_no_gt(controls, graphs)
+
+
+def test_fusion_camera_trajectory_contents_are_bound_before_gt(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path)
+    bind_original_graphs(controls, graphs)
+
+    camera_path = graphs / "dev1" / "trajectory_graph.csv"
+    rows = list(csv.DictReader(camera_path.open()))
+    with camera_path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows[:-1])
+    with pytest.raises(ValueError, match="camera trajectory pose count"):
+        score.validate_official_inputs_no_gt(controls, graphs)
+
+    controls = write_controls(tmp_path / "shift_controls", monkeypatch)
+    graphs = write_graph_root(tmp_path / "shift_graphs")
+    bind_original_graphs(controls, graphs)
+    camera_path = graphs / "dev1" / "trajectory_graph.csv"
+    rows = list(csv.DictReader(camera_path.open()))
+    rows[10]["t_sec"] = "10.500000000"
+    with camera_path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(ValueError, match="camera trajectory timestamps"):
+        score.validate_official_inputs_no_gt(controls, graphs)
+
+
+def test_fusion_supervision_flags_when_present_must_be_strict_false(tmp_path, monkeypatch):
+    controls = write_controls(tmp_path, monkeypatch)
+    graphs = write_graph_root(tmp_path)
+    bind_original_graphs(controls, graphs)
+    fusion_path = graphs / "dev1" / "fusion_report.json"
+    fusion = json.loads(fusion_path.read_text())
+    fusion["external_ground_truth_used"] = True
+    fusion_path.write_text(json.dumps(fusion) + "\n")
+    with pytest.raises(ValueError, match="external_ground_truth_used"):
+        score.validate_official_inputs_no_gt(controls, graphs)
+
+    controls = write_controls(tmp_path / "slam_controls", monkeypatch)
+    graphs = write_graph_root(tmp_path / "slam_graphs")
+    bind_original_graphs(controls, graphs)
+    fusion_path = graphs / "dev1" / "fusion_report.json"
+    fusion = json.loads(fusion_path.read_text())
+    fusion["slam_supervision"] = None
+    fusion_path.write_text(json.dumps(fusion) + "\n")
+    with pytest.raises(ValueError, match="slam_supervision"):
+        score.validate_official_inputs_no_gt(controls, graphs)
+
+    controls = write_controls(tmp_path / "false_controls", monkeypatch)
+    graphs = write_graph_root(tmp_path / "false_graphs")
+    bind_original_graphs(controls, graphs)
+    fusion_path = graphs / "dev1" / "fusion_report.json"
+    fusion = json.loads(fusion_path.read_text())
+    fusion["external_ground_truth_used"] = False
+    fusion["slam_supervision"] = False
+    fusion_path.write_text(json.dumps(fusion) + "\n")
+    score.validate_official_inputs_no_gt(controls, graphs)
 
 
 def test_output_refuses_overwrite(tmp_path, monkeypatch):
