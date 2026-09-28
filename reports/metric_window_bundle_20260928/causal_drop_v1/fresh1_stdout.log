@@ -1,0 +1,165 @@
+/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/dataset
+{'use_calib': False, 'single_thread': True, 'dataset': {'subsample': 1, 'img_downsample': 1, 'center_principle_point': True}, 'matching': {'max_iter': 10, 'lambda_init': 1e-08, 'convergence_thresh': 1e-06, 'dist_thresh': 0.1, 'radius': 3, 'dilation_max': 5}, 'tracking': {'min_match_frac': 0.05, 'max_iters': 50, 'C_conf': 0.0, 'Q_conf': 1.5, 'rel_error': 0.001, 'delta_norm': 0.001, 'huber': 1.345, 'match_frac_thresh': 0.333, 'sigma_ray': 0.003, 'sigma_dist': 10.0, 'sigma_pixel': 1.0, 'sigma_depth': 10.0, 'sigma_point': 0.05, 'pixel_border': -10, 'depth_eps': 1e-06, 'filtering_mode': 'weighted_pointmap', 'filtering_score': 'median', 'imu_rotation_prior': True, 'imu_rotation_constraint_weight': 0.6, 'imu_rotation_constraint_gate_deg': 0.5, 'stereo_pointmap_scale_prior': False, 'stereo_fix_pose_scale': False, 'stereo_pointmap_depth_anchor': False, 'stereo_preserve_keyframe_pointmap': False, 'stereo_keyframe_pnp': False, 'stereo_keyframe_pnp_min_points': 100, 'stereo_keyframe_pnp_min_inlier_ratio': 0.4, 'stereo_keyframe_pnp_reprojection_error_px': 2.0, 'stereo_keyframe_pnp_max_points': 5000, 'stereo_keyframe_pnp_lookback': 1, 'stereo_keyframe_pnp_max_visual_disagreement_m': 0.05, 'stereo_keyframe_pnp_max_visual_disagreement_deg': 5.0, 'stereo_keyframe_3d_translation_refine': False, 'stereo_keyframe_3d_min_points': 100, 'stereo_keyframe_3d_min_inlier_ratio': 0.3, 'stereo_keyframe_3d_max_residual_m': 0.02, 'stereo_scale_min_points': 500, 'stereo_scale_min_depth_m': 0.15, 'stereo_scale_max_depth_m': 0.65, 'stereo_scale_min_confidence': 1.5, 'stereo_scale_max_relative_jump': 0.25, 'stereo_depth_anchor_max_relative_residual': 0.5}, 'local_opt': {'pin': 1, 'window_size': 1000000.0, 'C_conf': 0.0, 'Q_conf': 1.5, 'min_match_frac': 0.1, 'pixel_border': -10, 'depth_eps': 1e-06, 'max_iters': 10, 'sigma_ray': 0.003, 'sigma_dist': 10.0, 'sigma_pixel': 1.0, 'sigma_depth': 10.0, 'sigma_point': 0.05, 'delta_norm': 1e-08, 'use_cuda': True}, 'retrieval': {'k': 3, 'min_thresh': 0.005, 'confirmation_frames': 2, 'confirmation_immediate_frame_gap': 150, 'confirmation_frame_id_radius': 60, 'density_window': 10, 'dense_min_keyframes': 10, 'dense_max_mean_frame_gap': 24}, 'reloc': {'min_match_frac': 0.3, 'strict': True}, 'inherit': 'config/base.yaml'}
+Using calibrated IMU rotation priors for frame initialization
+... loading model from /home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth
+instantiating : AsymmetricMASt3R(enc_depth=24, dec_depth=12, enc_embed_dim=1024, dec_embed_dim=768, enc_num_heads=16, dec_num_heads=12, pos_embed='RoPE100',img_size=(512, 512), head_type='catmlp+dpt', output_mode='pts3d+desc24', depth_mode=('exp', -inf, inf), conf_mode=('exp', 1, inf), patch_embed_cls='PatchEmbedDust3R', two_confs=True, desc_conf_mode=('exp', 0, inf), landscape_only=False)
+<All keys matched successfully>
+Loading retrieval model from checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric_retrieval_trainingfree.pth
+Loop confirmation mode 0 : sparse_exact mean_source_frame_gap= inf
+Retrieval pending multi-frame confirmation 1 :  [0]
+Retrieval pending multi-frame confirmation 2 :  [1]
+Database retrieval 2 :  {0}
+Retrieval pending multi-frame confirmation 3 :  [2]
+Database retrieval 3 :  {0, 1}
+Retrieval pending multi-frame confirmation 4 :  [3]
+Database retrieval 4 :  {1, 2}
+Retrieval pending multi-frame confirmation 5 :  [4]
+Database retrieval 5 :  {3}
+Retrieval pending multi-frame confirmation 6 :  [5]
+Database retrieval 6 :  {3, 4}
+Retrieval pending multi-frame confirmation 7 :  [6]
+Database retrieval 7 :  {4, 5}
+Retrieval pending multi-frame confirmation 8 :  [7]
+Database retrieval 8 :  {5, 6}
+Retrieval pending multi-frame confirmation 9 :  [8]
+Database retrieval 9 :  {5, 6}
+Loop confirmation mode 10 : dense_scene_cluster mean_source_frame_gap= 14.0
+Database retrieval 10 :  {8, 5}
+Database retrieval 11 :  {9, 5}
+Database retrieval 12 :  {9, 10}
+Database retrieval 13 :  {10, 11}
+Database retrieval 14 :  {10, 12}
+Database retrieval 15 :  {12, 13}
+Database retrieval 16 :  {13, 14}
+Database retrieval 17 :  {14, 15}
+Database retrieval 18 :  {16, 15}
+Database retrieval 19 :  {16, 17}
+Database retrieval 20 :  {17, 18}
+Database retrieval 21 :  {18, 19}
+Database retrieval 22 :  {19, 20}
+Database retrieval 23 :  {20, 21}
+Database retrieval 24 :  {20, 22}
+Database retrieval 25 :  {22, 23}
+Database retrieval 26 :  {24, 19}
+Database retrieval 27 :  {25, 18}
+Database retrieval 28 :  {12, 13, 14}
+Retrieval pending multi-frame confirmation 29 :  [4]
+Database retrieval 29 :  {11}
+Database retrieval 30 :  {3, 4}
+Database retrieval 31 :  {2, 3}
+Database retrieval 32 :  {1, 2}
+Retrieval pending multi-frame confirmation 33 :  [0]
+Database retrieval 33 :  {1}
+Database retrieval 34 :  {0, 32}
+Database retrieval 35 :  {33}
+Retrieval pending multi-frame confirmation 36 :  [5]
+Database retrieval 36 :  {33, 34}
+Database retrieval 37 :  {34, 5}
+Database retrieval 38 :  {34, 36}
+Database retrieval 39 :  {36, 37}
+Database retrieval 40 :  {37, 38}
+Database retrieval 41 :  {38, 39}
+Database retrieval 42 :  {40, 39}
+Database retrieval 43 :  {40, 41}
+Database retrieval 44 :  {40, 41, 39}
+Database retrieval 45 :  {38, 39}
+Database retrieval 46 :  {44, 38}
+Database retrieval 47 :  {44, 45}
+Database retrieval 48 :  {45, 46}
+Database retrieval 49 :  {46, 47}
+Database retrieval 50 :  {48, 47}
+Database retrieval 51 :  {49, 47}
+Database retrieval 52 :  {48, 49}
+Database retrieval 53 :  {48, 47}
+Database retrieval 54 :  {51, 52}
+Database retrieval 55 :  {52, 53}
+Database retrieval 56 :  {53, 54}
+Database retrieval 57 :  {54, 55}
+Database retrieval 58 :  {56, 55}
+Database retrieval 59 :  {56, 55}
+Database retrieval 60 :  {56, 58}
+Database retrieval 61 :  {58, 59}
+Database retrieval 62 :  {59, 60}
+Database retrieval 63 :  {60, 61}
+Database retrieval 64 :  {61, 62}
+Database retrieval 65 :  {62, 63}
+Database retrieval 66 :  {62, 63}
+Database retrieval 67 :  {65, 63}
+Database retrieval 68 :  {65, 66}
+Database retrieval 69 :  {65, 67}
+Database retrieval 70 :  {67, 68}
+Database retrieval 71 :  {68, 69}
+Database retrieval 72 :  {68, 70}
+Database retrieval 73 :  {70, 71}
+Database retrieval 74 :  {72, 69}
+Database retrieval 75 :  {72, 70}
+Database retrieval 76 :  {74, 70}
+Database retrieval 77 :  {72, 75}
+Database retrieval 78 :  {72, 76}
+Database retrieval 79 :  {72, 77}
+Database retrieval 80 :  {77, 78}
+Database retrieval 81 :  {78, 79}
+Database retrieval 82 :  {72, 80}
+Database retrieval 83 :  {72, 81}
+Database retrieval 84 :  {72, 82}
+Database retrieval 85 :  {82, 83}
+Database retrieval 86 :  {83, 84}
+Database retrieval 87 :  {85, 79}
+Database retrieval 88 :  {79, 86}
+Database retrieval 89 :  {80, 79}
+Database retrieval 90 :  {80, 79}
+Database retrieval 91 :  {88, 89}
+Database retrieval 92 :  {89, 90}
+Database retrieval 93 :  {90, 91}
+Database retrieval 94 :  {91, 92}
+Database retrieval 95 :  {92, 93}
+Database retrieval 96 :  {92, 94}
+Database retrieval 97 :  {88, 74, 79}
+Database retrieval 98 :  {72, 68, 69}
+Database retrieval 99 :  {65, 62}
+Database retrieval 100 :  {62, 63}
+Database retrieval 101 :  {98, 99}
+Retrieval pending multi-frame confirmation 102 :  [36, 37]
+Database retrieval 102 :  {46}
+Retrieval pending multi-frame confirmation 103 :  [33, 34, 35]
+FPS: 7.4470162071832045
+FPS: 7.47578677443092
+FPS: 7.546762002822164
+FPS: 7.790832003275107
+FPS: 7.962218965653507
+FPS: 7.931009546061715
+FPS: 7.881372757348516
+FPS: 7.986728532456376
+FPS: 8.067722236483393
+FPS: 8.026974497390695
+FPS: 8.057152564801816
+FPS: 8.099156736911056
+FPS: 8.141184380773291
+FPS: 8.188387117886231
+FPS: 8.223147419367727
+FPS: 8.198352422119067
+FPS: 8.244118285284785
+FPS: 8.28066768721788
+FPS: 8.277497810867535
+FPS: 8.233953197687708
+FPS: 8.161690135588142
+FPS: 8.063150229400568
+FPS: 8.038427467841142
+FPS: 8.03096210820793
+FPS: 7.814255840572654
+FPS: 7.775427555310435
+FPS: 7.804777084622213
+FPS: 7.790737320727584
+FPS: 7.761851680841569
+FPS: 7.734445178513971
+FPS: 7.69366401539617
+FPS: 7.6720394659317295
+FPS: 7.624068043063802
+FPS: 7.509132168134195
+FPS: 7.4516034929729775
+FPS: 7.108273771209824
+FPS: 6.634414991324837
+FPS: 6.382358615296747
+FPS: 6.370897928049448
+done
+[W928 23:08:53.207452217 CudaIPCTypes.cpp:16] Producer process has been terminated before all shared CUDA tensors released. See Note [Sharing CUDA tensors]

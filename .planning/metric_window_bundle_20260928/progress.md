@@ -926,3 +926,19 @@ ATE cause. Existing native metric-loop gate skips consecutive edges and has no
 depth in frozen config; enabling flag alone is invalid. Evidence README and
 five stereo-check JSONs under backend_match_probe_v1. No production change;
 frozen goal remains9/10. Selected backup/remote restore then causal test.
+
+Selected accepted-edge diagnostic was committed b2c3da00 and normally pushed
+to owned sencang; clean remote-only restore verified all468 changed files
+byte-identical and11 relevant tests passed. Two isolated UMI-only causal
+candidates then ran on fresh4 current-chain commands while holding frozen
+seam stereo/VINS inputs fixed and re-estimating IMU metric scale from the
+candidate frontend. Dropping four stereo-rejected short edges produced
+max/P95/mean ATE13.942/10.237/6.223mm vs frozen current
+13.801/8.715/5.554; rotation RMSE2.018 vs1.529deg. It worsened.
+Passing fresh1 drop-hook control dropped0 and reproduced frozen frontend
+CSV byte-for-byte. Keeping edges but masking stereo-depth-supported PnP
+reprojection outliers (>4px) yielded13.817/8.699/5.558mm and1.540deg:
+essentially unchanged. Neither candidate promoted or meets10mm. Internal
+IMU-stereo scale agreement improved under drop but GT worsened, so not an
+accuracy gate. Report causal_drop_v1/README.md; next inspect actual
+keyframe pose/pointmap state around1042→1057→1074, not more edge deletion.

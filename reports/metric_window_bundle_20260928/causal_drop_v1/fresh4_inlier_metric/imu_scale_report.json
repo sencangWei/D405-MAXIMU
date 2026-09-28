@@ -1,0 +1,50 @@
+{
+  "scale": 0.4892787345257095,
+  "gravity": [
+    -0.008452388764377483,
+    9.137222272413975,
+    3.4944624978630205
+  ],
+  "gravity_norm": 9.782646392839972,
+  "accelerometer_bias_mps2": [
+    -0.0016665236796815641,
+    0.01493920286030459,
+    0.015718955248928967
+  ],
+  "accelerometer_bias_norm_mps2": 0.02174954338357713,
+  "residual_rmse_mps": 0.003213827651797788,
+  "rank": 355,
+  "unknowns": 355,
+  "condition_number": 22.55592972538523,
+  "nodes": 116,
+  "intervals": 115,
+  "schema": "umi_mast3r_imu_scale_v1",
+  "result": "PASS",
+  "failures": [],
+  "slam_supervision": false,
+  "external_ground_truth_used": false,
+  "inputs": "MASt3R camera poses + onboard calibrated 400Hz IMU + onboard orientation trajectory",
+  "attitude": {
+    "source": "onboard_orientation_trajectory",
+    "overlap_ratio": 0.9524603836530442,
+    "visual_orientation_difference_p95_deg": 3.5261205299123795,
+    "selection": {
+      "policy": "smallest_log_scale_difference_to_validated_onboard_stereo",
+      "stereo_scale": 0.47142067171402613,
+      "mast3r_scale": 0.5002435850410916,
+      "onboard_scale": 0.4892787345257095,
+      "log_scale_differences": {
+        "mast3r": 0.05934430858694605,
+        "onboard_orientation_trajectory": 0.03718149504772279
+      }
+    }
+  },
+  "orientation_trajectory": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/vins_input_retry1/vio_corrected_stream.csv",
+  "stereo_scale_report": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+  "td_s": -0.009109323,
+  "node_stride": 10,
+  "max_hop": 1,
+  "trajectory": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_drop_v1/fresh4_inlier_trajectory_frames.csv",
+  "imu_calibration": "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml",
+  "output": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/causal_drop_v1/fresh4_inlier_metric/trajectory_imu_metric.csv"
+}
