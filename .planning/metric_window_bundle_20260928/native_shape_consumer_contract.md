@@ -1,7 +1,10 @@
 # Isolated native grouped-shape consumer: preimplementation contract
 
-Status: design only. Full290 UMI-only capture is still running. This document
-does not authorize production promotion, a new real graph run, or GT-based
+Status: isolated source/test prototypes completed; full290 capture frozen.
+Independent review approves source backup and no-run all30 command preflight
+ONLY. The actual full local geometry comparison is mixed (BAmean1.389mm versus
+currentfused1.301mm); it does not justify direct replacement. This document
+does not authorize production promotion, a real graph run, or GT-based
 selection. Full-trajectory accuracy remains joint9/10PASS/max13.801442mm.
 
 ## New structural experiment, not another parameter sweep

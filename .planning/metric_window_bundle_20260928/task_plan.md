@@ -205,6 +205,16 @@ closure and exact uncropped full pose count retained. Back up/review the new
 adapter before launch, finish all290 before any external scoring. This is new
 correlated information capture, not a weight or density sweep.
 
+Full290 complete and endpoints/admission bit-identical tooldfullcensus. All253
+acceptedrank24diagnostics retained. ActualfullLOCALgeometry doesNOTsupport
+directreplacement: BAmean1.389/max12.181mm vsfused1.301/max9.850,8/10case means
+regress; targetfullATE still13.801442. Isolatedrefiner/CLI/runner source reviewed
+andtested, sourcebackup/no-run30command preflight ONLY approved, no realbatch
+orproductionpromotion. Next discriminator: ALL253 relativeBA/native attitudes
+andactualrigid-world invariance, UMI-only nooptimizer/noGT/no thresholds. Gauge
+orposeconditioning remains a hypothesis, notprovenrootcause. Separateevidence
+review needed before spending another fullgraph batch.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

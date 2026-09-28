@@ -250,3 +250,16 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - Includes actual nine-state producer interop, explicitly stored sparse-zero
   nonmutation and no-op identity. This is NOT real native consumer execution,
   new graph trajectories/ATE, completed full290 evidence or production promotion.
+
+## Full290 census and corrected evaluation restoration
+
+- Completed10case/290pair diagnostic census, exact solveridentity proof and
+  corrected evaluation-only scorer/test normally pushed as
+  `b8506e0d7c329c827722d804939584e68deadec3` on owned sencang branch. Exactly18
+  named paths, about47MB selected evidence, never reports-root staging/force.
+- Clean remote-only restore into `/tmp/ego-metric-graph-restore-0Wz3x7` matched
+  exact commit; all18files byte-identical to main and isolated backup. Fresh
+  restored403testsPASS9.80s; precommit backup403PASS11.00s.
+- This backs the complete253accepted/37refused capture and1046endpoint-vector
+  bitidentity proof. It is NOT a grouped native graph run or an ATE improvement.
+  Evaluation-only final reviewAPPROVE; actual local scoring starts afterward.

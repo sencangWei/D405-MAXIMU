@@ -188,3 +188,20 @@ would falsely label them1199. This was caught before launch. Allten actual
 timestamp counts and the literal29×9 schedule are now checked before any solver;
 unknown/extra/cropped/nonmonotonic input and shifted-but-still29 schedules fail.
 No accepted trajectory is cropped to make its graph/window contract fit.
+
+## Full290 actual local score: do not extrapolate sampled maximum improvement
+
+Completed253accepted/37refused groups. Fullpostfreeze1864nonanchorcenters from
+233groups: BAmean1.389377/median.789917/P954.512902/max12.180882mm; current
+officialFUSED relativegeometry1.300730/.734268/4.534526/9.849770. Eightcase BA
+meansworse,743/1864pointsgain.20groupsoutsideexistingofficialoverlap retained.
+Fresh4pair27 raw1070 BA12.180882vscurrent9.849770; supportsnodedrop143→19,
+heldoutpixelRMSE1.727452→1.642413, trainingRMSE.573653. No unique rootcause
+proved, no GT-selectedweights/productionpromotion. Shapegraphsourceprototype
+mustnotbeclaimednewATE; currentfullmax13.801442unchanged. Report
+reports/metric_window_bundle_20260928/full_shape_diagnostic_report.md.
+
+Rootrecheckedrobustresidual/Jacobian consistency suspicion. OfficialSciPy toy
+indeedmismatches Jmodified.T@rawfun whenlosssoft_l1, butOURbundle explicitly
+manuallytransforms residual andusesdefaultLINEARloss. This NEGATES thehypothesis
+forourmodel, agreeingwiththeearlieraffinealgebranoteabove. No frozenfileedit.

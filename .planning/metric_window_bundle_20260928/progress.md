@@ -610,3 +610,27 @@ trajectory count/exactrawtimestamps andstrictFalse supervisionflagswhenpresent.
 Source/censusselectedbackup underway. Newnativewrapper actualfrozennative
 syntheticcalls added, standalone27PASS/adjacent48PASS afterimport/order/four-
 iterationguardfixes; independentrecheckpending. No realconsumergraph yet.
+
+Complete290/scorer selected18paths backed b8506e0d7c329c827722d804939584e68deadec3;
+clean remote-only restore18byteidentical, fresh403PASS9.80s. Evaluation-only
+APPROVE andbackupchecks satisfied; actualfull LOCALgeometry evaluation launched
+afterfreeze. This is not a newfullATE. Newmatched-node research batchSOURCE
+prototype keepsall30graph+complementary+smooth estimatoroutputs frozen BEFORE
+anyGTscore (stronger thanoldgraph-onlyordering);7syntheticrunner testsPASS0.42s.
+CLI/wrapper review/backup required beforeanyactualbatch; no production change.
+
+ActualfullLOCALgeometryevaluation EXIT0,141hashes reverified.233scoredgroups/
+1864nonanchors;37refused+20missingexistingofficialoverlap retained. BAmean
+1.389377/max12.180882 versuscurrentFUSED1.300730/max9.849770;8/10caseBAmeans
+worse,743/1864pointsimprove. Fresh4pair27 raw1070 BA12.18vsfused9.85. Current
+ATE13.801442unchanged. Findings doNOTsupportdirectproductionreplacement; keep
+sourceprototype researchonly whileauditingposeconditioning/observationmodel.
+Newfullshape batch hasNOTlaunched. RootrobustJac/fun mismatch hypothesis was
+FALSIFIED forourmanualtransform+linearloss model; no unnecessaryfactorfix.
+
+FinalindependentreviewAPPROVE sourcebackup/no-runpreflightONLY forrefiner/CLI/
+runner (6ownedsource/testfiles); no realgraphlaunchauthorityclaimed. Freshmain
+expanded446PASS11.06s. Actualall30commandpreflight10cases110bindings/entry,
+unchangedformaltd/capsPASS, noGTopened/nooutputscreated. PureUMI-onlyall253
+relativeattitude+worldrigidinvarianceaudit next; avoid mistakingthe gauge or
+mathematicalconditional limitations for a demonstratedimplementationbug.
