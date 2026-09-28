@@ -868,3 +868,16 @@ verified388 changedfiles byte-identical main/backup/remote and41 focused tests
 PASS0.20s; restore status clean. Dataset symlinks/rawrecordings/modelcheckpoint
 were NOT copied. This diagnostic branch is complete; all-ten accuracy goal
 remains 9/10 PASS, fresh4 max13.801442mm, no production change.
+
+Timestamp-correct metric boundary complete for fresh4/fresh1/heldout1:
+product starts56–57 raw frames late; raw exposure time matching yields53/26/42
+poses per three windows. Post-freeze official SE3/no-scale body ATE in bad26:
+fresh4 stereo20.794/IMU7.829/graph14.796/fused13.801mm; passing fresh1
+14.652/18.758/5.329/6.004 and heldout1 4.418/5.161/1.139/1.237.
+Fresh4 graph/fused interval endpoint local displacement errors6.145/6.006mm
+vs IMU10.265mm. Smooth position hump begins before 26-frame gate slice;
+factor culprit still unknown. Same-window stereo quality and passing control
+counterexample reject simple scale/confidence clamp. No estimator edit or new
+10mm claim. Reviewer APPROVE with window-local/provenance caveats; three new
+tests pass. Report metric_boundary_findings.md, comparison JSON plus nine
+official stage-eval JSONs. Selected same-day backup/remote restore pending.

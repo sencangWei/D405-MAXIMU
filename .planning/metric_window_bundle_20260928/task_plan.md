@@ -387,6 +387,22 @@ All 388 changed files match main/backup/restored bytes; 41 focused tests pass
 in the clean restored checkout. Current observation-only branch closed;
 overall precision objective continues at the next metric-motion boundary.
 
+## Current continuation: timestamp-correct metric-stage boundary
+
+Matched raw D405 exposure times, not product row indices (which start 56–57
+frames later), across fresh4/fresh1/heldout1. Using the official fixed-body,
+SE(3)-no-scale post-freeze scoring, fresh4's 26-frame interval is 20.794 mm
+stereo metric, 7.829 mm IMU metric, 14.796 mm joint graph, 13.801 mm final.
+Graph improves the interval's *local displacement* despite the larger absolute
+position ATE, so neither deleting the graph nor switching to IMU is justified.
+Passing controls and full-trajectory scores confirm that. Reviewer approved
+the timestamp/metric contract; no estimator changed, 9/10 gate unchanged.
+Evidence: keyframe_update_probe_v1/metric_boundary_findings.md and JSON.
+Next bounded test is unchanged-output graph per-node/per-family residual tracing
+on all ten frozen cases, followed by UMI-only cross-sensor discrimination;
+no GT-driven admission or per-case weights. Back up this diagnostic to owned
+remote and verify clean restoration before extending it.
+
 ## Errors
 
 - Explorer role unavailable (`gpt-5.3-codex-spark` account unsupported). Used

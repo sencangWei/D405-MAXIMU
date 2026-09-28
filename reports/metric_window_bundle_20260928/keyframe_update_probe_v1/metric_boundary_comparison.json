@@ -1,0 +1,366 @@
+{
+  "evaluation_only": true,
+  "external_ground_truth_used_in_estimation": false,
+  "alignment": "official_global_SE3_no_scale_per_stage",
+  "time_binding": "raw_MASt3R_exposure_timestamp_not_product_row_index",
+  "source_and_input_sha256": {
+    "/home/robot/ego_vio_humble/.planning/metric_window_bundle_20260928/compare_metric_boundary.py": "97c5a66e9a366239e6ad00f77a9877375dac20550aeb0541887daf1e61bcafc8",
+    "/home/robot/ego_vio_humble/scripts/evaluate_slam_ground_truth.py": "78c7b8ecc2d3987acd8244414c449bf693396d5d7e74147b1cf419e9d4cb2d4a",
+    "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/trajectory_frames.csv": "cbba480baece6b07349ba41b5da4de2f9a4caa69c9c62f43ff94fde6b6e17530",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh4/official_score/steamvr_body_reference.csv": "de5f453abe8cdedd3b743a5b7517638069ced408c6e03508cbc26c20186ccf54",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/trajectory_stereo_dense10hz.csv": "33bc2aec5a6655d1b3fe24edd4529d1945c56b2fa9930c4c63426eca4e5e39e6",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/trajectory_imu_metric.csv": "e4110b2e7d5e0476f6e9485716e94cae3e9097e5c2c77564115df6bd59d48390",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh4/trajectory_graph.csv": "e909d65816b9046ac8555238e4ba0803e3467a05cfebe8d6a4e9469fe597860a",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh4/trajectory_fused.csv": "9200176953d3b235bcf09da80acf1edd3e205cdc691d811f1b0360410373cc96",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/trajectory_frames.csv": "f191e68a1732fc8880e2ef63b8644f5603a4f3829e8578abd9f2d401f10b997a",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh1/official_score/steamvr_body_reference.csv": "ee22707075060b46f36306637cedcfcbab89ab07c47622baccbe2e24216371a9",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/trajectory_stereo_dense10hz.csv": "c206b134620e1b1f9b6968735a722ca1ec1d122e4d8739cf8c33876491bb6c83",
+    "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/trajectory_imu_metric.csv": "9511bbae0031baee5f9bebafbfacc7f1b7b8fe55c0decfd47cb9c1e0b0ed783a",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh1/trajectory_graph.csv": "0721c69027d6f1c0760707bbd30ab86b528a45e4483f0f5c13d08863172e3642",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh1/trajectory_fused.csv": "83ec37203cea502006b6b7f0262e50bd4c59006df3516b3475020a4b9dc168e8",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/trajectory_frames.csv": "21706db3d78c0dbd6b4700ff7a5b006796b7e394644174d6e77cdc74b99979a4",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/official_score/steamvr_body_reference.csv": "a05418d2c8b776761e424c8f6ebcfbca8587b2399eff7a90dd1f4af74ea664f4",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/trajectory_stereo_dense10hz.csv": "088924497cd608a25be31eadf2c68a75cd63b1c58dad00f953eebef859b67dac",
+    "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/trajectory_imu_metric.csv": "d540f4d3f5a0e4b413cfc2d174e77ceb5a16d86adb60503af664dc0758fba3de",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/trajectory_graph.csv": "85b743689a08579d605f67fe5dd91572731d0ac2012e1a7a84dc3e63312018a2",
+    "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/trajectory_fused.csv": "a2445711f62276ce58ca701ab7272f31b74156d3fda572448785fe4de10a6e51"
+  },
+  "cases": {
+    "fresh4": {
+      "stereo_dense": {
+        "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/trajectory_stereo_dense10hz.csv",
+        "matched_samples": 1142,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 20.756794223794355,
+            "max_mm": 27.52951961649296
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 13.130462766788455,
+            "max_mm": 20.793906171268528
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 4.801323351324376,
+            "max_mm": 8.098355963872418
+          }
+        },
+        "local_displacement_body_mm": [
+          -98.35567151617164,
+          163.28714823250948,
+          76.78234603334211
+        ],
+        "local_displacement_error_mm": 16.330069263084212
+      },
+      "imu_metric": {
+        "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/trajectory_imu_metric.csv",
+        "matched_samples": 1142,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 9.158455461792085,
+            "max_mm": 15.482236306479994
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 3.050732961391219,
+            "max_mm": 7.829149146067051
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 5.744421733565792,
+            "max_mm": 9.697616397165843
+          }
+        },
+        "local_displacement_body_mm": [
+          -101.37966844394003,
+          168.10015257018077,
+          78.97164133710349
+        ],
+        "local_displacement_error_mm": 10.265009649830912
+      },
+      "joint_graph": {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh4/trajectory_graph.csv",
+        "matched_samples": 1142,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 7.339965540416587,
+            "max_mm": 11.286499131774903
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 13.646068234219612,
+            "max_mm": 14.796335451435802
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 5.962922033040572,
+            "max_mm": 10.608618884985198
+          }
+        },
+        "local_displacement_body_mm": [
+          -105.79655391624118,
+          171.87088420658736,
+          88.3418488660671
+        ],
+        "local_displacement_error_mm": 6.144630507408618
+      },
+      "fused": {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh4/trajectory_fused.csv",
+        "matched_samples": 1142,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 5.833711093399841,
+            "max_mm": 9.97292001811381
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 12.368478436435215,
+            "max_mm": 13.801441711258523
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 5.476684478608963,
+            "max_mm": 9.762618970818306
+          }
+        },
+        "local_displacement_body_mm": [
+          -105.96498707440135,
+          172.3045970400268,
+          88.50304093829938
+        ],
+        "local_displacement_error_mm": 6.005535378632975
+      }
+    },
+    "fresh1": {
+      "stereo_dense": {
+        "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/trajectory_stereo_dense10hz.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 11.30131081800017,
+            "max_mm": 13.329929817280108
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 13.317289175862644,
+            "max_mm": 14.652165651535718
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 18.167999919055873,
+            "max_mm": 20.148009186761218
+          }
+        },
+        "local_displacement_body_mm": [
+          -40.756056811019285,
+          -18.500164066274706,
+          -0.5290689699423041
+        ],
+        "local_displacement_error_mm": 7.935705318346427
+      },
+      "imu_metric": {
+        "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/trajectory_imu_metric.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 17.481240566203155,
+            "max_mm": 23.352075255196006
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 13.62466347870835,
+            "max_mm": 18.7582046502208
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 26.2730076118739,
+            "max_mm": 29.964349063013167
+          }
+        },
+        "local_displacement_body_mm": [
+          -42.94084883813715,
+          -19.392625529817057,
+          -0.3536600266267065
+        ],
+        "local_displacement_error_mm": 10.284885329884956
+      },
+      "joint_graph": {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh1/trajectory_graph.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 3.328831258930622,
+            "max_mm": 3.733973003404204
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 4.282127609554107,
+            "max_mm": 5.3288294516938715
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 4.576979909681368,
+            "max_mm": 5.674440454395719
+          }
+        },
+        "local_displacement_body_mm": [
+          -34.77083135612733,
+          -18.986400320284535,
+          -1.0497121961557214
+        ],
+        "local_displacement_error_mm": 3.7157018820030507
+      },
+      "fused": {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/fresh1/trajectory_fused.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 3.7312195259003604,
+            "max_mm": 4.23016249052789
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 4.769195562088621,
+            "max_mm": 6.003832087387731
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 5.318806755668254,
+            "max_mm": 6.268823833580364
+          }
+        },
+        "local_displacement_body_mm": [
+          -35.00819700753903,
+          -19.036424842352165,
+          -0.9704325342850921
+        ],
+        "local_displacement_error_mm": 3.836332439989165
+      }
+    },
+    "heldout1": {
+      "stereo_dense": {
+        "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/trajectory_stereo_dense10hz.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 1.7926221859955709,
+            "max_mm": 4.790059884262845
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 3.836685047744778,
+            "max_mm": 4.417873289516977
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 3.8058179691167373,
+            "max_mm": 4.342304256237496
+          }
+        },
+        "local_displacement_body_mm": [
+          -7.318164811568215,
+          -1.5820325127910582,
+          6.471738885469729
+        ],
+        "local_displacement_error_mm": 0.9973553079135468
+      },
+      "imu_metric": {
+        "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/trajectory_imu_metric.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 2.4068522461753683,
+            "max_mm": 6.958599796019057
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 4.479667717084438,
+            "max_mm": 5.161262124899674
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 4.362844091697761,
+            "max_mm": 5.005192466498886
+          }
+        },
+        "local_displacement_body_mm": [
+          -7.475151634814388,
+          -1.6208676691582908,
+          6.6214157016103945
+        ],
+        "local_displacement_error_mm": 1.2144992470668885
+      },
+      "joint_graph": {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/trajectory_graph.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 2.1892985248320573,
+            "max_mm": 3.6508615522804155
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 0.8354776621383131,
+            "max_mm": 1.139415893264169
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 1.1132731983913133,
+            "max_mm": 1.505858184667019
+          }
+        },
+        "local_displacement_body_mm": [
+          -6.0203060126905825,
+          -1.4126913258333844,
+          5.563105008491466
+        ],
+        "local_displacement_error_mm": 0.7430386572926403
+      },
+      "fused": {
+        "path": "/home/robot/ego_vio_humble/reports/metric_window_bundle_20260928/seam_graph_full_ten_v1/joint/heldout1/trajectory_fused.csv",
+        "matched_samples": 1143,
+        "windows": {
+          "before": {
+            "count": 53,
+            "median_mm": 2.0757529232531677,
+            "max_mm": 3.5639317768158336
+          },
+          "previously_over_10mm": {
+            "count": 26,
+            "median_mm": 0.8626899149538867,
+            "max_mm": 1.2374399784918813
+          },
+          "after": {
+            "count": 42,
+            "median_mm": 1.0047150453565115,
+            "max_mm": 1.2949172770981245
+          }
+        },
+        "local_displacement_body_mm": [
+          -6.022944453059233,
+          -1.4427191513352198,
+          5.61287702192746
+        ],
+        "local_displacement_error_mm": 0.7373211724076871
+      }
+    }
+  },
+  "limitations": [
+    "same frame indices across recordings are different motions",
+    "each stage has its own global SE3 fit",
+    "GT is used only for post-freeze localization, not factor selection"
+  ]
+}
