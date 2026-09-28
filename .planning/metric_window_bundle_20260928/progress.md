@@ -295,3 +295,25 @@ PASS. Same78v1-v2localmax7.171->4.520mm,48improved; same84independent-v2max
 287expandedtestsPASS3.96s (restoredprior278before7comparator tests); comparator
 reviewAPPROVE. FullUMIpaired40stride40alltenapproved, adapter/testsdelegated,
 no graphpromotion. Fullcase-count/sourcehash/tailcoverage boundariesexplicit.
+
+Fullpairedstride40adapter implemented; firstreviewinspectioncaught tailalways0
+whenloaded-prefix mistakenforrecordinglength. FixedBEFORElaunch byscopedactual
+countcapture,11testsPASS; expanded287beforeadapter,50newtargetedPASS1.66s
+withcomparator/allnewsets. No input/outputtrim. 1199/1200rawframes
+leave38/39withoutanother40frameendpointfactor, explicitlyreported(notdropped
+fromfuturefullSLAMoutputs). Hash/binding/argv/context restoration testsPASS.
+FulladapterimplementationreviewAPPROVE/alltenactualcountsverified; noGT/no
+graph/fullSLAMoutputtrim. Launchfrozenfullcensusnext (290pairs/580endpoints).
+
+FullpairedcensusRUNNINGsession35649 outputseam_full_ten_v1. First17/290pairs
+completedlatestcheck, onecore solvefailed retained; sourcecalibration/td/gates
+unchanged. 298expandedtestsPASS4.09s. Independentread-onlygraphreviewfound
+oldgraphinserts eachedge asadditive3D residualwithfixed4mmpenalty/conf1; not
+calibratedcovariance, butpairededges arenotindependentinformation. No graph
+launch; subsequentcontractmustcountpairgroupsandedgefactorsseparately. Full
+postfreeze scoringhelper/tests delegated, no actualGTreadsbeforemanifest.
+
+V2evidence22changedfilesnormalpushed093d44d65f01868a4ecaf7f11ac5f9835bd29085,
+remote-onlyrestoreall22byteequalbackup;21currentmainfilesbyteequal,progress
+intentionallyappendedaftercommit. Restored285PASS3.73s. Followupdocs/source
+commitwillincludecurrentprogress/fulladapter. No claimedfullATEimprovement.

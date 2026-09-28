@@ -112,3 +112,10 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
 - V1 refused promotion; v2 census is still running at this proof snapshot.
   This backup does NOT claim completed v2 evidence, full-trajectory accuracy,
   production deployment, GPUfrontend rerun or independent fresh capture.
+
+- Completed v2 all-ten evidence and analysis helper normally pushed in commit
+  `093d44d65f01868a4ecaf7f11ac5f9835bd29085` (22changed exact paths). Remote-only
+  restore matches all22 backup snapshot files;21 remain identical to current
+  main workspace, while progress.md was intentionally appended afterwards.
+  Restored285testsPASS3.73s. This backs v2 LOCAL comparisons, not full-trajectory
+  ATE or the still-running full-window census.
