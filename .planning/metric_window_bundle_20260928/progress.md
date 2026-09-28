@@ -317,3 +317,17 @@ V2evidence22changedfilesnormalpushed093d44d65f01868a4ecaf7f11ac5f9835bd29085,
 remote-onlyrestoreall22byteequalbackup;21currentmainfilesbyteequal,progress
 intentionallyappendedaftercommit. Restored285PASS3.73s. Followupdocs/source
 commitwillincludecurrentprogress/fulladapter. No claimedfullATEimprovement.
+
+Fulladapter/code commit c4fc7c95db8defc1230b1c87bb9526f86a81f4de normally
+pushed same owned sencang branch; clean remote-only restore all4 changed files
+byte-identical to main and backup, restored50 new targeted testsPASS1.79s.
+Full census now131/290 pairs completed, noGT read/evaluation or graphlaunch.
+Postfreeze full-scoring helper implemented/reviewed, six new tests plus all
+new adjacent/seam/adapter sets56PASS1.83s. Helper retains local-not-ATE warning,
+true tail coverage and explicit estimation/evaluation GT provenance flags.
+
+Read-only self-track diagnostic implemented all ten uniform final fixed-pair
+B-halves. Main review found signed ray-intersection denominator bug before
+interpreting results; worker fixing winding/near-boundary regressions and
+will preserve initial output as superseded. No self-mask or estimator change;
+running full census hashed sources remain unchanged.

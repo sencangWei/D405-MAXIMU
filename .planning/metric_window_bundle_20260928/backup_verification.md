@@ -119,3 +119,9 @@ it does not alter hashed census, paired proofs, helper code or trajectories.
   main workspace, while progress.md was intentionally appended afterwards.
   Restored285testsPASS3.73s. This backs v2 LOCAL comparisons, not full-trajectory
   ATE or the still-running full-window census.
+
+- Full-window adapter/test and two selected progress/proof documents backed in
+  commit `c4fc7c95db8defc1230b1c87bb9526f86a81f4de`, same owned branch, normal
+  fast-forward push. Remote-only clean restore compared all4 changed files
+  byte-for-byte to main and isolated backup; fresh restored50 targeted tests
+  PASS1.79s. The running full census is not complete/backed by this commit.
