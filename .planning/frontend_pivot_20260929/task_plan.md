@@ -9,7 +9,7 @@ Find and verify a source-only, recording-generalizable correction for the remain
 ## Phases
 1. [complete] Audit the fixed ten-recording result and reject the VINS absolute-position/backend-scale candidate on the predeclared controls.
 2. [complete] Compare saved MASt3R frontend observations and independent D405/IMU geometry at the same frame/edge boundary in the failed recording and passing controls. Directional vector comparison disproves a simple consensus threshold: the passing control has a strong counterexample.
-3. [pending] Build only a causally distinct multi-frame right-IR/MASt3R metric observation, after a diagnostic feasibility test. Reject immediately on missing output, unstable solver, or a passing-case regression.
+3. [pending] First capture dense same-keyframe correspondence IDs for the failed 26-frame interval and fixed passing controls, proving 1199-frame trajectory byte identity. The existing 2048-pixel subsample has zero all-window overlap. Then test one causally distinct multi-frame right-IR/MASt3R metric observation; reject immediately on missing output, unstable solver, or a passing-case regression.
 4. [pending] Run unchanged ten-case official scoring only after those checks; keep incumbent if not universally better. Back up algorithmic changes to the correct writable remote and verify from a clean restore.
 
 ## Decision / stop rules

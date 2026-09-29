@@ -26,4 +26,14 @@ An additional read-only fixed-frame check of the saved 2048-point frontend sampl
 
 The next justified work is a different measurement model, not another threshold: test whether multi-frame MASt3R correspondences plus the recorded right-IR observations can produce a held-out, metrically consistent local constraint over the failing interval **and passing controls**. Keep that test diagnostic-only until it shows a sensor-only quality witness and does not regress any passing recording. If the D405's short stereo baseline and the existing VINS disagree at the same window, mark that window's correction unobservable from these measurements instead of forcing a 10 mm claim.
 
+The saved 2048-pixel-per-frame *diagnostic subsample* cannot by itself support
+that multi-frame test: on fresh4 raw frames 1058–1074 (one keyframe anchor),
+adjacent saved samples share a median of only 36 keyframe pixel IDs and the
+17-frame intersection is empty. Heldout1 has median 49 adjacent IDs and no
+26-frame common ID. This is a limitation of the uniform diagnostic sampling,
+**not** evidence that native dense MASt3R matches are absent. A finite next
+step must capture dense same-keyframe correspondences for this exact window
+and fixed passing controls, preserving the original trajectories byte-for-byte,
+before attempting any multi-frame factor.
+
 Verification in this continuation: three targeted tests pass, including a nontrivial rotated-camera/rotating-lever synthetic case; all three stereo inputs say `PASS`, `slam_supervision=false`, and `external_ground_truth_used=false`. No production trajectory changed.
