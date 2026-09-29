@@ -61,6 +61,11 @@ def same_lighthouse_geometry(before: dict, after: dict) -> bool:
     return before["universe_id"] == after["universe_id"] and before["base_poses"] == after["base_poses"]
 
 
+def camera_deadline(now: float, duration: float, formal_started: bool) -> float:
+    """Give Docker startup and formal acquisition independent timeout budgets."""
+    return now + 180 + (duration if formal_started else 0)
+
+
 def preserve_staged_trace(staged: Path, target: Path) -> None:
     """Persist a private RAM-staged trace before removing its temporary copy."""
     with staged.open("rb") as source, target.open("xb") as destination:
@@ -225,7 +230,9 @@ def main() -> int:
                    UMI_CAPTURE_PREVIEW="1" if args.preview else "0")
         camera_process = subprocess.Popen(command, env=env, stdout=handles[2],
                                          stderr=subprocess.STDOUT, start_new_session=True)
-        deadline = time.monotonic() + args.duration + 180
+        # Container startup is separate from the formal camera acquisition.
+        # A slow Docker launch must not consume the recording/cleanup budget.
+        deadline = camera_deadline(time.monotonic(), args.duration, formal_started=False)
         announced = False
         while camera_process.poll() is None:
             log = (out / "d405_capture.log").read_text(errors="replace")
@@ -234,6 +241,7 @@ def main() -> int:
                     LIGHTHOUSE_DB, out / "lighthousedb_at_start.json")
                 print(f"正式采集开始：{args.duration:g} 秒", flush=True)
                 announced = True
+                deadline = camera_deadline(time.monotonic(), args.duration, formal_started=True)
                 if args.guided:
                     guide_process = subprocess.Popen(["python3", str(ROOT / "scripts/aprilgrid_motion_prompt.py"),
                         "--duration", str(args.duration)], start_new_session=True)

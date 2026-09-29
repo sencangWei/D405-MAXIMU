@@ -29,6 +29,13 @@ def test_process_arguments_do_not_falsely_match_reader():
     assert capture.conflicting_readers("900004 rg rg vive_pose_stream\n900005 python3 python3 capture_steamvr_with_d405.py") == []
 
 
+def test_slow_docker_start_does_not_consume_recording_timeout():
+    startup_deadline = capture.camera_deadline(100.0, 40.0, formal_started=False)
+    recording_deadline = capture.camera_deadline(239.0, 40.0, formal_started=True)
+    assert startup_deadline == 280.0
+    assert recording_deadline == 459.0
+
+
 def test_unrelated_unmatched_quote_does_not_abort_preflight():
     assert capture.conflicting_readers('900006 weird /tmp/process "unterminated') == []
 
