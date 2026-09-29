@@ -61,6 +61,14 @@ def same_lighthouse_geometry(before: dict, after: dict) -> bool:
     return before["universe_id"] == after["universe_id"] and before["base_poses"] == after["base_poses"]
 
 
+def capture_completion_status(world_unchanged: bool, require_unchanged_world: bool) -> str:
+    if world_unchanged:
+        return "PASS_CAPTURE_ONLY_NOT_CALIBRATED"
+    if not require_unchanged_world:
+        return "PASS_CAPTURE_ONLY_WORLD_CHANGED"
+    raise RuntimeError("SteamVR Lighthouse geometry changed during acquisition; reference unusable")
+
+
 def camera_deadline(now: float, duration: float, formal_started: bool) -> float:
     """Give Docker startup and formal acquisition independent timeout budgets."""
     return now + 180 + (duration if formal_started else 0)
@@ -173,6 +181,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--preview", action="store_true")
     parser.add_argument("--guided", action="store_true")
+    parser.add_argument("--require-unchanged-world", action="store_true",
+                        help="Fail acquisition if SteamVR changes its base geometry")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if not 5 <= args.duration <= 60 or not re.fullmatch(r"[A-Za-z0-9_-]+", args.label):
@@ -254,8 +264,11 @@ def main() -> int:
             LIGHTHOUSE_DB, out / "lighthousedb_at_end.json")
         manifest["steamvr_world_unchanged"] = same_lighthouse_geometry(
             manifest["steamvr_world_start"], manifest["steamvr_world_end"])
+        completion_status = capture_completion_status(
+            manifest["steamvr_world_unchanged"], args.require_unchanged_world)
         if not manifest["steamvr_world_unchanged"]:
-            raise RuntimeError("SteamVR Lighthouse geometry changed during acquisition; reference unusable")
+            manifest["reference_quality"] = "REVIEW_REQUIRED_WORLD_GEOMETRY_CHANGE"
+            print("基站关系已变化：继续验收原始采集；精度参考需单独检查 Tracker 轨迹", flush=True)
         stop_child(guide_process)
         stop_child(tracker_process)
         for fp in handles:
@@ -287,7 +300,7 @@ def main() -> int:
         manifest["clock_coverage"] = overlap
         if overlap["status"] != "PASS_CLOCK_COVERAGE_ONLY":
             raise RuntimeError("Tracker query coverage of camera exposures insufficient")
-        manifest["status"] = "PASS_CAPTURE_ONLY_NOT_CALIBRATED"
+        manifest["status"] = completion_status
         return 0
     except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as error:
         manifest.update(status="FAIL_CAPTURE", error=str(error))

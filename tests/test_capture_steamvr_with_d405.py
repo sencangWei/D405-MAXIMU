@@ -158,3 +158,10 @@ def test_lighthouse_world_snapshot_rejects_missing_base(tmp_path):
     with pytest.raises(ValueError, match="expected Lighthouse bases"):
         capture.snapshot_lighthouse_world(database, tmp_path / "invalid.json")
     assert not (tmp_path / "invalid.json").exists()
+
+
+def test_world_change_can_preserve_raw_capture_without_approving_reference():
+    assert capture.capture_completion_status(True, False) == "PASS_CAPTURE_ONLY_NOT_CALIBRATED"
+    assert capture.capture_completion_status(False, False) == "PASS_CAPTURE_ONLY_WORLD_CHANGED"
+    with pytest.raises(RuntimeError, match="Lighthouse geometry changed"):
+        capture.capture_completion_status(False, True)
