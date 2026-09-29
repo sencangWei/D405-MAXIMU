@@ -245,6 +245,15 @@ def compare_trajectories(frozen, output):
     return result
 
 
+def permitted_producer_difference(mismatched, allow_dirty, allow_revision):
+    if not mismatched:
+        return True
+    if allow_revision and set(mismatched) <= {
+            "toolchain_commit", "toolchain_dirty_diff_sha256"}:
+        return True
+    return allow_dirty and mismatched == ["toolchain_dirty_diff_sha256"]
+
+
 def main():
     global FIRST, LAST
     parser = argparse.ArgumentParser(description=__doc__)
@@ -254,6 +263,8 @@ def main():
     parser.add_argument("--last", type=int, default=LAST)
     parser.add_argument("--dense-ids", action="store_true")
     parser.add_argument("--allow-dirty-diff-change", action="store_true")
+    parser.add_argument("--allow-producer-revision-change", action="store_true",
+                        help="permit commit/diff provenance changes only when both full trajectories reproduce byte-for-byte")
     args = parser.parse_args()
     FIRST, LAST = args.first, args.last
     if not 0 <= FIRST <= LAST < 1199:
@@ -265,7 +276,8 @@ def main():
     dataset = (frozen/"dataset").resolve(strict=True)
     before = producer_identity(manifest)
     mismatched = [key for key in PRODUCER_KEYS if before[key] != manifest[key]]
-    if mismatched and not (args.allow_dirty_diff_change and mismatched == ["toolchain_dirty_diff_sha256"]):
+    if not permitted_producer_difference(
+            mismatched, args.allow_dirty_diff_change, args.allow_producer_revision_change):
         raise ValueError("producer differs from frozen frontend")
     hashes = frozen_inputs(frozen, manifest, dataset)
     with (dataset/"frames.csv").open(newline="") as stream:

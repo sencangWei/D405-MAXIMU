@@ -4,13 +4,13 @@
 Find and verify a source-only, recording-generalizable correction for the remaining >10 mm fusion error without using Lighthouse/SteamVR to construct the SLAM trajectory.
 
 ## Current phase
-3 — the opt-in single-frame stereo/IMU pose correction was falsified; inspect how the backend reconstructs the 27-frame block across its keyframe transition before designing a persistent onboard multi-frame factor.
+3 — opt-in single-frame stereo/IMU correction and simple short-hop replacement were falsified. Before another estimator change, separate bad MASt3R visual geometry from weak D405 stereo and assess an independently observable multi-view factor across the full bad block.
 
 ## Phases
 1. [complete] Audit the fixed ten-recording result and reject the VINS absolute-position/backend-scale candidate on the predeclared controls.
 2. [complete] Compare saved MASt3R frontend observations and independent D405/IMU geometry at the same frame/edge boundary in the failed recording and passing controls. Directional vector comparison disproves a simple consensus threshold: the passing control has a strong counterexample.
 3. [complete, negative] Dense native correspondence capture and three byte-identical frontend replays isolated a 1054–1057 visual rotation discrepancy, absent from two passing controls. The opt-in correction failed to persist across the new keyframe: first exploratory maximum ATE worsened 13.801→14.015 mm, and a reviewed scale-corrected frontend replay left the peak frame essentially unchanged. Production remains untouched.
-4. [in progress] Inspect persistent backend keyframe factors and design one source-only multi-frame constraint with a measurable effect on the actual 1053–1078 block; first test fresh4 plus at least two passing controls. Only then run unchanged ten-case official scoring. Back up diagnostic and experimental code to the correct writable remotes and verify clean restoration.
+4. [in progress] Do not promote a persistent IMU/stereo factor from the current disagreement: a post-score directional check and a full exploratory replay both predict/measure regression. Motion-matched controls are now complete. Next compare independent multi-view reprojection/track consistency across the bad block and passing high-turn windows, then design at most one source-only factor with an explicit ≥8 mm pre-score effect and unchanged 10-case official acceptance. Diagnostic/experimental sources have already been backed to the writable remotes and clean-restored; the latest short-hop and control results still need backup.
 
 ## Decision / stop rules
 - No more backend VINS-position or log-scale weight sweeps: one-cell PASS regressed two independent passing cases and dev2 failed numerically.

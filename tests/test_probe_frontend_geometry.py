@@ -70,6 +70,15 @@ def test_dense_correspondence_ids_preserve_full_valid_scope_and_mapping():
         probe.dense_matched_ids(valid[:-1], mapping, (2, 3))
 
 
+def test_revision_exception_never_accepts_changed_inputs_or_checkpoint():
+    assert probe.permitted_producer_difference([], False, False)
+    assert probe.permitted_producer_difference(
+        ["toolchain_commit", "toolchain_dirty_diff_sha256"], False, True)
+    assert not probe.permitted_producer_difference(["toolchain_commit"], True, False)
+    assert not probe.permitted_producer_difference(
+        ["toolchain_commit", "checkpoint_sha256"], False, True)
+
+
 def test_hooks_return_original_objects_and_restore_even_when_capture_fails():
     marker, result = object(), (True, object(), False)
 
