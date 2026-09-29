@@ -37,3 +37,75 @@ and fixed passing controls, preserving the original trajectories byte-for-byte,
 before attempting any multi-frame factor.
 
 Verification in this continuation: three targeted tests pass, including a nontrivial rotated-camera/rotating-lever synthetic case; all three stereo inputs say `PASS`, `slam_supervision=false`, and `external_ground_truth_used=false`. No production trajectory changed.
+
+## 2026-09-29 follow-up: dense native-match witness
+
+The observation-only replay now captures **all** valid native pixel correspondences
+at raw frames 1053–1078. Fresh4, fresh1, and heldout1 each reproduced both
+1199-row frozen frontend trajectories **byte-for-byte**. The current toolchain
+diff checksum differs from the frozen manifest because later fail-fast/race fixes
+are present; the check records that difference and accepts the replay only after
+both complete trajectory files prove identical. No Lighthouse/SteamVR input was
+used to build the diagnostic or change a trajectory.
+
+| Frozen case | Same-anchor persistence in this window | IMU-rotation stereo translation disagreement, max | Visual-rotation disagreement, max | Independent PnP/IMU witness frames |
+|---|---:|---:|---:|---|
+| fresh4, ATE FAIL | 44,762 pixel IDs common to frames 1058–1074 | 11.249 mm | 2.561 mm | 1054, 1055, 1056, 1057 |
+| fresh1, ATE PASS | frequent keyframe changes | 3.876 mm | 1.826 mm | none |
+| heldout1, ATE PASS | 74,836 pixel IDs common to frames 1053–1078 | 4.027 mm | 0.796 mm | none |
+
+At fresh4 frame 1057, visual vs preintegrated IMU relative rotation is
+**1.588°**; stereo-depth PnP is **0.467°** from IMU and **1.242°** from visual,
+with 4,013/5,000 PnP inliers and 1.33 px P95 reprojection. The independent
+stereo 3D translation fitted at fixed IMU rotation differs from the learned
+visual displacement by **11.249 mm** across 36,548 depth-valid matches; image
+quadrants disagree by at most **1.71 mm**. At fixed *visual* rotation the
+translation discrepancy is only **0.49 mm**. This is evidence for an upstream
+relative-*orientation* discrepancy, not a naked 11 mm translation offset.
+Frame 1057 then becomes the next keyframe anchor; subsequent comparisons to
+that new anchor fall to ~0.4–5.3 mm. The causal hypothesis is that the visual
+orientation error is inherited at this anchor transition. A passing heldout
+recording uses one anchor for all 26 frames, proving anchor duration alone is
+not the cause.
+
+The diagnostic rotation witness uses only onboard IMU, D405 stereo depth and
+MASt3R matches: visual–IMU >1°, stereo-PnP–IMU <0.6°,
+stereo-PnP–visual >0.8°, >80% PnP inliers, <1.5 px P95 reprojection,
+≥10,000 depth pairs, <2 mm cross-quadrant translation spread. It marks 4/26
+failed-case frames and 0/26 in each passing control. This is **not yet** an
+estimator, an ATE improvement, or proof that a correction generalizes to all
+ten recordings. The next bounded experiment is an opt-in anchor-relative
+IMU/stereo pose correction, followed by frozen multi-case replays and the
+unchanged official 10 mm gate; reject it on any passing-case regression.
+
+Reproduce the evidence with `probe_frontend_geometry.py --first 1053 --last
+1078 --dense-ids --allow-dirty-diff-change` and the read-only
+`summarize_dense_tracks.py` / `compare_dense_stereo_translation.py` under this
+directory. Eleven targeted tests pass. No production estimator changed.
+
+## 2026-09-29 correction experiment — rejected
+
+An opt-in, source-only stereo/IMU correction was inserted after frontend pose
+tracking, never enabled in the production config. The first exploratory fresh4
+replay passed the processing pipeline but **worsened** the unchanged official
+maximum ATE from 13.801 to 14.015 mm. Its seam replay also reused incumbent
+stereo reports, so it was not a promotion-grade same-mouth comparison. The
+external reference was read only after the candidate trajectory was frozen.
+
+Review found the first version mixed a metric stereo translation/rotation with
+an unchanged learned Sim3 scale. A second version computes both current and
+keyframe stereo/pointmap scales, uses dataset-indexed depth, and requires PnP
+and paired-depth translations to agree within 5 mm. Five local fork tests pass.
+Its full 1199-frame **frontend-only** replay still changes raw 1054 and 1056
+substantially, but changes new-anchor frame 1057 by just 0.18 mm / 0.002° and
+peak-error frame 1071 by 0.13 mm / 0.002°. Running a second expensive fusion
+and score would not test a changed error block; this candidate remains
+unpromoted. The reported peak is a continuous block around raw 1053–1078,
+not a few isolated outliers. Source-level inspection shows that a newly
+selected keyframe is subsequently optimized in the backend while non-keyframe
+poses are reconstructed relative to that keyframe. A transient per-frame
+tracking correction therefore cannot by itself enforce a durable multi-frame
+constraint across the new anchor. The next experiment must carry **independent
+onboard stereo/IMU evidence into the keyframe graph or another persistent
+multi-frame constraint**, with one failed and at least two passing controls.
+No ATE improvement or 10 mm compliance is claimed here.

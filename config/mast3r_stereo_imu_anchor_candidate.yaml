@@ -1,0 +1,7 @@
+inherit: /home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml
+
+tracking:
+  # Experimental and disabled in the production config. Correct an anchor pose
+  # only when independent D405 stereo PnP corroborates keyframe-relative IMU
+  # preintegration against a >1 degree MASt3R visual rotation disagreement.
+  stereo_imu_anchor_guard: true
