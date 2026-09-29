@@ -35,3 +35,12 @@ def test_rotation_witness_requires_independent_stereo_and_spatial_consistency():
         altered = list(args)
         altered[position] = bad
         assert not mod.stereo_imu_rotation_witness(*altered)
+
+
+def test_pnp_camera_center_uses_inverse_rotation():
+    rotation = Rotation.from_euler("z", 90, degrees=True).as_matrix()
+    center = np.array([0.02, -0.03, 0.01])
+    transform = np.eye(4)
+    transform[:3, :3] = rotation
+    transform[:3, 3] = -rotation @ center
+    np.testing.assert_allclose(mod.camera_center_from_pnp(transform), center)

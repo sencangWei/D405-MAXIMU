@@ -26,6 +26,13 @@ def backproject(ids, depth, K, width):
                             (y-K[1, 2])*depth/K[1, 1], depth))
 
 
+def camera_center_from_pnp(keyframe_to_current):
+    transform = np.asarray(keyframe_to_current, dtype=np.float64)
+    if transform.shape != (4, 4):
+        raise ValueError("PnP transform must be 4x4")
+    return -transform[:3, :3].T @ transform[:3, 3]
+
+
 def translation_observation(ids_k, ids_f, depth_k, depth_f, K, rotation):
     h, w = depth_k.shape
     if depth_f.shape != (h, w) or K.shape != (3, 3) or ids_k.shape != ids_f.shape:
@@ -111,16 +118,21 @@ def summarize(path):
                 entry["stereo_pnp"] = pnp_report
             if pnp_pose is not None:
                 pnp_rotation = Rotation.from_matrix(pnp_pose[:3, :3]).inv()
+                pnp_center_in_keyframe = camera_center_from_pnp(pnp_pose)
                 pnp_imu = float((pnp_rotation.inv()*rotation).magnitude()*180/np.pi)
                 pnp_visual = float((pnp_rotation.inv()*visual_rotation).magnitude()*180/np.pi)
                 entry["stereo_pnp"].update(pnp_vs_imu_deg=pnp_imu,
-                                           pnp_vs_visual_deg=pnp_visual)
+                                           pnp_vs_visual_deg=pnp_visual,
+                                           center_in_keyframe_m=pnp_center_in_keyframe.tolist())
                 entry["rotation_witness"] = stereo_imu_rotation_witness(
                     entry["visual_vs_imu_rotation_deg"], pnp_imu, pnp_visual,
                     pnp_report["inlier_ratio"], pnp_report["reprojection_p95_px"],
                     metric["points"], metric["tile_spread_max_mm"])
             if metric["status"] == "OK" and np.isfinite(scale):
                 visual = scale*learned[:3]
+                if pnp_pose is not None:
+                    entry["stereo_pnp"]["visual_translation_disagreement_mm"] = float(
+                        np.linalg.norm(pnp_center_in_keyframe-visual)*1000)
                 delta = visual-np.asarray(metric["translation_m"])
                 entry.update(visual_translation_m=visual.tolist(),
                              visual_minus_stereo_m=delta.tolist(),

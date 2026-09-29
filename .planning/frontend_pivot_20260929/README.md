@@ -194,6 +194,17 @@ post-score directional check are decisive against promoting it. Motion alone,
 simple image blur, match count, or a one-off Tracker jump do not explain the
 remaining 13.8 mm peak.
 
+An additional explicit PnP-center comparison falsifies any fallback based on
+translation-disagreement size: over these frozen windows, failed fresh4's
+largest PnP-vs-visual disagreement is **10.03 mm** (frame 1073), while
+**passing heldout1 reaches 11.76 mm** (frame 347). The latter whole-run max
+ATE is still 6.03 mm. Stronger or looser scalar thresholds cannot turn this
+measurement into a reliable error label. A two-view essential-matrix check
+also gives similar independent visual translation-direction differences
+(about 3.1–3.5°) in failed and passing motion-matched windows. This supports
+the conclusion that the current onboard disagreement metrics are useful
+quality observations, not a source-only oracle for which trajectory to move.
+
 The scored trajectory's local displacement decomposition explains the peak
 without declaring either onboard sensor uniquely right. In fresh4, the
 aligned fused trajectory enters raw frame 1042 with **8.15 mm ATE**. Its
