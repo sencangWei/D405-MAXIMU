@@ -50,7 +50,8 @@ def inspect_dataset(dataset: Path) -> dict:
     return manifest
 
 
-def probe(dataset: Path, indices: list[int], checkpoint: Path) -> dict:
+def probe(dataset: Path, indices: list[int], checkpoint: Path,
+          minimum_confidence: float = 1.5) -> dict:
     import torch
     from mast3r.fast_nn import fast_reciprocal_NNs
     from mast3r_slam.config import config
@@ -100,7 +101,7 @@ def probe(dataset: Path, indices: list[int], checkpoint: Path) -> dict:
         )
         left_conf = confidence[0, left_xy[:, 1], left_xy[:, 0]].cpu().numpy()
         right_conf = confidence[1, right_xy[:, 1], right_xy[:, 0]].cpu().numpy()
-        confident = valid & (left_conf >= 1.5) & (right_conf >= 1.5)
+        confident = valid & (left_conf >= minimum_confidence) & (right_conf >= minimum_confidence)
         classical_depth = compute_stereo_depth(
             *raw_images,
             focal_length_px=float(manifest["camera_info"]["fx"]),
@@ -136,7 +137,7 @@ def probe(dataset: Path, indices: list[int], checkpoint: Path) -> dict:
         "source": str(dataset),
         "checkpoint": str(checkpoint),
         "baseline_m": float(stereo["baseline_m"]),
-        "minimum_pointmap_confidence": 1.5,
+        "minimum_pointmap_confidence": minimum_confidence,
         "frames": reports,
     }
 
@@ -146,11 +147,14 @@ def main() -> None:
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--indices", type=int, nargs="+", required=True)
+    parser.add_argument("--minimum-confidence", type=float, default=1.5)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.minimum_confidence < 1.0:
+        parser.error("minimum confidence must be at least the model's 1.0 floor")
     if args.output.exists():
         raise FileExistsError(args.output)
-    report = probe(args.dataset, args.indices, args.checkpoint)
+    report = probe(args.dataset, args.indices, args.checkpoint, args.minimum_confidence)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(report, ensure_ascii=False, indent=2))
