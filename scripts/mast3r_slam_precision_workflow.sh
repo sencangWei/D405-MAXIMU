@@ -190,6 +190,7 @@ PY
     "$PYTHON" - "$TOOL_DIR" "$output" "$elapsed" "$CHECKPOINT" "$CONFIG" <<'PY'
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -212,6 +213,7 @@ manifest = {
     "schema": "umi_mast3r_run_v1",
     "slam_supervision": False,
     "algorithm": "MASt3R-SLAM monocular visual SLAM",
+    "stereo_descriptor_recovery": os.environ.get("MAST3R_STEREO_DESCRIPTOR_RECOVERY") == "1",
     "kernel_release": platform.release(),
     "config": str(config),
     "config_sha256": file_sha256(config),
