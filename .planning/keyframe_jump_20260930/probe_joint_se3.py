@@ -16,6 +16,7 @@ from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import lsqr
 from scipy.spatial.transform import Rotation, Slerp
 
+from audit_learned_long_loop_metric import audit as audit_learned_long_loops
 from fuse_mast3r_stereo_imu import (
     load_trajectory,
     load_vins_config,
@@ -255,7 +256,8 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
 
 def run(frontend, vins, config, output, visual_position_sigma_mm=20.0,
         visual_prior_mode="absolute", add_motion_disagreement_nodes=False,
-        all_frames_joint=False, local_stereo_scale=False):
+        all_frames_joint=False, local_stereo_scale=False,
+        learned_loop_matches_dir=None, learned_loop_dataset=None):
     times, native_pos, base_rot, _ = load_trajectory(frontend / "trajectory_frames.csv")
     stereo_report = json.loads((frontend / "stereo_scale_bidirectional_report.json").read_text())
     scale = float(stereo_report["scale_m_per_mast3r_unit"])
@@ -281,9 +283,17 @@ def run(frontend, vins, config, output, visual_position_sigma_mm=20.0,
         nodes = np.union1d(nodes, extra_nodes)
     if all_frames_joint:
         nodes = np.arange(len(times))
+    loop_rows = []
+    if learned_loop_matches_dir is not None:
+        if learned_loop_dataset is None:
+            raise ValueError("learned loop dataset is required with match snapshots")
+        loop_rows = audit_learned_long_loops(
+            learned_loop_matches_dir, learned_loop_dataset, vins, config
+        )
     candidate_pos, candidate_rot, report = solve_joint_poses(
         base_pos, base_rot, vins_pos, vins_rot, valid, nodes,
-        stereo_report["observations"], visual_position_sigma_mm / 1000.0,
+        stereo_report["observations"] + [row for row in loop_rows if row.get("accepted")],
+        visual_position_sigma_mm / 1000.0,
         visual_prior_mode, visual_prior_nodes if all_frames_joint else None,
         use_visual_step_factors=all_frames_joint,
     )
@@ -308,6 +318,8 @@ def run(frontend, vins, config, output, visual_position_sigma_mm=20.0,
             if add_motion_disagreement_nodes else "disabled"
         ),
         "stereo_scale_m_per_native_unit": scale,
+        "learned_metric_long_loops_audited": len(loop_rows),
+        "learned_metric_long_loops_prequalified": sum(bool(row.get("accepted")) for row in loop_rows),
         "source": str(frontend),
         "vins_source": str(vins),
         "max_step_before_mm": float(np.max(np.linalg.norm(np.diff(base_pos, axis=0), axis=1)) * 1000),
@@ -329,10 +341,14 @@ if __name__ == "__main__":
     parser.add_argument("--add-motion-disagreement-nodes", action="store_true")
     parser.add_argument("--all-frames-joint", action="store_true")
     parser.add_argument("--local-stereo-scale", action="store_true")
+    parser.add_argument("--learned-loop-matches-dir", type=Path)
+    parser.add_argument("--learned-loop-dataset", type=Path)
     arguments = parser.parse_args()
     print(json.dumps(run(arguments.frontend, arguments.vins, arguments.config, arguments.output,
                          arguments.visual_position_sigma_mm,
                          arguments.visual_prior_mode,
                          arguments.add_motion_disagreement_nodes,
                          arguments.all_frames_joint,
-                         arguments.local_stereo_scale), indent=2))
+                         arguments.local_stereo_scale,
+                         arguments.learned_loop_matches_dir,
+                         arguments.learned_loop_dataset), indent=2))
