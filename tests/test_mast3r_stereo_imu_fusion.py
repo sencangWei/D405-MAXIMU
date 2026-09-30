@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -125,6 +126,36 @@ def test_scale_consistency_accepts_close_independent_estimates():
 def test_scale_consistency_rejects_large_disagreement():
     quality = fusion.scale_consistency(imu_scale=0.80, stereo_scale=0.55)
     assert quality["consistent"] is False
+
+
+def test_metric_input_binds_imu_report_to_its_source_trajectory(tmp_path):
+    source = tmp_path / "joint_metric.csv"
+    scaled = tmp_path / "imu_scaled.csv"
+    report = {"trajectory": str(source), "output": str(scaled)}
+
+    fusion.validate_imu_scale_report_binding(report, source, input_already_metric=True)
+    fusion.validate_imu_scale_report_binding(report, scaled, input_already_metric=False)
+    with pytest.raises(ValueError, match="trajectory does not match"):
+        fusion.validate_imu_scale_report_binding(
+            report, scaled, input_already_metric=True
+        )
+    with pytest.raises(ValueError, match="output does not match"):
+        fusion.validate_imu_scale_report_binding(
+            report, source, input_already_metric=False
+        )
+
+
+@pytest.mark.parametrize(
+    "scale_report, mode",
+    [(None, "imu"), (Path("scale.json"), "joint")],
+)
+def test_metric_input_requires_imu_report_and_no_second_scale(scale_report, mode):
+    with pytest.raises(ValueError, match="metric input requires"):
+        fusion.run(SimpleNamespace(
+            input_already_metric=True,
+            imu_scale_report=scale_report,
+            metric_scale_mode=mode,
+        ))
 
 
 def test_default_policy_keeps_every_failure_blocking():

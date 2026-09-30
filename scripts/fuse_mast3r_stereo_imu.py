@@ -352,6 +352,14 @@ def scale_consistency(
     }
 
 
+def validate_imu_scale_report_binding(
+    report: dict, trajectory: Path, input_already_metric: bool
+) -> None:
+    key = "trajectory" if input_already_metric else "output"
+    if Path(report.get(key, "")).resolve() != trajectory.resolve():
+        raise ValueError(f"IMU scale report {key} does not match fusion trajectory")
+
+
 TOLERABLE_FAILURE_BY_POLICY = {
     # 尺度不一致降级为诊断（2026-09-22）。依据：09-11 Codex 明说的「尺度由双红外
     # 负责、IMU 只修姿态、冲突只作诊断」，此前只接进了 compare)
@@ -2466,6 +2474,11 @@ def write_trajectory(
 
 
 def run(args: argparse.Namespace) -> dict:
+    input_already_metric = getattr(args, "input_already_metric", False)
+    if input_already_metric and (
+        args.imu_scale_report is None or args.metric_scale_mode != "imu"
+    ):
+        raise ValueError("metric input requires an IMU scale report and imu scale mode")
     times, positions, camera_rotations, rows = load_trajectory(args.trajectory)
     stereo_report = load_json_report(args.stereo_report)
     validate_onboard_report(
@@ -2521,8 +2534,9 @@ def run(args: argparse.Namespace) -> dict:
             args.imu_scale_report,
             "umi_mast3r_imu_scale_v1",
         )
-        if Path(imu_scale_report.get("output", "")).resolve() != args.trajectory.resolve():
-            raise ValueError("fusion trajectory is not the IMU-scaled trajectory")
+        validate_imu_scale_report_binding(
+            imu_scale_report, args.trajectory, input_already_metric
+        )
         imu_scale = float(imu_scale_report.get("scale", np.nan))
         if not np.isfinite(imu_scale) or imu_scale <= 0.0:
             raise ValueError("IMU scale report contains an invalid scale")
@@ -2531,7 +2545,10 @@ def run(args: argparse.Namespace) -> dict:
             stereo_scale,
             args.max_scale_disagreement_ratio,
         )
-        if args.metric_scale_mode == "joint":
+        if input_already_metric:
+            selected_scale = 1.0
+            selection_policy = "pre_metricized_input_no_initial_rescale"
+        elif args.metric_scale_mode == "joint":
             selected_scale = metric_scale_quality[
                 "joint_scale_m_per_mast3r_unit"
             ]
@@ -2546,7 +2563,7 @@ def run(args: argparse.Namespace) -> dict:
                 "imu_scale_m_per_mast3r_unit"
             ]
             selection_policy = "imu_adjacent_windows"
-        if args.metric_scale_mode in {"joint", "stereo"}:
+        if not input_already_metric and args.metric_scale_mode in {"joint", "stereo"}:
             imu_scale = metric_scale_quality["imu_scale_m_per_mast3r_unit"]
             positions = positions[0] + (selected_scale / imu_scale) * (
                 positions - positions[0]
@@ -2927,6 +2944,10 @@ def main() -> int:
     parser.add_argument("--stereo-report", type=Path, required=True)
     parser.add_argument("--additional-stereo-report", type=Path, action="append")
     parser.add_argument("--imu-scale-report", type=Path)
+    parser.add_argument(
+        "--input-already-metric", action="store_true",
+        help="the input trajectory is already in meters; check IMU/stereo scales without rescaling it again",
+    )
     parser.add_argument("--session", type=Path, required=True)
     parser.add_argument("--stream", choices=("color", "infrared_left"), default="color")
     parser.add_argument("--vins-config", type=Path, required=True)
@@ -3016,6 +3037,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
+    if args.input_already_metric and (args.imu_scale_report is None or args.metric_scale_mode != "imu"):
+        parser.error("--input-already-metric requires --imu-scale-report and --metric-scale-mode imu")
     if args.orientation_node_stride < 1:
         parser.error("--orientation-node-stride must be positive")
     if args.position_node_stride < 1:
