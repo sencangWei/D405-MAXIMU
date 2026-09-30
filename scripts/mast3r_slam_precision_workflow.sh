@@ -369,7 +369,8 @@ case "$command" in
         # 依据：09-11 Codex 对用户明说的「尺度由双红外负责、IMU 只修姿态、
         # 冲突保留在报告里作为诊断」——那条策略此前只接进了 compare)
         # （--metric-scale-mode stereo）；现役产线 22 格实测 rd 最大 0.0928 < 0.15
-        # ⇒ 本改动对现役语料零影响。**尺度估计仍是 joint 对数均值，未改。**
+        # ⇒ 本策略不改初始 joint 对数均值；2026-09-27 联合图增加整体尺度状态，
+        # 由现有双目/IMU/VINS 米制运动因子求解，不读外部真值，不缩放刚性杠杆臂。
         # 其余 11 条 failures（含 visual_gyro_rotation_inconsistent，盘上真实触发 7 次）
         # **一律照旧阻断**；见 reports/.../rerun_tail_v2_20260920/README.md §33/§35。
         "$PYTHON" "$ROOT_DIR/scripts/fuse_mast3r_stereo_imu.py" \
@@ -394,6 +395,7 @@ case "$command" in
             --auto-visual-position-sigma \
             --joint-max-correction-mm 25 \
             --joint-correction-cap-mode per-node \
+            --joint-metric-scale-optimization \
             --full-rate-imu-position-refinement \
             --full-rate-max-correction-mm 20 \
             --metric-scale-mode joint \
