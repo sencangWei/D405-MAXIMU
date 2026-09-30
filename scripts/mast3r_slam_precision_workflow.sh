@@ -15,7 +15,7 @@ REUSE_DATASET_DIR="${MAST3R_REUSE_DATASET_DIR:-}"
 
 usage() {
     echo "用法:"
-    echo "  $0 run <D405会话目录> <输出目录> [color|infrared_left] [最大帧数] [起始帧索引]"
+    echo "  $0 run <D405会话目录> <输出目录> [color|infrared_left|infrared_right] [最大帧数] [起始帧索引]"
     echo "  $0 fusion <D405会话目录> <VINS轨迹.csv> <VINS验收报告.json> <输出目录>"
     echo "  $0 fusion-guarded <D405会话目录> <VINS轨迹.csv> <VINS验收报告.json> <新输出目录>"
     echo "  $0 compare <D405会话目录> <Docker2轨迹.csv> <Lighthouse-body真值.csv> <输出目录> [color|infrared_left]"

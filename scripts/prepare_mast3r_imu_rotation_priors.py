@@ -50,6 +50,11 @@ def body_t_camera_for_stream(
 ) -> np.ndarray:
     if stream == "infrared_left":
         return body_t_left_ir
+    if stream == "infrared_right":
+        right_t_left = np.eye(4)
+        right_t_left[:3, :3] = factory["right_rotation_from_left"]
+        right_t_left[:3, 3] = factory["right_translation_from_left_m"]
+        return body_t_left_ir @ np.linalg.inv(right_t_left)
     if stream != "color":
         raise ValueError(f"unsupported camera stream: {stream}")
     stereo_report = {
@@ -127,7 +132,11 @@ def generate(
         "camera_extrinsic_policy": (
             "docker2_body_T_left_ir"
             if stream == "infrared_left"
-            else "docker2_body_T_left_ir_composed_with_factory_left_ir_to_color"
+            else (
+                "docker2_body_T_left_ir_composed_with_factory_left_ir_to_right_ir"
+                if stream == "infrared_right"
+                else "docker2_body_T_left_ir_composed_with_factory_left_ir_to_color"
+            )
         ),
         "frames": int(len(priors)),
         "td_s": runtime["td_s"],
@@ -148,7 +157,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--session", type=Path, required=True)
     parser.add_argument("--dataset", type=Path, required=True)
-    parser.add_argument("--stream", choices=("color", "infrared_left"), default="color")
+    parser.add_argument(
+        "--stream", choices=("color", "infrared_left", "infrared_right"), default="color"
+    )
     parser.add_argument("--vins-config", type=Path, required=True)
     parser.add_argument("--imu-calibration", type=Path, required=True)
     parser.add_argument("--expected-td-s", type=float, required=True)
