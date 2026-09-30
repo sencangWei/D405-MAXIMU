@@ -16,7 +16,11 @@ from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import lsqr
 from scipy.spatial.transform import Rotation, Slerp
 
-from fuse_mast3r_stereo_imu import load_trajectory, load_vins_config
+from fuse_mast3r_stereo_imu import (
+    load_trajectory,
+    load_vins_config,
+    local_stereo_scale_state,
+)
 
 
 def camera_vins_at(times, vins_path, config_path):
@@ -57,8 +61,31 @@ def motion_disagreement_nodes(base_pos, base_rot, vins_pos, vins_rot, valid,
     return np.union1d(unusual, unusual + 1), unusual, mismatch
 
 
+def integrate_local_stereo_scale(native_pos, observations, global_scale):
+    """Convert each visual increment using independent D405 window scale."""
+    local_scale, _, quality = local_stereo_scale_state(
+        observations, np.arange(len(native_pos)), reference_scale=global_scale
+    )
+    if not np.all(np.isfinite(local_scale)) or np.any(local_scale <= 0.0):
+        raise ValueError("nonfinite/nonpositive local stereo scale")
+    steps = np.diff(native_pos, axis=0) * (
+        0.5 * (local_scale[:-1] + local_scale[1:])
+    )[:, None]
+    metric_pos = np.vstack((native_pos[0] * global_scale,
+                            native_pos[0] * global_scale + np.cumsum(steps, axis=0)))
+    return metric_pos, {
+        "local_scale_min": float(np.min(local_scale)),
+        "local_scale_median": float(np.median(local_scale)),
+        "local_scale_max": float(np.max(local_scale)),
+        "local_scale_first_100_median": float(np.median(local_scale[:100])),
+        "local_scale_last_100_median": float(np.median(local_scale[-100:])),
+        "quality": quality,
+    }
+
+
 def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, stereo,
-                      visual_position_sigma=0.020, visual_prior_mode="absolute"):
+                      visual_position_sigma=0.020, visual_prior_mode="absolute",
+                      visual_prior_nodes=None, use_visual_step_factors=False):
     """Solve one global camera gauge with joint position/rotation increments."""
     count = len(nodes)
     node_pos = base_pos[nodes]
@@ -71,6 +98,13 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
         raise ValueError("visual position sigma must be positive")
     if visual_prior_mode not in {"absolute", "random-walk"}:
         raise ValueError("unsupported visual position prior mode")
+    if visual_prior_nodes is None:
+        visual_prior_nodes = nodes
+    visual_prior_nodes = set(int(node) for node in visual_prior_nodes)
+    if not visual_prior_nodes.issubset(set(int(node) for node in nodes)):
+        raise ValueError("visual prior nodes must be joint states")
+    if use_visual_step_factors and not np.array_equal(nodes, np.arange(len(base_pos))):
+        raise ValueError("visual step factors require all frames as joint states")
     visual_rotation_sigma = np.radians(3.0)
     vins_translation_sigma = 0.008
     vins_rotation_sigma = np.radians(1.0)
@@ -99,7 +133,8 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
     if len(accepted_edges) < 4:
         raise ValueError("fewer than four stereo/VINS-consistent SE(3) edges")
 
-    rows = 6 * count + 6 + 6 * (count - 1) + 6 * len(accepted_edges)
+    visual_steps = count - 1 if use_visual_step_factors else 0
+    rows = 6 * count + 6 + 6 * (count - 1) + 6 * len(accepted_edges) + 6 * visual_steps
     columns = 6 * count
     stereo_residual_before = []
     stereo_residual_after = []
@@ -139,17 +174,19 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
         target = np.zeros(rows)
         row = 0
         for node in range(count):
-            add_block(matrix, row, node, np.eye(3) / visual_position_sigma)
-            if visual_prior_mode == "random-walk" and node > 0:
-                add_block(matrix, row, node - 1, -np.eye(3) / visual_position_sigma)
-                target[row : row + 3] = -(
-                    position_delta[node] - position_delta[node - 1]
-                ) / visual_position_sigma
-            else:
-                target[row : row + 3] = -position_delta[node] / visual_position_sigma
+            if int(nodes[node]) in visual_prior_nodes:
+                add_block(matrix, row, node, np.eye(3) / visual_position_sigma)
+                if visual_prior_mode == "random-walk" and node > 0:
+                    add_block(matrix, row, node - 1, -np.eye(3) / visual_position_sigma)
+                    target[row : row + 3] = -(
+                        position_delta[node] - position_delta[node - 1]
+                    ) / visual_position_sigma
+                else:
+                    target[row : row + 3] = -position_delta[node] / visual_position_sigma
             row += 3
-            add_block(matrix, row, node, np.eye(3) / visual_rotation_sigma, rotation=True)
-            target[row : row + 3] = -rotation_delta[node] / visual_rotation_sigma
+            if int(nodes[node]) in visual_prior_nodes:
+                add_block(matrix, row, node, np.eye(3) / visual_rotation_sigma, rotation=True)
+                target[row : row + 3] = -rotation_delta[node] / visual_rotation_sigma
             row += 3
         add_block(matrix, row, 0, np.eye(3) / 0.0001)
         target[row : row + 3] = -position_delta[0] / 0.0001
@@ -170,6 +207,13 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
             row = add_edge(matrix, target, row, first, second, translation, rotation,
                            current_pos, current_rot, stereo_translation_sigma,
                            stereo_rotation_sigma, robust=True)
+        if use_visual_step_factors:
+            for first in range(count - 1):
+                second = first + 1
+                translation, rotation = relative_pose(node_pos, node_rot, first, second)
+                row = add_edge(matrix, target, row, first, second, translation, rotation,
+                               current_pos, current_rot, 0.008,
+                               np.radians(1.0), robust=True)
         if row != rows:
             raise AssertionError("joint graph row count mismatch")
         solution = lsqr(matrix.tocsr(), target, atol=1e-9, btol=1e-9, iter_lim=3000)
@@ -195,6 +239,8 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
     report = {
         "nodes": count,
         "stereo_edges_selected": len(accepted_edges),
+        "visual_absolute_prior_nodes": len(visual_prior_nodes),
+        "visual_step_factors": visual_steps,
         "max_position_correction_mm": float(np.max(np.linalg.norm(full_position_delta, axis=1)) * 1000),
         "max_rotation_correction_deg": float(np.degrees(np.max(np.linalg.norm(full_rotation_delta, axis=1)))),
         "stereo_translation_rmse_before_mm": float(np.sqrt(np.mean(np.square(stereo_residual_before))) * 1000),
@@ -208,27 +254,38 @@ def solve_joint_poses(base_pos, base_rot, vins_pos, vins_rot, valid, nodes, ster
 
 
 def run(frontend, vins, config, output, visual_position_sigma_mm=20.0,
-        visual_prior_mode="absolute", add_motion_disagreement_nodes=False):
+        visual_prior_mode="absolute", add_motion_disagreement_nodes=False,
+        all_frames_joint=False, local_stereo_scale=False):
     times, native_pos, base_rot, _ = load_trajectory(frontend / "trajectory_frames.csv")
     stereo_report = json.loads((frontend / "stereo_scale_bidirectional_report.json").read_text())
     scale = float(stereo_report["scale_m_per_mast3r_unit"])
-    base_pos = native_pos * scale
+    if local_stereo_scale:
+        base_pos, local_scale_report = integrate_local_stereo_scale(
+            native_pos, stereo_report["observations"], scale
+        )
+    else:
+        base_pos = native_pos * scale
+        local_scale_report = None
     vins_pos, vins_rot, valid = camera_vins_at(times, vins, config)
     saved_keyframes = np.rint(
         np.loadtxt(frontend / "mast3r_logs/dataset.txt", usecols=0) * 30
     ).astype(int)
     nodes = np.union1d(np.arange(0, len(times), 5), saved_keyframes)
     nodes = np.union1d(nodes, [0, len(times) - 1])
+    visual_prior_nodes = nodes.copy()
     disagreement_edges = np.array([], dtype=int)
     if add_motion_disagreement_nodes:
         extra_nodes, disagreement_edges, _ = motion_disagreement_nodes(
             base_pos, base_rot, vins_pos, vins_rot, valid
         )
         nodes = np.union1d(nodes, extra_nodes)
+    if all_frames_joint:
+        nodes = np.arange(len(times))
     candidate_pos, candidate_rot, report = solve_joint_poses(
         base_pos, base_rot, vins_pos, vins_rot, valid, nodes,
         stereo_report["observations"], visual_position_sigma_mm / 1000.0,
-        visual_prior_mode,
+        visual_prior_mode, visual_prior_nodes if all_frames_joint else None,
+        use_visual_step_factors=all_frames_joint,
     )
     output.mkdir(parents=True, exist_ok=False)
     for name, positions, rotations in (("baseline", base_pos, base_rot),
@@ -244,6 +301,8 @@ def run(frontend, vins, config, output, visual_position_sigma_mm=20.0,
         "vins_valid_frames": int(np.count_nonzero(valid)),
         "vins_valid_fraction": float(np.mean(valid)),
         "motion_disagreement_edges": disagreement_edges.tolist(),
+        "all_frames_joint": all_frames_joint,
+        "local_stereo_scale": local_scale_report,
         "motion_disagreement_node_policy": (
             "consecutive_onboard_displacement_over_8mm"
             if add_motion_disagreement_nodes else "disabled"
@@ -268,8 +327,12 @@ if __name__ == "__main__":
     parser.add_argument("--visual-prior-mode", choices=("absolute", "random-walk"),
                         default="absolute")
     parser.add_argument("--add-motion-disagreement-nodes", action="store_true")
+    parser.add_argument("--all-frames-joint", action="store_true")
+    parser.add_argument("--local-stereo-scale", action="store_true")
     arguments = parser.parse_args()
     print(json.dumps(run(arguments.frontend, arguments.vins, arguments.config, arguments.output,
                          arguments.visual_position_sigma_mm,
                          arguments.visual_prior_mode,
-                         arguments.add_motion_disagreement_nodes), indent=2))
+                         arguments.add_motion_disagreement_nodes,
+                         arguments.all_frames_joint,
+                         arguments.local_stereo_scale), indent=2))
