@@ -68,6 +68,7 @@ run_mast3r() {
     local stream="$3"
     local max_frames="$4"
     local start_index="$5"
+    local require_complete="${6:-0}"
     mkdir -p "$output"
     set +u
     source /opt/ros/humble/setup.bash
@@ -166,6 +167,9 @@ PY
     ) 2>&1 | tee "$output/mast3r.log"
     local elapsed=$((SECONDS - started))
     local conversion_args=()
+    if [[ "$require_complete" == "1" ]]; then
+        conversion_args+=(--require-complete)
+    fi
     if grep -Eq '^[[:space:]]*reverse_order:[[:space:]]*(true|True|1)' "$CONFIG"; then
         conversion_args+=(--reverse-order)
     fi
@@ -259,6 +263,10 @@ case "$command" in
             bash "$ROOT_DIR/scripts/mast3r_slam_precision_workflow.sh" fusion \
             "$session" "$vins_trajectory" "$vins_report" "$output/baseline" \
             || baseline_status=$?
+        if [[ "$baseline_status" -ne 0 && ! -f "$output/baseline/mast3r/trajectory_frames.csv" ]]; then
+            echo "视觉前端未产出完整轨迹；停止尺度救援和后段融合" >&2
+            exit "$baseline_status"
+        fi
         choice="$("$PYTHON" "$ROOT_DIR/scripts/select_mast3r_metric_rescue.py" \
             --baseline-dir "$output/baseline" --probe)"
         if [[ "$choice" == "rescue" ]]; then
@@ -297,7 +305,7 @@ case "$command" in
         mkdir -p "$output"
 
         echo "[1/8] MASt3R左红外视觉轨迹 + 400Hz IMU旋转先验"
-        run_mast3r "$session" "$mast3r_output" infrared_left 0 0
+        run_mast3r "$session" "$mast3r_output" infrared_left 0 0 1
 
         echo "[2/8] D405双红外短时双向尺度"
         "$PYTHON" "$ROOT_DIR/scripts/align_mast3r_scale_with_stereo.py" \

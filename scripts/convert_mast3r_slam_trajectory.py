@@ -81,6 +81,22 @@ def dense_interpolation(keyframes: np.ndarray, frame_times: np.ndarray) -> np.nd
     return np.column_stack((times, positions, rotations))
 
 
+def require_complete_visual_coverage(trajectory: np.ndarray, frame_times: np.ndarray) -> None:
+    """Reject a lost visual tail before downstream scale/graph fitting can hide it."""
+    indices = np.searchsorted(frame_times, trajectory[:, 0])
+    if np.any(indices >= len(frame_times)) or not np.array_equal(
+        frame_times[indices], trajectory[:, 0]
+    ):
+        raise ValueError("restored visual poses do not map to source frames")
+    missing = np.diff(np.r_[-1, indices, len(frame_times)]) - 1
+    if missing.max() > 2 or len(trajectory) / len(frame_times) < 0.99:
+        raise ValueError(
+            "visual frontend incomplete: "
+            f"{len(trajectory)}/{len(frame_times)} source frames tracked; "
+            f"longest untracked run {int(missing.max())} frames"
+        )
+
+
 def write_csv(path: Path, trajectory: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as stream:
@@ -106,6 +122,11 @@ def main() -> int:
     parser.add_argument("--dense-output", type=Path)
     parser.add_argument("--source-fps", type=float, default=30.0)
     parser.add_argument(
+        "--require-complete",
+        action="store_true",
+        help="reject a missing visual tail or a gap over two frames in production fusion",
+    )
+    parser.add_argument(
         "--reverse-order",
         action="store_true",
         help="map a reverse-processing pass back to ascending source timestamps",
@@ -119,6 +140,8 @@ def main() -> int:
         args.source_fps,
         reverse_order=args.reverse_order,
     )
+    if args.require_complete:
+        require_complete_visual_coverage(restored, frame_times)
     write_csv(args.output, restored)
     if args.dense_output:
         write_csv(args.dense_output, dense_interpolation(restored, frame_times))
