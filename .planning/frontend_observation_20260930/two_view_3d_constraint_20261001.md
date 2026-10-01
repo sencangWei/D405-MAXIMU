@@ -139,3 +139,48 @@ geometry while its raw MASt3R match is **57.5–75.4%**. This is a possible
 or license to substitute stereo PnP poses directly. The source of the
 Sim(3) branch jump still needs a causal intervention that does not create
 the keyframe seam failures documented in the earlier v4 experiments.
+
+## Calibrated graph replay and failed anchor-isolation tests (2026-10-02)
+
+The first causal branch is the **keyframe-1004 backend solve**, not the
+1005 pairwise matcher. The online trajectory is recorded before each backend
+update, so the changed 1004 graph anchor first appears in the online stream
+at 1005. Exact, default-off snapshots of the calibrated graph contain the
+same 80 keyframe IDs, camera matrix, 448 directed edges and all five
+correspondence tensors in the descriptor-only control and spatial candidate.
+The current graph scale changes from 0.127870 to 0.117152 in the control,
+versus 0.127934 to 0.162434 with spatial recovery. These are dimensionless
+Sim(3) scales, **not position errors in millimetres**.
+
+Crossing the saved pose state and pointmap geometry under the *same solver*
+gives final current-keyframe scales: control/control 0.117152,
+control/spatial 0.143252, spatial/control 0.134589, spatial/spatial
+0.162434. The recovered weak pair had rewritten old keyframe 806's
+persistent 3D pointmap: its mean per-pixel 3D change is 0.291 model units;
+the next-largest keyframe change is only 0.000067. Replacing **only**
+keyframe 806's pointmap in the spatial snapshot moves the result from
+0.162434 to 0.146588. Replacing only its confidence has no effect.
+This is evidence for an upstream 3D-map/graph-state interaction, not proof
+that either snapshot's absolute scale is correct. The replay tool is
+`MASt3R-SLAM/scripts/replay_graph_snapshot.py`; it cannot generate a
+production trajectory and is not externally scored.
+
+Two default-off repairs were tested on all 1199 take3 input frames. Both
+retain tracking coverage and avoid the abrupt 1004/1005 scale branch:
+
+| Candidate | Short-hop dispersion | 8/12/16-hop | 10 Hz | 0.8–1.6 s | Decision |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Original spatial pointmap recovery | 0.393 PASS | 0.376 PASS | 0.430 PASS | 0.535 FAIL | Rejected |
+| Skip persistent pointmap write-back on weak recovery | 0.597 FAIL | 0.610 FAIL | 0.636 FAIL | 1.018 FAIL | Rejected |
+| Separate temporary local tracking map from persistent graph map | 0.598 FAIL | 0.610 FAIL | 0.635 FAIL | 1.018 FAIL | Rejected |
+
+The local-map separation avoids mutating the old graph anchor during a weak
+pair but does **not** preserve multi-span metric consistency. It is not a
+qualified accuracy fix and must remain disabled. No Lighthouse/robot data
+entered these SLAM candidates or their internal scale gates. Because all
+four independent stereo gates reject the two isolation variants, running
+their downstream fusion or choosing one by external ATE would be misleading.
+The next change must put a persistent, independently observable 3D/metric
+constraint into the *keyframe graph* while preserving the useful short-hop
+geometry; further position smoothing or a match-rate threshold is not a
+substitute.
