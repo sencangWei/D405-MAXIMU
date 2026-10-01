@@ -184,3 +184,36 @@ The next change must put a persistent, independently observable 3D/metric
 constraint into the *keyframe graph* while preserving the useful short-hop
 geometry; further position smoothing or a match-rate threshold is not a
 substitute.
+
+### Depth-support localization and global log-depth control
+
+At frame 806, independent D405 stereo depth is valid at 73,083 / 147,456
+pointmap pixels. Compared with the descriptor-only replay, the spatial
+candidate changes the saved 3D pointmap by >0.5 model units at only 1.33%
+of depth-valid pixels but 21.88% of depth-invalid pixels. The mean change
+is 0.103 versus 0.476 model units, respectively. Thus the large map change
+is concentrated where the stereo correction has no local depth support;
+the current `spatial_depth_correction` extrapolates its cell residual field
+to the whole image. On valid stereo pixels, fitting each saved map to depth
+with its own single median scale gives absolute-depth P50/P95 of
+2.94/23.80 mm (control) versus 2.75/18.76 mm (spatial). This does not
+validate the extrapolated regions or turn either map into ground truth.
+
+The graph is too nonlinear for a simple pixel/distance threshold to be a
+safe repair: in the frozen frame-1004 snapshot, replacing spatial map-806
+pixels farther than 2, 4, 8, 16 or 32 pixels from valid stereo depth with
+their control values yields current Sim(3) scales 0.1353, 0.1624, 0.0498,
+0.1032 and 0.1424. The response is non-monotonic and sometimes extreme;
+these hybrid snapshots are causal probes, not candidate trajectories.
+
+The untouched global calibrated graph uses `local_opt.sigma_depth=10`
+(learned log-depth, not D405 depth). On the frame-1004 snapshot, changing
+only this solver value to 3 made the two branches nearly equal, but values
+1 and 0.3 changed them differently. A full 1199-frame take3 replay with
+only `local_opt.sigma_depth=3` and the same spatial recovery proved the
+snapshot inference did not generalize: all poses were produced, the online
+scale near frame 1005 remained ~0.166, short-hop stereo PASS, and the
+0.8–1.6 s stereo dispersion only moved 0.535→0.525, still FAIL. The exact
+experimental config is `graph_depth_sigma3_20261002.yaml`; it is **not**
+a production config. No external reference was used to choose or evaluate
+this internal candidate, and no downstream fusion/ATE should be claimed.

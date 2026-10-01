@@ -1,0 +1,6 @@
+inherit: /home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml
+
+# Diagnostic-only: test whether calibrated keyframe GN's learned log-depth
+# channel prevents the frame-1004 Sim(3) branch. Tracker settings are frozen.
+local_opt:
+  sigma_depth: 3.0
