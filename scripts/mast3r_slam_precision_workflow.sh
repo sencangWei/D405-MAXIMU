@@ -214,6 +214,7 @@ manifest = {
     "slam_supervision": False,
     "algorithm": "MASt3R-SLAM monocular visual SLAM",
     "stereo_descriptor_recovery": os.environ.get("MAST3R_STEREO_DESCRIPTOR_RECOVERY") == "1",
+    "spatial_pointmap_recovery": os.environ.get("MAST3R_SPATIAL_POINTMAP_RECOVERY") == "1",
     "kernel_release": platform.release(),
     "config": str(config),
     "config_sha256": file_sha256(config),
