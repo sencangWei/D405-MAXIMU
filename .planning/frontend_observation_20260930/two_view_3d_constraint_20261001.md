@@ -86,5 +86,56 @@ the conversion is now covered by a nonzero-distance unit test. Corrected
 `v3` full frontends completed on take3 and take1: both exported **1199/1199
 source poses**. Take3 recovered frames 807–810 with 56.76–64.59% accepted
 3D matches; take1 recovered frame 959 with 58.47%. This is only tracking
-coverage, not metric accuracy. Frozen downstream fusion and independent
-SteamVR scoring are still pending; no 10 mm claim follows from this result.
+coverage, not metric accuracy.
+
+Frozen downstream validation **rejects this candidate**:
+
+| 09-30 take | Descriptor-only control | Spatial pointmap candidate | Decision |
+| --- | --- | --- | --- |
+| take1 | SteamVR mean/P95/max 5.282/9.891/10.963 mm | 5.284/9.879/10.964 mm, same 1143 stamps | No meaningful accuracy gain; both fail max and rotation gates |
+| take3 | Long-hop stereo scale dispersion 1.182 (fails) | 0.535 (still fails); short-hop dispersion 0.288→0.393 | No qualified fusion output |
+
+The take3 candidate and control have identical 103 keyframe image IDs, but
+their online positions first differ by more than 0.01 model units at frame
+1019 and diverge further near 1100. The weak-frame correction changed a
+later trajectory state; improved local matching did **not** preserve stable
+global scale. This does not yet identify whether a tracking transition or
+graph factor causes the divergence. Do not enable the candidate or relax the
+multisecond scale gate. Inspect the frame-1005 scale transition and the accepted
+keyframe/loop constraints before another algorithm edit; any replacement must
+pass independent take1 and take3 end-to-end and then a passing control.
+
+Additional localization after that rejection: the diagnostic online Sim(3)
+scale is nearly identical through frame 1004 (both ~0.128) and separates
+abruptly at frame 1005 (control 0.11954, candidate 0.16575); the position
+difference grows gradually afterward. The *same raw pair* 1005→1004 has a
+34.46% MASt3R 3D match rate, so it does not trigger the weak-frame gate,
+but a metric pose from those learned points is rejected at 36.3% PnP
+inliers. Independent D405 two-view stereo has 1228 PnP inliers, 1.50 mm
+paired-depth median / 11.14 mm P95, and agrees with IMU rotation to 0.115°;
+the learned-point fit differs from stereo translation by ~16.19 mm. This
+supports a 3D geometry / unconstrained Sim(3) branch issue even where raw
+MASt3R match fraction is high. It is *not* evidence that the 1005 stereo
+pose is externally accurate to 1.5 mm. A healthy-control counterexample
+exists: take2 807→806 has 29.62% raw match and ~20 mm learned/stereo
+anchor disagreement, but its stereo pair P95 is 25.13 mm. A single
+learned-vs-stereo threshold would also fire on passing data. Existing
+hard-scale, soft-scale, keyframe-PnP, and position-window prototypes were
+rejected in `.planning/five_take_fusion_optimization_20260924/findings.md`;
+do not retread them. The next candidate needs persistent multi-frame 3D
+constraints that preserve keyframe gauge, not a per-pair match-rate rescue.
+
+The 1005 anomaly is part of a *block*: take3 pairs 1001→1000 through
+1008→1007 all have raw 3D match rates **30.6–42.3%**, yet stereo PnP has
+**1199–1249 inliers**, stereo paired-depth P95 is **9.48–12.88 mm**, and
+IMU rotation disagreement is **0.049–0.206°**. Their learned-point
+translation anchors differ from stereo by **13.89–16.61 mm**; 7 of 8
+learned-point PnP fits fail the existing 40% inlier gate. A same-index
+take1 control has stereo pair P95 **25.9–27.4 mm** on the observable
+pairs and learned/stereo anchor difference only **5.57–6.88 mm**;
+take2's eight stereo estimates are all rejected for inconsistent stereo
+geometry while its raw MASt3R match is **57.5–75.4%**. This is a possible
+*multi-frame onboard observability gate*, not yet an accuracy improvement
+or license to substitute stereo PnP poses directly. The source of the
+Sim(3) branch jump still needs a causal intervention that does not create
+the keyframe seam failures documented in the earlier v4 experiments.
