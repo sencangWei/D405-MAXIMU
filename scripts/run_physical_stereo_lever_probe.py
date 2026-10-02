@@ -327,6 +327,9 @@ def reference_bound_eye_candidate(
             "metric_displacement_camera_i_m"
         ),
         "metric_displacement_frame": observation.get("metric_displacement_frame"),
+        "pnp_rotation_quaternion_xyzw": observation.get("pnp_rotation_quaternion_xyzw"),
+        "pnp_rotation_mode": observation.get("pnp_rotation_mode"),
+        "pnp_rotation_constrained": observation.get("pnp_rotation_constrained"),
         "observation_confidence": confidence,
         "body_t_camera": body_t_camera,
         "reference_first_index": first,

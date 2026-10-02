@@ -296,3 +296,30 @@ After v2 closed, constant runner was amended ONLY to publish the output factor
 hash required by combined-probe provenance. Red test failed on absent field;
 fresh complete targeted suite after the one-field fix reports 179 PASS.
 Old completed v2 artifacts are not mutated/relabelled to add this field.
+
+## Pose-only SE3 pilot and full batch close (2026-10-02)
+
+Physical lever v4 full25 closed: 24 scores, 17 PASS, one primary scale-unobservable
+input. All16 frozen hashes matched at job close. Constant gauge v3 also closed
+25/25,24 scores,18 PASS, six scoredFAIL,one unscored, zero frozen hash changes;
+it repeats v2 mathematics and adds output-factor hashes, not new precision gain.
+
+New isolated solver/extractor/runner pass 198 targeted regression tests. Peer
+review approved bounded first1 + controls only, NOT production. Raw free-PnP
+rotation is carried through the existing shared stereo selection without
+counting derived right-eye geometry twice. Fixed-R and joint-R,p controls use
+identical factors and fixed declared weights. Camera-only gaps retain trusted
+VINS endpoint deltas; gyro bridge requires raw IMU coverage/sample count/hash,
+max gap10ms and formal noise sigma gyr_n*sqrt(dt). Formal td remains -0.009109323.
+
+Read-only source preflight passed heldout2,heldout4,Sep30take06:1141/1143 nodes,
+all original shared rows retained,1493/1675/1494 stereo factors and matching
+gyro intervals. Raw observed IMU gaps below2.55ms;heldout2 has two camera-only
+66.67ms gaps, not IMU outages. Root runner separately checks full timestamp
+identity, finite SO3 poses, unchanged first-pose gauge and frozen estimate hash
+before scoring; nonconvergence yields unscored failure, never fallback.
+
+`umi-joint-stereo-se3-first-v1-20261002.service` launched Sep30take06; real
+precision result is pending. Output `joint_stereo_se3_first_v1/`. Scope remains
+pose-only: acceleration,velocity,gravity absent. No claim of10mm/full visual-
+inertial repair. Production code/GT policy untouched; strict all25 goal active.
