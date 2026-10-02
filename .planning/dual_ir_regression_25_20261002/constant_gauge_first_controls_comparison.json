@@ -1,0 +1,138 @@
+{
+  "schema": "umi_constant_ir_gauge_first_controls_v1",
+  "development_only": true,
+  "production_promoted": false,
+  "decision": "CONTINUE_FULL25_FIXED_POLICY",
+  "score_reference_changed": false,
+  "ground_truth_used_in_transform": false,
+  "dataset_count": 3,
+  "baseline_summary_sha256": "1114785a4581157b8363bb51987ac2f59591f472082ad71ebfa84f30a0845505",
+  "probe_summaries_sha256": {
+    ".planning/dual_ir_regression_25_20261002/constant_gauge_first_v1/summary.json": "ef830e68f019b0f7f574d074adc2823a998f1dd51e12d06a8ba4cae3c75d3faf",
+    ".planning/dual_ir_regression_25_20261002/constant_gauge_controls_v1/summary.json": "47456d73e8bbd7675d8985fd467474789aadd5ae53d3c6a98c2b4b152a54df42"
+  },
+  "records": [
+    {
+      "id": "20260930_take06",
+      "baseline_max_m": 0.015351918601790342,
+      "probe_score": {
+        "result": "FAIL",
+        "failures": [
+          "ate_translation_max_over_limit"
+        ],
+        "samples": 1143,
+        "ate_translation_mean_m": 0.0032794517356577583,
+        "ate_translation_p95_m": 0.005838234047314512,
+        "ate_translation_max_m": 0.015104559585705677,
+        "ate_translation_rmse_m": 0.003639248587429278,
+        "ate_translation_within_10mm_ratio": 0.9956255468066492,
+        "timestamp_overlap_ratio": 1
+      },
+      "source_factor_reconstruction": {
+        "schema": "reconstructed_motion_factor_identity_v1",
+        "factor_count": 2985,
+        "max_metric_displacement_abs_error_m": 0,
+        "builder_report": {
+          "track_count": 2,
+          "input_observation_count": 7386,
+          "rejected_observation_count": 4401,
+          "missing_observation_count": 0,
+          "zero_confidence_count": 0,
+          "missing_endpoint_count": 0,
+          "gap_rejected_count": 0,
+          "duplicate_motion_pair_count": 0,
+          "stereo_duplicate_count": 0,
+          "stereo_weight_policy": "observation",
+          "stereo_selection_changed_pairs": 0,
+          "factor_count": 2985,
+          "stereo_observation_count": 1494,
+          "confidence_count": 2985,
+          "confidence_min": 0.005200105297793798,
+          "confidence_max": 0.8881312639452446,
+          "confidence_mean": 0.25896834563152354
+        }
+      },
+      "output_estimate_sha256": "cf12faf6f7b35a6c8e8b4607b3aba0212f539260ca48d247f3278fd9789424dc"
+    },
+    {
+      "id": "20260927_heldout2",
+      "baseline_max_m": 0.0062773344655005685,
+      "probe_score": {
+        "result": "PASS",
+        "failures": [],
+        "samples": 1141,
+        "ate_translation_mean_m": 0.002557329415623654,
+        "ate_translation_p95_m": 0.005196306746438681,
+        "ate_translation_max_m": 0.006184248313317794,
+        "ate_translation_rmse_m": 0.002836063716794803,
+        "ate_translation_within_10mm_ratio": 1,
+        "timestamp_overlap_ratio": 1
+      },
+      "source_factor_reconstruction": {
+        "schema": "reconstructed_motion_factor_identity_v1",
+        "factor_count": 2980,
+        "max_metric_displacement_abs_error_m": 0,
+        "builder_report": {
+          "track_count": 2,
+          "input_observation_count": 7386,
+          "rejected_observation_count": 4326,
+          "missing_observation_count": 0,
+          "zero_confidence_count": 0,
+          "missing_endpoint_count": 12,
+          "gap_rejected_count": 68,
+          "duplicate_motion_pair_count": 0,
+          "stereo_duplicate_count": 0,
+          "stereo_weight_policy": "observation",
+          "stereo_selection_changed_pairs": 0,
+          "factor_count": 2980,
+          "stereo_observation_count": 1493,
+          "confidence_count": 2980,
+          "confidence_min": 0.0020553626515470414,
+          "confidence_max": 0.956039326270777,
+          "confidence_mean": 0.3004141837256868
+        }
+      },
+      "output_estimate_sha256": "5fd4684945ee27986732960f7f6a14a3e28238c3f66f395cea931c4adc1be3e8"
+    },
+    {
+      "id": "20260927_heldout4",
+      "baseline_max_m": 0.010463470821977124,
+      "probe_score": {
+        "result": "PASS",
+        "failures": [],
+        "samples": 1143,
+        "ate_translation_mean_m": 0.0038334699450814566,
+        "ate_translation_p95_m": 0.005719704044108512,
+        "ate_translation_max_m": 0.009568732566349651,
+        "ate_translation_rmse_m": 0.004094438244144043,
+        "ate_translation_within_10mm_ratio": 1,
+        "timestamp_overlap_ratio": 1
+      },
+      "source_factor_reconstruction": {
+        "schema": "reconstructed_motion_factor_identity_v1",
+        "factor_count": 3349,
+        "max_metric_displacement_abs_error_m": 0,
+        "builder_report": {
+          "track_count": 2,
+          "input_observation_count": 7386,
+          "rejected_observation_count": 4037,
+          "missing_observation_count": 0,
+          "zero_confidence_count": 0,
+          "missing_endpoint_count": 0,
+          "gap_rejected_count": 0,
+          "duplicate_motion_pair_count": 0,
+          "stereo_duplicate_count": 0,
+          "stereo_weight_policy": "observation",
+          "stereo_selection_changed_pairs": 0,
+          "factor_count": 3349,
+          "stereo_observation_count": 1675,
+          "confidence_count": 3349,
+          "confidence_min": 0.0219663146961767,
+          "confidence_max": 0.8705925182592154,
+          "confidence_mean": 0.3132528659088857
+        }
+      },
+      "output_estimate_sha256": "4cead124be63ac5a82388fdf589753dd2a9f173edd24ad14220d49708cf10769"
+    }
+  ]
+}

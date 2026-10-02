@@ -177,3 +177,39 @@ from existing source-bound reports. Confidence, scales, stereo observations,
 correction limits, reference timestamps and scoring extrinsics remain frozen.
 Constant gauge can smear real orientation drift; synthetic geometry tests and
 full-corpus score comparison are required before any production change.
+
+## Full duration-gate experiment rejected
+
+`segment_probe_batch_v2/summary.json` closed 25/25 with 24 scores, 17 max-10mm
+passes and the same one preparation failure. All 15 frozen hashes still match.
+No previously failing trajectory passed. Sep29 take08 (a pass) changed max
+6.089 to 6.510 mm; heldout2 changed 6.277 to 6.476 mm. The main take06 change
+remained only 15.352 to 15.218 mm. `segment_probe_batch_v2_comparison.json`
+retains every record and both summary hashes. Decision: reject production
+promotion; no further threshold tuning in this family.
+
+Experimental module/runner/tests and compact diagnosis evidence were committed
+as `59c3573f88286e435593e7b97fbab5cbb25a7a32`, non-force pushed to the owned
+`sencang` branch, fetched and restored to a fresh temporary directory: all ten
+files match local content SHA-256, zero mismatches. This backs up an experiment
+and its diagnostic capability, not a completed 10 mm algorithm.
+
+## Constant-gauge first case and controls (before full25)
+
+Actual cache reconstruction reproduces baseline learned factors exactly (zero
+vector error) in all three checked records. This isolates the changed gauge/
+lever geometry from source preparation, factor membership or confidence changes.
+
+- Sep30 take06: maximum 15.351919 -> 15.104560 mm; still FAIL, 1143 samples,
+  overlap 1.0. Mean 3.279452 mm and P95 5.838234 mm. Small benefit is not a
+  complete diagnosis or fix for the remaining peak.
+- Sep27 heldout2 (passing control): 6.277 -> 6.184248 mm, 1141 samples,
+  overlap 1.0, remains PASS.
+- Sep27 heldout4 (near-limit control): 10.463471 -> 9.568733 mm, 1143 samples,
+  overlap 1.0, now PASS under the unchanged scorer.
+
+`constant_gauge_first_controls_comparison.json` binds the three estimates,
+source factor identity checks and both probe summaries by hashes. It is
+development evidence, not a three-sample generalization claim. Fresh tests:
+143 PASS. The separate full25 fixed-policy job is now running under
+`constant_gauge_batch_v1/`; no production runner has been changed.
