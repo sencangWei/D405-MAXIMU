@@ -1182,3 +1182,45 @@ hook. Original oldcontrol validation untouched. Rootfullraw recomputation across
 second/third source allrows EXACTPASS, confidence delta0; held4 nativeleft
 2541attempt/1770accepted,right2541/1765; ind2 left2101/1398,right1700/1248.
 No freshATEyet. Back up adapterfix before frozen4source final score run.
+
+2026-10-03 automatic continuation: adapter replay-isolation fix
+c24091f1852faabed9f51d8e70baacc315eff89b backed to owned sencang branch;
+3 fetched files byte-identical at /tmp/umi-se3-control-fix-20261003.LIXqzS,
+207 fresh restored-dependent tests PASS. Source v3 session44317 CLOSED0:
+umi_bidirectional_se3_source_preflight_v1 / PREFLIGHT_COMPLETE, ready4/4,
+failures empty; backend_launched=false, scoring_launched=false,
+external_ground_truth_used=false, slam_supervision=false. Actual frozen matched
+scalar-vs-SE3 four-record evaluation launched as session60672 with both ROS
+setup environments, original25 manifest, new bidirectional_se3_four_score_v1
+output. Producer/helper/consumer and all consumed evaluator code remain frozen.
+No new ATE or promotion claim yet; full25 maximum10mm goal remains unmet.
+
+Actual four-record matched scalar-vs-SE3 session60672 CLOSED0 / COMPLETED4/4.
+Both arms keep the same fresh native source, pair layout and confidence;
+this is NOT a replay of the older recovery-v2 scalar measurement realization.
+Mean/P95/max ATE in mm (scalar -> SE3):
+- heldout2: 2.083/3.761/5.535 -> 2.168/3.877/5.740, PASS -> PASS.
+- heldout4: 3.620/6.114/7.847 -> 2.934/5.056/7.845, PASS -> PASS.
+- ind2: 3.572/8.826/10.664 -> 3.778/9.826/11.438, FAIL -> FAIL.
+- take06: 2.748/4.863/13.089 -> 2.755/4.998/13.118, FAIL -> FAIL.
+Full scored timelines remain1141/1143/1143/1143. No extra precision PASS;
+worst maximum13.089 ->13.118mm. Reject promotion and no SE3-weight sweep.
+Independent artifact/source provenance audit pending before evidence backup.
+Next read-only source-contract audit checks stereo rectification, target depth
+and correspondence use against already-tested families; no speculative new
+optimizer, repeated Sep28 BA, GT-selected gates, or production edits.
+Fresh bounded RK SSH probe session42758 CLOSED255: No route to host;
+actual ARM candidate/target identity/rollback/HIL still unverified, no mutation.
+
+Independent read-only reviewer APPROVE frozen artifact/provenance form:
+take06 all4258rawnative rows recompute with0mismatches; confidence mismatch0,
+left1603accepted/526rejected,right1616/513;30sourceguard hashes match.
+Four-score all24code hashes unchanged, eacharm71input hashes0bad;
+physicalpair key/order/count matches1588/1799/1468/1642;
+scalar-vs-SE3 confidence/time/quaternion delta0 and learnedfactors identical.
+Summary SHA2566cdb36a53fa5f66ade71ef1512afa09e1ab2c4b8dcb8696a691269fd7801ce2e.
+Root independent ATE recompute matches saved maxima <1e-12m. ind2 samepeak
+row1105/time1790504142.5195704(+36.831s), scalar9above10frames ->SE3 49,
+mainSE3run1090..1126(1.2s). take06 bothsamepeakrow1030/time1790758857.1729436
+(+34.330s), both4above10frames1027..1030(.100s). These are post-output GT
+diagnostics only, not input windows or selection. Reject this geometry update.
