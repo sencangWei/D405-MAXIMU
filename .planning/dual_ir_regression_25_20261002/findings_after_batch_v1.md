@@ -1457,3 +1457,32 @@ parent/RIGHT/native proof validators PASS, noGT sources, raw/metric timelines
 equal, original source guards unchanged, matching score/precision.json for
 both variants. Originalcontrol maxdelta <=2.8337254630594168e-8m,rotations0.
 No complete25merge, closed-familyrerun, selectionchange or productionpromotion.
+
+Fresh B-chain progress:heldout1 READY1009.518s,heldout3 READY875.806s,
+ind1 READY744.896s;B85809 now5/21source-ready,0technicalfail. With first
+ind2 and closed A3 shard this is9/25native-source-ready,still4/25paired
+scores/2precisionPASS2FAIL. Source-ready is not accuracyPASS. No source
+policy, inputs, producer, consumer or solver parameter changes while B runs.
+
+Read-only actual4-record factor audit found physical-stereo residual RMSE
+improves for all4 native runs, but learned-edge residual RMSE slightly worsens
+in all4; this is a fit-compromise observation, not causal proof. PASSheldout2
+has learned residual P95 above failingind2, so a lone learned-residual gate
+is unsupported. Actual saved graphs omit LSQR termination/iteration/condition
+telemetry; neither convergence nor numerical failure can yet be asserted.
+
+Prepared isolated future diagnostic scripts/audit_independent_ir_solver_convergence.py
+and its7tests. It wraps only the process-local canonical fusion.lsqr binding,
+returns the identical original result, restores the binding on exceptions,
+forwards consumer args unchanged, records istop/itn/norms/acond and nonfinite
+values without claiming convergence/rank, and exclusively creates telemetry
+files with open('x') to prevent precheck/write race overwrite. Root fresh
+40relatedtestsPASS plus py_compile; independent initial and follow-up
+exclusive-write reviewsAPPROVE (7focusedtestsPASS). Actual consumer/solver
+diagnostic is deliberately NOT launched before all25 frozen jobs finish,
+as user requests complete corpus first then automatically optimize.
+This is diagnostic capability, not a new precision fix or production promotion.
+
+Latest RK3576 read-only SSH(pi@192.168.113.161) again exits255 No route to
+host before identity/authentication; target access and actual ARM candidate
+remain unverified. No board service/release/recording/network changes.
