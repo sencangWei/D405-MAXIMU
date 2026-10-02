@@ -1072,3 +1072,22 @@ Independent audit found no sealed fullnative forward/reverse SE3 geometry trial.
 Proceed with bounded symmetricSE3 source-only geometry experiment; retain full
 rawforward/reverse poses, original native scalar acceptance unchanged, no new
 gate/weight/cap/scale-state sweep, no GT and no score-based source selection.
+
+Native symmetric SE3 implementation now complete in isolated new helper and
+source producer, not production alignment edits. Forward/reverse PnP camera
+transform conventions verified; midpoint computed on SE3, not scalar-scale
+averaging. Both original acceptance and complete raw forward/reverse geometry
+preserved; near-pi branch ambiguity and zero-motion candidates fail closed
+with diagnostic evidence (not fake zero scale). Two regression tests reproduced
+both failures RED before fixes; root fresh related suite188PASS, independent
+focused review21PASS/APPROVE, py_compile/diffcheck PASS. Source producer caches
+up to2048disparity frames to avoid repeated SGBM, with output-equivalence and
+process-local patch restoration tests. Mathematical exceptions are not accuracy
+gate tuning. Original global scales and report quality remain frozen.
+Next automatically: backup these4files+thisledger, freeze consumed code, then
+native source-only four-record extraction. Paired score consumer is separate
+bounded work; it must use saved same-native scalar baseline vs midpoint on the
+identical recovery-v2 physical pair layout, original learned factors unchanged,
+explicit common frozen fallback, noGT source or candidate selection. No actual
+SE3 ATE result at this point. RK3576 SSH fresh again255No route to host;
+target identity/candidate/deployment remain unverified, no hardware mutation.
