@@ -269,12 +269,18 @@ def estimate_right_motion(right_i, right_j, disp_l, disp_r, positions, rotations
     )
 
 
+def combine_bidirectional_native(forward: dict[str, Any], reverse: dict[str, Any]) -> dict[str, Any]:
+    return stereo.combine_bidirectional_scale(forward, reverse)
+
+
 def _result_summary(result: dict[str, Any]) -> dict[str, Any]:
     keys = (
         "accepted", "reason", "method", "tracked_points", "pnp_inliers", "pnp_inlier_ratio",
         "pnp_refined", "pnp_reprojection_median_px", "pnp_reprojection_p95_px",
         "metric_distance_m", "direction_cosine", "rotation_error_deg", "metric_displacement_frame",
-        "right_centric_motion_source",
+        "scale", "scale_estimator", "forward_scale", "reverse_scale",
+        "bidirectional_relative_disagreement", "reverse_failure_reason",
+        "reverse_metric_distance_m", "reverse_pnp_inlier_ratio", "right_centric_motion_source",
     )
     return {key: result.get(key) for key in keys if key in result}
 
@@ -301,14 +307,29 @@ def factory_closure(left: dict[str, Any], right: dict[str, Any], calibration: di
     }
 
 
-def diagnose_pair(pair: Pair, *, left_numbers, right_numbers, left_images, right_images, positions_left, rotations_left, positions_right, rotations_right, calibration, left_times, right_times):
+def diagnose_pair(
+    pair: Pair,
+    *,
+    left_numbers,
+    right_numbers,
+    left_images,
+    right_images,
+    positions_left,
+    rotations_left,
+    positions_right,
+    rotations_right,
+    calibration,
+    left_times,
+    right_times,
+    bidirectional: bool = False,
+):
     first, second = pair.first_index, pair.second_index
     left_i, left_j = left_images[int(left_numbers[first])], left_images[int(left_numbers[second])]
     right_i, right_j = right_images[int(right_numbers[first])], right_images[int(right_numbers[second])]
     disp_l, disp_r = stereo.stereo_disparity(left_i, right_i, NUM_DISPARITIES)
     left_result = estimate_left_motion(left_i, left_j, disp_l, disp_r, positions_left, rotations_left, pair, calibration)
     right_result = estimate_right_motion(right_i, right_j, disp_l, disp_r, positions_right, rotations_right, pair, calibration)
-    return {
+    row = {
         "first_index": first, "second_index": second, "source_class": pair.source_class,
         "source_left_accepted": pair.source_observation.get("accepted") is True,
         "source_left_reason": pair.source_observation.get("reason"),
@@ -320,14 +341,61 @@ def diagnose_pair(pair: Pair, *, left_numbers, right_numbers, left_images, right
         "cross_class": ("L" if left_result.get("accepted") else "notL") + "_" + ("R" if right_result.get("accepted") else "notR"),
         "factory_frame_closure": factory_closure(left_result, right_result, calibration),
     }
+    if bidirectional:
+        reverse_pair = Pair(second, first, pair.source_class, pair.source_observation)
+        disp_l_j, disp_r_j = stereo.stereo_disparity(left_j, right_j, NUM_DISPARITIES)
+        left_reverse = estimate_left_motion(left_j, left_i, disp_l_j, disp_r_j, positions_left, rotations_left, reverse_pair, calibration)
+        right_reverse = estimate_right_motion(right_j, right_i, disp_l_j, disp_r_j, positions_right, rotations_right, reverse_pair, calibration)
+        left_combined = combine_bidirectional_native(left_result, left_reverse)
+        right_combined = combine_bidirectional_native(right_result, right_reverse)
+        row.update(
+            {
+                "raw_forward_left": _result_summary(left_result),
+                "raw_forward_right": _result_summary(right_result),
+                "raw_reverse_left": _result_summary(left_reverse),
+                "raw_reverse_right": _result_summary(right_reverse),
+                "native_combined_left": _result_summary(left_combined),
+                "native_combined_right": _result_summary(right_combined),
+                "bidirectional_cross_class": ("L" if left_combined.get("accepted") else "notL")
+                + "_"
+                + ("R" if right_combined.get("accepted") else "notR"),
+                "bidirectional_factory_frame_closure": factory_closure(left_combined, right_combined, calibration),
+            }
+        )
+    return row
 
 
-def cross_matrix(rows: list[dict[str, Any]]) -> dict[str, int]:
+def cross_matrix(rows: list[dict[str, Any]], *, left_key: str = "fresh_left", right_key: str = "fresh_right") -> dict[str, int]:
     matrix = {"both": 0, "left_only": 0, "right_only": 0, "neither": 0}
     for row in rows:
-        left, right = row["fresh_left"].get("accepted") is True, row["fresh_right"].get("accepted") is True
+        left, right = row[left_key].get("accepted") is True, row[right_key].get("accepted") is True
         matrix["both" if left and right else "left_only" if left else "right_only" if right else "neither"] += 1
     return matrix
+
+
+def bidirectional_gate_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    reasons: dict[str, int] = {}
+    disagreements = []
+    accepted = 0
+    for row in rows:
+        for key in ("native_combined_left", "native_combined_right"):
+            result = row[key]
+            if result.get("accepted") is True:
+                accepted += 1
+            else:
+                reason = str(result.get("reason", "unknown"))
+                reasons[reason] = reasons.get(reason, 0) + 1
+            if "bidirectional_relative_disagreement" in result:
+                disagreements.append(float(result["bidirectional_relative_disagreement"]))
+    return {
+        "enabled": True,
+        "eye_observations": 2 * len(rows),
+        "combined_accepted": accepted,
+        "combined_rejected": 2 * len(rows) - accepted,
+        "combined_rejection_reasons": reasons,
+        "max_bidirectional_relative_disagreement": max(disagreements) if disagreements else None,
+        "p95_bidirectional_relative_disagreement": float(np.percentile(disagreements, 95)) if disagreements else None,
+    }
 
 
 def _record_sources(record, stage_row, baseline):
@@ -364,6 +432,7 @@ def run_record(
     max_pairs: int,
     manifest: Path | None = None,
     pair_sampling: str = PAIR_SAMPLING_BALANCED,
+    bidirectional: bool = False,
 ) -> dict[str, Any]:
     record_id = record["id"]
     stage_row = stage["by_id"].get(record_id)
@@ -393,13 +462,13 @@ def run_record(
         diagnose_pair(
             pair, left_numbers=left_nums, right_numbers=right_nums, left_images=left_imgs, right_images=right_imgs,
             positions_left=left_pos, rotations_left=rotations_left, positions_right=right_pos, rotations_right=rotations_right,
-            calibration=calib, left_times=left_times, right_times=right_times,
+            calibration=calib, left_times=left_times, right_times=right_times, bidirectional=bidirectional,
         )
         for pair in pairs
     ]
     after = snapshot(consumed)
     hash_failures = compare_snapshot(before, after)
-    return {
+    record_output = {
         "id": record_id, "status": "PASS" if not hash_failures else "FAIL",
         "baseline_artifact": str((baseline / record_id / "both").resolve()),
         "source_left_report": str(left_path), "source_right_binding_report": str(right_path),
@@ -410,6 +479,17 @@ def run_record(
         "provenance_sha256": {"guarded_before": before, "guarded_after": after},
         "hash_failures": hash_failures, "diagnostics": diagnostics,
     }
+    if bidirectional:
+        record_output.update(
+            {
+                "bidirectional_cross_matrix": cross_matrix(
+                    diagnostics, left_key="native_combined_left", right_key="native_combined_right"
+                ),
+                "bidirectional_gate_summary": bidirectional_gate_summary(diagnostics),
+                "bidirectional_note": "native forward/reverse scale gate diagnostic only; no factors emitted and no precision claim",
+            }
+        )
+    return record_output
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -419,7 +499,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     results, failures = [], []
     for record in records:
         try:
-            results.append(run_record(record, stage, args.baseline, args.output, args.max_pairs, args.manifest, args.pair_sampling))
+            results.append(
+                run_record(
+                    record,
+                    stage,
+                    args.baseline,
+                    args.output,
+                    args.max_pairs,
+                    args.manifest,
+                    args.pair_sampling,
+                    args.bidirectional,
+                )
+            )
         except Exception as error:
             failures.append({"id": record.get("id"), "error": f"{type(error).__name__}: {error}"})
     pair_sampling_policy = {
@@ -434,6 +525,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     }
     if args.pair_sampling != PAIR_SAMPLING_BALANCED:
         pair_sampling_policy["pair_sampling_mode"] = args.pair_sampling
+    if args.bidirectional:
+        pair_sampling_policy["bidirectional"] = "optional native forward/reverse SIFT/PnP scale gate via combine_bidirectional_scale"
     output = {
         "schema": SCHEMA, "status": "PASS" if not failures and all(r["status"] == "PASS" for r in results) else "FAIL",
         "development_only": True, "external_ground_truth_used": False, "slam_supervision": False,
@@ -460,6 +553,7 @@ def argument_parser() -> argparse.ArgumentParser:
         choices=(PAIR_SAMPLING_BALANCED, PAIR_SAMPLING_VISUAL_REJECTIONS),
         default=PAIR_SAMPLING_BALANCED,
     )
+    parser.add_argument("--bidirectional", action="store_true")
     return parser
 
 

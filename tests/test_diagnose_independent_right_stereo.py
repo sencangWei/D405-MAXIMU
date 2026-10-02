@@ -242,6 +242,102 @@ def test_zero_sift_points_reach_native_rejection_not_shape_exception(monkeypatch
     assert result["accepted"] is False
 
 
+def test_bidirectional_uses_second_frame_disparity_and_reversed_pair(monkeypatch):
+    calls = []
+
+    def fake_disparity(left, right, *_args):
+        calls.append(("disp", int(left[0, 0]), int(right[0, 0])))
+        return np.full((1, 1), float(left[0, 0])), np.full((1, 1), -float(right[0, 0]))
+
+    def fake_left(left_i, left_j, disp_l, _disp_r, _positions, _rotations, pair, _calibration):
+        calls.append(("left", int(left_i[0, 0]), int(left_j[0, 0]), float(disp_l[0, 0]), pair.first_index, pair.second_index))
+        return {
+            "accepted": True,
+            "scale": 1.0,
+            "metric_distance_m": 1.0,
+            "pnp_inlier_ratio": 1.0,
+            "rotation_error_deg": 0.0,
+            "metric_displacement_camera_i_m": [0.1, 0.0, 0.0],
+            "pnp_rotation_quaternion_xyzw": Rotation.identity().as_quat().tolist(),
+        }
+
+    monkeypatch.setattr(diag.stereo, "stereo_disparity", fake_disparity)
+    monkeypatch.setattr(diag, "estimate_left_motion", fake_left)
+    monkeypatch.setattr(diag, "estimate_right_motion", fake_left)
+    pair = diag.Pair(0, 1, "accepted_left_source", {"accepted": True})
+    diag.diagnose_pair(
+        pair,
+        left_numbers=np.array([10, 11]),
+        right_numbers=np.array([20, 21]),
+        left_images={10: np.array([[10]], dtype=np.uint8), 11: np.array([[11]], dtype=np.uint8)},
+        right_images={20: np.array([[20]], dtype=np.uint8), 21: np.array([[21]], dtype=np.uint8)},
+        positions_left=np.zeros((2, 3)),
+        rotations_left=Rotation.from_quat(np.tile([0.0, 0.0, 0.0, 1.0], (2, 1))),
+        positions_right=np.zeros((2, 3)),
+        rotations_right=Rotation.from_quat(np.tile([0.0, 0.0, 0.0, 1.0], (2, 1))),
+        calibration=calibration(),
+        left_times=np.array([0.0, 1.0]),
+        right_times=np.array([0.0, 1.0]),
+        bidirectional=True,
+    )
+    assert ("disp", 10, 20) in calls
+    assert ("disp", 11, 21) in calls
+    assert ("left", 10, 11, 10.0, 0, 1) in calls
+    assert ("left", 11, 10, 11.0, 1, 0) in calls
+
+
+def test_bidirectional_scale_gate_accepts_and_rejects(monkeypatch):
+    monkeypatch.setattr(diag.stereo, "stereo_disparity", lambda *a, **k: (np.ones((1, 1)), -np.ones((1, 1))))
+    scales = {"left": [1.0, 1.1], "right": [1.0, 2.0]}
+
+    def fake_left(*_args, **_kwargs):
+        scale = scales["left"].pop(0)
+        return {
+            "accepted": True,
+            "scale": scale,
+            "metric_distance_m": 1.0,
+            "pnp_inlier_ratio": 1.0,
+            "rotation_error_deg": 0.0,
+            "metric_displacement_camera_i_m": [0.1, 0.0, 0.0],
+            "pnp_rotation_quaternion_xyzw": Rotation.identity().as_quat().tolist(),
+        }
+
+    def fake_right(*_args, **_kwargs):
+        scale = scales["right"].pop(0)
+        return {
+            "accepted": True,
+            "scale": scale,
+            "metric_distance_m": 1.0,
+            "pnp_inlier_ratio": 1.0,
+            "rotation_error_deg": 0.0,
+            "metric_displacement_camera_i_m": [0.1, 0.0, 0.0],
+            "pnp_rotation_quaternion_xyzw": Rotation.identity().as_quat().tolist(),
+        }
+
+    monkeypatch.setattr(diag, "estimate_left_motion", fake_left)
+    monkeypatch.setattr(diag, "estimate_right_motion", fake_right)
+    row = diag.diagnose_pair(
+        diag.Pair(0, 1, "accepted_left_source", {"accepted": True}),
+        left_numbers=np.array([10, 11]),
+        right_numbers=np.array([20, 21]),
+        left_images={10: np.zeros((1, 1), dtype=np.uint8), 11: np.zeros((1, 1), dtype=np.uint8)},
+        right_images={20: np.zeros((1, 1), dtype=np.uint8), 21: np.zeros((1, 1), dtype=np.uint8)},
+        positions_left=np.zeros((2, 3)),
+        rotations_left=Rotation.from_quat(np.tile([0.0, 0.0, 0.0, 1.0], (2, 1))),
+        positions_right=np.zeros((2, 3)),
+        rotations_right=Rotation.from_quat(np.tile([0.0, 0.0, 0.0, 1.0], (2, 1))),
+        calibration=calibration(),
+        left_times=np.array([0.0, 1.0]),
+        right_times=np.array([0.0, 1.0]),
+        bidirectional=True,
+    )
+    assert row["native_combined_left"]["accepted"] is True
+    assert row["native_combined_left"]["scale_estimator"] == "bidirectional_pnp_weighted_mean"
+    assert row["native_combined_right"]["accepted"] is False
+    assert row["native_combined_right"]["reason"] == "bidirectional_scale_disagrees"
+    assert row["bidirectional_factory_frame_closure"] is None
+
+
 def make_fixture(tmp_path: Path):
     session = tmp_path / "session"
     session.mkdir()
@@ -350,6 +446,10 @@ def patch_runtime(monkeypatch):
     result = {
         "accepted": True,
         "method": "sift",
+        "scale": 1.0,
+        "metric_distance_m": 0.1,
+        "pnp_inlier_ratio": 1.0,
+        "rotation_error_deg": 0.0,
         "metric_displacement_camera_i_m": [0.1, 0.0, 0.0],
         "metric_displacement_frame": "infrared_left_camera_i",
         "pnp_rotation_quaternion_xyzw": Rotation.identity().as_quat().tolist(),
@@ -391,6 +491,7 @@ def test_run_record_outputs_cross_matrix_and_no_gt_flags(tmp_path, monkeypatch):
     assert "pair_sampling_mode" not in result["policy"]
     row = result["records"][0]
     assert row["cross_matrix"]["both"] == 2
+    assert "bidirectional_cross_matrix" not in row
     assert row["selection"]["selected_accepted"] == 1
     assert row["selection"]["selected_rejected"] == 1
     assert row["diagnostics"][0]["factory_frame_closure"]["vector_closure_mm"] == pytest.approx(0.0)
@@ -424,6 +525,37 @@ def test_run_visual_rejections_reports_policy_and_selection_counts(tmp_path, mon
     assert selection["selected_total"] == 2
     assert selection["source_visual_rejected_available"] == 1
     assert selection["skipped_low_excitation_rejections"] == 0
+
+
+def test_run_bidirectional_adds_native_combined_diagnostics_only_when_requested(tmp_path, monkeypatch):
+    manifest, baseline, stage = make_fixture(tmp_path)
+    patch_runtime(monkeypatch)
+    args = diag.argument_parser().parse_args(
+        [
+            "--manifest",
+            str(manifest),
+            "--baseline",
+            str(baseline),
+            "--source-stage",
+            str(stage),
+            "--output",
+            str(tmp_path / "out"),
+            "--dataset",
+            "rec",
+            "--max-pairs",
+            "2",
+            "--bidirectional",
+        ]
+    )
+    result = diag.run(args)
+    assert result["status"] == "PASS"
+    assert "bidirectional" in result["policy"]
+    row = result["records"][0]
+    assert row["cross_matrix"]["both"] == 2
+    assert row["bidirectional_cross_matrix"]["both"] == 2
+    assert row["bidirectional_gate_summary"]["combined_accepted"] == 4
+    assert row["diagnostics"][0]["raw_reverse_left"]["accepted"] is True
+    assert row["diagnostics"][0]["native_combined_right"]["scale_estimator"] == "bidirectional_pnp_weighted_mean"
 
 
 def test_run_refuses_overwrite(tmp_path):
