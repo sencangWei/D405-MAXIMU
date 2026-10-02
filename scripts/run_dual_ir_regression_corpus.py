@@ -85,9 +85,27 @@ def file_hash(path):
     return digest.hexdigest()
 
 
+def validate_right_cache_reuse_binding(record, directory):
+    audit = record.get("right_cache_reuse_audit")
+    if audit is None:
+        return
+    directory = Path(directory).resolve()
+    if audit.get("ground_truth_used_for_selection") is not False:
+        raise ValueError("right cache reuse selection is not onboard-only")
+    if Path(audit.get("cache", "")).resolve() != directory:
+        raise ValueError("right cache reuse source path mismatch")
+    for name, key in (("trajectory_frames.csv", "raw_trajectory_sha256"),
+                      ("run_manifest.json", "run_manifest_sha256")):
+        # Never use the config/checkpoint memoization to check a reuse source.
+        actual = hashlib.sha256((directory / name).read_bytes()).hexdigest()
+        if actual != audit.get(key):
+            raise ValueError(f"right cache reuse source hash changed: {name}")
+
+
 def validate_reused_right_cache(record, directory):
     """Require frozen frontend provenance, not just a directory of CSVs."""
     directory = Path(directory)
+    validate_right_cache_reuse_binding(record, directory)
     run = read_json(directory / "run_manifest.json")
     dataset = read_json(directory / "dataset/dataset_manifest.json")
     if run.get("schema") != "umi_mast3r_run_v1" or run.get("slam_supervision") is not False:
@@ -112,7 +130,7 @@ def validate_reused_right_cache(record, directory):
     preprocessing = dataset.get("image_preprocessing", {})
     if preprocessing.get("crop_bottom_px") != 0 or preprocessing.get("mask_fixed_self_occlusion") is not False:
         raise ValueError("right cache image preprocessing mismatch")
-    for key, expected in record.get("right_input_sha256", {}).items():
+    for key, expected in (record.get("right_input_sha256") or {}).items():
         if key == "elapsed_s":
             continue
         actual = dataset.get(key) if key == "source_frames_csv_sha256" else run.get(key)
@@ -131,6 +149,15 @@ def ensure_left(record, work):
         expected.update({entry["path"]: entry["sha256"] for entry in audit["raw_trajectory_hashes"].values()})
         if any(file_hash(Path(path)) != digest for path, digest in expected.items()):
             raise ValueError("recovery cache provenance hash changed")
+    primary_path = source / STEREO_REPORTS[0][0]
+    primary = read_json(primary_path)
+    if (primary.get("schema") == "umi_mast3r_stereo_scale_v2"
+            and primary.get("slam_supervision") is False
+            and primary.get("external_ground_truth_used") is False
+            and primary.get("result") == "FAIL"
+            and any("scale_unobservable" in failure for failure in primary.get("failures", []))):
+        raise ValueError("primary_stereo_scale_unobservable: no metric scale; optional reports cannot restore it")
+    symmetric.fusion.validate_onboard_report(primary, primary_path, "umi_mast3r_stereo_scale_v2")
     imu_path = source / "imu_scale_report.json"
     if complete_eye(source, "left") and read_json(imu_path).get("orientation_trajectory"):
         return source
@@ -152,11 +179,16 @@ def ensure_left(record, work):
     return output
 
 
-def graph_command(record, left, right, output, policy):
-    return [sys.executable, str(ROOT / "scripts/fuse_mast3r_dual_ir_symmetric.py"),
+def graph_command(record, left, right, output, policy, *, optional_stereo_policy="strict"):
+    if optional_stereo_policy not in ("strict", "reject_window"):
+        raise ValueError("unsupported optional stereo policy")
+    command = [sys.executable, str(ROOT / "scripts/fuse_mast3r_dual_ir_symmetric.py"),
             "--session", record["session"], "--left-dir", str(left),
             "--right-dir", str(right), "--vins-dir", record["vins_dir"],
             "--output-dir", str(output), "--max-correction-mm", "none", *POLICIES[policy]]
+    if optional_stereo_policy != "strict":
+        command += ["--optional-stereo-policy", optional_stereo_policy]
+    return command
 
 
 def score_frozen(record, estimate, output, work, stage):
@@ -215,7 +247,7 @@ def cap_candidates(record, graph, work):
     return result
 
 
-def process_record(record, work, policies):
+def process_record(record, work, policies, *, optional_stereo_policy="strict"):
     work.mkdir()
     result = {"id": record["id"], "status": "IN_PROGRESS", "variants": {}}
     if record.get("alternate_left_dir"):
@@ -228,13 +260,21 @@ def process_record(record, work, policies):
             right = Path(record["right_dir"])
             validate_reused_right_cache(record, right)
         else:
-            right = prepare(record["session"], left, work / "right_cache", frontend_timeout_s=1200, stage_timeout_s=300)
+            preparation_options = {}
+            if optional_stereo_policy != "strict":
+                preparation_options["optional_stereo_policy"] = optional_stereo_policy
+            if record.get("right_frontend_cache"):
+                validate_reused_right_cache(record, Path(record["right_frontend_cache"]))
+                preparation_options["frontend_cache"] = record["right_frontend_cache"]
+            right = prepare(record["session"], left, work / "right_cache", frontend_timeout_s=1200,
+                            stage_timeout_s=300, **preparation_options)
             validate_reused_right_cache({"session": record["session"]}, right)
         result["left_cache"], result["right_cache"] = str(left), str(right)
         for policy in policies:
             graph = work / policy
             try:
-                _run_command(graph_command(record, left, right, graph, policy),
+                _run_command(graph_command(record, left, right, graph, policy,
+                                           optional_stereo_policy=optional_stereo_policy),
                              stage=f"solve_{policy}", output=work, timeout_s=600)
                 report = read_json(graph / "graph_report.json")["joint_position_solver"]
                 # Freeze cap variants from internal output before looking at GT.
@@ -283,6 +323,7 @@ def main(argv=None):
     parser.add_argument("--policies", nargs="+", choices=POLICIES, default=list(POLICIES))
     parser.add_argument("--dataset", action="append", default=[])
     parser.add_argument("--audit-only", action="store_true")
+    parser.add_argument("--optional-stereo-policy", choices=("strict", "reject_window"), default="strict")
     args = parser.parse_args(argv)
     records = validate_corpus(read_json(args.manifest))
     if args.dataset:
@@ -308,7 +349,8 @@ def main(argv=None):
                "blind_test": False, "production_promoted": False,
                "dataset_count": len(records), "completed_count": 0, "results": [],
                "manifest_sha256": hashlib.sha256(args.manifest.read_bytes()).hexdigest(),
-               "policies": args.policies, "caps_mm": list(CAPS_MM), "code_sha256": frozen_hashes}
+               "policies": args.policies, "caps_mm": list(CAPS_MM), "code_sha256": frozen_hashes,
+               "optional_stereo_policy": args.optional_stereo_policy}
     write_json(args.output / "summary.json", summary)
     for index, record in enumerate(records, 1):
         if any(hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest for path, digest in frozen_hashes.items()):
@@ -317,7 +359,8 @@ def main(argv=None):
             return 2
         print(f"[{index}/{len(records)}] {record['id']} started", flush=True)
         started = time.monotonic()
-        result = process_record(record, args.output / record["id"], args.policies)
+        result = process_record(record, args.output / record["id"], args.policies,
+                                optional_stereo_policy=args.optional_stereo_policy)
         result["elapsed_s"] = time.monotonic() - started
         summary["results"].append(result)
         summary["completed_count"] = index

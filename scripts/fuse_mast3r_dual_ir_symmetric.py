@@ -29,6 +29,7 @@ IMU_CONFIG = ROOT / "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml"
 CORRECTION_CAP_MODES = {"global", "per-frame", "per-node"}
 EYE_POLICIES = {"both", "left", "right"}
 STEREO_WEIGHT_POLICIES = {"observation", "residual-aware"}
+OPTIONAL_STEREO_POLICIES = {"strict", "reject_window"}
 
 
 def parse_optional_correction_mm(value: str) -> float | None:
@@ -52,6 +53,7 @@ def symmetric_policy(args) -> dict:
     cap_mode = getattr(args, "correction_cap_mode", "global")
     eyes = getattr(args, "eyes", "both")
     stereo_weight_policy = getattr(args, "stereo_weight_policy", "observation")
+    optional_stereo_policy = getattr(args, "optional_stereo_policy", "strict")
     disable_learned_motion = bool(getattr(args, "disable_learned_motion", False))
     consistency_limit_m = getattr(args, "learned_motion_consistency_limit_m", None)
     if max_correction_m is not None and (
@@ -64,9 +66,11 @@ def symmetric_policy(args) -> dict:
         raise ValueError(f"unsupported eye policy: {eyes}")
     if stereo_weight_policy not in STEREO_WEIGHT_POLICIES:
         raise ValueError(f"unsupported stereo weight policy: {stereo_weight_policy}")
+    if optional_stereo_policy not in OPTIONAL_STEREO_POLICIES:
+        raise ValueError(f"unsupported optional stereo policy: {optional_stereo_policy}")
     if consistency_limit_m is not None and (not np.isfinite(consistency_limit_m) or consistency_limit_m <= 0):
         raise ValueError("learned motion consistency limit must be none or finite positive")
-    return {
+    policy = {
         "max_correction_m": max_correction_m,
         "max_correction_mm": (
             None if max_correction_m is None else 1000.0 * max_correction_m
@@ -77,6 +81,9 @@ def symmetric_policy(args) -> dict:
         "disable_learned_motion": disable_learned_motion,
         "learned_motion_consistency_limit_m": consistency_limit_m,
     }
+    if optional_stereo_policy != "strict":
+        policy["optional_stereo_policy"] = optional_stereo_policy
+    return policy
 
 
 def validate_factory_calibration(left, right):
@@ -122,7 +129,10 @@ def bind_body_reference(frame_csv, times, positions, rotations, rows):
             bound_rows, camera_mono[closest[keep]], quality)
 
 
-def load_eye(directory, eye, session, config, imu_times, gyro):
+def load_eye(
+    directory, eye, session, config, imu_times, gyro,
+    optional_stereo_policy="strict",
+):
     if eye == "left":
         trajectory = directory / "trajectory_imu_metric.csv"
         names = ["stereo_scale_bidirectional_report.json"] + [
@@ -137,16 +147,21 @@ def load_eye(directory, eye, session, config, imu_times, gyro):
         ]
     paths = [directory / name for name in names]
     reports = []
-    for path in paths:
+    for index, path in enumerate(paths):
         report = fusion.load_json_report(path)
-        fusion.validate_onboard_report(report, path, "umi_mast3r_stereo_scale_v2")
+        if optional_stereo_policy == "strict" or index == 0:
+            fusion.validate_onboard_report(
+                report, path, "umi_mast3r_stereo_scale_v2"
+            )
         if Path(report.get("session", "")).resolve() != session.resolve():
             raise ValueError("eye report uses a different recording")
         if report.get("observation_frame") != f"infrared_{eye}_camera_i":
             raise ValueError("eye report uses the wrong camera frame")
         report["report_path"] = str(path.resolve())
         reports.append(report)
-    stereo = fusion.merge_stereo_reports(reports[0], reports[1:])
+    stereo = fusion.merge_stereo_reports(
+        reports[0], reports[1:], optional_policy=optional_stereo_policy
+    )
     imu_path = directory / "imu_scale_report.json"
     imu_report = fusion.load_json_report(imu_path)
     fusion.validate_onboard_report(imu_report, imu_path, "umi_mast3r_imu_scale_v1")
@@ -182,6 +197,11 @@ def load_eye(directory, eye, session, config, imu_times, gyro):
         "effective_body_T_camera": extrinsic.tolist(),
         "factory_stereo_calibration": stereo["factory_stereo_calibration"],
     }
+    if optional_stereo_policy != "strict":
+        metadata["optional_stereo_policy"] = optional_stereo_policy
+        metadata["optional_report_rejections"] = stereo.get(
+            "optional_report_rejections", []
+        )
     return track, metadata, [trajectory, imu_path, *paths]
 
 
@@ -207,7 +227,10 @@ def run(args):
     )
     all_tracks, eye_reports, inputs = {}, {}, []
     for eye, directory in (("left", args.left_dir), ("right", args.right_dir)):
-        track, report, paths = load_eye(directory, eye, args.session, config, imu_times, gyro)
+        track, report, paths = load_eye(
+            directory, eye, args.session, config, imu_times, gyro,
+            policy.get("optional_stereo_policy", "strict"),
+        )
         all_tracks[eye] = track
         eye_reports[eye] = report
         inputs.extend(paths)
@@ -251,6 +274,10 @@ def run(args):
         },
         "imu": imu_info,
     }
+    if policy.get("optional_stereo_policy", "strict") != "strict":
+        manifest["policy_arguments"]["optional_stereo_policy"] = policy[
+            "optional_stereo_policy"
+        ]
     (output / "candidate_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     (output / "local_motion_factors.json").write_text(json.dumps(motion_factors, indent=2) + "\n")
     (output / "shared_stereo_observations.json").write_text(json.dumps(stereo_observations, indent=2) + "\n")
@@ -302,6 +329,16 @@ if __name__ == "__main__":
         "--stereo-weight-policy",
         choices=sorted(STEREO_WEIGHT_POLICIES),
         default="observation",
+    )
+    parser.add_argument(
+        "--optional-stereo-policy",
+        choices=sorted(OPTIONAL_STEREO_POLICIES),
+        default="strict",
+        help=(
+            "strict keeps every stereo report mandatory; reject_window keeps "
+            "identity/GT errors fatal but records optional failed or scale-"
+            "inconsistent windows as rejected diagnostics"
+        ),
     )
     parser.add_argument("--disable-learned-motion", action="store_true")
     parser.add_argument("--learned-motion-consistency-mm", dest="learned_motion_consistency_limit_m",

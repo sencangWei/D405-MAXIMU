@@ -10,10 +10,12 @@ right-eye ``trajectory_frames.csv`` rather than the interpolated dense track.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import signal
+import shutil
 import subprocess
 import sys
 import time
@@ -46,6 +48,11 @@ STEREO_REPORTS = (
     ("stereo_scale_dense10hz_report.json", "stereo_scale_dense10hz_right_report.json"),
     ("stereo_scale_multisecond_report.json", "stereo_scale_multisecond_right_report.json"),
 )
+PRIMARY_STEREO_REPORTS = (STEREO_REPORTS[0],)
+OPTIONAL_STEREO_REPORTS = STEREO_REPORTS[1:]
+STRICT_DERIVE_STEREO_RETURNCODES = (0,)
+OPTIONAL_DERIVE_STEREO_RETURNCODES = (0, 2)
+OPTIONAL_STEREO_POLICIES = ("strict", "reject_window")
 ONBOARD_ATTITUDE_SOURCES = {None, "onboard_orientation_trajectory", "mast3r"}
 
 
@@ -55,6 +62,14 @@ class PreparationError(RuntimeError):
 
 def _json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _contains_tracker_gt(value: Any) -> bool:
@@ -69,6 +84,11 @@ def _contains_tracker_gt(value: Any) -> bool:
 
 def _same_path(left: str | Path, right: str | Path) -> bool:
     return Path(left).resolve() == Path(right).resolve()
+
+
+def _require_file(path: Path, label: str) -> None:
+    if not path.is_file():
+        raise PreparationError(f"{label} does not exist: {path}")
 
 
 def _validate_left_stereo_report(path: Path, session: Path) -> None:
@@ -156,7 +176,7 @@ def _run_command(
     timeout_s: int,
     env: dict[str, str] | None = None,
     allowed_returncodes: tuple[int, ...] = (0,),
-) -> None:
+) -> int:
     started = time.time()
     _append_command_log(
         output,
@@ -211,6 +231,135 @@ def _run_command(
     if rc not in allowed_returncodes:
         _fail_marker(output, stage, command, "disallowed return code", rc)
         raise subprocess.CalledProcessError(rc, command)
+    return rc
+
+
+def _validate_right_stereo_identity(report: dict[str, Any], path: Path, session: Path, trajectory: Path) -> None:
+    if report.get("schema") != "umi_mast3r_stereo_scale_v2":
+        raise PreparationError(f"unexpected right stereo report schema: {path}")
+    if report.get("slam_supervision") is not False:
+        raise PreparationError(f"right stereo report does not disable supervision: {path}")
+    if report.get("external_ground_truth_used") is not False:
+        raise PreparationError(f"right stereo report is not onboard-only: {path}")
+    if not _same_path(report.get("session", ""), session):
+        raise PreparationError(f"right stereo report session does not match input: {path}")
+    if not _same_path(report.get("trajectory", ""), trajectory):
+        raise PreparationError(f"right stereo report is not bound to raw right trajectory: {path}")
+    if report.get("observation_frame") != "infrared_right_camera_i":
+        raise PreparationError(f"right stereo report is not right-IR framed: {path}")
+    if _contains_tracker_gt(report):
+        raise PreparationError(f"right stereo report is not onboard-only: {path}")
+
+
+def _validate_right_stereo_pass(report: dict[str, Any], path: Path, session: Path, trajectory: Path) -> None:
+    _validate_right_stereo_identity(report, path, session, trajectory)
+    if report.get("result") != "PASS":
+        raise PreparationError(f"right stereo report did not pass: {path}")
+
+
+def _validate_right_stereo_optional_rejection(
+    report: dict[str, Any], path: Path, session: Path, trajectory: Path
+) -> dict[str, Any]:
+    _validate_right_stereo_identity(report, path, session, trajectory)
+    if report.get("result") != "FAIL":
+        raise PreparationError(f"optional right stereo rc2 did not write a FAIL report: {path}")
+    return {
+        "report": str(path.resolve()),
+        "result": report.get("result"),
+        "failures": report.get("failures", []),
+    }
+
+
+def _validate_frontend_cache(cache: Path, session: Path) -> dict[str, Any]:
+    run_path = cache / "run_manifest.json"
+    dataset_path = cache / "dataset" / "dataset_manifest.json"
+    trajectory_path = cache / "trajectory_frames.csv"
+    trajectory_manifest_path = cache / "trajectory_frames.manifest.json"
+    interpolated_path = cache / "trajectory_all_frames_interpolated.csv"
+    for label, path in (
+        ("frontend cache run manifest", run_path),
+        ("frontend cache dataset manifest", dataset_path),
+        ("frontend cache raw trajectory", trajectory_path),
+        ("frontend cache trajectory manifest", trajectory_manifest_path),
+        ("frontend cache interpolated trajectory", interpolated_path),
+    ):
+        _require_file(path, label)
+    run = _json(run_path)
+    dataset = _json(dataset_path)
+    if run.get("schema") != "umi_mast3r_run_v1" or run.get("slam_supervision") is not False:
+        raise PreparationError("frontend cache is not an unsupervised MASt3R run")
+    if dataset.get("schema") != "umi_mast3r_dataset_v1" or dataset.get("slam_supervision") is not False:
+        raise PreparationError("frontend cache dataset is not unsupervised")
+    if dataset.get("stream") != "infrared_right":
+        raise PreparationError("frontend cache dataset is not infrared_right")
+    if not _same_path(dataset.get("source_session", ""), session):
+        raise PreparationError("frontend cache source session mismatch")
+    frames = session / "d405_frames.csv"
+    _require_file(frames, "session d405_frames.csv")
+    if dataset.get("source_frames_csv_sha256") != _file_sha256(frames):
+        raise PreparationError("frontend cache source frame hash mismatch")
+    if Path(run.get("config", "")).resolve() != OFFLINE_CONFIG.resolve():
+        raise PreparationError("frontend cache config path mismatch")
+    if run.get("config_sha256") != _file_sha256(OFFLINE_CONFIG):
+        raise PreparationError("frontend cache config hash mismatch")
+    if Path(run.get("checkpoint", "")).resolve() != CHECKPOINT.resolve():
+        raise PreparationError("frontend cache checkpoint path mismatch")
+    if run.get("checkpoint_sha256") != _file_sha256(CHECKPOINT):
+        raise PreparationError("frontend cache checkpoint hash mismatch")
+    if bool(run.get("stereo_descriptor_recovery")) or bool(run.get("spatial_pointmap_recovery")):
+        raise PreparationError("frontend cache recovery flags are enabled")
+    preprocessing = dataset.get("image_preprocessing", {})
+    if preprocessing.get("crop_bottom_px") != 0 or preprocessing.get("mask_fixed_self_occlusion") is not False:
+        raise PreparationError("frontend cache preprocessing mismatch")
+    if run.get("trajectory") and not _same_path(run["trajectory"], trajectory_path):
+        raise PreparationError("frontend cache run trajectory path mismatch")
+    if run.get("all_frames_interpolated_trajectory") and not _same_path(
+        run["all_frames_interpolated_trajectory"], interpolated_path
+    ):
+        raise PreparationError("frontend cache run interpolated trajectory path mismatch")
+    return {
+        "source_cache": str(cache.resolve()),
+        "source_sha256": {
+            "run_manifest.json": _file_sha256(run_path),
+            "dataset/dataset_manifest.json": _file_sha256(dataset_path),
+            "trajectory_frames.csv": _file_sha256(trajectory_path),
+            "trajectory_frames.manifest.json": _file_sha256(trajectory_manifest_path),
+            "trajectory_all_frames_interpolated.csv": _file_sha256(interpolated_path),
+        },
+    }
+
+
+def _copy_frontend_cache(cache: Path, output: Path, provenance: dict[str, Any]) -> dict[str, Any]:
+    output.mkdir(parents=True)
+    (output / "dataset").mkdir()
+    shutil.copy2(cache / "trajectory_frames.csv", output / "trajectory_frames.csv")
+    shutil.copy2(cache / "trajectory_frames.manifest.json", output / "trajectory_frames.manifest.json")
+    shutil.copy2(
+        cache / "trajectory_all_frames_interpolated.csv",
+        output / "trajectory_all_frames_interpolated.csv",
+    )
+    shutil.copy2(cache / "dataset" / "dataset_manifest.json", output / "dataset" / "dataset_manifest.json")
+    run = _json(cache / "run_manifest.json")
+    run["trajectory"] = str((output / "trajectory_frames.csv").resolve())
+    run["all_frames_interpolated_trajectory"] = str(
+        (output / "trajectory_all_frames_interpolated.csv").resolve()
+    )
+    _write_json(output / "run_manifest.json", run)
+    provenance = {
+        **provenance,
+        "frontend_reused_without_gpu": True,
+        "copied_sha256": {
+            "run_manifest.json": _file_sha256(output / "run_manifest.json"),
+            "dataset/dataset_manifest.json": _file_sha256(output / "dataset" / "dataset_manifest.json"),
+            "trajectory_frames.csv": _file_sha256(output / "trajectory_frames.csv"),
+            "trajectory_frames.manifest.json": _file_sha256(output / "trajectory_frames.manifest.json"),
+            "trajectory_all_frames_interpolated.csv": _file_sha256(
+                output / "trajectory_all_frames_interpolated.csv"
+            ),
+        },
+    }
+    _write_json(output / "frontend_cache_reuse_provenance.json", provenance)
+    return provenance
 
 
 def _coverage_report(output: Path) -> dict[str, Any]:
@@ -225,8 +374,12 @@ def _coverage_report(output: Path) -> dict[str, Any]:
     compatible_frames = int(dataset_manifest["frames"])
     tracked_poses = int(trajectory_manifest["source_poses"])
     dense_frames = int(trajectory_manifest["dense_frames"])
-    if dense_frames != compatible_frames:
-        raise PreparationError("trajectory manifest dense frame count does not match dataset")
+    if tracked_poses <= 0:
+        raise PreparationError("frontend raw trajectory has zero poses")
+    if tracked_poses > dense_frames:
+        raise PreparationError("frontend raw trajectory pose count exceeds dense frames")
+    if dense_frames > compatible_frames:
+        raise PreparationError("frontend dense frames exceed compatible dataset frames")
     report = {
         "schema": "umi_dual_ir_eye_cache_coverage_v1",
         "stream": dataset_manifest.get("stream"),
@@ -253,6 +406,8 @@ def prepare(
     *,
     frontend_timeout_s: int = 7200,
     stage_timeout_s: int = 1800,
+    optional_stereo_policy: str = "strict",
+    frontend_cache: str | Path | None = None,
 ) -> Path:
     """Prepare a new independent right-IR cache from a validated left cache."""
 
@@ -265,31 +420,42 @@ def prepare(
         raise PreparationError(f"left cache does not exist: {left_path}")
     if output_path.exists() or output_path.is_symlink():
         raise PreparationError(f"refusing to overwrite existing output: {output_path}")
+    if optional_stereo_policy not in OPTIONAL_STEREO_POLICIES:
+        raise PreparationError(f"unknown optional_stereo_policy: {optional_stereo_policy}")
 
     for left_name, _ in STEREO_REPORTS:
         _validate_left_stereo_report(left_path / left_name, session_path)
     orientation_trajectory = _orientation_trajectory_from_left_cache(left_path, session_path)
 
-    output_path.mkdir(parents=True)
-    env = _frontend_environment()
+    frontend_reuse: dict[str, Any] | None = None
+    if frontend_cache is not None:
+        cache_path = Path(frontend_cache).resolve()
+        frontend_reuse = _copy_frontend_cache(
+            cache_path,
+            output_path,
+            _validate_frontend_cache(cache_path, session_path),
+        )
+    else:
+        output_path.mkdir(parents=True)
+        env = _frontend_environment()
 
-    workflow_command = [
-        "bash",
-        str(WORKFLOW),
-        "run",
-        str(session_path),
-        str(output_path),
-        "infrared_right",
-        "0",
-        "0",
-    ]
-    _run_command(
-        workflow_command,
-        stage="frontend",
-        output=output_path,
-        timeout_s=frontend_timeout_s,
-        env=env,
-    )
+        workflow_command = [
+            "bash",
+            str(WORKFLOW),
+            "run",
+            str(session_path),
+            str(output_path),
+            "infrared_right",
+            "0",
+            "0",
+        ]
+        _run_command(
+            workflow_command,
+            stage="frontend",
+            output=output_path,
+            timeout_s=frontend_timeout_s,
+            env=env,
+        )
     coverage = _coverage_report(output_path)
     run_manifest = _json(output_path / "run_manifest.json")
     if Path(run_manifest["config"]).resolve() != OFFLINE_CONFIG.resolve():
@@ -300,7 +466,9 @@ def prepare(
         raise PreparationError("frontend dataset is not infrared_right")
 
     stereo_outputs: list[Path] = []
+    rejected_optional_stereo_reports: list[dict[str, Any]] = []
     for left_name, right_name in STEREO_REPORTS:
+        is_primary = (left_name, right_name) in PRIMARY_STEREO_REPORTS
         right_report = output_path / right_name
         if right_report.exists():
             raise PreparationError(f"refusing to overwrite: {right_report}")
@@ -314,19 +482,31 @@ def prepare(
             "--output",
             str(right_report),
         ]
-        _run_command(command, stage=right_report.stem, output=output_path, timeout_s=stage_timeout_s)
+        allowed = STRICT_DERIVE_STEREO_RETURNCODES
+        if optional_stereo_policy == "reject_window" and not is_primary:
+            allowed = OPTIONAL_DERIVE_STEREO_RETURNCODES
+        rc = _run_command(
+            command,
+            stage=right_report.stem,
+            output=output_path,
+            timeout_s=stage_timeout_s,
+            allowed_returncodes=allowed,
+        )
         report = _json(right_report)
-        try:
-            validate_onboard_report(report, right_report, "umi_mast3r_stereo_scale_v2")
-        except ValueError as error:
-            raise PreparationError(str(error)) from error
-        if not _same_path(report.get("session", ""), session_path):
-            raise PreparationError(f"right stereo report session does not match input: {right_report}")
-        if not _same_path(report.get("trajectory", ""), output_path / "trajectory_frames.csv"):
-            raise PreparationError(f"right stereo report is not bound to raw right trajectory: {right_report}")
-        if _contains_tracker_gt(report):
-            raise PreparationError(f"right stereo report is not onboard-only: {right_report}")
-        stereo_outputs.append(right_report)
+        if is_primary or rc == 0:
+            _validate_right_stereo_pass(
+                report, right_report, session_path, output_path / "trajectory_frames.csv"
+            )
+            stereo_outputs.append(right_report)
+        else:
+            rejected = _validate_right_stereo_optional_rejection(
+                report, right_report, session_path, output_path / "trajectory_frames.csv"
+            )
+            rejected.update(
+                source_left_report=str((left_path / left_name).resolve()),
+                returncode=rc,
+            )
+            rejected_optional_stereo_reports.append(rejected)
 
     imu_output = output_path / "imu_metric_trajectory.csv"
     imu_report = output_path / "imu_scale_report.json"
@@ -386,12 +566,15 @@ def prepare(
             "interpolated_dense_used_for_downstream": False,
             "coverage": coverage,
             "stereo_reports": [str(path.resolve()) for path in stereo_outputs],
+            "rejected_optional_stereo_reports": rejected_optional_stereo_reports,
             "imu_metric_trajectory": str(imu_output.resolve()),
             "imu_scale_report": str(imu_report.resolve()),
             "imu_alignment_args": {"node_stride": 10, "max_hop": 1, "stream": "infrared_right"},
             "orientation_source": "onboard_orientation_trajectory_from_left_imu_scale_report",
             "orientation_trajectory": str(orientation_trajectory),
             "external_ground_truth_used": False,
+            "optional_stereo_policy": optional_stereo_policy,
+            "frontend_cache_reuse": frontend_reuse,
         },
     )
     return output_path
@@ -404,6 +587,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("output", type=Path)
     parser.add_argument("--frontend-timeout-s", type=int, default=7200)
     parser.add_argument("--stage-timeout-s", type=int, default=1800)
+    parser.add_argument("--optional-stereo-policy", choices=OPTIONAL_STEREO_POLICIES, default="strict")
+    parser.add_argument("--frontend-cache", type=Path)
     args = parser.parse_args(argv)
     prepare(
         args.session,
@@ -411,6 +596,8 @@ def main(argv: list[str] | None = None) -> int:
         args.output,
         frontend_timeout_s=args.frontend_timeout_s,
         stage_timeout_s=args.stage_timeout_s,
+        optional_stereo_policy=args.optional_stereo_policy,
+        frontend_cache=args.frontend_cache,
     )
     return 0
 

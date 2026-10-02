@@ -1308,36 +1308,108 @@ def filter_stereo_observations(
     ]
 
 
-def merge_stereo_reports(primary: dict, additions: list[dict]) -> dict:
+def _validate_optional_stereo_report_identity(
+    report: dict, primary: dict, primary_baseline: float
+) -> None:
+    if report.get("schema") != "umi_mast3r_stereo_scale_v2":
+        raise ValueError("unexpected report schema")
+    if report.get("external_ground_truth_used") is not False:
+        raise ValueError("input report does not prove GT independence")
+    if report.get("slam_supervision") is not False:
+        raise ValueError("input report does not disable supervision")
+    if report.get("session") != primary.get("session"):
+        raise ValueError("stereo reports come from different sessions")
+    if report.get("trajectory") != primary.get("trajectory"):
+        raise ValueError("stereo reports use different source trajectories")
+    if report.get("observation_frame") != primary.get("observation_frame"):
+        raise ValueError("stereo reports use different observation frames")
+    baseline = float(report["factory_stereo_calibration"]["baseline_m"])
+    if not np.isfinite(baseline) or baseline <= 0.0:
+        raise ValueError("stereo report baseline must be finite and positive")
+    if abs(baseline - primary_baseline) > 1e-9:
+        raise ValueError("stereo reports use different factory baselines")
+
+
+def _finite_positive_stereo_scale(report: dict) -> float:
+    scale = float(report["scale_m_per_mast3r_unit"])
+    if not np.isfinite(scale) or scale <= 0.0:
+        raise ValueError("stereo report scale must be finite and positive")
+    return scale
+
+
+def _optional_stereo_rejection(report: dict, reason: str) -> dict:
+    return {
+        "report_path": report.get("report_path"),
+        "reason": reason,
+        "result": report.get("result"),
+        "failures": list(report.get("failures", [])),
+    }
+
+
+def merge_stereo_reports(
+    primary: dict, additions: list[dict], optional_policy: str = "strict"
+) -> dict:
     """Combine independently sampled edges from the same UMI recording."""
+    if optional_policy not in {"strict", "reject_window"}:
+        raise ValueError(f"unsupported optional stereo report policy: {optional_policy}")
     merged = dict(primary)
     observations = list(primary.get("observations", []))
     sources = [primary.get("report_path")]
-    primary_scale = float(primary["scale_m_per_mast3r_unit"])
     primary_baseline = float(
         primary["factory_stereo_calibration"]["baseline_m"]
     )
+    rejections = []
+    if optional_policy == "reject_window":
+        _validate_optional_stereo_report_identity(
+            primary, primary, primary_baseline
+        )
+        if primary.get("result") != "PASS":
+            raise ValueError("primary stereo report did not pass")
+    primary_scale = _finite_positive_stereo_scale(primary)
     for addition in additions:
-        if addition.get("session") != primary.get("session"):
-            raise ValueError("stereo reports come from different sessions")
-        if addition.get("trajectory") != primary.get("trajectory"):
-            raise ValueError("stereo reports use different source trajectories")
-        if addition.get("observation_frame") != primary.get("observation_frame"):
-            raise ValueError("stereo reports use different observation frames")
-        baseline = float(addition["factory_stereo_calibration"]["baseline_m"])
-        if abs(baseline - primary_baseline) > 1e-9:
-            raise ValueError("stereo reports use different factory baselines")
-        scale = float(addition["scale_m_per_mast3r_unit"])
+        if optional_policy == "reject_window":
+            _validate_optional_stereo_report_identity(
+                addition, primary, primary_baseline
+            )
+            result = addition.get("result")
+            if result not in {"PASS", "FAIL"}:
+                raise ValueError("unexpected optional stereo report result")
+            if result == "FAIL":
+                rejections.append(
+                    _optional_stereo_rejection(addition, "optional_report_failed")
+                )
+                continue
+        else:
+            if addition.get("session") != primary.get("session"):
+                raise ValueError("stereo reports come from different sessions")
+            if addition.get("trajectory") != primary.get("trajectory"):
+                raise ValueError("stereo reports use different source trajectories")
+            if addition.get("observation_frame") != primary.get("observation_frame"):
+                raise ValueError("stereo reports use different observation frames")
+            baseline = float(addition["factory_stereo_calibration"]["baseline_m"])
+            if abs(baseline - primary_baseline) > 1e-9:
+                raise ValueError("stereo reports use different factory baselines")
+        scale = _finite_positive_stereo_scale(addition)
         relative_scale_difference = abs(scale - primary_scale) / (
             0.5 * (scale + primary_scale)
         )
         if relative_scale_difference > 0.05:
+            if optional_policy == "reject_window":
+                rejections.append(
+                    _optional_stereo_rejection(
+                        addition, "scale_disagreement_over_5_percent"
+                    )
+                )
+                continue
             raise ValueError("stereo report scales disagree by more than 5%")
         observations.extend(addition.get("observations", []))
         sources.append(addition.get("report_path"))
     merged["observations"] = observations
     merged["merged_report_paths"] = sources
-    merged["merged_report_count"] = 1 + len(additions)
+    merged["merged_report_count"] = len(sources)
+    if optional_policy == "reject_window":
+        merged["optional_report_policy"] = optional_policy
+        merged["optional_report_rejections"] = rejections
     return merged
 
 

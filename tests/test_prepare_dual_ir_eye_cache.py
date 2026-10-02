@@ -1,4 +1,5 @@
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,6 +19,10 @@ spec.loader.exec_module(prep)
 def write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+
+
+def file_sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def left_stereo_report(session: Path) -> dict:
@@ -63,11 +68,54 @@ def make_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     return session, left, output, orientation
 
 
-def fake_run_factory(monkeypatch):
-    calls = []
+def make_frontend_cache(tmp_path: Path, session: Path) -> Path:
+    cache = tmp_path / "frontend_cache"
+    (cache / "dataset").mkdir(parents=True)
+    raw = cache / "trajectory_frames.csv"
+    raw.write_text("t,x,y,z,qw,qx,qy,qz\n", encoding="utf-8")
+    dense = cache / "trajectory_all_frames_interpolated.csv"
+    dense.write_text("dense\n", encoding="utf-8")
+    write_json(
+        cache / "trajectory_frames.manifest.json",
+        {"schema": "umi_mast3r_trajectory_v1", "source_poses": 22, "dense_frames": 25},
+    )
+    write_json(
+        cache / "dataset/dataset_manifest.json",
+        {
+            "schema": "umi_mast3r_dataset_v1",
+            "slam_supervision": False,
+            "stream": "infrared_right",
+            "source_session": str(session),
+            "source_frames_csv_sha256": file_sha(session / "d405_frames.csv"),
+            "frames": 25,
+            "image_preprocessing": {"crop_bottom_px": 0, "mask_fixed_self_occlusion": False},
+        },
+    )
+    write_json(
+        cache / "run_manifest.json",
+        {
+            "schema": "umi_mast3r_run_v1",
+            "slam_supervision": False,
+            "config": str(prep.OFFLINE_CONFIG),
+            "config_sha256": file_sha(prep.OFFLINE_CONFIG),
+            "checkpoint": str(prep.CHECKPOINT),
+            "checkpoint_sha256": file_sha(prep.CHECKPOINT),
+            "trajectory": str(raw),
+            "all_frames_interpolated_trajectory": str(dense),
+            "stereo_descriptor_recovery": False,
+            "spatial_pointmap_recovery": False,
+        },
+    )
+    (cache / "000000.png").write_text("large image should not be copied", encoding="utf-8")
+    return cache
 
-    def fake_run(command, *, stage, output, timeout_s, env=None):
-        calls.append((stage, command, env))
+
+def fake_run_factory(monkeypatch, optional_failures: set[str] | None = None):
+    calls = []
+    optional_failures = optional_failures or set()
+
+    def fake_run(command, *, stage, output, timeout_s, env=None, allowed_returncodes=(0,)):
+        calls.append((stage, command, env, allowed_returncodes))
         output.mkdir(parents=True, exist_ok=True)
         if stage == "frontend":
             (output / "dataset").mkdir()
@@ -96,11 +144,13 @@ def fake_run_factory(monkeypatch):
             )
         elif stage.startswith("stereo_scale"):
             report = Path(command[-1])
+            failed = report.name in optional_failures
             write_json(
                 report,
                 {
                     "schema": "umi_mast3r_stereo_scale_v2",
-                    "result": "PASS",
+                    "result": "FAIL" if failed else "PASS",
+                    "failures": ["right_stereo_scale_unobservable"] if failed else [],
                     "slam_supervision": False,
                     "external_ground_truth_used": False,
                     "session": str(output.parent / "session"),
@@ -112,6 +162,10 @@ def fake_run_factory(monkeypatch):
                     },
                 },
             )
+            if failed:
+                if 2 not in allowed_returncodes:
+                    raise subprocess.CalledProcessError(2, command)
+                return 2
         elif stage == "imu_scale":
             write_json(
                 Path(command[-1]),
@@ -124,6 +178,7 @@ def fake_run_factory(monkeypatch):
                 },
             )
             Path(command[command.index("--output") + 1]).write_text("t,x,y,z,qw,qx,qy,qz\n", encoding="utf-8")
+        return 0
 
     monkeypatch.setattr(prep, "_run_command", fake_run)
     return calls
@@ -146,11 +201,11 @@ def test_prepare_builds_right_onboard_commands_and_manifest(tmp_path, monkeypatc
     assert "MAST3R_REUSE_DATASET_DIR" not in frontend[2]
     assert frontend[2]["MAST3R_STEREO_DESCRIPTOR_RECOVERY"] == "0"
     assert frontend[2]["MAST3R_SPATIAL_POINTMAP_RECOVERY"] == "0"
-    derive_commands = [command for stage, command, _ in calls if stage.startswith("stereo_scale")]
+    derive_commands = [command for stage, command, _, _ in calls if stage.startswith("stereo_scale")]
     assert len(derive_commands) == 4
     assert all("--right-trajectory" in command for command in derive_commands)
     assert all(str(output.resolve() / "trajectory_frames.csv") in command for command in derive_commands)
-    imu_command = [command for stage, command, _ in calls if stage == "imu_scale"][0]
+    imu_command = [command for stage, command, _, _ in calls if stage == "imu_scale"][0]
     assert "--stream" in imu_command and imu_command[imu_command.index("--stream") + 1] == "infrared_right"
     assert "--orientation-trajectory" in imu_command
     assert imu_command[imu_command.index("--orientation-trajectory") + 1] == str(orientation.resolve())
@@ -224,6 +279,192 @@ def test_prepare_rejects_unknown_attitude_source_before_frontend(tmp_path, monke
     monkeypatch.setattr(prep, "_run_command", forbidden_run)
     with pytest.raises(prep.PreparationError, match="onboard body orientation"):
         prep.prepare(session, left, output)
+
+
+def test_reject_window_keeps_valid_optional_rc2_as_diagnostic(tmp_path, monkeypatch):
+    session, left, output, _ = make_inputs(tmp_path)
+    calls = fake_run_factory(monkeypatch, {"stereo_scale_dense10hz_right_report.json"})
+
+    prep.prepare(
+        session,
+        left,
+        output,
+        frontend_timeout_s=1,
+        stage_timeout_s=1,
+        optional_stereo_policy="reject_window",
+    )
+
+    manifest = json.loads((output / "dual_ir_eye_cache_manifest.json").read_text())
+    rejected = manifest["rejected_optional_stereo_reports"]
+    assert len(rejected) == 1
+    assert rejected[0]["result"] == "FAIL"
+    assert rejected[0]["returncode"] == 2
+    assert "stereo_scale_dense10hz_right_report.json" in rejected[0]["report"]
+    assert all("dense10hz" not in path for path in manifest["stereo_reports"])
+    optional_call = [
+        call for call in calls
+        if call[0] == "stereo_scale_dense10hz_right_report"
+    ][0]
+    assert optional_call[3] == prep.OPTIONAL_DERIVE_STEREO_RETURNCODES
+
+
+def test_strict_policy_rejects_optional_rc2(tmp_path, monkeypatch):
+    session, left, output, _ = make_inputs(tmp_path)
+    fake_run_factory(monkeypatch, {"stereo_scale_dense10hz_right_report.json"})
+
+    with pytest.raises(subprocess.CalledProcessError):
+        prep.prepare(session, left, output, frontend_timeout_s=1, stage_timeout_s=1)
+
+
+def test_optional_rc2_with_wrong_identity_still_fails(tmp_path, monkeypatch):
+    session, left, output, _ = make_inputs(tmp_path)
+
+    def fake_run(command, *, stage, output, timeout_s, env=None, allowed_returncodes=(0,)):
+        output.mkdir(parents=True, exist_ok=True)
+        if stage == "frontend":
+            (output / "dataset").mkdir()
+            write_json(output / "dataset/dataset_manifest.json", {
+                "schema": "umi_mast3r_dataset_v1", "stream": "infrared_right",
+                "frames": 25, "source_session": str(session),
+            })
+            write_json(output / "trajectory_frames.manifest.json", {
+                "schema": "umi_mast3r_trajectory_v1", "source_poses": 22, "dense_frames": 25,
+            })
+            (output / "trajectory_frames.csv").write_text("raw\n")
+            (output / "trajectory_all_frames_interpolated.csv").write_text("dense\n")
+            write_json(output / "run_manifest.json", {
+                "config": str(prep.OFFLINE_CONFIG), "checkpoint": str(prep.CHECKPOINT),
+            })
+            return 0
+        if stage.startswith("stereo_scale"):
+            report = Path(command[-1])
+            write_json(report, {
+                "schema": "umi_mast3r_stereo_scale_v2",
+                "result": "FAIL" if "dense10hz" in report.name else "PASS",
+                "failures": ["right_stereo_scale_unobservable"] if "dense10hz" in report.name else [],
+                "slam_supervision": False,
+                "external_ground_truth_used": False,
+                "session": str(session),
+                "observation_frame": "infrared_left_camera_i" if "dense10hz" in report.name else "infrared_right_camera_i",
+                "trajectory": str(output / "trajectory_frames.csv"),
+            })
+            return 2 if "dense10hz" in report.name else 0
+        raise AssertionError(stage)
+
+    monkeypatch.setattr(prep, "_run_command", fake_run)
+    with pytest.raises(prep.PreparationError, match="right-IR framed"):
+        prep.prepare(
+            session,
+            left,
+            output,
+            frontend_timeout_s=1,
+            stage_timeout_s=1,
+            optional_stereo_policy="reject_window",
+        )
+
+
+def test_coverage_allows_partial_dense_within_dataset(tmp_path):
+    output = tmp_path / "out"
+    (output / "dataset").mkdir(parents=True)
+    write_json(output / "dataset/dataset_manifest.json", {
+        "schema": "umi_mast3r_dataset_v1", "stream": "infrared_right",
+        "frames": 1199, "source_session": "/session",
+    })
+    write_json(output / "trajectory_frames.manifest.json", {
+        "schema": "umi_mast3r_trajectory_v1", "source_poses": 588, "dense_frames": 588,
+    })
+
+    report = prep._coverage_report(output)
+
+    assert report["raw_tracked_poses"] == 588
+    assert report["dense_frames"] == 588
+    assert report["compatible_original_camera_frames"] == 1199
+    assert report["partial_track_allowed"] is True
+
+
+@pytest.mark.parametrize(
+    "source_poses,dense_frames,dataset_frames,message",
+    [
+        (0, 10, 10, "zero poses"),
+        (11, 10, 12, "exceeds dense"),
+        (10, 13, 12, "exceed compatible"),
+    ],
+)
+def test_coverage_rejects_invalid_ranges(tmp_path, source_poses, dense_frames, dataset_frames, message):
+    output = tmp_path / "out"
+    (output / "dataset").mkdir(parents=True)
+    write_json(output / "dataset/dataset_manifest.json", {
+        "schema": "umi_mast3r_dataset_v1", "stream": "infrared_right",
+        "frames": dataset_frames, "source_session": "/session",
+    })
+    write_json(output / "trajectory_frames.manifest.json", {
+        "schema": "umi_mast3r_trajectory_v1", "source_poses": source_poses, "dense_frames": dense_frames,
+    })
+
+    with pytest.raises(prep.PreparationError, match=message):
+        prep._coverage_report(output)
+
+
+def test_frontend_cache_reuse_copies_small_files_and_rebinds_paths(tmp_path, monkeypatch):
+    session, left, output, orientation = make_inputs(tmp_path)
+    cache = make_frontend_cache(tmp_path, session)
+    calls = fake_run_factory(monkeypatch)
+
+    prep.prepare(
+        session,
+        left,
+        output,
+        frontend_cache=cache,
+        frontend_timeout_s=1,
+        stage_timeout_s=1,
+    )
+
+    assert all(stage != "frontend" for stage, *_ in calls)
+    assert (output / "trajectory_frames.csv").is_file()
+    assert (output / "trajectory_frames.manifest.json").is_file()
+    assert (output / "trajectory_all_frames_interpolated.csv").is_file()
+    assert (output / "dataset/dataset_manifest.json").is_file()
+    assert not (output / "000000.png").exists()
+    run = json.loads((output / "run_manifest.json").read_text())
+    assert run["trajectory"] == str((output / "trajectory_frames.csv").resolve())
+    assert run["all_frames_interpolated_trajectory"] == str(
+        (output / "trajectory_all_frames_interpolated.csv").resolve()
+    )
+    derive_commands = [command for stage, command, _, _ in calls if stage.startswith("stereo_scale")]
+    assert derive_commands
+    assert all(str(output.resolve() / "trajectory_frames.csv") in command for command in derive_commands)
+    provenance = json.loads((output / "frontend_cache_reuse_provenance.json").read_text())
+    assert provenance["frontend_reused_without_gpu"] is True
+    assert provenance["source_cache"] == str(cache.resolve())
+    manifest = json.loads((output / "dual_ir_eye_cache_manifest.json").read_text())
+    assert manifest["frontend_cache_reuse"]["frontend_reused_without_gpu"] is True
+    imu_command = [command for stage, command, _, _ in calls if stage == "imu_scale"][0]
+    assert imu_command[imu_command.index("--orientation-trajectory") + 1] == str(orientation.resolve())
+
+
+@pytest.mark.parametrize(
+    "mutator,message",
+    [
+        (lambda run, dataset, session: run.update(config_sha256="bad"), "config hash"),
+        (lambda run, dataset, session: run.update(stereo_descriptor_recovery=True), "recovery"),
+        (lambda run, dataset, session: dataset.update(source_session="/other"), "session"),
+        (lambda run, dataset, session: dataset.update(source_frames_csv_sha256="bad"), "frame hash"),
+        (lambda run, dataset, session: dataset["image_preprocessing"].update(crop_bottom_px=2), "preprocessing"),
+    ],
+)
+def test_frontend_cache_reuse_rejects_bad_provenance(tmp_path, mutator, message):
+    session, left, output, _ = make_inputs(tmp_path)
+    cache = make_frontend_cache(tmp_path, session)
+    run_path = cache / "run_manifest.json"
+    dataset_path = cache / "dataset/dataset_manifest.json"
+    run = json.loads(run_path.read_text())
+    dataset = json.loads(dataset_path.read_text())
+    mutator(run, dataset, session)
+    write_json(run_path, run)
+    write_json(dataset_path, dataset)
+
+    with pytest.raises(prep.PreparationError, match=message):
+        prep.prepare(session, left, output, frontend_cache=cache, frontend_timeout_s=1, stage_timeout_s=1)
 
 
 def test_prepare_refuses_existing_output(tmp_path):

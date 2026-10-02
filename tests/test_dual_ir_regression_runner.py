@@ -33,6 +33,65 @@ def test_graph_command_has_no_external_reference_input():
     assert "--eyes" in runner.graph_command(record, Path("/left"), Path("/right"), Path("/new"), "right")
 
 
+def test_optional_window_policy_is_explicit_and_not_selected_by_reference():
+    record = {"session": "/umi", "vins_dir": "/vins", "capture_dir": "/tracker", "reference_manifest": "/gt.json"}
+    command = runner.graph_command(
+        record, Path("/left"), Path("/right"), Path("/new"), "both",
+        optional_stereo_policy="reject_window",
+    )
+    assert command[command.index("--optional-stereo-policy") + 1] == "reject_window"
+    assert "/tracker" not in command and "/gt.json" not in command
+    default = runner.graph_command(record, Path("/left"), Path("/right"), Path("/new"), "both")
+    assert "--optional-stereo-policy" not in default
+
+
+def test_primary_unobservable_is_explicit_not_missing_optional_file(tmp_path):
+    source = tmp_path / "left"
+    source.mkdir()
+    (source / "stereo_scale_bidirectional_report.json").write_text(json.dumps({
+        "schema": "umi_mast3r_stereo_scale_v2", "result": "FAIL",
+        "slam_supervision": False, "external_ground_truth_used": False,
+        "failures": ["stereo_scale_unobservable"], "observations": [],
+    }))
+    (tmp_path / "work").mkdir()
+    with pytest.raises(ValueError, match="primary_stereo_scale_unobservable"):
+        runner.ensure_left({"left_dir": str(source)}, tmp_path / "work")
+
+
+def test_right_cache_reuse_cannot_mutate_frozen_raw_frontend(tmp_path):
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    raw = cache / "trajectory_frames.csv"
+    manifest = cache / "run_manifest.json"
+    raw.write_text("raw tracked poses")
+    manifest.write_text("{}")
+    record = {"right_cache_reuse_audit": {
+        "cache": str(cache), "raw_trajectory_sha256": runner.file_hash(raw),
+        "run_manifest_sha256": runner.file_hash(manifest),
+        "ground_truth_used_for_selection": False,
+    }}
+    runner.validate_right_cache_reuse_binding(record, cache)
+    raw.write_text("silently interpolated substitute")
+    with pytest.raises(ValueError, match="reuse source hash"):
+        runner.validate_right_cache_reuse_binding(record, cache)
+
+
+def test_adapter_manifest_preserves_all_source_identities_and_failures():
+    repaired = runner.read_json(ROOT / "config/dual_ir_regression_25_20261002_adapters.json")
+    source = runner.read_json(Path(repaired["source_baseline"]["manifest"]))
+    baseline = runner.read_json(Path(repaired["source_baseline"]["summary"]))
+    assert len(repaired["records"]) == 25
+    original = {record["id"]: record for record in source["records"]}
+    assert {record["id"] for record in repaired["records"]} == set(original)
+    for record in repaired["records"]:
+        for key in ("session", "capture_dir", "left_dir", "vins_dir", "reference_manifest"):
+            assert record[key] == original[record["id"]][key]
+        if record.get("right_cache_reuse_audit"):
+            assert record["right_cache_reuse_audit"]["ground_truth_used_for_selection"] is False
+    failures = {row["id"] for row in baseline["results"] if row["status"] != "COMPLETED"}
+    assert failures <= {record["id"] for record in repaired["records"]}
+
+
 def test_corpus_rejects_duplicate_recordings_before_processing():
     record = {"id": "a", "session": "/umi", "capture_dir": "/capture"}
     with pytest.raises(ValueError, match="duplicate"):
@@ -90,6 +149,7 @@ def test_reused_right_cache_rejects_stale_model_and_foreign_session(tmp_path, mo
     (cache / "run_manifest.json").write_text(json.dumps(run))
     (cache / "dataset/dataset_manifest.json").write_text(json.dumps(dataset))
     runner.validate_reused_right_cache({"session": str(session)}, cache)
+    runner.validate_reused_right_cache({"session": str(session), "right_input_sha256": None}, cache)
     run["checkpoint_sha256"] = "stale"
     (cache / "run_manifest.json").write_text(json.dumps(run))
     with pytest.raises(ValueError, match="checkpoint hash"):
