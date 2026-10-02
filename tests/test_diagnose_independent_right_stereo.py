@@ -58,6 +58,49 @@ def test_balanced_selection_uses_accepted_and_rejected():
     assert any(pair.source_class == "rejected_left_source" for pair in pairs)
 
 
+def test_default_pair_sampling_preserves_balanced_metadata():
+    observations = [
+        {"accepted": True, "first_index": 0, "second_index": 1},
+        {"accepted": False, "reason": diag.LOW_EXCITATION_REASON, "first_index": 1, "second_index": 2},
+    ]
+    _pairs, meta = diag.select_balanced_pairs({"observations": observations}, max_pairs=2)
+    assert meta == {
+        "rule": "uniform_6_accepted_left_plus_6_rejected_left_fill_missing_uniform_other_class",
+        "max_pairs": 2,
+        "source_accepted_available": 1,
+        "source_rejected_available": 1,
+        "selected_accepted": 1,
+        "selected_rejected": 1,
+        "selected_total": 2,
+    }
+
+
+def test_visual_rejections_excludes_low_excitation_only_from_rejected_sampling():
+    observations = [
+        {"accepted": True, "reason": diag.LOW_EXCITATION_REASON, "first_index": 0, "second_index": 1},
+        {"accepted": True, "first_index": 1, "second_index": 2},
+        {"accepted": False, "reason": diag.LOW_EXCITATION_REASON, "first_index": 10, "second_index": 11},
+        {"accepted": False, "reason": "pnp_failed", "first_index": 20, "second_index": 21},
+        {"accepted": False, "reason": "visibility_low", "first_index": 30, "second_index": 31},
+    ]
+    pairs, meta = diag.select_balanced_pairs(
+        {"observations": observations},
+        max_pairs=4,
+        pair_sampling=diag.PAIR_SAMPLING_VISUAL_REJECTIONS,
+    )
+    rejected_reasons = [
+        pair.source_observation.get("reason")
+        for pair in pairs
+        if pair.source_class == "rejected_left_source"
+    ]
+    assert meta["selected_accepted"] == 2
+    assert meta["selected_rejected"] == 2
+    assert meta["source_rejected_available"] == 3
+    assert meta["source_visual_rejected_available"] == 2
+    assert meta["skipped_low_excitation_rejections"] == 1
+    assert diag.LOW_EXCITATION_REASON not in rejected_reasons
+
+
 def test_selection_fills_missing_class():
     pairs, meta = diag.select_balanced_pairs(
         {"observations": [{"accepted": True, "first_index": i, "second_index": i + 1} for i in range(3)]},
@@ -66,6 +109,28 @@ def test_selection_fills_missing_class():
     assert len(pairs) == 3
     assert meta["selected_accepted"] == 3
     assert meta["selected_rejected"] == 0
+
+
+def test_visual_rejections_reports_expected_counts_when_low_excitation_shortens_class():
+    observations = [
+        {"accepted": True, "first_index": i, "second_index": i + 1}
+        for i in range(5)
+    ] + [
+        {"accepted": False, "reason": diag.LOW_EXCITATION_REASON, "first_index": 100 + i, "second_index": 101 + i}
+        for i in range(3)
+    ] + [
+        {"accepted": False, "reason": "pnp_failed", "first_index": 200, "second_index": 201}
+    ]
+    pairs, meta = diag.select_balanced_pairs(
+        {"observations": observations},
+        max_pairs=6,
+        pair_sampling=diag.PAIR_SAMPLING_VISUAL_REJECTIONS,
+    )
+    assert len(pairs) == 6
+    assert meta["selected_accepted"] == 5
+    assert meta["selected_rejected"] == 1
+    assert meta["skipped_low_excitation_rejections"] == 3
+    assert meta["source_visual_rejected_available"] == 1
 
 
 def test_factory_closure_handles_noncommuting_right_frame():
@@ -323,11 +388,42 @@ def test_run_record_outputs_cross_matrix_and_no_gt_flags(tmp_path, monkeypatch):
     assert result["status"] == "PASS"
     assert result["external_ground_truth_used"] is False
     assert result["backend_launched"] is False
+    assert "pair_sampling_mode" not in result["policy"]
     row = result["records"][0]
     assert row["cross_matrix"]["both"] == 2
     assert row["selection"]["selected_accepted"] == 1
     assert row["selection"]["selected_rejected"] == 1
     assert row["diagnostics"][0]["factory_frame_closure"]["vector_closure_mm"] == pytest.approx(0.0)
+
+
+def test_run_visual_rejections_reports_policy_and_selection_counts(tmp_path, monkeypatch):
+    manifest, baseline, stage = make_fixture(tmp_path)
+    patch_runtime(monkeypatch)
+    args = diag.argument_parser().parse_args(
+        [
+            "--manifest",
+            str(manifest),
+            "--baseline",
+            str(baseline),
+            "--source-stage",
+            str(stage),
+            "--output",
+            str(tmp_path / "out"),
+            "--dataset",
+            "rec",
+            "--max-pairs",
+            "2",
+            "--pair-sampling",
+            "visual-rejections",
+        ]
+    )
+    result = diag.run(args)
+    assert result["status"] == "PASS"
+    assert result["policy"]["pair_sampling_mode"] == diag.PAIR_SAMPLING_VISUAL_REJECTIONS
+    selection = result["records"][0]["selection"]
+    assert selection["selected_total"] == 2
+    assert selection["source_visual_rejected_available"] == 1
+    assert selection["skipped_low_excitation_rejections"] == 0
 
 
 def test_run_refuses_overwrite(tmp_path):

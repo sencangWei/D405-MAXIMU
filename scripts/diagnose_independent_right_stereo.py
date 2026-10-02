@@ -28,6 +28,9 @@ RIGHT_PRIMARY_REPORT = "stereo_scale_right_report.json"
 SIFT_PARAMS = {"nfeatures": 4000, "contrastThreshold": 0.01, "edgeThreshold": 15, "ratio": 0.75}
 PNP_PARAMS = {"pnp_iterations": 1000, "pnp_reprojection_error_px": 4.0, "refine_pnp": True, "pnp_rotation_mode": "free"}
 NUM_DISPARITIES, MIN_DEPTH_M, MAX_DEPTH_M = 128, 0.07, 0.6
+LOW_EXCITATION_REASON = "translation_excitation_low"
+PAIR_SAMPLING_BALANCED = "balanced"
+PAIR_SAMPLING_VISUAL_REJECTIONS = "visual-rejections"
 
 
 @dataclass(frozen=True)
@@ -77,12 +80,23 @@ def _uniform(items: list[dict[str, Any]], count: int) -> list[dict[str, Any]]:
     return [items[int(i)] for i in np.rint(np.linspace(0, len(items) - 1, count)).astype(int)]
 
 
-def select_balanced_pairs(report: dict[str, Any], *, max_pairs: int) -> tuple[list[Pair], dict[str, Any]]:
+def select_balanced_pairs(
+    report: dict[str, Any], *, max_pairs: int, pair_sampling: str = PAIR_SAMPLING_BALANCED
+) -> tuple[list[Pair], dict[str, Any]]:
     if max_pairs < 1:
         raise ValueError("max_pairs must be positive")
+    if pair_sampling not in {PAIR_SAMPLING_BALANCED, PAIR_SAMPLING_VISUAL_REJECTIONS}:
+        raise ValueError(f"unknown pair_sampling: {pair_sampling}")
     ordered = [o for o in report.get("observations", []) if "first_index" in o and "second_index" in o]
     accepted = [o for o in ordered if o.get("accepted") is True]
-    rejected = [o for o in ordered if o.get("accepted") is not True]
+    all_rejected = [o for o in ordered if o.get("accepted") is not True]
+    low_excitation = [o for o in all_rejected if o.get("reason") == LOW_EXCITATION_REASON]
+    rejected = (
+        [o for o in all_rejected if o.get("reason") != LOW_EXCITATION_REASON]
+        if pair_sampling == PAIR_SAMPLING_VISUAL_REJECTIONS
+        else all_rejected
+    )
+    eligible_ordered = [o for o in ordered if o.get("accepted") is True or o in rejected]
     target = max_pairs // 2
     chosen_a, chosen_r = _uniform(accepted, min(target, len(accepted))), _uniform(rejected, min(target, len(rejected)))
     used = {id(o) for o in [*chosen_a, *chosen_r]}
@@ -90,7 +104,7 @@ def select_balanced_pairs(report: dict[str, Any], *, max_pairs: int) -> tuple[li
     if remaining:
         pool = [o for o in (accepted if len(chosen_a) < target else rejected) if id(o) not in used]
         if len(pool) < remaining:
-            pool = [o for o in ordered if id(o) not in used]
+            pool = [o for o in eligible_ordered if id(o) not in used]
         for obs in _uniform(pool, min(remaining, len(pool))):
             (chosen_a if obs.get("accepted") is True else chosen_r).append(obs)
     pairs = [
@@ -99,7 +113,7 @@ def select_balanced_pairs(report: dict[str, Any], *, max_pairs: int) -> tuple[li
         for o in rows
     ]
     pairs.sort(key=lambda p: (p.first_index, p.second_index, p.source_class))
-    return pairs, {
+    meta = {
         "rule": "uniform_6_accepted_left_plus_6_rejected_left_fill_missing_uniform_other_class",
         "max_pairs": max_pairs,
         "source_accepted_available": len(accepted),
@@ -108,6 +122,18 @@ def select_balanced_pairs(report: dict[str, Any], *, max_pairs: int) -> tuple[li
         "selected_rejected": sum(p.source_class == "rejected_left_source" for p in pairs),
         "selected_total": len(pairs),
     }
+    if pair_sampling == PAIR_SAMPLING_VISUAL_REJECTIONS:
+        meta.update(
+            {
+                "pair_sampling": PAIR_SAMPLING_VISUAL_REJECTIONS,
+                "rule": "uniform_half_accepted_left_plus_half_visual_rejected_left_excluding_translation_excitation_low_fill_missing_uniform_other_class",
+                "source_rejected_available": len(all_rejected),
+                "source_visual_rejected_available": len(rejected),
+                "skipped_low_excitation_rejections": len(low_excitation),
+                "skipped_low_excitation_reason": LOW_EXCITATION_REASON,
+            }
+        )
+    return pairs, meta
 
 
 def validate_pair_source_times(pair: Pair) -> None:
@@ -330,7 +356,15 @@ def _record_sources(record, stage_row, baseline):
     return left_path, right_path, left_report, left_traj, right_traj, db3, consumed
 
 
-def run_record(record: dict[str, Any], stage: dict[str, Any], baseline: Path, output: Path, max_pairs: int, manifest: Path | None = None) -> dict[str, Any]:
+def run_record(
+    record: dict[str, Any],
+    stage: dict[str, Any],
+    baseline: Path,
+    output: Path,
+    max_pairs: int,
+    manifest: Path | None = None,
+    pair_sampling: str = PAIR_SAMPLING_BALANCED,
+) -> dict[str, Any]:
     record_id = record["id"]
     stage_row = stage["by_id"].get(record_id)
     if stage_row is None:
@@ -339,7 +373,7 @@ def run_record(record: dict[str, Any], stage: dict[str, Any], baseline: Path, ou
     consumed["source_stage_preflight"] = stage["path"]
     if manifest is not None:
         consumed["manifest"] = manifest
-    pairs, selection = select_balanced_pairs(left_report, max_pairs=max_pairs)
+    pairs, selection = select_balanced_pairs(left_report, max_pairs=max_pairs, pair_sampling=pair_sampling)
     if selection["selected_total"] != max_pairs:
         raise ValueError(f"selected pair count {selection['selected_total']} != max_pairs {max_pairs}")
     before = snapshot(consumed)
@@ -385,19 +419,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     results, failures = [], []
     for record in records:
         try:
-            results.append(run_record(record, stage, args.baseline, args.output, args.max_pairs, args.manifest))
+            results.append(run_record(record, stage, args.baseline, args.output, args.max_pairs, args.manifest, args.pair_sampling))
         except Exception as error:
             failures.append({"id": record.get("id"), "error": f"{type(error).__name__}: {error}"})
+    pair_sampling_policy = {
+        "pair_sampling": (
+            "6 accepted + 6 rejected LEFT primary source rows, fill missing class uniformly"
+            if args.pair_sampling == PAIR_SAMPLING_BALANCED
+            else "half accepted + half visual rejected LEFT primary source rows, excluding translation_excitation_low rejections only for diagnostic sampling"
+        ),
+        "num_disparities": NUM_DISPARITIES, "min_depth_m": MIN_DEPTH_M, "max_depth_m": MAX_DEPTH_M,
+        "sift": SIFT_PARAMS, "pnp": PNP_PARAMS,
+        "right_measurement": "fresh independent RIGHT pixels via mirrored native estimator",
+    }
+    if args.pair_sampling != PAIR_SAMPLING_BALANCED:
+        pair_sampling_policy["pair_sampling_mode"] = args.pair_sampling
     output = {
         "schema": SCHEMA, "status": "PASS" if not failures and all(r["status"] == "PASS" for r in results) else "FAIL",
         "development_only": True, "external_ground_truth_used": False, "slam_supervision": False,
         "factors_emitted": 0, "backend_launched": False, "scoring_launched": False, "gpu_model_used": False,
-        "policy": {
-            "pair_sampling": "6 accepted + 6 rejected LEFT primary source rows, fill missing class uniformly",
-            "num_disparities": NUM_DISPARITIES, "min_depth_m": MIN_DEPTH_M, "max_depth_m": MAX_DEPTH_M,
-            "sift": SIFT_PARAMS, "pnp": PNP_PARAMS,
-            "right_measurement": "fresh independent RIGHT pixels via mirrored native estimator",
-        },
+        "policy": pair_sampling_policy,
         "manifest": str(args.manifest.resolve()), "baseline": str(args.baseline.resolve()),
         "source_stage": str(args.source_stage.resolve()), "record_count": len(records),
         "records": results, "failures": failures,
@@ -414,6 +455,11 @@ def argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dataset", action="append", default=[])
     parser.add_argument("--max-pairs", type=int, default=12)
+    parser.add_argument(
+        "--pair-sampling",
+        choices=(PAIR_SAMPLING_BALANCED, PAIR_SAMPLING_VISUAL_REJECTIONS),
+        default=PAIR_SAMPLING_BALANCED,
+    )
     return parser
 
 
