@@ -250,6 +250,7 @@ def test_reconstructs_tracks_transforms_factors_and_scores_after_freeze(tmp_path
 
     variant = tmp_path / "out" / "case_01" / "selected"
     candidate = json.loads((variant / "candidate_manifest.json").read_text())
+    assert candidate["output_motion_factors_sha256"] == sha(variant / "local_motion_factors.json")
     assert candidate["external_ground_truth_used"] is False
     assert candidate["policy_arguments"]["learned_factor_transform"] == "constant_ir_fixed_so3_gauge_v1"
     assert candidate["track_reports"]["left"]["orientation_refinement"]["eye"] == "left"

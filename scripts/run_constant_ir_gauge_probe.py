@@ -312,6 +312,7 @@ def run_record(record: dict[str, Any], baseline: Path, output: Path, frozen_hash
             "source_candidate_manifest": str((artifact / "candidate_manifest.json").resolve()),
             "input_sha256": provenance_hashes(baseline_candidate, artifact, track_paths),
             "output_estimate_sha256": estimate_sha,
+            "output_motion_factors_sha256": file_hash(variant_dir / "local_motion_factors.json"),
             "bound_samples": len(state.rows),
             "baseline_policy_arguments": baseline_candidate["policy_arguments"],
             "policy_arguments": dict(POLICY_ARGUMENTS),

@@ -213,3 +213,86 @@ source factor identity checks and both probe summaries by hashes. It is
 development evidence, not a three-sample generalization claim. Fresh tests:
 143 PASS. The separate full25 fixed-policy job is now running under
 `constant_gauge_batch_v1/`; no production runner has been changed.
+
+## Constant replay cache binding repair (2026-10-02)
+
+Full v1 closed with 25 records, 18 scored, 15 PASS, six NEW cache reconstruction
+failures and the known primary-scale-unobservable case. The six reconstruction
+failures must not be misreported as trajectory regressions: manifest cache
+hints referred to the earlier failed left cache in four cases; two right hints
+were null. The baseline artifacts already bound the actual successful caches.
+
+The isolated runner now resolves the unique per-eye metric trajectory from the
+validated baseline input hashes and rechecks loaded source hashes. Missing or
+ambiguous bindings are rejected. Red/green tests reproduced the stale-hint/null
+failure; independent review approved only this bounded experimental repair.
+First fixed Sep29 take02 reproduces 1335 original factors with zero vector
+error; its maximum is 18.719518 mm, still FAIL. Fixed controls Sep27 dev1 and
+Sep29 take06 pass at 6.524297 and 6.520835 mm respectively. A fresh full25 replay
+is running under `constant_gauge_batch_v2/`; v1 evidence remains intact.
+
+The two-file cache fix was committed as
+`77105629f89417c0b889282d8aa26ff96631a402`, pushed non-force to the owned
+`sencang` branch, fetched, and both files restored/compared byte-for-byte under
+`/tmp/umi-gauge-cache-fix-backup-20261002.BtWgu6`. This is not production
+promotion or a claim of full-corpus precision acceptance.
+
+## Physical stereo lever experiment: corrected census and pre-score failure
+
+The v1 lever census did not exactly reuse current merged-scale confidence and
+optional report rejection; its P95 must not be quoted as a pure lever effect.
+Corrected `stereo_lever_geometry_audit_v2/` rebuilds all 35254 shared rows in
+24 scored records, zero selection failures and zero raw duplicate matches.
+Lever-only displacement changes: global P50 0.090883 mm, P95 0.300520 mm,
+maximum 2.342799 mm. This supports a geometry consistency test, not a claim
+that this small term explains the remaining 15--19 mm trajectory peaks.
+
+First real physical probe take06 was rejected BEFORE scoring because raw
+camera indices/times were incorrectly assumed to be exact VINS indices/times.
+`physical_stereo_first_v1/` keeps the failed evidence. The adapter/module are
+being repaired to preserve original timestamps and reproduce current nearest
+reference mapping and same-eye dedup before LR selection. Independent review
+also requires output-factor hash binding for the combined constant-gauge
+variant. No production change or score filtering is enabled.
+
+## Fixed constant-gauge full25 result and next information source
+
+`constant_gauge_batch_v2/summary.json` closed COMPLETED_WITH_FAILURES, 25/25
+records, 24 scored, 18 PASS, six scored FAIL and one scale-unobservable input.
+At job close MainPID was zero, ExecMainStatus 3, and all 16 frozen code hashes
+still matched. Baseline had 17 PASS: heldout4 is the one new pass and no old
+PASS became FAIL. Not all metrics improve: Sep29 take02 maximum changed
+18.702402 -> 18.719518 mm, take08 6.088607 -> 6.135901 mm. Worst raw-reference
+contaminated take03 remains explicitly present at 223.956860 mm; it is not a
+valid estimate of ordinary SLAM precision and is not removed from this audit.
+Take06 still fails at 15.104560 mm. NO production promotion/full-goal claim.
+
+Physical-only v4 first plus two controls now all score with complete timelines:
+take06 15.017590 mm FAIL, heldout2 6.278972 mm PASS, heldout4 10.354881 mm FAIL.
+The adapter preserves raw timestamps, maps reference indices, and mirrors
+current unused-candidate gap filtering without dropping any original shared
+row. Same-eye duplicate ambiguity is a visible failure, not an approximation.
+`physical_stereo_batch_v4/` is the next frozen full25 run.
+
+Independent rotation census binds 24 actual adapter-v2 baseline sources:
+69760 accepted raw free-PnP observations, 69619 mapped within the current 10ms
+rule; no constrained/IMU-copied rotations. Relative free-PnP vs VINS angular
+discrepancy P95 is 0.8048 degrees, max 7.7246 degrees. LR transported rotations
+are numerically identical: right stereo reports derive the same physical
+stereo measurement. Do not double-count them as independent rotation factors.
+No point correspondence/inlier sets are saved, so this supports a relative
+SE(3) pose-factor pilot, NOT point-level BA without extracting new inputs.
+
+Independent architecture review confirms current position solver fixes R and
+cannot jointly represent this rotation/translation information. Next isolated
+pilot will optimize body SO3 poses and positions together with one shared
+stereo SE(3) factor per pair, gyro relative rotations, fixed VINS short-motion
+and learned displacement priors. No GT, scale fitting, correction cap or score
+selector. Pilot explicitly omits acceleration/velocity/gravity states and is
+NOT a complete production visual-inertial replacement. Synthetic validation,
+first case plus controls, then full25 are required before promotion.
+
+After v2 closed, constant runner was amended ONLY to publish the output factor
+hash required by combined-probe provenance. Red test failed on absent field;
+fresh complete targeted suite after the one-field fix reports 179 PASS.
+Old completed v2 artifacts are not mutated/relabelled to add this field.
