@@ -932,3 +932,51 @@ evaluation; compare also with the closed fixed-pair RIGHT experiment above.
 All consumed source/helper/evaluator/backend code frozen once run starts.
 Parallel RK3576 branch remains blocked by unreachable target and absent real
 ARM candidate; no deployment or hardware/service mutation performed here.
+
+Capability eb7942ea21d9e6fddc7e568b4b92e20e91875989 pushed non-force to
+sencang/codex/dual-ir-frontend-20261001, fetched HEAD equality confirmed;
+all7changedfiles restored byte-identical and131fresh tests against clean
+remote dependencies PASS at /tmp/umi-symmetric-ir-recovery-backup-20261003.RQpmZW.
+Actual source -> paired evaluator automatically chained in session10560,
+sourcePID2202786; DB3 opens READ_ONLY. No code edits during this experiment.
+Recovery output independent_ir_recovery_four_source_v1, followed automatically
+by independent_ir_recovery_dual_four_score_v1 (samefourrecords). Goal remains
+validation_failed until full25 max10mm contract actually passes; no recovery
+ATE or new acceptance claim at launch.
+
+First actual appendix readonly admission check exposed wrapper provenance bug
+before backend launch: raw trajectory_frames.csv was compared against baseline
+body/IMU metric trajectory_imu_metric.csv / imu_metric_trajectory.csv. These
+correctly differ in path/content. Independent reviewer confirms all4 LEFT/RIGHT
+raw/metric full1199-row timelines exactly equal (maxdt0). Producer remains
+frozen and running; firsttwo native appendices closed. Wrapper will be repaired
+ONLY after source+original evaluator chain closes, preserving costly source
+outputs. Five new contract regressions currently RED (5FAIL/15PASS): distinct
+raw/metric files, source-declared raw path, raw consumed guard, metric baseline
+hash binding and exact raw/metric timeline. Tests alone edited (not consumed
+by running producer); no geometry/scales/weights/gates/caps changed.
+Firstheld2 actual native recovery171/1282rows (LEFT86/RIGHT85); full guarded
+source hashes verified unchanged. Native failures retained (mainlyPnP failures)
+and native acceptance is NOT a trajectory precision result. Initial readonly
+guard command used unavailable hashlib.file_digest onPython3.10; corrected
+streamingSHA implementation passed. Initial debug path candidate.json was
+incorrect; subsequent authoritative validate_baseline_artifact loaded correct
+candidate and confirmed raw-vs-metric mismatch above.
+
+Actual symmetric recovery source CLOSED4/4ready0failures. First chained
+evaluator CLOSEDexit3 before backend: all4record variants explicitly failed
+raw trajectory mismatch (zero scored, not counted as precision failures).
+After chain closure ONLY wrapper binding corrected: contextRAW path/hash must
+match all normally-admitted source reports and consumed guard; baseline metric
+path/hash verified separately; complete raw/metric timelines require EXACT
+equality. Raw-index validation uses raw times; reference association uses
+metric times. Producer/geometry/scales/weights/gates/caps unchanged.
+Five contract regressions RED5FAIL/15PASS -> GREEN20PASS; full136relatedtests
+PASS, independentfocusedreviewAPPROVE. Root actual4record metadata/admission/
+physicaltransform preflight nowPASS: held2 167recoveredeye candidates/95new
+physicalpairs/1588totalpairs; held4 212/124/1799; ind2 152/115/1468;
+take06 251/148/1642. No same-eye replacements, no physical-pair duplicates.
+Actual nativeaccepted counts171/212/152/251 (4held2 candidates excluded by
+unchanged exact-reference binding). This is internal source acceptance, NOTATE.
+Next paired output independent_ir_recovery_dual_four_score_v2; reuse all4
+validated appendices without rerunning expensive source extraction.

@@ -48,6 +48,7 @@ def validate_recovery_appendix(
     guarded = guard.get("guarded_before_sha256")
     if guard.get("guarded_after_verified") is not True or not isinstance(guarded, dict) or not guarded:
         raise ValueError("recovery consumed source guard missing")
+    guarded_paths = {Path(binding["path"]).resolve(): binding["sha256"] for binding in guarded.values()}
     consumed = [path]
     for binding in guarded.values():
         source_path = Path(binding["path"])
@@ -70,6 +71,7 @@ def validate_recovery_appendix(
     consumed.append(parent)
     source_reports = {}
     trajectory_times = {}
+    metric_times = {}
     metadata = {}
     for eye in ("left", "right"):
         context, merged = contexts[eye], eye_reports[eye]
@@ -80,14 +82,19 @@ def validate_recovery_appendix(
         declared = {str(Path(x).resolve()) for x in context["merged_report_paths"]}
         if declared != admitted:
             raise ValueError("recovery report admission does not match normal merge")
-        trajectory = paired.physical.eye_trajectory_path_from_baseline(baseline_candidate, eye)
-        if Path(context["reference_trajectory_path"]).resolve() != trajectory.resolve():
-            raise ValueError("recovery raw trajectory mismatch")
+        trajectory = Path(context["reference_trajectory_path"]).resolve()
+        if guarded_paths.get(trajectory) != context["reference_trajectory_sha256"]:
+            raise ValueError("recovery raw trajectory missing from consumed source guard")
         if paired.file_hash(trajectory) != context["reference_trajectory_sha256"]:
             raise ValueError("recovery raw trajectory hash mismatch")
         trajectory_times[eye] = paired.fusion.load_trajectory(trajectory)[0]
+        metric_trajectory = paired.physical.eye_trajectory_path_from_baseline(baseline_candidate, eye)
+        paired.source_eval.validate_candidate_hashes(baseline_candidate, [metric_trajectory])
+        metric_times[eye] = paired.fusion.load_trajectory(metric_trajectory)[0]
+        if not np.array_equal(trajectory_times[eye], metric_times[eye]):
+            raise ValueError("recovery raw/metric trajectory timeline mismatch")
         metadata[eye] = paired.physical.validate_eye_metadata(baseline_candidate, eye)
-        consumed.append(trajectory)
+        consumed.extend([trajectory, metric_trajectory])
         for source, digest in context["report_sha256"].items():
             source_path = Path(source)
             if paired.file_hash(source_path) != digest:
@@ -96,6 +103,10 @@ def validate_recovery_appendix(
             consumed.append(source_path)
         if not admitted <= {key[1] for key in source_reports if key[0] == eye}:
             raise ValueError("recovery accepted report missing source hash")
+        for source_path in admitted:
+            declared_trajectory = source_reports[(eye, source_path)].get("trajectory")
+            if not declared_trajectory or Path(declared_trajectory).resolve() != trajectory:
+                raise ValueError("recovery source report trajectory mismatch")
 
     candidates = []
     rejected = 0
@@ -145,7 +156,7 @@ def validate_recovery_appendix(
                 or not np.isclose(np.linalg.norm(quaternion), 1.0, atol=1e-6)):
             raise ValueError("recovery native measurement invalid")
         candidate, reason = paired.physical.reference_bound_eye_candidate(
-            reference_times, trajectory_times[eye], eye, native,
+            reference_times, metric_times[eye], eye, native,
             paired.fusion.stereo_observation_confidence(native, float(context["reference_scale"])),
             metadata[eye]["effective_body_T_camera"],
         )
@@ -159,6 +170,7 @@ def validate_recovery_appendix(
         "schema": "independent_ir_recovery_appendix_validation_v1",
         "source_reports_unchanged": True,
         "reference_scales_unchanged": True,
+        "raw_metric_timelines_equal": True,
         "native_rejected_rows_retained": rejected,
         "recovered_eye_candidate_count": len(candidates),
         "skipped_candidates": skipped,

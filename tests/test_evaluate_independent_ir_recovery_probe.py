@@ -35,7 +35,7 @@ def fixture(tmp_path, monkeypatch):
         trajectories[eye] = trajectory
         original = {"accepted": False, "reason": "pnp_failed", "first_index": 1,
                     "second_index": 2, "first_t_sec": .02, "second_t_sec": .04}
-        source = write(tmp_path / f"{eye}.json", {"result": "PASS", "observations": [original]})
+        source = write(tmp_path / f"{eye}.json", {"result": "PASS", "trajectory": str(trajectory), "observations": [original]})
         scale = .4
         reports[eye] = {"merged_report_paths": [str(source)], "scale_m_per_mast3r_unit": scale}
         contexts[eye] = {"reference_scale": scale, "reference_trajectory_path": str(trajectory),
@@ -53,6 +53,7 @@ def fixture(tmp_path, monkeypatch):
                         "original_observation": original, "native_observation": native,
                         "raw_forward_summary": {"accepted": True}, "raw_reverse_summary": {"accepted": True}})
     monkeypatch.setattr(probe.paired.physical, "eye_trajectory_path_from_baseline", lambda _, eye: trajectories[eye])
+    monkeypatch.setattr(probe.paired.source_eval, "validate_candidate_hashes", lambda *_: None)
     monkeypatch.setattr(probe.paired.fusion, "load_trajectory", lambda _: (times, None, None, None))
     appendix = {"schema": probe.APPENDIX_SCHEMA, "external_ground_truth_used": False,
                 "slam_supervision": False, "id": "take", "session": str(session),
@@ -89,6 +90,62 @@ def test_native_failure_retained_without_factor(fixture):
     candidates, diagnostic, _ = run()
     assert len(candidates) == 1 and candidates[0]["eye"] == "right"
     assert diagnostic["native_rejected_rows_retained"] == 1
+
+
+def test_raw_camera_and_body_metric_paths_are_distinct(fixture, tmp_path, monkeypatch):
+    appendix, _, _, run = fixture
+    metric_paths = {eye: write(tmp_path / f"{eye}_body_metric.csv", {"metric": True})
+                    for eye in ("left", "right")}
+    monkeypatch.setattr(probe.paired.physical, "eye_trajectory_path_from_baseline", lambda _, eye: metric_paths[eye])
+    monkeypatch.setattr(probe.paired.source_eval, "validate_candidate_hashes", lambda *_: None)
+    candidates, _, consumed = run()
+    assert len(candidates) == 2
+    assert set(metric_paths.values()) <= set(consumed)
+    assert all(Path(appendix["eye_contexts"][eye]["reference_trajectory_path"]) != metric_paths[eye]
+               for eye in ("left", "right"))
+
+
+def test_raw_camera_metric_timeline_mismatch_fails(fixture, tmp_path, monkeypatch):
+    _, _, _, run = fixture
+    metric_paths = {eye: write(tmp_path / f"{eye}_body_metric.csv", {}) for eye in ("left", "right")}
+    monkeypatch.setattr(probe.paired.physical, "eye_trajectory_path_from_baseline", lambda _, eye: metric_paths[eye])
+    monkeypatch.setattr(probe.paired.source_eval, "validate_candidate_hashes", lambda *_: None)
+    monkeypatch.setattr(probe.paired.fusion, "load_trajectory", lambda path: (
+        np.array([0., .02, .05 if Path(path) in metric_paths.values() else .04]), None, None, None))
+    with pytest.raises(ValueError, match="timeline"):
+        run()
+
+
+def test_raw_camera_path_must_match_admitted_source_report(fixture):
+    appendix, _, _, run = fixture
+    entry = appendix["observations"][0]
+    source = Path(entry["source_report_path"])
+    report = json.loads(source.read_text())
+    report["trajectory"] = str(source.parent / "wrong_camera.csv")
+    write(source, report)
+    digest = probe.paired.file_hash(source)
+    entry["source_report_sha256"] = digest
+    appendix["eye_contexts"]["left"]["report_sha256"][str(source)] = digest
+    appendix["consumed_source_guard"]["guarded_before_sha256"][str(source)]["sha256"] = digest
+    with pytest.raises(ValueError, match="source report trajectory"):
+        run()
+
+
+def test_raw_camera_path_must_have_consumed_source_guard(fixture):
+    appendix, _, _, run = fixture
+    trajectory = appendix["eye_contexts"]["left"]["reference_trajectory_path"]
+    appendix["consumed_source_guard"]["guarded_before_sha256"].pop(trajectory)
+    with pytest.raises(ValueError, match="trajectory.*guard"):
+        run()
+
+
+def test_metric_trajectory_must_remain_baseline_bound(fixture, monkeypatch):
+    _, _, _, run = fixture
+    def reject(*_):
+        raise ValueError("metric trajectory not baseline-bound")
+    monkeypatch.setattr(probe.paired.source_eval, "validate_candidate_hashes", reject)
+    with pytest.raises(ValueError, match="baseline-bound"):
+        run()
 
 
 def test_valid_hash_appendix_cannot_admit_original_low_excitation(fixture):
