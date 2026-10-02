@@ -980,3 +980,25 @@ Actual nativeaccepted counts171/212/152/251 (4held2 candidates excluded by
 unchanged exact-reference binding). This is internal source acceptance, NOTATE.
 Next paired output independent_ir_recovery_dual_four_score_v2; reuse all4
 validated appendices without rerunning expensive source extraction.
+
+Wrapper binding capability d4776ce184b28cd47023ced804ba7f8907d42161 backed
+to sencang branch; all5changedfiles byte-identical after remote restore and
+136fresh relatedtests PASS at /tmp/umi-ir-recovery-binding-backup-20261003.ac3ijR.
+Actual paired recovery evaluation session1899 CLOSEDexit0/4of4scored:
+originalcurrentbest -> recovered (mean/P95/max mm):
+held2 2.520/5.135/6.183 -> 2.026/3.801/5.256 PASS;
+held4 3.796/5.589/9.445 -> 3.524/6.022/8.240 PASS;
+ind2 4.972/11.527/14.403 -> 3.763/9.193/10.987 FAILmax;
+take06 3.180/5.688/14.756 -> 2.717/4.973/13.259 FAILmax.
+All4originalmax improved and both oldPASS retained, NO extraPASS; held4P95
+worsened0.432mm vsoriginal. Versus the preceding actual independentRIGHT
+fixed-pair arm (max5.153/7.959/12.426/14.401), held2/held4max slightlyworse
+and ind2/take06max improve1.439/1.142mm. No promotion or full25claim.
+Rootfreshverification PASS: allfrozen codehashes, full1141/1143/1143/1143
+timelines/orientation unchanged betweenarms, learnedfactor SHAidentical,
+originalcontrol replaymax <=2.834e-8m <1e-7m. The large physicaltransform
+vector-delta field on appendedrows compares zero template to actual native
+motion; it is not an ATE or a claimed228mm trajectory correction.
+Automatically continuing evidence audit of ind2/take06 residual over10mm
+frames/constraintcoverage/nativeclosure, including held4 regression; no new
+cap/weight/threshold sweep and no GT-based source/candidate selection.
