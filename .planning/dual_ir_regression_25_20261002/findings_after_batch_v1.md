@@ -1224,3 +1224,63 @@ row1105/time1790504142.5195704(+36.831s), scalar9above10frames ->SE3 49,
 mainSE3run1090..1126(1.2s). take06 bothsamepeakrow1030/time1790758857.1729436
 (+34.330s), both4above10frames1027..1030(.100s). These are post-output GT
 diagnostics only, not input windows or selection. Reject this geometry update.
+
+SE3 score evidence committedc4847b10e734dd4e4cf176a1a9e5755fb8ac3515,
+fetched from owned sencang and restored2files byte-identical at
+/tmp/umi-se3-score-evidence-20261003.fuEBxX. Original five acceptance suites
+fresh78PASS11.92s, not an accuracy claim. Next bounded corpus expansion is
+the earlier native independent-IR missing-pair recovery policy (all4max
+improved, no extraPASS), NOT rejected SE3 averaging or a parameter sweep.
+Independent readiness audit: baseline/constant/combined prerequisites exist
+24/25; originalmanifest retains unobservable20260929_take05, and raw-Tracker
+contaminated20260929_take03. Existing source-stage registries have only4records,
+so extending them requires an honestly typed original-baseline source registry;
+do not fabricate SIFT-LM/refined lineage or reuse metric coordinates as raw.
+Current ordinary translation failures: ind2 14.403mm,take02 18.849mm,
+take04 10.902mm,take06 14.756mm; take07 max9.864mm but rotation gate fail.
+Registry-only implementation/TDD assigned to executor: new script/test pair,
+no production/backend/score yet. Uniform ORIGINAL BASELINE source recipe for
+all24 is distinct from the earlier four-pilot refined source context; exact
+currentcombined control replay and all-record regression are required before
+any improvement or promotion claim. Denominator25 and gate thresholds frozen.
+
+Further read-only source census reconstructed all6497current scalar sharedrows:
+0frozen-whole-pair fallbacks; independentRIGHTwinner2924/6497(45.01%),
+existing/fallback-labeledwinner48/6497(.74%). Nativeboth-eye common-body
+difference median.407/P953.016/max27.907mm; fixed1s worstbins not unique to
+failures (passingheld4 max23.963mm). Thus stalefallback is NOT dominant and
+L/Rclosure tail is not a validated failureselector; no new closuregate.
+
+Registry initial6mocktests/metadata17ready1retained7errors was NOT readiness.
+Root + independentreview REQUESTCHANGES before any source job: hardcoded-ID
+bypass, missing/nonfinite acceptedtimes, raw/metric proof and artifactguards,
+overstrictrejectedrows. Independentreview found7errors all rejectedRIGHT
+diagnostics, accepted_bad0. This is newregistry validation behavior, not the
+cause of existingSLAMprecision failures or grounds to reject videos.
+Executor repaired ownedregistry2files, rootfresh9testsPASS. Read-only actual
+ORIGINAL25manifest/v3 source dryrun now24ready1retained0errors; rejected invalid
+rowdiagnostics kept. Sourceprototype2files is METADATA-ONLY (no image/native
+outputs yet), initial7mocktests insufficient; rootrequested mandatoryregistry
+rawhash proof (rawnotoldcandidate-bound), strictconsumable time/index validation,
+raw/metric exacttimeline/calibration/optionaladmission checks. Independentfresh
+four-file review pending; no actual corpus extraction/backend/scorer launched.
+
+2026-10-03 user authorized automatic optimization after batch completion.
+Metadata-only corpus registry/source contracts now independently APPROVED:
+root fresh26tests PASS, reviewer26tests PASS and py_compile PASS. Actual CLI
+registry/source artifacts both PREFLIGHT_COMPLETE25records/24ready/1retained,
+0technical errors. Registry SHA1e96b5244941f41d1ab4835c6fe3dce049c1c8ee227b54797532486fbb82f8ad;
+source SHAa53b3a8ff9a690765be03eb8c947ca984158ee562efd1234c4d1226474f42089.
+Accepted rows strictly bound;3999invalid rejected diagnostics excluded only
+from recovery eligibility, preserved for audit. Candidate-bound metric and
+registry/report-bound raw trajectories remain distinct with exact timelines.
+Metadata eligible counts:34440acceptedRIGHT refresh rows,29509symmetric
+rejected non-low-excitation rows. These counts are NOT emitted factors or
+native accepted measurements. No image/native/backend/scorer/GPU job yet.
+Native producer and paired consumer are bounded NEW-file implementation lanes;
+reuse original native estimators/optional reject_window/confidence/physical
+factor policy, honest original-baseline lineage and strict currentcombined
+control replay. No per-record recipe or GT source supervision is introduced.
+Fresh read-only RK SSH probe again exited255 No route to host. No board
+identity/release/rollback/idle verification, actual ARM package or deployment
+acceptance; no live modification of services/configuration/recordings.
