@@ -773,3 +773,31 @@ per record, recomputes fresh SIFT/PnP for BOTH eyes, emits no factors and
 reads no GT. Lightweight four-record paths/timestamp preflight PASS:
 1199 raw poses per eye, exactly equal time arrays, all source paths present.
 Independent client review remains pending before real DB3 pilot launch.
+
+Client review initially blocked stale stage-hash/lineage acceptance; fixed with
+declared LEFT/refinedRIGHT/originalRIGHT/rawRIGHT bindings, manifest guard and
+timestamp checks before image loading. Empty SIFT/KNN results now cleanly
+reject per pair rather than throwing a record-level shape exception.
+Fresh 43 related tests PASS; independent re-review approves bounded pilot.
+Helper backup 4c1396fe remote-restored byte-identical and 11 known-motion
+tests freshly pass against clean remote native dependencies at
+/tmp/umi-independent-right-helper-20261003.BKhfTW. Client d759b71c backup
+remote-restored byte-identical at /tmp/umi-right-diagnostic-backup-20261003.3WWuLK.
+First source pilot v1 failed all four before motion estimation because root
+omitted ROS environment setup (rosbag2_py unavailable); retained as launcher
+failure, NOT raw recording quality or algorithm precision failure.
+Same frozen code under /opt/ros/humble/setup.bash: source pilot v2 CLOSED
+4x12, exact6 accepted+6 rejected LEFTsource rows each, allhashguards PASS,
+0GT/0factors/0backend/0scoring. FreshLEFT/RIGHT crossmatrix both/Lonly/Ronly/neither:
+held2 8/0/0/4; held4 7/0/0/5; ind2 7/0/0/5; take06 6/0/1/5.
+Bothaccepted physical-vector closure median/max(mm): held2 .333/.446;
+held4 .386/1.446; ind2 .421/.740; take06 .572/.663.
+Take06 pair1125->1150: freshLEFT pnp_failed17inliers/57points;
+freshRIGHT accepted22/62, reprojectionP95 3.927px, distance69.796mm.
+This is evidence of RIGHT source complement, NOT ground-truth accuracy.
+Most sampled rejects are static lowexcitation; therefore next predeclared
+4x24 source-only audit stratifies12 accepted+12 non-lowexcitation rejected
+primaryreport pairs per record. This changes diagnostic sampling only,
+not tracking gates, frame retention, graph factors, weights or scores.
+No independentRIGHT factor promotion until stronger source coverage and
+guarded paired currentbest replay show an actual precision improvement.

@@ -1,0 +1,53 @@
+{
+  "schema": "umi_independent_right_stereo_diagnostic_v1",
+  "status": "FAIL",
+  "development_only": true,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "factors_emitted": 0,
+  "backend_launched": false,
+  "scoring_launched": false,
+  "gpu_model_used": false,
+  "policy": {
+    "pair_sampling": "6 accepted + 6 rejected LEFT primary source rows, fill missing class uniformly",
+    "num_disparities": 128,
+    "min_depth_m": 0.07,
+    "max_depth_m": 0.6,
+    "sift": {
+      "nfeatures": 4000,
+      "contrastThreshold": 0.01,
+      "edgeThreshold": 15,
+      "ratio": 0.75
+    },
+    "pnp": {
+      "pnp_iterations": 1000,
+      "pnp_reprojection_error_px": 4.0,
+      "refine_pnp": true,
+      "pnp_rotation_mode": "free"
+    },
+    "right_measurement": "fresh independent RIGHT pixels via mirrored native estimator"
+  },
+  "manifest": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+  "baseline": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2",
+  "source_stage": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3",
+  "record_count": 4,
+  "records": [],
+  "failures": [
+    {
+      "id": "20260927_heldout2",
+      "error": "ModuleNotFoundError: No module named 'rosbag2_py'"
+    },
+    {
+      "id": "20260927_heldout4",
+      "error": "ModuleNotFoundError: No module named 'rosbag2_py'"
+    },
+    {
+      "id": "20260927_ind2",
+      "error": "ModuleNotFoundError: No module named 'rosbag2_py'"
+    },
+    {
+      "id": "20260930_take06",
+      "error": "ModuleNotFoundError: No module named 'rosbag2_py'"
+    }
+  ]
+}
