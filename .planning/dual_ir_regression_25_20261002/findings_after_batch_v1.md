@@ -691,3 +691,19 @@ best trajectory<1e-7m before attributing any sourceupgrade; implementation
 reuses existingbackend/selection, noGTpolicy and separateoverrides.
 Capability f006c61c backed to sencang, fetched/restored5files byte-identical
 at /tmp/umi-sift-source-score-backup-20261002.qYmv2R. Production unchanged.
+
+2026-10-03 exactcurrentbest dual-context adapter launched boundedfour after
+Root/independentreview repairedfailclosedcontracts: originalcontrolreplay
+hardgate<1e-7m withfinitep/R/t/count checks; combinedreference schema/policy/
+inputSHA binding; actualconsumedinputbefore/afterhashes; finalprovenance
+written/frozen before score. Scorerlocalwrapper restoredfinally; shared
+backend/math unchanged. Newtests6PASS; related52testsPASS0.25s, existing
+five acceptance suites78PASS11.82s. Newartifacts only, production unchanged.
+This arm isPARTIAL LEFT SIFT-LM sourceupgrade: RIGHTmetricreports derive
+oldLEFTgeometry andremainunchanged. It doesNOT claim fullmetric-source
+parity; staleRIGHTderivedgeometry canwinfixedconfidence, tobeaudited.
+Ready legacycoverage:16direct+8adapterneeded+1unobservable, not25direct.
+Of8readyadapterneeded,4havepayload/datasetbutlackoldgraph;4havevalidgraph
+outside reports anddatasetatkeyframe_dir. No missingrawpayload found for8.
+Do not writes himgraphs or discardthese; genericimmutableinputadapterneeded
+onlyif currentbest probe supports expansion.
