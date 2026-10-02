@@ -359,3 +359,39 @@ scoring change. 400nodeperturbedfixed-R benchmark36.71s->0.06455s,LSMRstatus2
 converged; numericalspeedup is NOT precisiongain. Firstv2take06 restarted under
 900sboundedownCPUservice `umi-joint-stereo-se3-first-v2-20261002`, realresults
 pending. Originalfailedv1 artifacts remain untouched.
+
+Firstv2closed1record/2variantsboth unscorednonconverged,19frozenhashesunchanged,
+MainPID0/Exec3. ActualfixedR matrix16863x3426 has101169nnz; LSMRhardcoded2000
+iterations exhausted,normar0.00068728,normr3.143876,conditionestimate254.776.
+Joint200nfev exhausted,cost241.755201->73.397931. Do not score partialsolutions
+or claim thisinternalcost improvement as precision. Nextread-onlybenchmark
+must use thisrealmatrix to establish convergencebudget/preconditioning before
+anothernumericaledit; synthetic400nodes was insufficient performanceevidence.
+Numericalrepaircommitcc095dfafe76d0ff950a1939d597781d0ca576fc backed nonforce
+toownedremote,fetched and restored4filesbyteidentical at
+/tmp/umi-se3-numerical-backup-20261002.E2qzyz.
+
+RealAread-onlybenchmark: graph-derivedLSMRbudget13704stopped9492/status2,
+normalgradient6.18e-6,cost220.36089165; sparse normaldirect0.0099s finite,
+normalgradient6.94e-11,cost220.36089077 (sameLSQRoptimum). Thus hardcoded2000
+budget was unsuitable, not a changedobjective. FixedRexactinit +x_scale=jac
+joint200nfevstillfailed after74.77s,optimality1.51499,cost73.379526: do NOT
+blindly increase nonlinearbudget as a precisionfix. NextanalyticJacobian is
+for sameposefactorloss; standardSO3Jacob formulas checked against primary
+https://arxiv.org/pdf/1812.01537 eq143-146 and independentcentraldifferences.
+Reviewer derivativeerror max2.20e-9 forrotation/gyro and~4.6e-10translation.
+Runtime/precision gains still need actualsamefailedcase+controls verification.
+
+### Verified numerical conditioning repair, not precision acceptance
+
+Actual take06 analytic-Jacobian solve still exhausted 200 outer evaluations with
+default inner LSMR tolerances. A bounded no-GT benchmark isolated numerical
+conditioning: exact gradient-verified fixed-R position initialization,
+`x_scale='jac'`, inner LSMR atol/btol1e-10 and maxiter4*nvars converged by ftol
+in4 outer evaluations,2.69s,cost220.360891->73.376338. No weights, factors,
+outer convergence tolerances, timeline, gauge, or scoring policy changed.
+Implementation repeats this result in2.59s; fresh root targeted suite206PASS,
+compile and diffcheck clean. This proves numerical operability only; actual
+frozen first case plus two independent controls must score before any precision
+claim. Joint pilot remains pose-only, no acceleration/velocity/gravity states,
+and production is not promoted. All failed previous pilot artifacts retained.

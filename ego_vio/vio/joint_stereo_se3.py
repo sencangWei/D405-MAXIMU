@@ -16,7 +16,7 @@ from typing import Any, Sequence
 import numpy as np
 from scipy.optimize import least_squares
 from scipy.sparse import coo_matrix, lil_matrix
-from scipy.sparse.linalg import lsmr
+from scipy.sparse.linalg import spsolve
 from scipy.spatial.transform import Rotation
 
 from ego_vio.vio.dual_ir_factors import (
@@ -122,8 +122,6 @@ def solve_joint_stereo_se3(
         learned,
         optimize_rotations,
     )
-    x0 = _pack(rotations0, positions0, optimize_rotations)
-
     def residual(parameters: np.ndarray) -> np.ndarray:
         rotations, positions = _unpack(
             parameters,
@@ -133,50 +131,79 @@ def solve_joint_stereo_se3(
         )
         return _residual_vectorized(rotations, positions, stereo, gyro, vins, learned)
 
+    reference_before = residual(_pack(rotations0, positions0, optimize_rotations))
+    joint_initialization = None
+    initial_positions = positions0
+    if optimize_rotations:
+        init_linear = _fixed_rotation_linear_system(rotations0, positions0, stereo, vins, learned)
+        init_solution = _solve_fixed_rotation_normal_equations(
+            init_linear["matrix"],
+            init_linear["rhs"],
+        )
+        joint_initialization = _fixed_rotation_diagnostic(init_linear, init_solution)
+        if not init_solution["success"]:
+            raise ValueError(
+                "joint fixed-R position initialization failed finite/gradient verification"
+            )
+        initial_positions = positions0.copy()
+        initial_positions[1:] = init_solution["x"].reshape((times.size - 1, 3))
+    x0 = _pack(rotations0, initial_positions, optimize_rotations)
     before = residual(x0)
     if optimize_rotations:
-        sparsity = _jacobian_sparsity(
-            times.size,
-            stereo,
-            gyro,
-            vins,
-            learned,
-            optimize_rotations,
-        )
+        inner_lsmr_maxiter = 4 * x0.size
+        tr_options = {
+            "regularize": True,
+            "atol": 1e-10,
+            "btol": 1e-10,
+            "maxiter": inner_lsmr_maxiter,
+        }
         result = least_squares(
             residual,
             x0,
-            jac_sparsity=sparsity,
+            jac=lambda parameters: _analytic_jacobian(
+                parameters,
+                rotations0,
+                positions0,
+                stereo,
+                gyro,
+                vins,
+                learned,
+            ),
             max_nfev=200,
             xtol=1e-10,
             ftol=1e-10,
             gtol=1e-10,
+            x_scale="jac",
+            tr_solver="lsmr",
+            tr_options=tr_options,
         )
         rotations, positions = _unpack(result.x, rotations0, positions0, optimize_rotations)
-        solver_name = "scipy_least_squares_sparse_finite_difference"
+        solver_name = "scipy_least_squares_sparse_analytic_jacobian"
         solver_success = bool(result.success)
         solver_status = int(result.status)
         solver_message = str(result.message)
         solver_nfev = int(result.nfev)
+        solver_njev = int(result.njev) if result.njev is not None else None
+        solver_optimality = float(result.optimality)
         fixed_linear = None
+        solver_x_scale = "jac"
+        solver_tr_options = tr_options
     else:
         linear = _fixed_rotation_linear_system(rotations0, positions0, stereo, vins, learned)
-        solution = lsmr(linear["matrix"], linear["rhs"], atol=1e-10, btol=1e-10, maxiter=2000)
+        solution = _solve_fixed_rotation_normal_equations(linear["matrix"], linear["rhs"])
         positions = positions0.copy()
-        positions[1:] = np.asarray(solution[0], dtype=float).reshape((times.size - 1, 3))
+        positions[1:] = solution["x"].reshape((times.size - 1, 3))
         rotations = rotations0.copy()
-        solver_name = "scipy_sparse_lsmr_fixed_rotation_exact_linear_objective"
-        solver_status = int(solution[1])
-        solver_success = solver_status in {0, 1, 2, 4, 5}
-        solver_message = _lsmr_status_message(solver_status)
-        solver_nfev = int(solution[2])
-        fixed_linear = {
-            "matrix_shape": tuple(int(value) for value in linear["matrix"].shape),
-            "matrix_nnz": int(linear["matrix"].nnz),
-            "lsmr_normr": float(solution[3]),
-            "lsmr_normar": float(solution[4]),
-            "lsmr_conda": float(solution[6]),
-        }
+        solver_name = "scipy_sparse_normal_equation_spsolve_fixed_rotation_exact_linear_objective"
+        solver_status = int(solution["status"])
+        solver_success = bool(solution["success"])
+        solver_message = str(solution["message"])
+        solver_nfev = 1
+        solver_njev = None
+        solver_optimality = float(solution["normal_gradient_inf"])
+        fixed_linear = _fixed_rotation_diagnostic(linear, solution)
+        solver_x_scale = None
+        solver_tr_options = {}
     if not optimize_rotations:
         after = residual(_pack(rotations, positions, optimize_rotations))
     else:
@@ -225,12 +252,28 @@ def solve_joint_stereo_se3(
                 sum(factor.imu_gap_bridged for factor in gyro)
             ),
             "missing_physics": ["acceleration", "velocity", "gravity"],
+            "reference_cost_before_initialization": float(
+                np.dot(reference_before, reference_before)
+            ),
+            "joint_initialization": joint_initialization,
             "cost_before": float(np.dot(before, before)),
             "cost_after": float(np.dot(after, after)),
             "least_squares_success": solver_success,
             "least_squares_status": solver_status,
             "least_squares_message": solver_message,
             "nfev": solver_nfev,
+            "njev": solver_njev,
+            "optimality": solver_optimality,
+            "solver_tr_options": {
+                "method": "trf",
+                "tr_solver": "lsmr" if optimize_rotations else "spsolve_normal_equations",
+                "tr_options": solver_tr_options,
+                "x_scale": solver_x_scale,
+                "max_nfev": 200,
+                "xtol": 1e-10,
+                "ftol": 1e-10,
+                "gtol": 1e-10,
+            },
             "solver": solver_name,
             "fixed_rotation_linear_solver": fixed_linear,
         },
@@ -455,18 +498,188 @@ def _fixed_rotation_linear_system(
     return {"matrix": matrix, "rhs": np.asarray(rhs, dtype=float)}
 
 
-def _lsmr_status_message(status: int) -> str:
-    messages = {
-        0: "x=0 is an exact solution",
-        1: "Ax-b is small enough",
-        2: "least-squares normal equation residual is small enough",
-        3: "condition number estimate exceeded conlim",
-        4: "Ax-b is small enough for machine precision",
-        5: "least-squares residual is small enough for machine precision",
-        6: "condition number estimate exceeded machine precision",
-        7: "iteration limit reached",
+def _solve_fixed_rotation_normal_equations(matrix, rhs: np.ndarray) -> dict[str, Any]:
+    normal = matrix.T @ matrix
+    normal_rhs = matrix.T @ rhs
+    solution = np.asarray(spsolve(normal.tocsc(), normal_rhs), dtype=float)
+    residual = matrix @ solution - rhs
+    gradient = matrix.T @ residual
+    gradient_norm = float(np.linalg.norm(gradient))
+    gradient_relative = gradient_norm / max(1.0, float(np.linalg.norm(normal_rhs)))
+    finite = bool(np.all(np.isfinite(solution)))
+    success = finite and gradient_relative <= 1e-8
+    return {
+        "x": solution,
+        "status": 1 if success else -1,
+        "success": success,
+        "message": (
+            "sparse normal equations solved and independently gradient-checked"
+            if success
+            else "sparse normal equation solution failed finite/gradient verification"
+        ),
+        "normal_nnz": int(normal.nnz),
+        "residual_norm": float(np.linalg.norm(residual)),
+        "normal_gradient_norm": gradient_norm,
+        "normal_gradient_inf": float(np.linalg.norm(gradient, ord=np.inf)),
+        "normal_gradient_relative": float(gradient_relative),
     }
-    return messages.get(int(status), f"unknown lsmr status {status}")
+
+
+def _fixed_rotation_diagnostic(linear: dict[str, Any], solution: dict[str, Any]) -> dict[str, Any]:
+    matrix = linear["matrix"]
+    return {
+        "matrix_shape": tuple(int(value) for value in matrix.shape),
+        "matrix_nnz": int(matrix.nnz),
+        "normal_matrix_nnz": int(solution["normal_nnz"]),
+        "residual_norm": float(solution["residual_norm"]),
+        "normal_gradient_norm": float(solution["normal_gradient_norm"]),
+        "normal_gradient_inf": float(solution["normal_gradient_inf"]),
+        "normal_gradient_relative": float(solution["normal_gradient_relative"]),
+        "success": bool(solution["success"]),
+        "status": int(solution["status"]),
+        "message": str(solution["message"]),
+    }
+
+
+def _analytic_jacobian(
+    parameters: np.ndarray,
+    reference_rotations: np.ndarray,
+    reference_positions: np.ndarray,
+    stereo: list[_StereoFactor],
+    gyro: list[_RotationFactor],
+    vins: list[_DisplacementFactor],
+    learned: list[_DisplacementFactor],
+):
+    rotations, positions = _unpack(parameters, reference_rotations, reference_positions, True)
+    node_count = positions.shape[0]
+    variable_count = 6 * max(0, node_count - 1)
+    rows: list[int] = []
+    cols: list[int] = []
+    data: list[float] = []
+
+    def add_block(row: int, col: int, block: np.ndarray) -> None:
+        if col < 0:
+            return
+        for local_row in range(block.shape[0]):
+            for local_col in range(block.shape[1]):
+                value = float(block[local_row, local_col])
+                if value != 0.0:
+                    rows.append(row + local_row)
+                    cols.append(col + local_col)
+                    data.append(value)
+
+    def rotation_col(node: int) -> int:
+        return -1 if node == 0 else 3 * (node - 1)
+
+    def position_col(node: int) -> int:
+        return -1 if node == 0 else 3 * max(0, node_count - 1) + 3 * (node - 1)
+
+    rotvecs = Rotation.from_matrix(rotations).as_rotvec()
+    row = 0
+    for factor in stereo:
+        first, second = factor.first, factor.second
+        ri = rotations[first]
+        rj = rotations[second]
+        rbc = factor.body_r_camera
+        tbc = factor.body_t_camera
+        measurement = factor.rotation_camera_j_from_i
+        predicted_r = rbc.T @ rj.T @ ri @ rbc
+        error = Rotation.from_matrix(measurement.T @ predicted_r).as_rotvec()
+        rot_scale = np.sqrt(factor.confidence) / factor.rotation_sigma_rad
+        trans_scale = np.sqrt(factor.confidence) / STEREO_TRANSLATION_SIGMA_M
+        jr_i = _right_jacobian_so3(rotvecs[first])
+        jr_j = _right_jacobian_so3(rotvecs[second])
+        jr_inv_error = _right_jacobian_inv_so3(error)
+        jl_inv_error = _left_jacobian_inv_so3(error)
+        add_block(
+            row,
+            rotation_col(first),
+            rot_scale * jr_inv_error @ rbc.T @ jr_i,
+        )
+        add_block(
+            row,
+            rotation_col(second),
+            -rot_scale * jl_inv_error @ measurement.T @ rbc.T @ jr_j,
+        )
+        u = ri.T @ ((positions[second] - positions[first]) + rj @ tbc)
+        trans_matrix = rbc.T @ ri.T
+        add_block(
+            row + 3,
+            rotation_col(first),
+            trans_scale * rbc.T @ _skew(u) @ jr_i,
+        )
+        add_block(
+            row + 3,
+            rotation_col(second),
+            -trans_scale * rbc.T @ ri.T @ rj @ _skew(tbc) @ jr_j,
+        )
+        add_block(row + 3, position_col(first), -trans_scale * trans_matrix)
+        add_block(row + 3, position_col(second), trans_scale * trans_matrix)
+        row += 6
+    for factor in gyro:
+        first, second = factor.first, factor.second
+        measurement = factor.delta_rotation_body_i_to_body_j
+        predicted = rotations[first].T @ rotations[second]
+        error = Rotation.from_matrix(measurement.T @ predicted).as_rotvec()
+        scale = np.sqrt(factor.confidence) / factor.rotation_sigma_rad
+        add_block(
+            row,
+            rotation_col(first),
+            -scale
+            * _left_jacobian_inv_so3(error)
+            @ measurement.T
+            @ _right_jacobian_so3(rotvecs[first]),
+        )
+        add_block(
+            row,
+            rotation_col(second),
+            scale * _right_jacobian_inv_so3(error) @ _right_jacobian_so3(rotvecs[second]),
+        )
+        row += 3
+    for factor in (*vins, *learned):
+        scale = np.sqrt(factor.confidence) / factor.sigma_m
+        add_block(row, position_col(factor.first), -scale * np.eye(3))
+        add_block(row, position_col(factor.second), scale * np.eye(3))
+        row += 3
+    return coo_matrix((data, (rows, cols)), shape=(row, variable_count)).tocsr()
+
+
+def _skew(vector: np.ndarray) -> np.ndarray:
+    x, y, z = np.asarray(vector, dtype=float)
+    return np.array([[0.0, -z, y], [z, 0.0, -x], [-y, x, 0.0]])
+
+
+def _left_jacobian_so3(phi: np.ndarray) -> np.ndarray:
+    phi = np.asarray(phi, dtype=float)
+    theta = float(np.linalg.norm(phi))
+    omega = _skew(phi)
+    if theta < 1e-8:
+        return np.eye(3) + 0.5 * omega + (1.0 / 6.0) * (omega @ omega)
+    theta2 = theta * theta
+    return (
+        np.eye(3)
+        + ((1.0 - np.cos(theta)) / theta2) * omega
+        + ((theta - np.sin(theta)) / (theta2 * theta)) * (omega @ omega)
+    )
+
+
+def _right_jacobian_so3(phi: np.ndarray) -> np.ndarray:
+    return _left_jacobian_so3(-np.asarray(phi, dtype=float))
+
+
+def _left_jacobian_inv_so3(phi: np.ndarray) -> np.ndarray:
+    phi = np.asarray(phi, dtype=float)
+    theta = float(np.linalg.norm(phi))
+    omega = _skew(phi)
+    if theta < 1e-8:
+        return np.eye(3) - 0.5 * omega + (1.0 / 12.0) * (omega @ omega)
+    theta2 = theta * theta
+    coefficient = (1.0 / theta2) - ((1.0 + np.cos(theta)) / (2.0 * theta * np.sin(theta)))
+    return np.eye(3) - 0.5 * omega + coefficient * (omega @ omega)
+
+
+def _right_jacobian_inv_so3(phi: np.ndarray) -> np.ndarray:
+    return _left_jacobian_inv_so3(-np.asarray(phi, dtype=float))
 
 
 def _validate_stereo_factors(
