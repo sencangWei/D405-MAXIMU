@@ -61,8 +61,11 @@ def make_fixture(tmp_path: Path, *, second_status: str | None = None):
         (session / "external_imu/imu.bin").write_bytes(f"imu {rid}".encode())
         (vins / "vio_corrected_stream.csv").write_text(f"vins {rid}\n")
         (vins / "run_acceptance.json").write_text("{}\n")
-        for directory in (left, right):
-            for name in ("trajectory_imu_metric.csv", "imu_scale_report.json", "stereo.json"):
+        for directory, trajectory_name in (
+            (left, "trajectory_imu_metric.csv"),
+            (right, "imu_metric_trajectory.csv"),
+        ):
+            for name in (trajectory_name, "imu_scale_report.json", "stereo.json"):
                 (directory / name).write_text(f"{directory.name} {name} {rid}\n")
         record = {
             "id": rid,
@@ -99,7 +102,7 @@ def make_fixture(tmp_path: Path, *, second_status: str | None = None):
             left / "trajectory_imu_metric.csv",
             left / "imu_scale_report.json",
             left / "stereo.json",
-            right / "trajectory_imu_metric.csv",
+            right / "imu_metric_trajectory.csv",
             right / "imu_scale_report.json",
             right / "stereo.json",
         ]
@@ -167,10 +170,11 @@ def patch_runtime(monkeypatch, tmp_path, *, changed_after_score=False):
 
     def fake_load_eye(directory, eye, *_args, **_kwargs):
         path = Path(directory)
+        trajectory_name = "trajectory_imu_metric.csv" if eye == "left" else "imu_metric_trajectory.csv"
         return (
             {"eye": eye, "times": times.tolist()},
             {"orientation_refinement": {"eye": eye}},
-            [path / "trajectory_imu_metric.csv", path / "imu_scale_report.json", path / "stereo.json"],
+            [path / trajectory_name, path / "imu_scale_report.json", path / "stereo.json"],
         )
 
     monkeypatch.setattr(probe.symmetric, "load_eye", fake_load_eye)
@@ -207,6 +211,35 @@ def patch_runtime(monkeypatch, tmp_path, *, changed_after_score=False):
     monkeypatch.setattr(probe.base, "code_changed", fake_code_changed)
     monkeypatch.setattr(probe.corpus, "score_frozen", lambda *args: {"result": "PASS", "samples": 3, "ate_translation_max_m": 0.001})
     return captured
+
+
+def test_reconstruct_uses_hash_bound_caches_despite_stale_manifest_paths(tmp_path, monkeypatch):
+    _manifest, baseline, records = make_fixture(tmp_path)
+    patch_runtime(monkeypatch, tmp_path)
+    record = dict(records[0])
+    record["alternate_left_dir"] = record["left_dir"]
+    record["left_dir"] = str(tmp_path / "original_failed_left")
+    record["right_dir"] = None
+    artifact = baseline / record["id"] / "both"
+    candidate, _graph = probe.base.validate_baseline_artifact(record, artifact)
+    state = probe.base.load_bound_reference(record)
+
+    tracks, _reports, paths = probe.reconstruct_tracks(record, state, candidate)
+
+    assert set(tracks) == {"left", "right"}
+    assert {path.parent for path in paths} == {
+        Path(records[0]["left_dir"]), Path(records[0]["right_dir"])
+    }
+
+
+def test_bound_eye_cache_rejects_missing_or_ambiguous_trajectory_paths():
+    with pytest.raises(ValueError, match="exactly one"):
+        probe.bound_eye_cache_directory({"input_sha256": {}}, "left")
+    with pytest.raises(ValueError, match="exactly one"):
+        probe.bound_eye_cache_directory({"input_sha256": {
+            "/cache/a/imu_metric_trajectory.csv": "hash_a",
+            "/cache/b/imu_metric_trajectory.csv": "hash_b",
+        }}, "right")
 
 
 def test_reconstructs_tracks_transforms_factors_and_scores_after_freeze(tmp_path, monkeypatch):

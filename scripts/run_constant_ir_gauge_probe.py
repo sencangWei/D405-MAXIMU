@@ -110,13 +110,25 @@ def validate_track_source_hashes(candidate: dict[str, Any], paths: list[Path]) -
     return track_hashes
 
 
+def bound_eye_cache_directory(candidate: dict[str, Any], eye: str) -> Path:
+    """Use the actual frozen baseline cache, not an earlier recording hint."""
+    names = {"left": "trajectory_imu_metric.csv", "right": "imu_metric_trajectory.csv"}
+    if eye not in names:
+        raise ValueError("unknown eye")
+    paths = [Path(path) for path in candidate.get("input_sha256", {})
+             if Path(path).name == names[eye]]
+    if len(paths) != 1:
+        raise ValueError(f"expected exactly one hash-bound {eye} trajectory")
+    return paths[0].parent
+
+
 def reconstruct_tracks(record: dict[str, Any], state, baseline_candidate: dict[str, Any]):
     tracks = {}
     metadata = {}
     all_paths = []
-    for eye, key in (("left", "left_dir"), ("right", "right_dir")):
+    for eye in ("left", "right"):
         track, report, paths = symmetric.load_eye(
-            Path(record[key]),
+            bound_eye_cache_directory(baseline_candidate, eye),
             eye,
             Path(record["session"]),
             state.config,
