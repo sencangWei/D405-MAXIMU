@@ -186,6 +186,23 @@ def load_body_t_camera(path: Path, key: str = "body_T_cam0") -> np.ndarray:
     return matrix
 
 
+def body_t_camera_from_graph_report(
+    body_t_left: np.ndarray, graph_report: dict | None, graph_trajectory: Path
+) -> np.ndarray:
+    if graph_report is None:
+        return body_t_left
+    extrinsics = graph_report.get("camera_extrinsics", {})
+    if extrinsics.get("trajectory_observation_frame") != "infrared_right_camera_i":
+        return body_t_left
+    if graph_report.get("result") != "PASS" or Path(graph_report.get("output", "")).resolve() != graph_trajectory.resolve():
+        raise ValueError("right-camera extrinsic belongs to a different graph trajectory")
+    reported_left = np.asarray(extrinsics.get("vins_body_T_left_ir"), dtype=float)
+    effective = np.asarray(extrinsics.get("effective_body_T_trajectory_camera"), dtype=float)
+    if reported_left.shape != (4, 4) or effective.shape != (4, 4) or not np.allclose(reported_left, body_t_left, atol=1e-9) or not np.all(np.isfinite(effective)):
+        raise ValueError("right-camera graph extrinsic does not match the VINS calibration")
+    return effective
+
+
 def camera_to_body(
     positions: np.ndarray,
     rotations: Rotation,
@@ -425,7 +442,13 @@ def write_trajectory(
 def run(args: argparse.Namespace) -> dict:
     mast3r_times, mast3r_positions, mast3r_rotations = load_trajectory(args.mast3r)
     docker_times, docker_positions, docker_rotations = load_trajectory(args.docker2)
-    body_t_camera = load_body_t_camera(args.body_t_camera_yaml)
+    graph_for_extrinsic = (
+        json.loads(args.graph_report.read_text(encoding="utf-8"))
+        if args.graph_report is not None else None
+    )
+    body_t_camera = body_t_camera_from_graph_report(
+        load_body_t_camera(args.body_t_camera_yaml), graph_for_extrinsic, args.mast3r
+    )
     inside = (mast3r_times >= docker_times[0]) & (mast3r_times <= docker_times[-1])
     common_times = mast3r_times[inside]
     if len(common_times) < 100:

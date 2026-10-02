@@ -890,6 +890,16 @@ def body_t_trajectory_camera_from_stereo_report(
     observation_frame = stereo_report.get("observation_frame")
     if observation_frame == "infrared_left_camera_i":
         return body_t_left_ir.copy()
+    if observation_frame == "infrared_right_camera_i":
+        calibration = stereo_report.get("factory_stereo_calibration", {})
+        rotation = np.asarray(calibration.get("right_rotation_from_left"), dtype=float)
+        translation = np.asarray(calibration.get("right_translation_from_left_m"), dtype=float)
+        if rotation.shape != (3, 3) or translation.shape != (3,) or not np.all(np.isfinite(rotation)) or not np.all(np.isfinite(translation)):
+            raise ValueError("stereo report lacks the factory left-IR to right-IR transform")
+        right_t_left = np.eye(4)
+        right_t_left[:3, :3] = rotation
+        right_t_left[:3, 3] = translation
+        return body_t_left_ir @ np.linalg.inv(right_t_left)
     if observation_frame != "color_camera_i":
         raise ValueError(
             "stereo observations must identify the MASt3R camera frame"
@@ -3068,7 +3078,11 @@ def run(args: argparse.Namespace) -> dict:
             "policy": (
                 "body_T_color = body_T_left_ir * inverse(color_T_left_ir)"
                 if stereo_report["observation_frame"] == "color_camera_i"
-                else "trajectory camera is the calibrated left IR camera"
+                else (
+                    "body_T_right_ir = body_T_left_ir * inverse(right_T_left_ir)"
+                    if stereo_report["observation_frame"] == "infrared_right_camera_i"
+                    else "trajectory camera is the calibrated left IR camera"
+                )
             ),
         },
         "imu": imu_info,
@@ -3142,7 +3156,7 @@ def main() -> int:
         help="the input trajectory is already in meters; check IMU/stereo scales without rescaling it again",
     )
     parser.add_argument("--session", type=Path, required=True)
-    parser.add_argument("--stream", choices=("color", "infrared_left"), default="color")
+    parser.add_argument("--stream", choices=("color", "infrared_left", "infrared_right"), default="color")
     parser.add_argument("--vins-config", type=Path, required=True)
     parser.add_argument("--imu-calibration", type=Path, required=True)
     parser.add_argument("--expected-td-s", type=float)

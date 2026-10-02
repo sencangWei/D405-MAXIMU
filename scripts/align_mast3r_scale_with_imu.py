@@ -102,6 +102,24 @@ def load_body_t_camera(path: Path, key: str = "body_T_cam0") -> np.ndarray:
     return matrix
 
 
+def body_t_camera_for_stream(
+    body_t_left: np.ndarray, stream: str, stereo_report: dict | None
+) -> np.ndarray:
+    if stream != "infrared_right":
+        return body_t_left
+    if stereo_report is None or stereo_report.get("observation_frame") != "infrared_right_camera_i":
+        raise ValueError("right-IR IMU scale requires a right-camera stereo report")
+    calibration = stereo_report["factory_stereo_calibration"]
+    rotation = np.asarray(calibration["right_rotation_from_left"], dtype=float)
+    translation = np.asarray(calibration["right_translation_from_left_m"], dtype=float)
+    if rotation.shape != (3, 3) or translation.shape != (3,) or not np.all(np.isfinite(rotation)) or not np.all(np.isfinite(translation)):
+        raise ValueError("invalid factory left-to-right IR extrinsic")
+    right_t_left = np.eye(4)
+    right_t_left[:3, :3] = rotation
+    right_t_left[:3, 3] = translation
+    return body_t_left @ np.linalg.inv(right_t_left)
+
+
 def select_scale_attitude(
     visual_times: np.ndarray,
     visual_camera_quaternions: np.ndarray,
@@ -343,7 +361,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--trajectory", type=Path, required=True)
     parser.add_argument("--session", type=Path, required=True)
-    parser.add_argument("--stream", choices=("color", "infrared_left"), default="color")
+    parser.add_argument("--stream", choices=("color", "infrared_left", "infrared_right"), default="color")
     parser.add_argument("--body-t-camera-yaml", type=Path, required=True)
     parser.add_argument("--imu-calibration", type=Path, required=True)
     parser.add_argument("--orientation-trajectory", type=Path)
@@ -360,6 +378,8 @@ def main() -> int:
         parser.error("--max-hop must be at least 1")
     if args.stereo_scale_report is not None and args.orientation_trajectory is None:
         parser.error("--stereo-scale-report requires --orientation-trajectory")
+    if args.stream == "infrared_right" and args.stereo_scale_report is None:
+        parser.error("infrared_right requires --stereo-scale-report for its factory extrinsic")
 
     times, positions, quaternions = load_trajectory(args.trajectory)
     mono_times = camera_epoch_to_monotonic(
@@ -368,7 +388,15 @@ def main() -> int:
     imu_times, accel = load_calibrated_acceleration(
         args.session / "external_imu" / "imu.bin", args.imu_calibration
     )
-    body_t_camera = load_body_t_camera(args.body_t_camera_yaml)
+    stereo = (
+        json.loads(args.stereo_scale_report.read_text(encoding="utf-8"))
+        if args.stereo_scale_report is not None else None
+    )
+    if args.stream == "infrared_right" and Path(stereo["trajectory"]).resolve() != args.trajectory.resolve():
+        raise ValueError("right stereo report is bound to a different trajectory")
+    body_t_camera = body_t_camera_for_stream(
+        load_body_t_camera(args.body_t_camera_yaml), args.stream, stereo
+    )
     reference_times = reference_quaternions = None
     if args.orientation_trajectory is not None:
         reference_times, _, reference_quaternions = load_trajectory(
@@ -407,7 +435,6 @@ def main() -> int:
             args.node_stride,
             args.max_hop,
         )
-        stereo = json.loads(args.stereo_scale_report.read_text(encoding="utf-8"))
         source, selection = choose_attitude_scale(legacy_result, result, stereo)
         result = legacy_result if source == "mast3r" else result
         attitude.update({"source": source, "selection": selection})
@@ -442,6 +469,7 @@ def main() -> int:
                 else None
             ),
             "td_s": args.td_s,
+            "camera_stream": args.stream,
             "node_stride": args.node_stride,
             "max_hop": args.max_hop,
             "trajectory": str(args.trajectory.resolve()),
