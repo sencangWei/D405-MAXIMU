@@ -1126,3 +1126,39 @@ producer+test+ledger, then immediately newnativefour sourcev3. Newconsumer is
 not live yet: rootfound firstversion source status/report admission/time-bound
 skip/layout/provenance and frozen_code_paths recursion defects before any
 backend; assigned bounded TDD fixes, no inaccurate score claim.
+
+Projection fix8a2773e10685dfd7ee351129111da14faba6b1a6 backed to owned
+sencang branch, remote3files byte-identical at
+/tmp/umi-se3-projection-fix-20261003.LEQkeY;189fresh restored-dependent testsPASS.
+Actual sourcev3session44317 nowrunning with bothROSsetupenvs, PID2300292;
+2m27s fresh processcheckCPU569%,RSS5.15GiB, no early producer exception.
+No finalsource report orATEyet. Baseline recovery-v2physicalpair layouts verified
+1588/1799/1468/1642, frozen learnedfactor sourceconstant_ir_gauge_selected,
+framebody_imu_origin. Consumer may update geometry onlywithinexactfrozenlayout;
+extra nativepairs excludedfrommain butretained diagnostics, missingpair common
+frozenbodygeometry fallback without inventing camera measurements.
+
+Sourcev3 firstheld2appendix nowcomplete (secondrecordrunning). Rootreadonly
+fullnative-from-raw reconstruction across3224acceptedobservations EXACTPASS:
+left2174attempted/1614accepted,right2168/1610; confidence delta vs savedscalar
+baseline max0.0. Forward/reverse edge vectorclosureP95=2.794mm,max26.621mm;
+midpoint-vs-forward edgegeometrydeltaP95=1.365mm,max13.663mm. These are native
+edge diagnostics, NOTATE or evidence of10mm acceptance. Allfailurerowsretained.
+Consumer14mockfocusedtests/fullrelated203PASS are insufficient: rootfound
+activefixedrowconfidencenotrefreshed before realphysicaltransform and missing
+fullSE3rawreconstruction; independentreview REQUESTCHANGES confirms2HIGH plus
+recovery-reference paths missing variant inputprovenance MEDIUM. TDD fixes
+assigned before any consumer backend/score, source producer/helperremainfrozen.
+
+Consumer TDD fixes now16focused/205relatedPASS; independentfreshreviewAPPROVE,
+fullnative recomputed (including mathinvalid rejects), realphysicaltransform
+confidence refreshed identically betweenarms, recovery-reference paths added to
+variant input provenance. Root firstACTUALheld2 consumer metadata+physical
+preflight session81659 CLOSED0/PASS: fixed1588rows preserved exactkey/order,
+same3140reference-bound scalar/SE3candidates, sameconfidence1048rows refreshed,
+fallback0physicalpairs;84nativeoutside-reference candidates diagnosed(72gap,
+12missingendpoint) withraw1118nativefailuresretained, notglobalframe omissions.
+No backend/no scorer launched. Root accidentally printed fullmatched1588pair
+keys in readonlyoutput(41k tokens); subsequentreports must summarize counts,
+notdump arrays. Sourcev3 now2/4appendices written, thirdrecordrunning; consumed
+producer/helperunchanged. Back up reviewedconsumer2files+ledger before score.
