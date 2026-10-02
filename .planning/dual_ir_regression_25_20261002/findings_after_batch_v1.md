@@ -1284,3 +1284,25 @@ control replay. No per-record recipe or GT source supervision is introduced.
 Fresh read-only RK SSH probe again exited255 No route to host. No board
 identity/release/rollback/idle verification, actual ARM package or deployment
 acceptance; no live modification of services/configuration/recordings.
+
+Metadata capability commit122fb6463c102b8521df4c3addf57a6b6427e1c3 pushed
+normally to owned sencang/codex/dual-ir-frontend-20261001, fetched and restored
+five specific files byte-identically at
+/tmp/umi-corpus-metadata-backup-20261003.4oQu4D;26fresh restored-dependent
+tests PASS. No reports/ directory or unrelated dirty progress was staged.
+First NEW native producer/consumer snapshots have NOT passed finalreview yet:
+actual status contract, frozen-code callback recursion, real parent provenance,
+optional byte-copy vs refresh validation and appendix guard/interface issues
+identified before launching expensive sources/scoring. Owners repairing only
+NEWfiles, original frozen evaluator/production paths remain unchanged.
+
+NEW native producer-only independently APPROVED for first actual ind2 source:
+producer SHA36fa811aba74e8ced827e110485cf8ba9727867bb67c2480b75eb0c4eb38ef60,
+test SHA869e22714d49d8bc1e156cf1994a5fbe949bc4f941f372ccd6d16ffa0f65cdb9.
+Root actual no-image full25contract24pass/1retained/0fail, all24 framecsvs
+guarded; fresh related producer/native suites74PASS. Reviewer11producertests
+PASS and192bound reports verified. Corrected actual trajectory-dict interface,
+existing candidate/registry hash guard, real typed RIGHT-refresh parent,
+strict recovery source rows and optional byte copies. No source/frame deletion,
+new confidence/gates/solver weights or GT supervision. Consumer finalguards
+remain separate; first source run cannot invoke backend/scorer.
