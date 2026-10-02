@@ -200,6 +200,65 @@ def test_run_refuses_to_overwrite_output(tmp_path):
         raise AssertionError("expected no-overwrite guard")
 
 
+def test_empty_selected_window_reports_no_matching_pairs(tmp_path):
+    session = tmp_path / "session"
+    session.mkdir()
+    (session / "d405_frames.csv").write_text("frames\n", encoding="utf-8")
+    trajectory = tmp_path / "trajectory.csv"
+    trajectory.write_text(
+        "t_sec,x,y,z,qw,qx,qy,qz\n"
+        "0.000000000,0,0,0,1,0,0,0\n"
+        "1.000000000,0,0,0,1,0,0,0\n",
+        encoding="utf-8",
+    )
+    report_path = tmp_path / "report.json"
+    output = tmp_path / "diag.json"
+    write_json(
+        report_path,
+        {
+            "schema": "umi_mast3r_stereo_scale_v2",
+            "session": str(session.resolve()),
+            "trajectory": str(trajectory.resolve()),
+            "db3": str(session / "bag.db3"),
+            "motion_estimator": "pnp",
+            "correspondence_estimator": "classical",
+            "trajectory_frame": "infrared_left",
+            "observations": [
+                {
+                    "accepted": False,
+                    "reason": "translation_excitation_low",
+                    "first_index": 0,
+                    "second_index": 1,
+                    "first_t_sec": 0.0,
+                    "second_t_sec": 1.0,
+                }
+            ],
+        },
+    )
+    args = diag.argument_parser().parse_args(
+        [
+            "--report",
+            str(report_path),
+            "--output",
+            str(output),
+            "--index-start",
+            "10",
+            "--index-end",
+            "20",
+            "--max-depth-m",
+            "0.6",
+        ]
+    )
+    result = diag.run(args)
+    assert result["result"] == "NO_MATCHING_PAIRS"
+    assert result["pair_filter"]["selected_pairs"] == 0
+    assert result["diagnostics"] == []
+    assert result["replayed_accepted_count"] == 0
+    assert result["rejected_replayed_count"] == 0
+    assert result["emitted_factor_count"] == 0
+    assert result["failures"] == []
+
+
 def test_run_uses_existing_report_binding_without_changing_acceptance(monkeypatch, tmp_path):
     session = tmp_path / "session"
     session.mkdir()

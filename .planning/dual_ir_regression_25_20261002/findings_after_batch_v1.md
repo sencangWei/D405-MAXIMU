@@ -508,3 +508,36 @@ used to justify repairing the retained VI failure until its actual timestamp
 is separately located. All diagnostic rows remain rejected/no emittedfactors.
 Independentreview approves diagnostic-only, fresh226testsPASS; production
 source remains unchanged.
+
+Independent currentpeak localization resolves the branch mixup: retained
+fullVI take06 row1030 epoch1790758857.172943592 (+34.330376863s), baseline
+15.351919mm, combined14.756369mm, stagedR14.735589mm. PureSE3 pilot row354
+at11.796170712s is a different failure. Current raw trajectory index1086
+matches peak exactly; cameraCSVrow1086/IRframe1116. Correct rawwindow
+1056..1116 is now replayed, not the earlier379..441. Full25review verified
+48/48 onboard manifests/outputhashes,24/24controls exactvectors; baseline
+17full/17translation versuscombined/staged18full/19translation withone
+sourceunobservable retained. No stagedR gains vscombined.
+
+Bias-only physicalstereo diagnostic on3records (16fit+8disjointheldout long
+edges) shows weak evidence: fullrank numericalJacobian butfit/heldout RMS
+gains small, weightedheldout2 gets worse0.2904->0.2986deg. Estimatedbias
+axes differ andformal1sigma~0.0147-0.0194deg/s. Do not implement/promote a
+bias-driven correction fromthis. Formalgyr_w2.89e-7 is a randomwalk rate,
+NOTan initialbias covariance. Candidatehypothesis rejectedpendingstronger
+evidence; nosealedgyroweight tuning andnoGT used.
+
+Currentpeak RAW-window 1056..1116 contains45/45 accepted free-PnP rows,
+zero lowexcitation rejections. Initialempty diagnostic v1 misleadingly said
+PASS withzero inspectedpairs; narrowfix now returnsNO_MATCHING_PAIRS/exit3.
+Freshv2 confirmszero selected/no emittedfactors,227targetedtestsPASS11.90s.
+No production trajectory or factor acceptance changed.
+
+Read-only RAW SE3 triangle check: take06 currentwindow80triples,
+translationclosure median1.117/P953.986/max4.573mm; rotationmedian0.127/
+P950.432/max0.575deg. Heldout2window transP955.395mm/max8.513mm;
+heldout4P954.732/max8.971; ind2P952.681/max3.173. No duplicatepairs.
+This does not support a uniquelybroken local rawstereo geometry atcurrent
+failure. Whole-record badcyclesexist butalsoin passingcontrols; notselection
+or groundsforfiltering. Nextboundeddiagnostics inspect graphassembly and
+actual LSQR convergence before proposing any new model/factor change.

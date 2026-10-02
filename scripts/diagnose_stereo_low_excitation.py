@@ -686,9 +686,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         else []
     )
     failures = [*hash_failures, *profiler_failures]
+    if failures:
+        result = "FAIL"
+    elif not pairs:
+        result = "NO_MATCHING_PAIRS"
+    else:
+        result = "PASS"
     output = {
         "schema": SCHEMA,
-        "result": "PASS" if not failures else "FAIL",
+        "result": result,
         "development_only": True,
         "external_ground_truth_used": False,
         "slam_supervision": False,
