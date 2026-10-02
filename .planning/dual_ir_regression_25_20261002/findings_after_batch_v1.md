@@ -84,3 +84,96 @@ Independent case comparison separated three precision failures:
 A future temporal learned-reliability hypothesis must be defined on the same
 onboard windows for ALL recordings; localization using GT is diagnosis only,
 not a deployable gating rule. It cannot be assumed to fix stereo-only failures.
+
+## Read-only accuracy diagnosis while adapter-v2 is frozen
+
+- The apparent heldout4 VINS baseline conflict is a label error, not a source
+  mismatch. Historical 9.024/9.960 mm estimates are left-only fused outputs,
+  not raw VINS. Their relative-motion input is the same current VINS CSV,
+  formal config (`td=-0.009109323`, `estimate_td=0`), recording and reference.
+  Current symmetric graph is a different algorithm recipe. Do not promise that
+  reproducing the historical raw input will reproduce the old fused result.
+- A predeclared all-duration temporal rule (fixed +/-1 s, >=8 paired edges,
+  joint own-residual-bad fraction >.25, weighted residual P95 >15 mm) did not
+  flag Sep30 take06. Do not implement it or quietly lower its threshold.
+- Duration-stratified onboard census of 24 available graphs reveals that
+  Sep30 take06's >=1 s edges have joint-bad fraction .445 and weighted P95
+  22.17 mm, versus zero joint-bad short edges. The candidate explanation is
+  that pooling long and short relative-motion constraints hides the long-edge
+  problem. This remains a hypothesis; a fixed-rule, final-factor-confidence
+  census is required before experimental integration.
+- Numerical audit reproduced take06 and heldout4 baseline positions within
+  .91 nanometers. All four LSQR solves terminate at istop=2. Comparing the
+  identical systems to column-scaled sparse direct solves changes positions
+  by at most .000109 mm / .000061 mm: numerical precision is not their
+  millimetric error source.
+- Sep29 take02 does hit the LSQR iteration limit (istop=7, 5000 iterations).
+  The same-system direct solution differs by at most .159 mm per IRLS solve;
+  this is a real convergence-diagnostic gap, not an explanation for 18.7 mm
+  ATE. Instrument/validate convergence separately; do not call it the main
+  accuracy fix or loosen the trajectory acceptance threshold.
+
+No GT-driven window selection, graph/reference edits, sensor capture or live
+service transition occurred during these SLAM checks. Frozen production
+dependencies remain unchanged until the full adapter-v2 batch closes.
+
+## Adapter-v2 full corpus closed (fresh strict audit)
+
+All 25 processed; 24 scored, 17 max-10mm PASS, 7 scored failures, one explicit
+primary-scale-unobservable preparation failure. All 13 frozen source hashes
+still match. `adapter_acceptance_v2.json` records strict FAIL before any new
+accuracy code. Correction-cap counts on these same 25: uncapped17, cap10mm10,
+cap25mm16, cap40mm17, cap100mm17. No cap is promoted.
+
+Six ordinary scored failures have maxima 10.463, 14.022, 18.702, 11.457, 13.038,
+15.352 mm. The seventh is the separately verified raw-Tracker-contaminated
+223.479 mm reference case, retained in the denominator and original scores.
+
+The preregistered duration-specific census exists under
+`duration_reliability_census_v1/`: 24 graphs, source hashes, no GT inputs. The
+fixed rule flags 13/24, including both the failing Sep30 take06 and passing
+Sep27 heldout2. Therefore detection alone is not acceptance. Next is a bounded,
+globally fixed factor-space ablation with existing passing controls; no frame
+deletion, trajectory smoothing, GT replacement or per-record thresholds.
+
+## First fixed duration-gate ablation and replay validation
+
+The first complete single-case probe (Sep30 take06) changed maximum ATE from
+15.351919 to 15.217702 mm: only 0.134216 mm improvement, still FAIL. It zeroed
+378 long learned factors (189 pairs), retaining all 1143 scored timestamps,
+the original stereo factors and unchanged external reference. No promotion.
+
+The first full replay was stopped after 12 records for independent-review
+input-contract repairs. Its partial artifacts remain under
+`segment_probe_batch_v1/`, with explicit `termination.json`; its RUNNING
+summary is not evidence of a completed batch.
+
+Two apparent rotation mismatches were quantified across all 24 available
+baseline estimates: maximum SO3 serialization difference 1.911278e-9 rad,
+timestamp difference zero, first-node serialization difference <=1.229169e-9 m.
+The replay validator now tests SO3 differences against 5e-9 rad and still
+rejects a genuine 1e-5 rad change. Gauge/schema/identity lever/primary-eye and
+shared-scale-state guards were also added. These are artifact validation fixes,
+not a relaxed trajectory precision threshold. Fresh targeted tests: 114 PASS;
+independent review approves only the bounded experimental replay.
+
+`segment_probe_batch_v2/` is the new full-25 globally frozen duration-gate
+experiment. No factor math in the 13 original dependencies was changed.
+
+## Next isolated geometry hypothesis (not accepted)
+
+Current learned relative-motion edges use endpoint-dependent world alignment
+`A_i = R_vins_i R_track_body_i^T`. Even if the original learned camera positions
+are globally closed, using a different A_i for every edge can break closure.
+The read-only 24-record census found take06 cycle closure up to 4.604 mm, but
+also a passing take05 case up to 5.273 mm: closure magnitude is NOT a validated
+failure selector and must not become a per-record GT-derived rule.
+
+A separate pure experiment will fit one SO3 world gauge per eye from onboard
+synced orientations, preserve metric camera position differences, and use
+VINS physical body rotations only for the camera-to-body lever term. This
+telescopes around cycles by construction. All 24 caches can be reconstructed
+from existing source-bound reports. Confidence, scales, stereo observations,
+correction limits, reference timestamps and scoring extrinsics remain frozen.
+Constant gauge can smear real orientation drift; synthetic geometry tests and
+full-corpus score comparison are required before any production change.
