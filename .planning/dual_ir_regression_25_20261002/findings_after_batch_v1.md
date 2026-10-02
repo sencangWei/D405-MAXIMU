@@ -873,3 +873,41 @@ Fiveframes/10featureentries each. NoPnP/factors/backend/scoring/GPU emitted.
 This proves correspondence equivalence and repeated-match throughput only,
 NOT an end-to-end speedup or precision improvement. Existing source producer
 and evaluator unchanged by this helper; integrate only after frozenrun closes.
+
+Independent RIGHT fixed-pair source stage CLOSED exit0, all4ready/0failures:
+held2 1525updates/2fallback/2166rejectionsunchanged;
+held4 1661/13/2019; ind2 1313/24/2356; take06 1482/9/2202.
+Totals5981nativeupdates/48explicitfallbacks/6029originalacceptedrows.
+Root independently reloaded stage and validated allfour complete provenance
+proofs via evaluator validator (10proofpaths/record; 21sourceguardpaths/record).
+Original rejected rows, pairs/times/global-scale/session/factory/quality are
+preserved. Fresh64 directly-related tests PASS. First attempted test command
+used nonexistent test_derive_right_stereo_sources.py and ran zero tests; corrected
+command above is the passing evidence, not that failed invocation.
+Supervisor automatically proceeds to paired currentbest-control/refreshed
+four-record evaluation, output independent_right_geometry_dual_four_score_v1.
+No newATE or promotion yet. Raw row-scale distribution audit on firstthree
+shows native and fallback medians close, no observed gross LEFT/RIGHT units
+mismatch; this is not a proof of absolute scale accuracy. Next missing-pair
+recovery contract under read-only review, not yet implemented or launched.
+
+Actual independentRIGHT four-record trajectory experiment CLOSED,4/4 scored:
+currentbest original -> refined (mean/P95/max mm):
+held2 2.520/5.135/6.183 -> 2.098/4.158/5.153 PASS;
+held4 3.796/5.589/9.445 -> 3.463/4.755/7.959 PASS;
+ind2 4.972/11.527/14.403 -> 3.983/9.864/12.426 FAILmax;
+take06 3.180/5.688/14.756 -> 3.123/5.860/14.401 FAILmax.
+Both passing controls retained; all4max improve but NO extraPASS and take06
+P95 worsens0.173mm. Root independently checked allfrozen-codehashes, complete
+1141/1143/1143/1143 sample timelines exactlyequal betweenarms, orientationequal,
+local_motion_factors SHAidentical, onboard-only metadata and oldPASS retention.
+Originalcontrol replaymax <=2.84e-8m, wellbelow1e-7m limit. No promotion.
+Best full25 still18full/19translationPASS; this pilot is not25record acceptance.
+Next justified NEW source pathway: symmetric LEFT/RIGHT native bidirectional
+recovery of originally rejected non-low-excitation rows, ONLY from normally
+merged PASS reports. Preserve8source reports byte-identical; separate appendix
+retains original rejection and native successes/failures. No optionalFAIL
+salvage, scale/global-quality rewriting or thresholdchange. Pure sharedpair
+append path dedups each physicalpair once and maintains symmetric confidence
+winner/tie-average lever transform. Implementing isolated NEWfiles, followed
+by fresh tests/review and same4record paired evaluation before broad25 run.

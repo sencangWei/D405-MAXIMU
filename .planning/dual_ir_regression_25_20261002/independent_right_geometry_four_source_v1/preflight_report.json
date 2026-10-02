@@ -1,0 +1,2075 @@
+{
+  "schema": "umi_independent_right_geometry_refresh_preflight_v1",
+  "status": "PREFLIGHT_COMPLETE",
+  "development_only": true,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "factors_emitted": 0,
+  "backend_launched": false,
+  "scoring_launched": false,
+  "gpu_model_used": false,
+  "policy": {
+    "name": "independent_right_geometry_refresh_source_only",
+    "development_only": true,
+    "external_ground_truth_used": false,
+    "slam_supervision": false,
+    "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+    "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+    "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+    "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim",
+    "this_script_sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806",
+    "diagnostic_module_sha256": "3690cf5be58c7b1fab108256821c59bd8e9f9f6036728211dec4d9b40af074fe"
+  },
+  "manifest": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+  "baseline": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2",
+  "source_stage": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3",
+  "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+  "record_count": 4,
+  "ready_record_count": 4,
+  "refined_source_count": 4,
+  "records": [
+    {
+      "id": "20260927_heldout2",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout2/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json": "dd6344c49b6e0cd2b07aa4e4f6465bc5cc5e6999d441b98564220b6cc14a9677",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_long_hops_report.json": "62ebb216b70d12037d15c527a89c3b1caeec25c743cdaacd2ee6437f4fede196",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_dense10hz_report.json": "a989f1b884d0a35fa15c58d490c4d7f16d11e9f9a42dbf2189a408b5d8bdc8ec",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_multisecond_report.json": "2db2e2d84393e84076e1c131b0212ab1d5c9783cad24bc3a5551d1d0c406aed4",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json": "40e3e813b686fa5f8d6a5773b1021fbb6a4f290120f4472cf2bcae14713da37e",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json": "b9839bd9336d8ca6c92b63274011567925938a355d8b7e83bc0e16e5296a9ee0",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json": "09faa309c2eddbd71670eeeacd02b6d03495415d58357ec97dc813279d369f06",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json": "470252f41508700fa3ebc286d79575b92c69decdc53a331c49720f73eca2bc6a"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "09d8f8ecd9e8df07dd4b2545231d4db23be055e3e2b26886b3cc8a583ef3ef4c",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 648,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "9e6aa2378c439224123978bf113968c1e8c81616102fa284e77a11f974bd95b6",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 182,
+            "fallback_row_count": 1,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "1b1bc96ac5799f96b48f3c6f134444f1e001cf53253b8fd71c44b771d0b34514",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 648,
+            "fallback_row_count": 1,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "b982ec7f165246370aa7e51233fff1f6954d9787ce58ee877870f7907fe26874",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 47,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.543701171875
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "09d8f8ecd9e8df07dd4b2545231d4db23be055e3e2b26886b3cc8a583ef3ef4c",
+          "refreshed_sha256": "40e3e813b686fa5f8d6a5773b1021fbb6a4f290120f4472cf2bcae14713da37e",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 648,
+          "rejected_input_rows_unchanged": 542,
+          "independent_replaced_rows": 648,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "9e6aa2378c439224123978bf113968c1e8c81616102fa284e77a11f974bd95b6",
+          "refreshed_sha256": "b9839bd9336d8ca6c92b63274011567925938a355d8b7e83bc0e16e5296a9ee0",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 183,
+          "rejected_input_rows_unchanged": 504,
+          "independent_replaced_rows": 182,
+          "fallback_preserved_rows": 1,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "1b1bc96ac5799f96b48f3c6f134444f1e001cf53253b8fd71c44b771d0b34514",
+          "refreshed_sha256": "09faa309c2eddbd71670eeeacd02b6d03495415d58357ec97dc813279d369f06",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 649,
+          "rejected_input_rows_unchanged": 548,
+          "independent_replaced_rows": 648,
+          "fallback_preserved_rows": 1,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "b982ec7f165246370aa7e51233fff1f6954d9787ce58ee877870f7907fe26874",
+          "refreshed_sha256": "470252f41508700fa3ebc286d79575b92c69decdc53a331c49720f73eca2bc6a",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 47,
+          "rejected_input_rows_unchanged": 572,
+          "independent_replaced_rows": 47,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        }
+      ],
+      "accepted_input_rows": 1527,
+      "independent_replaced_rows": 1525,
+      "fallback_preserved_rows": 2,
+      "rejected_input_rows_unchanged": 2166,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816/d405_frames.csv",
+            "sha256": "0c8c6a1c3262ae33ebb170532e4c64d6344cbe4ee21ec2a9b17eea2e4806d58b"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "dd6344c49b6e0cd2b07aa4e4f6465bc5cc5e6999d441b98564220b6cc14a9677"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/stereo_scale_right_report.json",
+            "sha256": "ec09811f59af4048cf6dc5faa2c55b112cf96fe52276558ad64e62b809c3763f"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/trajectory_frames.csv",
+            "sha256": "a583e2aabb921516c6832f7de4eca754acc5b3a01db26bc9d9cfa190d208a235"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "f55f013fcaeda36299bbb3fd9d3b2ce5416b5d06ca5758e24368a863bd8f9281"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout2/both/candidate_manifest.json",
+            "sha256": "a2a54904ed2d6168833d25102b4d49395b70362c4c07d463f29bd87d0cd32769"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "dd6344c49b6e0cd2b07aa4e4f6465bc5cc5e6999d441b98564220b6cc14a9677"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "62ebb216b70d12037d15c527a89c3b1caeec25c743cdaacd2ee6437f4fede196"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "a989f1b884d0a35fa15c58d490c4d7f16d11e9f9a42dbf2189a408b5d8bdc8ec"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "2db2e2d84393e84076e1c131b0212ab1d5c9783cad24bc3a5551d1d0c406aed4"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "09d8f8ecd9e8df07dd4b2545231d4db23be055e3e2b26886b3cc8a583ef3ef4c"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "9e6aa2378c439224123978bf113968c1e8c81616102fa284e77a11f974bd95b6"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "1b1bc96ac5799f96b48f3c6f134444f1e001cf53253b8fd71c44b771d0b34514"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "b982ec7f165246370aa7e51233fff1f6954d9787ce58ee877870f7907fe26874"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    },
+    {
+      "id": "20260927_heldout4",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout4/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json": "e560b7bdc3a8420b7e01c3702f9d11c1512b27115e72c9009fe6d91e6f4db41a",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_long_hops_report.json": "15f6c9257fd2f3a13d506538dd057edbc64fea8aff98dfeff7b4b937fd662fca",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_dense10hz_report.json": "5f07adc3cb92728f80f356b7a4030b2987f1b4bb0ed39d2d71f814a0377da251",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_multisecond_report.json": "f195dbb260dcedf98343bcfbe7647dbe81997945df147e8adc5f453c58a3236f",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json": "8edbe84da23b82d99ec9cebb585cbb8cd3a2e0ebda6bf18cf8e42a702d04d7b2",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json": "c62b6588f7736f7ecfcc36080eb52766b8b918836f10022707e42d3a02dfbdd3",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json": "2f76dfaf832cdeb0ceca46ee31de5aa1e5a7661ec79d565719f476516828e876",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json": "d691bbc1ea42d8521a56e9831cf9c1235c8fd55504ca05d824a80676efa4a06c"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "fcb34b8b5775d1dc774275c714e7c4aed060ea47283bb023e5f861f794b5764b",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 734,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "ed94b2b6c01d6b3ed9e9e8fcf768ec2c2f3b547e107452badeafb1e44e37bbe8",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 123,
+            "fallback_row_count": 4,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "81a3c5a5978fd5b9a85784e082b07f0ad6c25ca915d74e83d1a01cd211debb31",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 770,
+            "fallback_row_count": 8,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "30fc6647b08a3a1cc1525093187fbf85789a682f972ee111883256d64cf9fe3e",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 34,
+            "fallback_row_count": 1,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.5439453125
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "fcb34b8b5775d1dc774275c714e7c4aed060ea47283bb023e5f861f794b5764b",
+          "refreshed_sha256": "8edbe84da23b82d99ec9cebb585cbb8cd3a2e0ebda6bf18cf8e42a702d04d7b2",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 734,
+          "rejected_input_rows_unchanged": 456,
+          "independent_replaced_rows": 734,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "ed94b2b6c01d6b3ed9e9e8fcf768ec2c2f3b547e107452badeafb1e44e37bbe8",
+          "refreshed_sha256": "c62b6588f7736f7ecfcc36080eb52766b8b918836f10022707e42d3a02dfbdd3",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 127,
+          "rejected_input_rows_unchanged": 560,
+          "independent_replaced_rows": 123,
+          "fallback_preserved_rows": 4,
+          "native_reject_reasons": {
+            "bidirectional_scale_disagrees": 1,
+            "reverse_motion_failed": 1,
+            "pnp_inlier_ratio_low": 1,
+            "pnp_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "81a3c5a5978fd5b9a85784e082b07f0ad6c25ca915d74e83d1a01cd211debb31",
+          "refreshed_sha256": "2f76dfaf832cdeb0ceca46ee31de5aa1e5a7661ec79d565719f476516828e876",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 778,
+          "rejected_input_rows_unchanged": 419,
+          "independent_replaced_rows": 770,
+          "fallback_preserved_rows": 8,
+          "native_reject_reasons": {
+            "bidirectional_scale_disagrees": 2,
+            "translation_excitation_low": 2,
+            "reverse_motion_failed": 1,
+            "translation_direction_disagrees": 3
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "30fc6647b08a3a1cc1525093187fbf85789a682f972ee111883256d64cf9fe3e",
+          "refreshed_sha256": "d691bbc1ea42d8521a56e9831cf9c1235c8fd55504ca05d824a80676efa4a06c",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 35,
+          "rejected_input_rows_unchanged": 584,
+          "independent_replaced_rows": 34,
+          "fallback_preserved_rows": 1,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 1
+          }
+        }
+      ],
+      "accepted_input_rows": 1674,
+      "independent_replaced_rows": 1661,
+      "fallback_preserved_rows": 13,
+      "rejected_input_rows_unchanged": 2019,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141/d405_frames.csv",
+            "sha256": "863387b120f8e6b9681d8e402965266fcf73de9d0e9f09efc3e34363e0bbeafa"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "e560b7bdc3a8420b7e01c3702f9d11c1512b27115e72c9009fe6d91e6f4db41a"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/stereo_scale_right_report.json",
+            "sha256": "277afb5e55ed28ab3ee4eb2bf00d13fea8e7970e4d65f6dba0e5a08c9af0210f"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/trajectory_frames.csv",
+            "sha256": "c9273d7bb576fcfe798b17e84b3ab8a8cd5288a2677b63de567b233a7ed30306"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "367a09e09dd65ef1c8e4c7eebb6463eb46add5e2a41595853e6c00997adaf4c4"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout4/both/candidate_manifest.json",
+            "sha256": "35b90171bfd27dcb921702ac05e774b5de26b2d5e4326dd97236cf03a4cb841b"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "e560b7bdc3a8420b7e01c3702f9d11c1512b27115e72c9009fe6d91e6f4db41a"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "15f6c9257fd2f3a13d506538dd057edbc64fea8aff98dfeff7b4b937fd662fca"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "5f07adc3cb92728f80f356b7a4030b2987f1b4bb0ed39d2d71f814a0377da251"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "f195dbb260dcedf98343bcfbe7647dbe81997945df147e8adc5f453c58a3236f"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "fcb34b8b5775d1dc774275c714e7c4aed060ea47283bb023e5f861f794b5764b"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "ed94b2b6c01d6b3ed9e9e8fcf768ec2c2f3b547e107452badeafb1e44e37bbe8"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "81a3c5a5978fd5b9a85784e082b07f0ad6c25ca915d74e83d1a01cd211debb31"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "30fc6647b08a3a1cc1525093187fbf85789a682f972ee111883256d64cf9fe3e"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    },
+    {
+      "id": "20260927_ind2",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_ind2/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json": "47e491ecaa85ac59b1f16caed5edfacf3c833bfa4c2fbd557154ce171eedb872",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_long_hops_report.json": "b064e0cc32ba2e38e7f8ecfd8020e423dc39d15089dc2799e05d5d24ded0159f",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_dense10hz_report.json": "cb86edfc0e3975f40dc0b0979799df681f5f2bc445bef9ca4133af89e1d216b4",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_multisecond_report.json": "b05f07a415bae8dd45a979c07fa8b01214e49224e9de61a6ed05d01e1e8689f7",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json": "ad1e1447914a93c050e1b6b716257cd80fefca336461de3947ed785f2e301d45",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json": "2709c7050c46ed0f03e430050dda4f29dbe2f4514179e29ab6a02f415229cbef",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json": "2e673c8cc3c5ee981209ccb0e9160daf54315cf5c4f608b1dce76034a16891c3",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json": "e3290c9ea952812ad9e915f882de097e29e3caf1b4b46c4103c0a9ae9b28011e"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "b83c84d1956d330a8874eb0aff77b70e82edc3d2a6fbd488194f9964d0f1816b",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 559,
+            "fallback_row_count": 11,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "8bcf08032f5d123da8fd139b4e74c27d9c3ca996be38ac310bd57af84a296e1c",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 148,
+            "fallback_row_count": 7,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "8b35c7262d9060a4e9d15f21289e6e9527bffc8c3aaca0eb614747b0fa81c418",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 595,
+            "fallback_row_count": 3,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "fc8ce6a6611fddd00fe5f729a55b85d69a5aaf2c24858fd75aa03ae1c09d5fdd",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 11,
+            "fallback_row_count": 3,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.543701171875
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "b83c84d1956d330a8874eb0aff77b70e82edc3d2a6fbd488194f9964d0f1816b",
+          "refreshed_sha256": "ad1e1447914a93c050e1b6b716257cd80fefca336461de3947ed785f2e301d45",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 570,
+          "rejected_input_rows_unchanged": 620,
+          "independent_replaced_rows": 559,
+          "fallback_preserved_rows": 11,
+          "native_reject_reasons": {
+            "translation_excitation_low": 1,
+            "reverse_motion_failed": 4,
+            "rotation_disagrees": 5,
+            "pnp_inlier_ratio_low": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "8bcf08032f5d123da8fd139b4e74c27d9c3ca996be38ac310bd57af84a296e1c",
+          "refreshed_sha256": "2709c7050c46ed0f03e430050dda4f29dbe2f4514179e29ab6a02f415229cbef",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 155,
+          "rejected_input_rows_unchanged": 532,
+          "independent_replaced_rows": 148,
+          "fallback_preserved_rows": 7,
+          "native_reject_reasons": {
+            "rotation_disagrees": 1,
+            "reverse_motion_failed": 4,
+            "bidirectional_scale_disagrees": 2
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "8b35c7262d9060a4e9d15f21289e6e9527bffc8c3aaca0eb614747b0fa81c418",
+          "refreshed_sha256": "2e673c8cc3c5ee981209ccb0e9160daf54315cf5c4f608b1dce76034a16891c3",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 598,
+          "rejected_input_rows_unchanged": 599,
+          "independent_replaced_rows": 595,
+          "fallback_preserved_rows": 3,
+          "native_reject_reasons": {
+            "translation_direction_disagrees": 1,
+            "translation_excitation_low": 1,
+            "reverse_motion_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "fc8ce6a6611fddd00fe5f729a55b85d69a5aaf2c24858fd75aa03ae1c09d5fdd",
+          "refreshed_sha256": "e3290c9ea952812ad9e915f882de097e29e3caf1b4b46c4103c0a9ae9b28011e",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 14,
+          "rejected_input_rows_unchanged": 605,
+          "independent_replaced_rows": 11,
+          "fallback_preserved_rows": 3,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 2,
+            "pnp_inlier_ratio_low": 1
+          }
+        }
+      ],
+      "accepted_input_rows": 1337,
+      "independent_replaced_rows": 1313,
+      "fallback_preserved_rows": 24,
+      "rejected_input_rows_unchanged": 2356,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_frames.csv",
+            "sha256": "cb69a553a35566d59d49238f36b69083287ada96c545ba33f907769be9717d43"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "47e491ecaa85ac59b1f16caed5edfacf3c833bfa4c2fbd557154ce171eedb872"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/stereo_scale_right_report.json",
+            "sha256": "b708e8433e3ceac4e091114f2eac75fa9dabb232c441f0680ed2981457877488"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/trajectory_frames.csv",
+            "sha256": "3aa84ecbd3acea5ebd7147bbc9f87d5f94c8304dd3e24be1469f385e7a39ac34"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "7896cdd90024840487b7cb5eff000bc1cb9825fa3f9fe1b6e35782c76dfb573d"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_ind2/both/candidate_manifest.json",
+            "sha256": "50de78c05159c65ab9371f322f4d226b0a97752c40e9f1d6ae1cd2b2deda84ea"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "47e491ecaa85ac59b1f16caed5edfacf3c833bfa4c2fbd557154ce171eedb872"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "b064e0cc32ba2e38e7f8ecfd8020e423dc39d15089dc2799e05d5d24ded0159f"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "cb86edfc0e3975f40dc0b0979799df681f5f2bc445bef9ca4133af89e1d216b4"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "b05f07a415bae8dd45a979c07fa8b01214e49224e9de61a6ed05d01e1e8689f7"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "b83c84d1956d330a8874eb0aff77b70e82edc3d2a6fbd488194f9964d0f1816b"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "8bcf08032f5d123da8fd139b4e74c27d9c3ca996be38ac310bd57af84a296e1c"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "8b35c7262d9060a4e9d15f21289e6e9527bffc8c3aaca0eb614747b0fa81c418"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "fc8ce6a6611fddd00fe5f729a55b85d69a5aaf2c24858fd75aa03ae1c09d5fdd"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    },
+    {
+      "id": "20260930_take06",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260930_take06/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json": "cafd85ea85d195a2883da4f993f7615b2d8d9e8b212f8f8f44b11db5381b7887",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_long_hops_report.json": "9285d6dbd2c1e54051a75cca46c21ebc2d61ec9c065b8147a639efff9b1832ad",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_dense10hz_report.json": "09a10bac89feaa9d3bd3d2ee450ade24514823e7b0f7d578fa0f0b68e040da1c",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_multisecond_report.json": "aa1d7ea9108a5e0c46cbfdc53cded73e3f29317016e9f5f7825143c25b808232",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json": "5f607055f922bb8bd2d6b0ffe3a4968fff18370d2a9b8139b84765d2defdb643",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json": "ca4a13eedc60ac0aa5ac07ffac8f6b8f0dc12c0a348eecd1f4d215cb0600c628",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json": "51d59c23baed8e1a87458ab88a843c3f70cde5dcf5993d2f109e5cf4a75e77db",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json": "7478490bdf4c16b61a130cf72fac572726866cf089925d95f70d504474d987ff"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "78741089f1f167ae35c1bbaf288f7c308aae4c10df8c9fb9b4ebcc5d6a2718ce",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 589,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "19043fa7d6b7eb964c49abf5aafaeb6457e936877e2c7a8884d7fc25a3b5bd37",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 151,
+            "fallback_row_count": 5,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "01e031e1b117c8a23a10dd5fad5fced1b10baffdcf2f0b2715d81a18c2bbfeef",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 657,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "d4b828199ec2557a085c48b90a7739310a82c1381ea86277da6c385e88780334",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 85,
+            "fallback_row_count": 4,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.5439453125
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "78741089f1f167ae35c1bbaf288f7c308aae4c10df8c9fb9b4ebcc5d6a2718ce",
+          "refreshed_sha256": "5f607055f922bb8bd2d6b0ffe3a4968fff18370d2a9b8139b84765d2defdb643",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 589,
+          "rejected_input_rows_unchanged": 601,
+          "independent_replaced_rows": 589,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "19043fa7d6b7eb964c49abf5aafaeb6457e936877e2c7a8884d7fc25a3b5bd37",
+          "refreshed_sha256": "ca4a13eedc60ac0aa5ac07ffac8f6b8f0dc12c0a348eecd1f4d215cb0600c628",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 156,
+          "rejected_input_rows_unchanged": 531,
+          "independent_replaced_rows": 151,
+          "fallback_preserved_rows": 5,
+          "native_reject_reasons": {
+            "pnp_inlier_ratio_low": 1,
+            "reverse_motion_failed": 3,
+            "pnp_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "01e031e1b117c8a23a10dd5fad5fced1b10baffdcf2f0b2715d81a18c2bbfeef",
+          "refreshed_sha256": "51d59c23baed8e1a87458ab88a843c3f70cde5dcf5993d2f109e5cf4a75e77db",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 657,
+          "rejected_input_rows_unchanged": 540,
+          "independent_replaced_rows": 657,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "d4b828199ec2557a085c48b90a7739310a82c1381ea86277da6c385e88780334",
+          "refreshed_sha256": "7478490bdf4c16b61a130cf72fac572726866cf089925d95f70d504474d987ff",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 89,
+          "rejected_input_rows_unchanged": 530,
+          "independent_replaced_rows": 85,
+          "fallback_preserved_rows": 4,
+          "native_reject_reasons": {
+            "pnp_failed": 2,
+            "rotation_disagrees": 1,
+            "reverse_motion_failed": 1
+          }
+        }
+      ],
+      "accepted_input_rows": 1491,
+      "independent_replaced_rows": 1482,
+      "fallback_preserved_rows": 9,
+      "rejected_input_rows_unchanged": 2202,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_170018/d405_frames.csv",
+            "sha256": "22b62bb86511e7386917bff54881c23ff0c59a0e8f1d2b2c1cefe17c411119e6"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "cafd85ea85d195a2883da4f993f7615b2d8d9e8b212f8f8f44b11db5381b7887"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_right_report.json",
+            "sha256": "8d89cabd44d9a1f9dacaf6405f36c89089394e8b186e5f5df05bcec4246107b8"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/trajectory_frames.csv",
+            "sha256": "2b63af24f9b27ab32ba8702c2925e69a816eabfb14e864332a8fca95138031db"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_170018/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "b332d47c2a79b2b6cd1093220c26ed01a31e518d91fff6e2ace9adce3ad8232b"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260930_take06/both/candidate_manifest.json",
+            "sha256": "92d175d2e8df8ad3c075d1ff111ef4c690ecbcb996b467b3871f786bddac7be6"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "cafd85ea85d195a2883da4f993f7615b2d8d9e8b212f8f8f44b11db5381b7887"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "9285d6dbd2c1e54051a75cca46c21ebc2d61ec9c065b8147a639efff9b1832ad"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "09a10bac89feaa9d3bd3d2ee450ade24514823e7b0f7d578fa0f0b68e040da1c"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "aa1d7ea9108a5e0c46cbfdc53cded73e3f29317016e9f5f7825143c25b808232"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "78741089f1f167ae35c1bbaf288f7c308aae4c10df8c9fb9b4ebcc5d6a2718ce"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "19043fa7d6b7eb964c49abf5aafaeb6457e936877e2c7a8884d7fc25a3b5bd37"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "01e031e1b117c8a23a10dd5fad5fced1b10baffdcf2f0b2715d81a18c2bbfeef"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "d4b828199ec2557a085c48b90a7739310a82c1381ea86277da6c385e88780334"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    }
+  ],
+  "refined_sources": [
+    {
+      "id": "20260927_heldout2",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout2/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json": "dd6344c49b6e0cd2b07aa4e4f6465bc5cc5e6999d441b98564220b6cc14a9677",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_long_hops_report.json": "62ebb216b70d12037d15c527a89c3b1caeec25c743cdaacd2ee6437f4fede196",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_dense10hz_report.json": "a989f1b884d0a35fa15c58d490c4d7f16d11e9f9a42dbf2189a408b5d8bdc8ec",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_multisecond_report.json": "2db2e2d84393e84076e1c131b0212ab1d5c9783cad24bc3a5551d1d0c406aed4",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json": "40e3e813b686fa5f8d6a5773b1021fbb6a4f290120f4472cf2bcae14713da37e",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json": "b9839bd9336d8ca6c92b63274011567925938a355d8b7e83bc0e16e5296a9ee0",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json": "09faa309c2eddbd71670eeeacd02b6d03495415d58357ec97dc813279d369f06",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json": "470252f41508700fa3ebc286d79575b92c69decdc53a331c49720f73eca2bc6a"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "09d8f8ecd9e8df07dd4b2545231d4db23be055e3e2b26886b3cc8a583ef3ef4c",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 648,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "9e6aa2378c439224123978bf113968c1e8c81616102fa284e77a11f974bd95b6",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 182,
+            "fallback_row_count": 1,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "1b1bc96ac5799f96b48f3c6f134444f1e001cf53253b8fd71c44b771d0b34514",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 648,
+            "fallback_row_count": 1,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "b982ec7f165246370aa7e51233fff1f6954d9787ce58ee877870f7907fe26874",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+            "refreshed_row_count": 47,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.543701171875
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "09d8f8ecd9e8df07dd4b2545231d4db23be055e3e2b26886b3cc8a583ef3ef4c",
+          "refreshed_sha256": "40e3e813b686fa5f8d6a5773b1021fbb6a4f290120f4472cf2bcae14713da37e",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 648,
+          "rejected_input_rows_unchanged": 542,
+          "independent_replaced_rows": 648,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "9e6aa2378c439224123978bf113968c1e8c81616102fa284e77a11f974bd95b6",
+          "refreshed_sha256": "b9839bd9336d8ca6c92b63274011567925938a355d8b7e83bc0e16e5296a9ee0",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 183,
+          "rejected_input_rows_unchanged": 504,
+          "independent_replaced_rows": 182,
+          "fallback_preserved_rows": 1,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "1b1bc96ac5799f96b48f3c6f134444f1e001cf53253b8fd71c44b771d0b34514",
+          "refreshed_sha256": "09faa309c2eddbd71670eeeacd02b6d03495415d58357ec97dc813279d369f06",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 649,
+          "rejected_input_rows_unchanged": 548,
+          "independent_replaced_rows": 648,
+          "fallback_preserved_rows": 1,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "b982ec7f165246370aa7e51233fff1f6954d9787ce58ee877870f7907fe26874",
+          "refreshed_sha256": "470252f41508700fa3ebc286d79575b92c69decdc53a331c49720f73eca2bc6a",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 47,
+          "rejected_input_rows_unchanged": 572,
+          "independent_replaced_rows": 47,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        }
+      ],
+      "accepted_input_rows": 1527,
+      "independent_replaced_rows": 1525,
+      "fallback_preserved_rows": 2,
+      "rejected_input_rows_unchanged": 2166,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816/d405_frames.csv",
+            "sha256": "0c8c6a1c3262ae33ebb170532e4c64d6344cbe4ee21ec2a9b17eea2e4806d58b"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "dd6344c49b6e0cd2b07aa4e4f6465bc5cc5e6999d441b98564220b6cc14a9677"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/stereo_scale_right_report.json",
+            "sha256": "ec09811f59af4048cf6dc5faa2c55b112cf96fe52276558ad64e62b809c3763f"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/trajectory_frames.csv",
+            "sha256": "a583e2aabb921516c6832f7de4eca754acc5b3a01db26bc9d9cfa190d208a235"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/trajectory_frames.csv",
+            "sha256": "b544a65cec9c0d54046ecec51ff5a5ed5303430dd4fa3815bb610112b2bff26f"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "f55f013fcaeda36299bbb3fd9d3b2ce5416b5d06ca5758e24368a863bd8f9281"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout2/both/candidate_manifest.json",
+            "sha256": "a2a54904ed2d6168833d25102b4d49395b70362c4c07d463f29bd87d0cd32769"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "dd6344c49b6e0cd2b07aa4e4f6465bc5cc5e6999d441b98564220b6cc14a9677"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "62ebb216b70d12037d15c527a89c3b1caeec25c743cdaacd2ee6437f4fede196"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "a989f1b884d0a35fa15c58d490c4d7f16d11e9f9a42dbf2189a408b5d8bdc8ec"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout2/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "2db2e2d84393e84076e1c131b0212ab1d5c9783cad24bc3a5551d1d0c406aed4"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "09d8f8ecd9e8df07dd4b2545231d4db23be055e3e2b26886b3cc8a583ef3ef4c"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "9e6aa2378c439224123978bf113968c1e8c81616102fa284e77a11f974bd95b6"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "1b1bc96ac5799f96b48f3c6f134444f1e001cf53253b8fd71c44b771d0b34514"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "b982ec7f165246370aa7e51233fff1f6954d9787ce58ee877870f7907fe26874"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    },
+    {
+      "id": "20260927_heldout4",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout4/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json": "e560b7bdc3a8420b7e01c3702f9d11c1512b27115e72c9009fe6d91e6f4db41a",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_long_hops_report.json": "15f6c9257fd2f3a13d506538dd057edbc64fea8aff98dfeff7b4b937fd662fca",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_dense10hz_report.json": "5f07adc3cb92728f80f356b7a4030b2987f1b4bb0ed39d2d71f814a0377da251",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_multisecond_report.json": "f195dbb260dcedf98343bcfbe7647dbe81997945df147e8adc5f453c58a3236f",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json": "8edbe84da23b82d99ec9cebb585cbb8cd3a2e0ebda6bf18cf8e42a702d04d7b2",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json": "c62b6588f7736f7ecfcc36080eb52766b8b918836f10022707e42d3a02dfbdd3",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json": "2f76dfaf832cdeb0ceca46ee31de5aa1e5a7661ec79d565719f476516828e876",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json": "d691bbc1ea42d8521a56e9831cf9c1235c8fd55504ca05d824a80676efa4a06c"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "fcb34b8b5775d1dc774275c714e7c4aed060ea47283bb023e5f861f794b5764b",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 734,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "ed94b2b6c01d6b3ed9e9e8fcf768ec2c2f3b547e107452badeafb1e44e37bbe8",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 123,
+            "fallback_row_count": 4,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "81a3c5a5978fd5b9a85784e082b07f0ad6c25ca915d74e83d1a01cd211debb31",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 770,
+            "fallback_row_count": 8,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "30fc6647b08a3a1cc1525093187fbf85789a682f972ee111883256d64cf9fe3e",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+            "refreshed_row_count": 34,
+            "fallback_row_count": 1,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.5439453125
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "fcb34b8b5775d1dc774275c714e7c4aed060ea47283bb023e5f861f794b5764b",
+          "refreshed_sha256": "8edbe84da23b82d99ec9cebb585cbb8cd3a2e0ebda6bf18cf8e42a702d04d7b2",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 734,
+          "rejected_input_rows_unchanged": 456,
+          "independent_replaced_rows": 734,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "ed94b2b6c01d6b3ed9e9e8fcf768ec2c2f3b547e107452badeafb1e44e37bbe8",
+          "refreshed_sha256": "c62b6588f7736f7ecfcc36080eb52766b8b918836f10022707e42d3a02dfbdd3",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 127,
+          "rejected_input_rows_unchanged": 560,
+          "independent_replaced_rows": 123,
+          "fallback_preserved_rows": 4,
+          "native_reject_reasons": {
+            "bidirectional_scale_disagrees": 1,
+            "reverse_motion_failed": 1,
+            "pnp_inlier_ratio_low": 1,
+            "pnp_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "81a3c5a5978fd5b9a85784e082b07f0ad6c25ca915d74e83d1a01cd211debb31",
+          "refreshed_sha256": "2f76dfaf832cdeb0ceca46ee31de5aa1e5a7661ec79d565719f476516828e876",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 778,
+          "rejected_input_rows_unchanged": 419,
+          "independent_replaced_rows": 770,
+          "fallback_preserved_rows": 8,
+          "native_reject_reasons": {
+            "bidirectional_scale_disagrees": 2,
+            "translation_excitation_low": 2,
+            "reverse_motion_failed": 1,
+            "translation_direction_disagrees": 3
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "30fc6647b08a3a1cc1525093187fbf85789a682f972ee111883256d64cf9fe3e",
+          "refreshed_sha256": "d691bbc1ea42d8521a56e9831cf9c1235c8fd55504ca05d824a80676efa4a06c",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 35,
+          "rejected_input_rows_unchanged": 584,
+          "independent_replaced_rows": 34,
+          "fallback_preserved_rows": 1,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 1
+          }
+        }
+      ],
+      "accepted_input_rows": 1674,
+      "independent_replaced_rows": 1661,
+      "fallback_preserved_rows": 13,
+      "rejected_input_rows_unchanged": 2019,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141/d405_frames.csv",
+            "sha256": "863387b120f8e6b9681d8e402965266fcf73de9d0e9f09efc3e34363e0bbeafa"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "e560b7bdc3a8420b7e01c3702f9d11c1512b27115e72c9009fe6d91e6f4db41a"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/stereo_scale_right_report.json",
+            "sha256": "277afb5e55ed28ab3ee4eb2bf00d13fea8e7970e4d65f6dba0e5a08c9af0210f"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/trajectory_frames.csv",
+            "sha256": "c9273d7bb576fcfe798b17e84b3ab8a8cd5288a2677b63de567b233a7ed30306"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/trajectory_frames.csv",
+            "sha256": "aa7ac6507ad04536547272b9d19bcf924db259fa3319cf28da98e43de27f6e17"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "367a09e09dd65ef1c8e4c7eebb6463eb46add5e2a41595853e6c00997adaf4c4"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout4/both/candidate_manifest.json",
+            "sha256": "35b90171bfd27dcb921702ac05e774b5de26b2d5e4326dd97236cf03a4cb841b"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "e560b7bdc3a8420b7e01c3702f9d11c1512b27115e72c9009fe6d91e6f4db41a"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "15f6c9257fd2f3a13d506538dd057edbc64fea8aff98dfeff7b4b937fd662fca"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "5f07adc3cb92728f80f356b7a4030b2987f1b4bb0ed39d2d71f814a0377da251"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_heldout4/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "f195dbb260dcedf98343bcfbe7647dbe81997945df147e8adc5f453c58a3236f"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "fcb34b8b5775d1dc774275c714e7c4aed060ea47283bb023e5f861f794b5764b"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "ed94b2b6c01d6b3ed9e9e8fcf768ec2c2f3b547e107452badeafb1e44e37bbe8"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "81a3c5a5978fd5b9a85784e082b07f0ad6c25ca915d74e83d1a01cd211debb31"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_heldout4/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "30fc6647b08a3a1cc1525093187fbf85789a682f972ee111883256d64cf9fe3e"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    },
+    {
+      "id": "20260927_ind2",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_ind2/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json": "47e491ecaa85ac59b1f16caed5edfacf3c833bfa4c2fbd557154ce171eedb872",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_long_hops_report.json": "b064e0cc32ba2e38e7f8ecfd8020e423dc39d15089dc2799e05d5d24ded0159f",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_dense10hz_report.json": "cb86edfc0e3975f40dc0b0979799df681f5f2bc445bef9ca4133af89e1d216b4",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_multisecond_report.json": "b05f07a415bae8dd45a979c07fa8b01214e49224e9de61a6ed05d01e1e8689f7",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json": "ad1e1447914a93c050e1b6b716257cd80fefca336461de3947ed785f2e301d45",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json": "2709c7050c46ed0f03e430050dda4f29dbe2f4514179e29ab6a02f415229cbef",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json": "2e673c8cc3c5ee981209ccb0e9160daf54315cf5c4f608b1dce76034a16891c3",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json": "e3290c9ea952812ad9e915f882de097e29e3caf1b4b46c4103c0a9ae9b28011e"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "b83c84d1956d330a8874eb0aff77b70e82edc3d2a6fbd488194f9964d0f1816b",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 559,
+            "fallback_row_count": 11,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "8bcf08032f5d123da8fd139b4e74c27d9c3ca996be38ac310bd57af84a296e1c",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 148,
+            "fallback_row_count": 7,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "8b35c7262d9060a4e9d15f21289e6e9527bffc8c3aaca0eb614747b0fa81c418",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 595,
+            "fallback_row_count": 3,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "fc8ce6a6611fddd00fe5f729a55b85d69a5aaf2c24858fd75aa03ae1c09d5fdd",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+            "refreshed_row_count": 11,
+            "fallback_row_count": 3,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.543701171875
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "b83c84d1956d330a8874eb0aff77b70e82edc3d2a6fbd488194f9964d0f1816b",
+          "refreshed_sha256": "ad1e1447914a93c050e1b6b716257cd80fefca336461de3947ed785f2e301d45",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 570,
+          "rejected_input_rows_unchanged": 620,
+          "independent_replaced_rows": 559,
+          "fallback_preserved_rows": 11,
+          "native_reject_reasons": {
+            "translation_excitation_low": 1,
+            "reverse_motion_failed": 4,
+            "rotation_disagrees": 5,
+            "pnp_inlier_ratio_low": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "8bcf08032f5d123da8fd139b4e74c27d9c3ca996be38ac310bd57af84a296e1c",
+          "refreshed_sha256": "2709c7050c46ed0f03e430050dda4f29dbe2f4514179e29ab6a02f415229cbef",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 155,
+          "rejected_input_rows_unchanged": 532,
+          "independent_replaced_rows": 148,
+          "fallback_preserved_rows": 7,
+          "native_reject_reasons": {
+            "rotation_disagrees": 1,
+            "reverse_motion_failed": 4,
+            "bidirectional_scale_disagrees": 2
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "8b35c7262d9060a4e9d15f21289e6e9527bffc8c3aaca0eb614747b0fa81c418",
+          "refreshed_sha256": "2e673c8cc3c5ee981209ccb0e9160daf54315cf5c4f608b1dce76034a16891c3",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 598,
+          "rejected_input_rows_unchanged": 599,
+          "independent_replaced_rows": 595,
+          "fallback_preserved_rows": 3,
+          "native_reject_reasons": {
+            "translation_direction_disagrees": 1,
+            "translation_excitation_low": 1,
+            "reverse_motion_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "fc8ce6a6611fddd00fe5f729a55b85d69a5aaf2c24858fd75aa03ae1c09d5fdd",
+          "refreshed_sha256": "e3290c9ea952812ad9e915f882de097e29e3caf1b4b46c4103c0a9ae9b28011e",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 14,
+          "rejected_input_rows_unchanged": 605,
+          "independent_replaced_rows": 11,
+          "fallback_preserved_rows": 3,
+          "native_reject_reasons": {
+            "reverse_motion_failed": 2,
+            "pnp_inlier_ratio_low": 1
+          }
+        }
+      ],
+      "accepted_input_rows": 1337,
+      "independent_replaced_rows": 1313,
+      "fallback_preserved_rows": 24,
+      "rejected_input_rows_unchanged": 2356,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_frames.csv",
+            "sha256": "cb69a553a35566d59d49238f36b69083287ada96c545ba33f907769be9717d43"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "47e491ecaa85ac59b1f16caed5edfacf3c833bfa4c2fbd557154ce171eedb872"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/stereo_scale_right_report.json",
+            "sha256": "b708e8433e3ceac4e091114f2eac75fa9dabb232c441f0680ed2981457877488"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/trajectory_frames.csv",
+            "sha256": "3aa84ecbd3acea5ebd7147bbc9f87d5f94c8304dd3e24be1469f385e7a39ac34"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/trajectory_frames.csv",
+            "sha256": "90de7efaf3ff23f0ffc1f9ef72a8684367d44fa80b3d32b5158077d03e57bae2"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "7896cdd90024840487b7cb5eff000bc1cb9825fa3f9fe1b6e35782c76dfb573d"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_ind2/both/candidate_manifest.json",
+            "sha256": "50de78c05159c65ab9371f322f4d226b0a97752c40e9f1d6ae1cd2b2deda84ea"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "47e491ecaa85ac59b1f16caed5edfacf3c833bfa4c2fbd557154ce171eedb872"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "b064e0cc32ba2e38e7f8ecfd8020e423dc39d15089dc2799e05d5d24ded0159f"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "cb86edfc0e3975f40dc0b0979799df681f5f2bc445bef9ca4133af89e1d216b4"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260927_ind2/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "b05f07a415bae8dd45a979c07fa8b01214e49224e9de61a6ed05d01e1e8689f7"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "b83c84d1956d330a8874eb0aff77b70e82edc3d2a6fbd488194f9964d0f1816b"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "8bcf08032f5d123da8fd139b4e74c27d9c3ca996be38ac310bd57af84a296e1c"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "8b35c7262d9060a4e9d15f21289e6e9527bffc8c3aaca0eb614747b0fa81c418"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260927_ind2/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "fc8ce6a6611fddd00fe5f729a55b85d69a5aaf2c24858fd75aa03ae1c09d5fdd"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    },
+    {
+      "id": "20260930_take06",
+      "status": "INDEPENDENT_RIGHT_GEOMETRY_REFRESH_READY",
+      "baseline_artifact": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260930_take06/both",
+      "refined_left_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_multisecond_report.json"
+      ],
+      "refined_right_sources": [
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json"
+      ],
+      "source_override_sha256": {
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json": "cafd85ea85d195a2883da4f993f7615b2d8d9e8b212f8f8f44b11db5381b7887",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_long_hops_report.json": "9285d6dbd2c1e54051a75cca46c21ebc2d61ec9c065b8147a639efff9b1832ad",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_dense10hz_report.json": "09a10bac89feaa9d3bd3d2ee450ade24514823e7b0f7d578fa0f0b68e040da1c",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_multisecond_report.json": "aa1d7ea9108a5e0c46cbfdc53cded73e3f29317016e9f5f7825143c25b808232",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json": "5f607055f922bb8bd2d6b0ffe3a4968fff18370d2a9b8139b84765d2defdb643",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json": "ca4a13eedc60ac0aa5ac07ffac8f6b8f0dc12c0a348eecd1f4d215cb0600c628",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json": "51d59c23baed8e1a87458ab88a843c3f70cde5dcf5993d2f109e5cf4a75e77db",
+        "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json": "7478490bdf4c16b61a130cf72fac572726866cf089925d95f70d504474d987ff"
+      },
+      "independent_right_geometry_refresh": {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "source_stage_preflight": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+        "source_stage_preflight_sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf",
+        "reports": {
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+            "fallback_right_source_sha256": "78741089f1f167ae35c1bbaf288f7c308aae4c10df8c9fb9b4ebcc5d6a2718ce",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 589,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "fallback_right_source_sha256": "19043fa7d6b7eb964c49abf5aafaeb6457e936877e2c7a8884d7fc25a3b5bd37",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 151,
+            "fallback_row_count": 5,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "fallback_right_source_sha256": "01e031e1b117c8a23a10dd5fad5fced1b10baffdcf2f0b2715d81a18c2bbfeef",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 657,
+            "fallback_row_count": 0,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          },
+          "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json": {
+            "fallback_right_source_path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "fallback_right_source_sha256": "d4b828199ec2557a085c48b90a7739310a82c1381ea86277da6c385e88780334",
+            "raw_right_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "raw_right_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+            "refreshed_row_count": 85,
+            "fallback_row_count": 4,
+            "pairs_preserved": true,
+            "global_scale_preserved": true
+          }
+        }
+      },
+      "right_raw_geometry_trajectory": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+      "right_raw_geometry_trajectory_sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72",
+      "right_geometry_refresh_policy": {
+        "name": "independent_right_geometry_refresh_source_only",
+        "development_only": true,
+        "external_ground_truth_used": false,
+        "slam_supervision": false,
+        "scope": "recompute currently accepted RIGHT source rows from actual RIGHT pixels; keep fallback row on native reject",
+        "limitation": "fixed-pair geometry refresh only; no missing-pair recovery, no factor generation, no backend/scorer",
+        "bidirectional_gate": "native align_mast3r_scale_with_stereo.combine_bidirectional_scale default thresholds",
+        "global_scale_policy": "report-level scale/quality preserved from corrected-derived fallback for confidence normalization only; not a new RIGHT scale claim"
+      },
+      "synchronization": {
+        "trajectory_frame": "infrared_left",
+        "max_trajectory_to_source_delta_ms": 0.0,
+        "max_left_right_ir_skew_ms": 0.0,
+        "max_rgb_left_ir_skew_ms": 0.5439453125
+      },
+      "reports": [
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+          "source_sha256": "78741089f1f167ae35c1bbaf288f7c308aae4c10df8c9fb9b4ebcc5d6a2718ce",
+          "refreshed_sha256": "5f607055f922bb8bd2d6b0ffe3a4968fff18370d2a9b8139b84765d2defdb643",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 589,
+          "rejected_input_rows_unchanged": 601,
+          "independent_replaced_rows": 589,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+          "source_sha256": "19043fa7d6b7eb964c49abf5aafaeb6457e936877e2c7a8884d7fc25a3b5bd37",
+          "refreshed_sha256": "ca4a13eedc60ac0aa5ac07ffac8f6b8f0dc12c0a348eecd1f4d215cb0600c628",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 156,
+          "rejected_input_rows_unchanged": 531,
+          "independent_replaced_rows": 151,
+          "fallback_preserved_rows": 5,
+          "native_reject_reasons": {
+            "pnp_inlier_ratio_low": 1,
+            "reverse_motion_failed": 3,
+            "pnp_failed": 1
+          }
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+          "source_sha256": "01e031e1b117c8a23a10dd5fad5fced1b10baffdcf2f0b2715d81a18c2bbfeef",
+          "refreshed_sha256": "51d59c23baed8e1a87458ab88a843c3f70cde5dcf5993d2f109e5cf4a75e77db",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 657,
+          "rejected_input_rows_unchanged": 540,
+          "independent_replaced_rows": 657,
+          "fallback_preserved_rows": 0,
+          "native_reject_reasons": {}
+        },
+        {
+          "source_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "refreshed_report": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_right_geometry_four_source_v1/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+          "source_sha256": "d4b828199ec2557a085c48b90a7739310a82c1381ea86277da6c385e88780334",
+          "refreshed_sha256": "7478490bdf4c16b61a130cf72fac572726866cf089925d95f70d504474d987ff",
+          "pairs_preserved": true,
+          "global_scale_preserved": true,
+          "accepted_input_rows": 89,
+          "rejected_input_rows_unchanged": 530,
+          "independent_replaced_rows": 85,
+          "fallback_preserved_rows": 4,
+          "native_reject_reasons": {
+            "pnp_failed": 2,
+            "rotation_disagrees": 1,
+            "reverse_motion_failed": 1
+          }
+        }
+      ],
+      "accepted_input_rows": 1491,
+      "independent_replaced_rows": 1482,
+      "fallback_preserved_rows": 9,
+      "rejected_input_rows_unchanged": 2202,
+      "consumed_source_guard": {
+        "schema": "independent_right_geometry_refresh_guard_v1",
+        "guarded_path_count": 21,
+        "guarded_before_sha256": {
+          "manifest_record_session_frames": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_170018/d405_frames.csv",
+            "sha256": "22b62bb86511e7386917bff54881c23ff0c59a0e8f1d2b2c1cefe17c411119e6"
+          },
+          "left_source_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "cafd85ea85d195a2883da4f993f7615b2d8d9e8b212f8f8f44b11db5381b7887"
+          },
+          "right_binding_report": {
+            "path": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_right_report.json",
+            "sha256": "8d89cabd44d9a1f9dacaf6405f36c89089394e8b186e5f5df05bcec4246107b8"
+          },
+          "left_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/trajectory_frames.csv",
+            "sha256": "2b63af24f9b27ab32ba8702c2925e69a816eabfb14e864332a8fca95138031db"
+          },
+          "right_raw_trajectory": {
+            "path": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/trajectory_frames.csv",
+            "sha256": "339f52f0d5f603b1c84c68c316a2b41cbcd26701195cf9b771dafc84641f7a72"
+          },
+          "db3": {
+            "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_170018/d405_720p_rgb_stereo_ir.db3",
+            "sha256": "b332d47c2a79b2b6cd1093220c26ed01a31e518d91fff6e2ace9adce3ad8232b"
+          },
+          "baseline_candidate": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260930_take06/both/candidate_manifest.json",
+            "sha256": "92d175d2e8df8ad3c075d1ff111ef4c690ecbcb996b467b3871f786bddac7be6"
+          },
+          "this_script": {
+            "path": "/home/robot/ego_vio_humble/scripts/prepare_independent_right_geometry_probe.py",
+            "sha256": "be9b98a15fcf0775a4eca60538b95e8bc6dd9f5d5e8eac77681a773fa8014806"
+          },
+          "alignment_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+            "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+          },
+          "lowdiag_module": {
+            "path": "/home/robot/ego_vio_humble/scripts/diagnose_stereo_low_excitation.py",
+            "sha256": "9d934613d330eac1452e9823984494f8080c8176122c6a288f9e2ed204917d26"
+          },
+          "right_helper_module": {
+            "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+            "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+          },
+          "manifest": {
+            "path": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+            "sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759"
+          },
+          "source_stage_preflight": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/preflight_report.json",
+            "sha256": "5e17d109e040d94d621561b0298045f433efb36c4aebe9afb090a0140c2216cf"
+          },
+          "stage_source_00_stereo_scale_bidirectional_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_bidirectional_report.json",
+            "sha256": "cafd85ea85d195a2883da4f993f7615b2d8d9e8b212f8f8f44b11db5381b7887"
+          },
+          "stage_source_01_stereo_scale_long_hops_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_long_hops_report.json",
+            "sha256": "9285d6dbd2c1e54051a75cca46c21ebc2d61ec9c065b8147a639efff9b1832ad"
+          },
+          "stage_source_02_stereo_scale_dense10hz_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_dense10hz_report.json",
+            "sha256": "09a10bac89feaa9d3bd3d2ee450ade24514823e7b0f7d578fa0f0b68e040da1c"
+          },
+          "stage_source_03_stereo_scale_multisecond_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/20260930_take06/refined_left_sources/stereo_scale_multisecond_report.json",
+            "sha256": "aa1d7ea9108a5e0c46cbfdc53cded73e3f29317016e9f5f7825143c25b808232"
+          },
+          "stage_source_04_stereo_scale_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_right_report.json",
+            "sha256": "78741089f1f167ae35c1bbaf288f7c308aae4c10df8c9fb9b4ebcc5d6a2718ce"
+          },
+          "stage_source_05_stereo_scale_long_hops_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_long_hops_right_report.json",
+            "sha256": "19043fa7d6b7eb964c49abf5aafaeb6457e936877e2c7a8884d7fc25a3b5bd37"
+          },
+          "stage_source_06_stereo_scale_dense10hz_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_dense10hz_right_report.json",
+            "sha256": "01e031e1b117c8a23a10dd5fad5fced1b10baffdcf2f0b2715d81a18c2bbfeef"
+          },
+          "stage_source_07_stereo_scale_multisecond_right_report.json": {
+            "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_consistent_four_source_v3/20260930_take06/refined_right_sources/stereo_scale_multisecond_right_report.json",
+            "sha256": "d4b828199ec2557a085c48b90a7739310a82c1381ea86277da6c385e88780334"
+          }
+        },
+        "guarded_after_verified": true
+      },
+      "factor_output_count": 0,
+      "accepted_as_candidate": false
+    }
+  ],
+  "failures": []
+}
