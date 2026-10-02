@@ -14,11 +14,14 @@ MASt3R positions are converted with the existing stereo/IMU global scale;
 VINS body poses are converted to the left-IR camera centre using the Docker2
 `body_T_cam0` calibration. No Tracker pose enters these ratios.
 
-| Take | Product ATE max | 33–35 s MASt3R / VINS displacement | Independent stereo / VINS displacement | 33–35 s median 3D match fraction |
+| Take | Frozen fusion ATE max | 33–35 s MASt3R / VINS displacement | Independent stereo / VINS displacement | 33–35 s median 3D match fraction |
 | --- | ---: | ---: | ---: | ---: |
 | 2, passing | 7.02 mm | 0.985 | 0.979 | 0.549 |
 | 4, failing | 23.47 mm | 1.152 | 0.975 | 0.552 |
 | 6, failing | 68.72 mm | 1.298 | 0.973 | 0.254 |
+
+Take6's ATE is from `baseline_diagnostic_score`, not a selected/published
+`fusion_score`: its candidate was produced and scored for diagnosis only.
 
 For take6, VINS/Tracker 1-second displacement ratio is 1.02 at 33 s and the
 per-second median VINS ATE is about 1.8–4.5 mm in the 31–35 s error growth window. The Tracker
