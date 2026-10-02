@@ -44,20 +44,22 @@ def combine_native_geometry(forward, reverse, original_combine):
     if baseline.get("accepted") is not True:
         return baseline
     geometry, diagnostic = combine_bidirectional_se3_motion(forward, reverse)
+    diagnostic["scale_source"] = "unchanged_native_scalar_bidirectional_baseline"
     if geometry.get("accepted") is not True:
         return {
             **deepcopy(baseline), "accepted": False, "reason": geometry["reason"],
             "bidirectional_se3": diagnostic,
             "scalar_bidirectional_baseline": deepcopy(baseline),
             "native_scalar_acceptance_unchanged": True,
+            "scale_source": "unchanged_native_scalar_bidirectional_baseline",
+            "raw_confidence_fields_source": "unchanged_native_scalar_bidirectional_baseline",
         }
-    # Each native distance/scale pair encodes the same frozen visual distance.
-    visual_distance = float(forward["metric_distance_m"]) / float(forward["scale"])
-    reverse_distance = float(reverse["metric_distance_m"]) / float(reverse["scale"])
-    if (not np.isfinite(visual_distance) or visual_distance <= 0
-            or not np.isfinite(reverse_distance)
-            or not np.isclose(visual_distance, reverse_distance, rtol=1e-6, atol=1e-9)):
-        raise ValueError("native forward/reverse scale source mismatch")
+    forward_mast3r_distance = float(forward["mast3r_distance"])
+    reverse_mast3r_distance = float(reverse["mast3r_distance"])
+    if (not np.isfinite(forward_mast3r_distance) or forward_mast3r_distance <= 0
+            or not np.isfinite(reverse_mast3r_distance)
+            or not np.isclose(forward_mast3r_distance, reverse_mast3r_distance, rtol=1e-6, atol=1e-12)):
+        raise ValueError("native forward/reverse mast3r_distance mismatch")
     distance = float(np.linalg.norm(geometry["metric_displacement_camera_i_m"]))
     if not np.isfinite(distance) or distance <= np.finfo(float).eps:
         return {
@@ -66,15 +68,17 @@ def combine_native_geometry(forward, reverse, original_combine):
             "bidirectional_se3": diagnostic,
             "scalar_bidirectional_baseline": deepcopy(baseline),
             "native_scalar_acceptance_unchanged": True,
+            "scale_source": "unchanged_native_scalar_bidirectional_baseline",
+            "raw_confidence_fields_source": "unchanged_native_scalar_bidirectional_baseline",
         }
     result = deepcopy(baseline)
     result.update(geometry)
     result.update(
         metric_distance_m=distance,
-        scale=distance / visual_distance,
-        scale_estimator="native_bidirectional_se3_midpoint",
         bidirectional_se3=diagnostic,
         scalar_bidirectional_baseline=deepcopy(baseline),
+        scale_source="unchanged_native_scalar_bidirectional_baseline",
+        raw_confidence_fields_source="unchanged_native_scalar_bidirectional_baseline",
         pnp_reprojection_source="raw_forward_before_se3_midpoint",
         rotation_error_source="raw_forward_before_se3_midpoint",
         native_scalar_acceptance_unchanged=True,

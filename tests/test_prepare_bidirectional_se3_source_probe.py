@@ -15,7 +15,7 @@ spec.loader.exec_module(probe)
 def motions():
     common = {"accepted": True, "metric_displacement_frame": "infrared_left_camera_i",
               "pnp_rotation_quaternion_xyzw": [0, 0, 0, 1], "pnp_inlier_ratio": 0.9,
-              "rotation_error_deg": 0.0}
+              "rotation_error_deg": 0.0, "mast3r_distance": 0.01}
     return (dict(common, metric_displacement_camera_i_m=[0.01, 0, 0],
                  metric_distance_m=0.01, scale=1.0),
             dict(common, metric_displacement_camera_i_m=[-0.012, 0, 0],
@@ -26,14 +26,41 @@ def test_native_scalar_gate_preserved_but_geometry_really_fused():
     forward, reverse = motions()
     before = deepcopy(forward), deepcopy(reverse)
     native = probe.source.diag.combine_bidirectional_native
+    baseline = native(forward, reverse)
     result = probe.combine_native_geometry(forward, reverse, native)
     assert np.allclose(result["metric_displacement_camera_i_m"], [0.011, 0, 0])
     assert result["metric_distance_m"] == pytest.approx(0.011)
-    assert result["scale"] == pytest.approx(1.1)
+    assert result["scale"] == pytest.approx(baseline["scale"])
+    assert result["scale_estimator"] == baseline["scale_estimator"]
+    assert result["scale_source"] == "unchanged_native_scalar_bidirectional_baseline"
     assert result["native_scalar_acceptance_unchanged"] is True
-    assert result["scalar_bidirectional_baseline"] == native(forward, reverse)
+    assert result["scalar_bidirectional_baseline"] == baseline
     assert result["pnp_reprojection_source"] == "raw_forward_before_se3_midpoint"
     assert (forward, reverse) == before
+
+
+def test_projected_native_scales_can_differ_without_recomputing_from_norm_ratio():
+    forward, reverse = motions()
+    # Frozen visual deltas are [.02, 0, 0] and [-.02, 0, 0]. Native
+    # scale is their projection, not either metric displacement's norm.
+    forward_distance = np.linalg.norm([0.02, 0.02, 0.0])
+    reverse_distance = np.linalg.norm([-0.021, 0.01, 0.0])
+    forward.update(metric_displacement_camera_i_m=[0.02, 0.02, 0.0],
+                   metric_distance_m=forward_distance, scale=1.0, mast3r_distance=0.02,
+                   direction_cosine=0.02 / forward_distance)
+    reverse.update(metric_displacement_camera_i_m=[-0.021, 0.01, 0.0],
+                   metric_distance_m=reverse_distance, scale=1.05, mast3r_distance=0.02,
+                   direction_cosine=0.021 / reverse_distance)
+    native = probe.source.diag.combine_bidirectional_native
+    baseline = native(forward, reverse)
+
+    result = probe.combine_native_geometry(forward, reverse, native)
+
+    assert result["metric_distance_m"] == pytest.approx(np.linalg.norm([0.0205, 0.005, 0]))
+    assert result["scale"] == pytest.approx(baseline["scale"])
+    assert result["scale_estimator"] == "bidirectional_pnp_weighted_mean"
+    assert result["scalar_bidirectional_baseline"] == baseline
+    assert result["scale_source"] == "unchanged_native_scalar_bidirectional_baseline"
 
 
 def test_native_rejection_never_salvaged():
@@ -43,10 +70,10 @@ def test_native_rejection_never_salvaged():
     assert probe.combine_native_geometry(forward, reverse, native) == native(forward, reverse)
 
 
-def test_mismatched_visual_scale_sources_rejected():
+def test_mismatched_native_mast3r_distances_rejected():
     forward, reverse = motions()
-    reverse["metric_distance_m"] = 0.02
-    with pytest.raises(ValueError, match="scale source mismatch"):
+    reverse["mast3r_distance"] = 0.02
+    with pytest.raises(ValueError, match="mast3r_distance mismatch"):
         probe.combine_native_geometry(forward, reverse, lambda f, r: dict(f))
 
 

@@ -1091,3 +1091,38 @@ identical recovery-v2 physical pair layout, original learned factors unchanged,
 explicit common frozen fallback, noGT source or candidate selection. No actual
 SE3 ATE result at this point. RK3576 SSH fresh again255No route to host;
 target identity/candidate/deployment remain unverified, no hardware mutation.
+
+Capability080c79263193fd683c96ca9181514122adf2016d backed non-force to
+sencang/codex/dual-ir-frontend-20261001, fetched5files byte-identical at
+/tmp/umi-bidirectional-se3-backup-20261003.5rw5dT;188fresh remote-dependent tests
+PASS. Initial real source launch session93560 CLOSED3/0ready: omitted ROS
+environment, all4 explicitly fail rosbag2_py import before extraction. This is
+launcher error, not video/algorithm accuracy; failedv1preflight kept. Corrected
+launch uses both /opt/ros/humble/setup.bash and ros2_ws/install/setup.bash;
+verified import before native extraction, new output bidirectional_se3_four_source_v2.
+
+Actual v2session86922 CLOSED3/0ready: all4 fail explicit scale source mismatch
+before output/backend. Root source diagnosis corrects our producer assumption:
+native align_mast3r_scale_with_stereo.py:1074 scale is projection
+dot(d_cam,mast3r_delta_i)/mast3r_distance^2, NOTnorm(d_cam)/visual_distance.
+Therefore forwarddistance/scale need not equal reversedistance/scale; the
+failing check was our new adapter bug, not dataset rejection or native defect.
+TDD repair is now scoped to geometry-only isolation: keep saved same-native
+scalar baseline scale/scale_estimator byte-equal for both score arms, validate
+native explicit mast3r_distance positive finite and symmetric; only update
+midpoint displacement/quaternion/metric_distance, label unchanged scalar scale
+provenance. No source rows/report confidence/gates/weights changed. Failedv2
+preflight retained, no score launched; all live consumed-source jobs closed
+before producer edits. Freeze/review/backup before new v3native extraction.
+
+Projection producer repair GREEN8focused/22helper+producer/189related tests,
+independentfreshreviewAPPROVE. Root also made projection fixture physically
+consistent with visualdelta[.02,0,0], forward[.02,.02,0],reverse[-.021,.01,0],
+projection scales1/1.05 and proper cosines, not merely hand-authored inconsistent
+norms. Focused22PASSafterfixtureupdate. Frozen scale means existing confidence
+formula (inlier ratio,rotation_error,scale,bidirectional_disagreement) unchanged;
+it does not use updated metric_distance or quaternion/vector. Back up only
+producer+test+ledger, then immediately newnativefour sourcev3. Newconsumer is
+not live yet: rootfound firstversion source status/report admission/time-bound
+skip/layout/provenance and frozen_code_paths recursion defects before any
+backend; assigned bounded TDD fixes, no inaccurate score claim.
