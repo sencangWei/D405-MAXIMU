@@ -395,3 +395,60 @@ compile and diffcheck clean. This proves numerical operability only; actual
 frozen first case plus two independent controls must score before any precision
 claim. Joint pilot remains pose-only, no acceleration/velocity/gravity states,
 and production is not promoted. All failed previous pilot artifacts retained.
+
+First-v3 closed3/3 and six variants converged; original19 frozen hashes match.
+Joint max errors heldout2=5.352177mm PASS, heldout4=10.287017mm FAIL,
+Sep30take06=13.751503mm FAIL. Full25-v1 then closed25/25 with24 scores and one
+original unobservable source; fixed-R13PASS,joint-R14PASS versus baseline17
+and combined18full/19translation. Joint loses three baseline passes:
+Sep27ind4 9.973->13.074mm,Sep29take01 9.383->11.928mm,
+Sep30take03 9.871->10.086mm; no old failure becomesPASS. Reject production
+promotion. This pilot is not an apples-to-apples replacement of the established
+fullVI p,v,g,bias/IRLS graph: it intentionally omitted those states and used a
+plain pose objective. Next integration must retain established fullVI constraints
+and prove original-R control identity before assessing extra rotational data.
+
+Numericalrepair4fed23fa943f8fb0e38ce1a251b199bf11ab492b backed nonforce toowned
+sencang/codex/dual-ir-frontend-20261001; fetchedremote restoredthreefiles
+byteidentical at/tmp/umi-se3-conditioned-backup-20261002.ugqzNu. Fresh206tests
+and independent boundedpilot review passed. No code/promoted policy changed
+while first3/full25 ran; precisiongoal remains active and failed.
+
+Independent source audit confirms fixed-R13 vs joint14 alone does NOT test the
+new R information inside the established backend: experimental weights differ
+(stereo sigma12.5mm vs4mm, learned200mm vs8mm, VINS1000mm vs8mm), plus no
+velocity/gravity/accelbias/preintegration/IRLS and raw ungauged learned vectors.
+Do not tune those experimental weights to conceal this mismatch. Next staged
+single-R feedback retains complete prior VI graph and recomputes gauge/lever
+vectors; original-R arm must reproduce combined output byte-exact or stop.
+
+Corrected diagnostic: an agent's first12-14deg local PnP conflict was an inverse
+rotation mistake and is discarded. Proper Z.T@(Rj.T@Ri) gives localPnP P95
+heldout4~0.54deg,take06~0.65deg, consistent with original rotation census.
+Take06 remainingbad indices353-355(11.76-11.83s) lie within20-21 longedges but
+have0short/midlocalstereo support and endpointincidence0,1,0. Objective local
+stereo residualP95~0.023mm despite externalpositionerror13.75mm: internal
+residual alone cannot certify absoluteaccuracy. Source learned-vs-stereo
+displacementP95~17.61mm remains a real frame-consistent disagreement. Heldout4
+has2badnear-finalnodes, no>=30framefactors at tail. Weaklocaltopology is a
+diagnostic lead, NOT proof that filling any gap will fix precision.
+
+New isolated staged rotation feedback wrapper retains the existing complete
+VI solver and all its weights/IRLS. It recomputes constant gauge/physicallever
+factors with original-R control then frozenjoint-R feedback, consuming no
+pilot positions. Original-R control must byte-match closedcombined estimate
+and vectors beforefeedback. All original expected inputhashes fromfourupstream
+candidates guard rawIMU/referenceCSV/sourceartifacts throughout construction
+and scoring; mutation is visible STOP_CODE_CHANGED. Fresh214targetedtestsPASS,
+compile/diffclean, independentreview approves boundedfirst3 only thenfull25
+afteractualcontrolidentity. First3 launched under ownbounded CPUservice
+`umi-joint-r-vi-feedback-first3-v1-20261002`; no precisionclaimyet.
+
+Source rejection audit: both eyes near take06badwindow each367observations,
+31accepted(multisecondonly),336rejected including317translation_excitation_low.
+All149short and75medium rows are rejected; no unused valid right shortedges.
+`align_mast3r_scale_with_stereo.py` calculates freePnP+metrictranslation before
+the lowexcitation check, but stores no metrics on that rejection path. Existing
+cache cannot distinguish metricdistance<3mm from learneddelta<1e-4 nor judge
+reprojection quality there. Do NOT accept/reuse rejected rows or lower gates
+based on these incomplete artifacts; fresh diagnostic geometry is required.
