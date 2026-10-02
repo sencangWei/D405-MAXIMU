@@ -1002,3 +1002,46 @@ motion; it is not an ATE or a claimed228mm trajectory correction.
 Automatically continuing evidence audit of ind2/take06 residual over10mm
 frames/constraintcoverage/nativeclosure, including held4 regression; no new
 cap/weight/threshold sweep and no GT-based source/candidate selection.
+
+Closed-four residual coverage audit: exact frozen scorer reconstruction agrees
+with precision.json. ind2 max10.987mm at CSV1104;22samples >10mm, mainrun
+1102-1116 (0.467s). take06 max13.259mm at CSV1030;only4samples1027-1030
+(0.100s) >10mm. Both are covered by existing stereo and learned constraints,
+not an uncovered endpoint/gap: ind2 peak55stereo/81learned factors, take06
+52stereo/86learned factors. No recovered newphysicalpair has a learned local
+factor in these windows (8new ind2,13new take06); avoid claiming a learned
+LEFT/RIGHT closure validation for those new pairs.
+Post-solve signed residual pull audit uses w^2*(target_delta-solved_delta),
+not an exact stored historical LSQR gradient or a causal proof. take06 nearpeak
+learnedLEFT target residualP95=22.13mm vs currentstereoLEFT2.23mm; ind2
+learnedRIGHT33.07mm vs newstereo2.70mm. Large learned pull also appears in
+held2PASS, so magnitude alone is not a failure selector. held4P95 regression
+window129-170 has small stereo residuals and a subtle objective balance change;
+do not assume a single bad recovered edge without source evidence.
+Next bounded read-only audit: do frozen learned factors' source-consistency
+metadata still refer to old stereo measurements while native geometry is
+refreshed? Check original coordinate/gauge/lever/deduplication semantics and
+unchanged8mm formula across all4 before any implementation. This is a hypothesis,
+not a confirmed production bug; no generic weight/gate/cap sweep authorized.
+
+Source-consistency exact audit closes all4: reconstruct_tracks/load_eye reruns
+the identical hash-bound orientation refinement; baseline factor identity
+PASS with target maxabs0 at2980/3349/2536/2985factors. Current policy
+learned_motion_consistency_limit_m=None:8mm is confidence Huber scaling,
+NOT an enabled hard consistency gate. Refreshed native observations materially
+change RIGHT source confidence, e.g.take06(844,854) .013->.661, ind2(958,964)
+.078->.680. Independent contract review allows ONE parameter-unchanged source
+consistency experiment after exact controls, not revival of sealed weight sweeps.
+New isolated helper/adapter4files implement source metadata sync only, preserve
+current constant-gauge targets, reference timeline, scale, original factor
+count/keys/order, solver/gates/caps. No recovered newpair becomes learned factor.
+An existing observation with no matched native source explicitly retains its
+hash-bound old source; all4 exact adapter preflights PASStargetmaxabs0/count
+unchanged. ind2 one boundRIGHT rawpair575/595 (reference519/539) retains old
+measurement; held2's80remaining raw fallbackrows are outside usable reference
+intervals, not80 scored omissions. Changedfactors2941/3341/2357/2921.
+Independent review APPROVE, fresh165relatedtests PASS; two added actual adapter
+call/restoration tests bring focusednewtests31PASS. No real ATE for this source
+sync arm yet and no production promotion. Initial root preflight accidentally
+used wrongind2/take06filterIDs and processed onlyheld2/held4; exact IDs corrected
+and separate secondpreflight processesind2/take06. Both sessionsCLOSEDexit0.
