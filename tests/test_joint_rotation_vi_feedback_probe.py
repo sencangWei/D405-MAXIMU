@@ -98,7 +98,7 @@ def test_joint_artifact_validation_uses_rotations_not_positions_and_rejects_gt(t
     Path(record["session"]).mkdir()
     write_joint_artifact(tmp_path / "joint", record, state)
 
-    rotations, candidate, paths = probe.validate_joint_rotation_artifact(
+    rotations, candidate, paths, gauge_report = probe.validate_joint_rotation_artifact(
         record,
         tmp_path / "joint",
         state,
@@ -112,12 +112,45 @@ def test_joint_artifact_validation_uses_rotations_not_positions_and_rejects_gt(t
     }
     np.testing.assert_allclose(rotations[0], np.eye(3), atol=1e-12)
     assert not np.allclose(rotations[1], np.eye(3))
+    assert gauge_report["first_pose_restored_to_original_reference_rotation"] is True
 
     candidate_path = tmp_path / "joint" / "case" / probe.JOINT_VARIANT / "candidate_manifest.json"
     candidate = json.loads(candidate_path.read_text())
     candidate["external_ground_truth_used"] = True
     write_json(candidate_path, candidate)
     with pytest.raises(ValueError, match="ground truth"):
+        probe.validate_joint_rotation_artifact(record, tmp_path / "joint", state)
+
+
+def test_joint_artifact_accepts_nontrivial_first_gauge_csv_roundtrip_and_restores(tmp_path):
+    state = make_state()
+    state.rotations = Rotation.from_euler("zyx", [[0.39, -0.01, 0.002], [0.4, 0, 0], [0.41, 0, 0]])
+    record = {"id": "case", "session": str(tmp_path / "session")}
+    Path(record["session"]).mkdir()
+    write_joint_artifact(tmp_path / "joint", record, state, rotations=state.rotations)
+
+    rotations, _candidate, _paths, gauge_report = probe.validate_joint_rotation_artifact(
+        record,
+        tmp_path / "joint",
+        state,
+    )
+
+    np.testing.assert_allclose(rotations[0], state.rotations.as_matrix()[0], atol=0.0)
+    assert gauge_report["serialized_first_angle_rad"] <= 1e-12
+    assert gauge_report["original_vs_serialized_first_angle_rad"] > 0.0
+
+
+def test_joint_artifact_rejects_non_serialization_first_gauge_change(tmp_path):
+    state = make_state()
+    state.rotations = Rotation.from_euler("zyx", [[0.39, -0.01, 0.002], [0.4, 0, 0], [0.41, 0, 0]])
+    changed = Rotation.from_matrix(state.rotations.as_matrix().copy())
+    matrices = changed.as_matrix()
+    matrices[0] = Rotation.from_euler("z", 1e-5).as_matrix() @ matrices[0]
+    record = {"id": "case", "session": str(tmp_path / "session")}
+    Path(record["session"]).mkdir()
+    write_joint_artifact(tmp_path / "joint", record, state, rotations=Rotation.from_matrix(matrices))
+
+    with pytest.raises(ValueError, match="first-pose gauge"):
         probe.validate_joint_rotation_artifact(record, tmp_path / "joint", state)
 
 
@@ -264,6 +297,7 @@ def patch_run_record(
                 "input_sha256": {str(paths[3].resolve()): sha(paths[3])},
             },
             [paths[3]],
+            {"schema": "joint_rotation_first_gauge_serialization_v1"},
         ),
     )
     monkeypatch.setattr(

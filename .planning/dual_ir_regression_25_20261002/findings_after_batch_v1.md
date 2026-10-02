@@ -452,3 +452,13 @@ the lowexcitation check, but stores no metrics on that rejection path. Existing
 cache cannot distinguish metricdistance<3mm from learneddelta<1e-4 nor judge
 reprojection quality there. Do NOT accept/reuse rejected rows or lower gates
 based on these incomplete artifacts; fresh diagnostic geometry is required.
+
+Staged first3-v1 closed3/3 with all6 unscored, before any solver comparison:
+first-gauge validation compared a 9-decimal CSV quaternion with the original
+in-memory rotation at1e-12. Observed roundtrip deltas0.63-1.24e-9rad match
+the existing serializer, not a physical gauge change. Narrow fix validates
+only that exact canonical roundtrip at unchanged1e-12, then restores the
+original first rotation. Genuine gauge changes remain rejected. Fresh216
+targeted tests PASS in11.97s, diffcheck clean; independent review approves
+bounded first3-v2 only. No weights, timeline, graph or scoring policy changed.
+First3-v2 running under `umi-joint-r-vi-feedback-first3-v2-20261002`.

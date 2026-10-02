@@ -214,11 +214,22 @@ def validate_combined_artifact(
     return artifact, candidate, paths
 
 
+def canonical_trajectory_serialized_rotation(matrix: np.ndarray) -> np.ndarray:
+    """Round-trip a rotation through write_trajectory's 9-decimal quaternion CSV."""
+
+    quaternion = Rotation.from_matrix(np.asarray(matrix, dtype=float)).as_quat()
+    serialized = np.asarray([float(f"{value:.9f}") for value in quaternion], dtype=float)
+    norm = float(np.linalg.norm(serialized))
+    if not np.isfinite(norm) or norm <= 0.0:
+        raise ValueError("serialized first-gauge quaternion is invalid")
+    return Rotation.from_quat(serialized / norm).as_matrix()
+
+
 def validate_joint_rotation_artifact(
     record: dict[str, Any],
     joint_root: Path,
     state,
-) -> tuple[np.ndarray, dict[str, Any], list[Path]]:
+) -> tuple[np.ndarray, dict[str, Any], list[Path], dict[str, Any]]:
     artifact = joint_artifact_dir(joint_root, record["id"])
     paths = [
         artifact / "candidate_manifest.json",
@@ -267,14 +278,33 @@ def validate_joint_rotation_artifact(
         raise ValueError("joint rotation estimate contains non-SO3 rotations")
     if not np.allclose(np.linalg.det(matrices), 1.0, atol=1e-8, rtol=0):
         raise ValueError("joint rotation estimate determinant is invalid")
-    if not np.allclose(
-        matrices[0],
-        state.rotations.as_matrix()[0],
-        atol=1e-12,
-        rtol=0.0,
+    original_first = state.rotations.as_matrix()[0]
+    expected_serialized_first = canonical_trajectory_serialized_rotation(original_first)
+    first_serialization_abs_error = float(
+        np.max(np.abs(matrices[0] - expected_serialized_first))
+    )
+    first_serialization_angle_rad = float(
+        Rotation.from_matrix(expected_serialized_first.T @ matrices[0]).magnitude()
+    )
+    first_original_angle_rad = float(
+        Rotation.from_matrix(original_first.T @ matrices[0]).magnitude()
+    )
+    if (
+        first_serialization_abs_error > 1e-12
+        or first_serialization_angle_rad > 1e-12
     ):
         raise ValueError("joint rotation changed the first-pose gauge")
-    return matrices, candidate, paths
+    matrices = matrices.copy()
+    matrices[0] = original_first
+    gauge_report = {
+        "schema": "joint_rotation_first_gauge_serialization_v1",
+        "policy": "accept_exact_trajectory_quaternion_9_decimal_roundtrip_only",
+        "first_pose_restored_to_original_reference_rotation": True,
+        "serialized_first_max_abs_error": first_serialization_abs_error,
+        "serialized_first_angle_rad": first_serialization_angle_rad,
+        "original_vs_serialized_first_angle_rad": first_original_angle_rad,
+    }
+    return matrices, candidate, paths, gauge_report
 
 
 def transform_motion_factors(
@@ -380,6 +410,7 @@ def augment_candidate_manifest(
     arm_label: str,
     reference_rotation_source: str,
     joint_candidate: dict[str, Any],
+    joint_gauge_report: dict[str, Any],
     joint_paths: list[Path],
     control_identity: dict[str, Any] | None,
     extra_paths: list[Path],
@@ -402,6 +433,7 @@ def augment_candidate_manifest(
         "uses_ground_truth_for_construction": False,
         "joint_variant": JOINT_VARIANT,
         "joint_output_estimate_sha256": joint_candidate.get("output_estimate_sha256"),
+        "joint_first_gauge_serialization": joint_gauge_report,
         "control_identity": control_identity,
     }
     write_json(manifest_path, candidate)
@@ -482,7 +514,12 @@ def run_record(
             record,
             combined_root,
         )
-        joint_rotations, joint_candidate, joint_paths = validate_joint_rotation_artifact(
+        (
+            joint_rotations,
+            joint_candidate,
+            joint_paths,
+            joint_gauge_report,
+        ) = validate_joint_rotation_artifact(
             record,
             joint_root,
             state,
@@ -577,6 +614,7 @@ def run_record(
             arm_label="control",
             reference_rotation_source="original_vins_body_rotations",
             joint_candidate=joint_candidate,
+            joint_gauge_report=joint_gauge_report,
             joint_paths=joint_paths,
             control_identity=control_identity,
             extra_paths=[*constant_paths, *combined_paths, *track_paths],
@@ -641,6 +679,7 @@ def run_record(
             arm_label="staged_feedback",
             reference_rotation_source="joint_stereo_se3_pose_only_rotations",
             joint_candidate=joint_candidate,
+            joint_gauge_report=joint_gauge_report,
             joint_paths=joint_paths,
             control_identity=None,
             extra_paths=[*constant_paths, *combined_paths, *track_paths],
