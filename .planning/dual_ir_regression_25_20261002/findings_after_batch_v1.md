@@ -911,3 +911,24 @@ salvage, scale/global-quality rewriting or thresholdchange. Pure sharedpair
 append path dedups each physicalpair once and maintains symmetric confidence
 winner/tie-average lever transform. Implementing isolated NEWfiles, followed
 by fresh tests/review and same4record paired evaluation before broad25 run.
+
+Symmetric native recovery capability now implemented in six isolated new
+source/test files. Explicit fail-closed guards reject stale source hashes,
+unguarded consumed paths, optional failed/conflicting reports, low-excitation
+original rows and invalid native bidirectional results. Original8reports are
+not edited; recovered candidates live in a separate provenance appendix.
+Pure shared-pair construction preserves original rows and appends each new
+physical pair once, with unchanged confidence winner/tie-average and calibrated
+lever transformation. Wrapper integration test exercises actual adapter and
+physical-transform call path (one tied LEFT/RIGHT pair becomes20mm, original
+row unchanged). Independent code-review APPROVE, zero remaining issues;
+fresh directly-related suite131PASS. No actual recovery ATE yet, no promotion.
+Actual four-record readonly preflight: held2 LEFT/RIGHT641/641 eligible pairs;
+held4 866/867; ind2 748/518 (one conflicting RIGHT report normally excluded);
+take06 635/638. These5554 candidates are not accepted factors until native
+validation and exact reference association pass. Automatic next branch is
+four-record native source recovery, then unchanged-currentbest-control paired
+evaluation; compare also with the closed fixed-pair RIGHT experiment above.
+All consumed source/helper/evaluator/backend code frozen once run starts.
+Parallel RK3576 branch remains blocked by unreachable target and absent real
+ARM candidate; no deployment or hardware/service mutation performed here.
