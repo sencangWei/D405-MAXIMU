@@ -462,3 +462,49 @@ original first rotation. Genuine gauge changes remain rejected. Fresh216
 targeted tests PASS in11.97s, diffcheck clean; independent review approves
 bounded first3-v2 only. No weights, timeline, graph or scoring policy changed.
 First3-v2 running under `umi-joint-r-vi-feedback-first3-v2-20261002`.
+
+First3-v2 closed3/3, all original-R controls byte-identical. Heldout2max
+6.182894->5.939977mm; heldout4max9.444787->8.514762mm; take06max
+14.756369->14.735589mm still FAIL. No production promotion. Frozen full25
+launched automatically under `umi-joint-r-vi-feedback-full25-v1-20261002`.
+Canonicalfix caab66b4189cbe30796fa353ea4d4376fffb7634 pushed nonforce to
+owned sencang/codex/dual-ir-frontend-20261001, fetchedremote restored3committed
+files byteidentical at/tmp/umi-r-vi-gauge-fix-backup-20261002.OwVtHv.
+
+Internal gyro/VINS-only audit of first3: calibrated rawgyro integrations have
+mean correction-rate norms0.0323/0.0332/0.0341deg/s, corresponding~1.23/1.26/
+1.30deg over38s. Convention Log(gyro_delta.T@VINS_Ri.T@VINS_Rj)/dt, so a
+bias-to-subtract would have approximately opposite sign. YAML static bias
+correction is already applied; no dynamic gyro bias columns exist in cached
+VINS CSV, and pose-only pilot has no gyro bias state. This is an omitted-state
+confound, not evidence of sign/dimension/td bug or proven cause. Do not retune
+sealed imu_rotation_constraint_weight. Any further rotational experiment must
+address this physical state/observability explicitly, not hide the conflict
+with noise-weight sweeps. No GT used in these internal statistics.
+
+Standalone diagnostic now replays only source-rejected lowexcitation pairs,
+with an exact-function return profiler and before/after binding/source hashes;
+no cache/acceptance/factor mutation. Fresh226targetedtestsPASS. First raw DB3
+smoke8pairs reproduced8rejections, but root caught an index-space mismatch:
+reference indices353-355 are epoch1790758834.6053965..1790758834.6720788;
+raw learned trajectory indices409-411, not353-355. Initialrawwindow323..385
+was earlier and is NOT evidence about the precision peak. Correct time-bound
+window maps to raw379..441; new16pair diagnostic launched. Originalsmoke
+retained. Raw reports omit depth/parser/sourcehash metadata; maxdepth0.6 is
+explicitly taken from workflow and uncertainty is flagged, not claimed exact
+historicalsource reproducibility. Other parser fallbacks are declared.
+
+Staged rotation feedback full25-v1 closed25/25,24scored and original1unscored.
+Control and feedback both18fullPASS/19max<=10mm, no oldFAIL->PASS and no
+oldPASS loss relative to combined. All controls must match combined exactly.
+Do not promote the new rotation feedback: it adds work without new pass.
+FullVI take06max14.756369->14.735589mm remainsfail. Correct raw-window
+16pair diagnostic succeeded16/16 lowexcitation reproductions; measured short
+PnP translations0.086-0.963mm, all learned lengths<1e-4, inlier ratios
+0.905-1.0. This corroborates a stationary/lowmotion window, not a badscale
+measurement. IMPORTANT this window was selected from the discarded pureSE3
+pilot peak11.8s, not yet verified as the retained fullVI peak. It cannot be
+used to justify repairing the retained VI failure until its actual timestamp
+is separately located. All diagnostic rows remain rejected/no emittedfactors.
+Independentreview approves diagnostic-only, fresh226testsPASS; production
+source remains unchanged.
