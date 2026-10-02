@@ -1306,3 +1306,33 @@ existing candidate/registry hash guard, real typed RIGHT-refresh parent,
 strict recovery source rows and optional byte copies. No source/frame deletion,
 new confidence/gates/solver weights or GT supervision. Consumer finalguards
 remain separate; first source run cannot invoke backend/scorer.
+
+Native-source capability commit7e76d9728f1045e8941454a01e48a8720bf09dc0
+was pushed normally to owned sencang/codex/dual-ir-frontend-20261001,
+fetched and restored at /tmp/umi-corpus-native-backup-20261003.p94IZO.
+Three committed files byte-identical. The initial partial restore lacked two
+unchanged geometry dependencies; restoring those from the same remote commit
+also matched local content and yielded11fresh producer tests PASS.
+Actual first-source ind2 extraction launched as session63886, PID2425921;
+producer/native dependencies remain frozen. RIGHT native pixel refresh and
+symmetric rejected-nonlow recovery only; no backend/scorer/ATE result yet.
+Consumer review caught executable typed-row/legacy-adapter mismatch and an
+actual metadata readiness-field mismatch before any backend launch. These
+are new adapter integration bugs, not evidence of SLAM accuracy improvement.
+Fresh RK SSH probe still exited255 No route to host; live deployment and all
+board acceptance remain unverified, with no service/release/data mutation.
+
+First actual native original-corpus source ind2 completed740.891s:
+NATIVE_SOURCES_COMPLETE,1READY0technicalfail. Final preflight SHA
+82de26efa12dd6c75847c5c9e149f0a3161c9fc1cb061b5c46c736e85338bae3.
+Accepted RIGHT1165native refreshed/18fallback,3refreshed reports plus1normal
+unadmitted optional bytecopy. Symmetric recovery1265attempted/152native
+accepted/1113rejected retained,0invaliddiagnostic skips for this record.
+Root and independent reviewer actual complete pre-backend guard PASS:
+LEFT1353/RIGHT1183existing eye candidates,152recovered/0reference skips,
+48consumedpaths, exact raw/metric timelines and immutable sources.
+Consumer independently APPROVED first paired score at SHA
+4b6343daea2dc98945ed76bae949c72bfe8d71ad6d896f130c87bdf66a57edcf,
+tests SHA9564537b1732e19f41ff37d6d2acbee49366e4d53e652d2a9037a0666e143a95.
+Fresh root related80tests PASS,93probe tests PASS; no GT source supervision,
+no production promotion or accuracy improvement claim before paired output.
