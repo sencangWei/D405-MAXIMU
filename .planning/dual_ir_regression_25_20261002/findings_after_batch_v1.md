@@ -1045,3 +1045,30 @@ call/restoration tests bring focusednewtests31PASS. No real ATE for this source
 sync arm yet and no production promotion. Initial root preflight accidentally
 used wrongind2/take06filterIDs and processed onlyheld2/held4; exact IDs corrected
 and separate secondpreflight processesind2/take06. Both sessionsCLOSEDexit0.
+
+Capabilityf33a27165fadb912a8c658f3af993a92fd8ed0dd pushed non-force to
+sencang/codex/dual-ir-frontend-20261001; fetchedHEAD equalslocal,all5changed
+files byte-identical after remote restore at
+/tmp/umi-source-consistency-backup-20261003.NJVq7M;167fresh relatedtests against
+clean remote dependencies PASS. Actual source-consistency four-record paired
+experiment started session96906, outputindependent_ir_source_consistency_four_score_v1,
+all consumed code frozen. No newATE/promotion at launch; production code/config
+unchanged. Parallel RK3576 freshbounded SSH againCLOSED255No route to host,
+target/release/recording-idle notverified; no hardware/service/deployment mutation.
+
+Source-consistency actual4record run session96906 CLOSEDexit0/4of4scored.
+mean/P95/max mm: held2 2.082/3.848/5.097 PASS;
+held4 3.581/5.898/7.884 PASS; ind2 3.630/9.025/10.648 FAILmax;
+take06 3.177/6.035/14.723 FAILmax. Compared with previous recovery-only
+max5.256/8.240/10.987/13.259, first3max improve buttake06regresses1.464mm;
+NO extraPASS; no promotion/no weight sweep continuation. Rootfreshallfrozen
+codehashes/fulltimelines/orientations/exact originalfactor targets+order+count
+and actual newsource contextpath/hash PASS. Existinggoalcore78tests freshlyPASS.
+Next source-geometry evidence: native combine_bidirectional_scale only averages
+scalar scale and leaves forward displacement/quaternion unchanged. Reverse
+vector/quaternion are transient and omitted from saved summaries. Existing
+validate_bidirectional_motion only validates closure, not production-fused SE3.
+Independent audit found no sealed fullnative forward/reverse SE3 geometry trial.
+Proceed with bounded symmetricSE3 source-only geometry experiment; retain full
+rawforward/reverse poses, original native scalar acceptance unchanged, no new
+gate/weight/cap/scale-state sweep, no GT and no score-based source selection.
