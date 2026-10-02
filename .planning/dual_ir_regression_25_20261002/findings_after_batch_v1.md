@@ -609,3 +609,41 @@ Next readonly source-class force/stiffness decomposition uses fixed1s grid
 state/finalsolve weights. Check against objective finite differences and
 stationarity; compare4records before proposing model changes. No GTselected
 direction, weightpatch, geometrygate or productionpromotion.
+
+Source-force replay4records completed using actualfourth LSQR system (not
+post-solve next-IRLS weights). Numericaltrajectorydelta max2.85e-8m,
+roworderexact andfixed1s/3mm/xyz finite-difference errors<1.55e-13.
+Take06 34s-z linear learnedleft-3.640/stereo+3.393/right+0.249,
+total+4.7e-8; quadratic7.58. PASSheldout2/4 alsohaveopposingstereo/learned
+forces. No isolatedfailure discriminator andno license forscalarweighttuning.
+Source-force reproducible script/json beinghardened forsourcehash guards;
+v1 retained, v2 tobindallconsumed sources. Notanaccuracyfix.
+
+Important source-parity audit: currentbaseline/constant/physical/combined
+alluse same192rawreportpaths over24preparedrecords,70332acceptedobservations
+(LK54644/SIFT15688), pnp_refined=False70332/True0. Sep27/28 validated
+SIFT-LM+gyro ten has40differentmeasurementreports, acceptedFalse13661/True2056
+forpnp_refined. Current17/18PASSistherefore internallysame-source butNOTsame
+sourceasthatvalidatedten. Historicalten8PASS2FAIL—notall10PASS—remainsfact.
+Evidence: .planning/stereo_spatial_repeatability_20260927/progress.md:141-177;
+reports/stereo_spatial_repeatability_20260927/sift_lm_gyro_candidate_ten_v1/
+dev2/validated_graph_command.json explicitlybindsnewmeasurementpaths.
+Nextgloballyfixed probe reuseslegacyfreeSIFTLM+rawgyro5deg policy; original
+LK/scales/frontends/VINS/backend/scoring stayfrozen. Firstmeasurement-only
+physicalsharedstereo arm isnotfull27restore. All25sourcepreflightrequired,
+thenfailedtake06+heldout2/4+ind2, independentreviewbeforeactualrun. Newsource
+overridehashes areseparatefromoriginalbaselinehashmap, noprovenanceforgery,
+noderivedrightdoublecount oraccepted-falsefactor. Productionunchanged.
+
+Source-force v2 nowhashguarded131consumedsource/inputpaths withbefore/after
+equality and34/34candidateinputs verifiedperrecord; assertsallframe nodes,
+inactivevisual/scalepriors,rowordering,replayandfinite-differenceconsistency.
+Independentreview APPROVE diagnostic/backup, no precisionfix implied.
+Reciprocaldiagnostic code/ledger7412c56e remotelyfetched/restored3files
+byteidentical at/tmp/umi-reciprocal-diag-backup-20261002.aPx7Uv.
+NewSIFTsourcepreflight all25 preservesunobservabletake05failure;24ready,
+15688SIFT/54644LK. Firstadapterdraft incorrectlyrequiredlegacygraph/dataset
+forRIGHT aswellasLEFT; maincaughtthisbeforeanyLMrun: refinementonlyneedsLEFT
+legacygraph. Targettake06/held2/ind2 originalleftgraphpathsarepresent.
+Do not invent shimgraphs or declarea blockerfromderivedRIGHT missinggraph.
+Fresh39targetedtestsPASS0.29s; sourceprobeimplementationstillpendingreview.
