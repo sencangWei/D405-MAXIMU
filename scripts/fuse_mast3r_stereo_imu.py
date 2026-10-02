@@ -1982,6 +1982,8 @@ def refine_positions_visual_inertial(
     correction_interpolation_mode: str = "linear",
     solve_metric_scale: bool = False,
     secondary_visual_factors: list[dict] | None = None,
+    use_visual_position_prior: bool = True,
+    stereo_factor_confidences: np.ndarray | None = None,
 ) -> tuple[np.ndarray, dict]:
     """Jointly refine position, velocity, gravity and accelerometer bias.
 
@@ -2113,6 +2115,12 @@ def refine_positions_visual_inertial(
         ],
         dtype=float,
     )
+    if stereo_factor_confidences is not None:
+        stereo_prior_weights = np.asarray(stereo_factor_confidences, dtype=float)
+        if (stereo_prior_weights.shape != (len(accepted),)
+                or not np.all(np.isfinite(stereo_prior_weights))
+                or np.any((stereo_prior_weights < 0) | (stereo_prior_weights > 1))):
+            raise ValueError("stereo factor confidences must match accepted edges and lie in [0, 1]")
     secondary_factors = secondary_visual_factors or []
     secondary_targets = []
     secondary_prior_weights = []
@@ -2168,7 +2176,7 @@ def refine_positions_visual_inertial(
         visual_times_mono, body_positions, body_rotations, imu_times,
         gyro_body, accel_body, td_s,
         relative_motion_positions_body, relative_motion_valid,
-    )
+    ) if use_visual_position_prior else []
     static_pairs = [
         (first, int(frame))
         for first, last in stationary_segments
@@ -2207,9 +2215,9 @@ def refine_positions_visual_inertial(
 
     def build_system():
         row_count = (
-            3 * node_count
+            (3 * node_count if use_visual_position_prior else 0)
             + 3
-            + 3 * max(node_count - 2, 0)
+            + (3 * max(node_count - 2, 0) if use_visual_position_prior else 0)
             + 3 * len(relative_motion_weights)
             + 3 * len(secondary_factors)
             + 6 * (node_count - 1)
@@ -2220,7 +2228,7 @@ def refine_positions_visual_inertial(
         design = lil_matrix((row_count, unknowns), dtype=float)
         target = np.zeros(row_count)
         row = 0
-        for node in range(node_count):
+        for node in range(node_count) if use_visual_position_prior else ():
             add_identity(
                 design,
                 row,
@@ -2230,7 +2238,7 @@ def refine_positions_visual_inertial(
             row += 3
         add_identity(design, row, position_offset, 1.0 / anchor_sigma_m)
         row += 3
-        for node in range(1, node_count - 1):
+        for node in range(1, node_count - 1) if use_visual_position_prior else ():
             add_identity(
                 design,
                 row,
@@ -2510,6 +2518,9 @@ def refine_positions_visual_inertial(
         }
     return refined, {
         **secondary_quality,
+        **({"visual_position_prior_enabled": False,
+            "correction_smoothness_prior_enabled": False}
+           if not use_visual_position_prior else {}),
         "mode": (
             "keyframe_graph_visual_stereo_imu_preintegration"
             if correction_node_indices is not None
@@ -2528,7 +2539,8 @@ def refine_positions_visual_inertial(
         },
         "stationary_motion_guard": stationary_guard_report(
             stationary_segments, visual_times_mono
-        ),
+        ) | ({"policy": "disabled_no_independent_absolute_visual_prior"}
+             if not use_visual_position_prior else {}),
         "visual_position_sigma_m": float(visual_position_sigma_m),
         "nodes": int(node_count),
         "node_stride": int(node_stride),
