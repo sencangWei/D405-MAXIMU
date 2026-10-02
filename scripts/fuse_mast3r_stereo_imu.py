@@ -29,6 +29,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from ego_vio.imu.vins_transform import load_vins_imu_rotation
+from ego_vio.vio.dual_ir_factors import build_secondary_visual_factors
 
 
 IMU_DTYPE = np.dtype(
@@ -1980,6 +1981,7 @@ def refine_positions_visual_inertial(
     correction_cap_mode: str = "global",
     correction_interpolation_mode: str = "linear",
     solve_metric_scale: bool = False,
+    secondary_visual_factors: list[dict] | None = None,
 ) -> tuple[np.ndarray, dict]:
     """Jointly refine position, velocity, gravity and accelerometer bias.
 
@@ -2111,6 +2113,24 @@ def refine_positions_visual_inertial(
         ],
         dtype=float,
     )
+    secondary_factors = secondary_visual_factors or []
+    secondary_targets = []
+    secondary_prior_weights = []
+    for factor in secondary_factors:
+        first, second = int(factor["first_index"]), int(factor["second_index"])
+        target_delta = np.asarray(factor["metric_displacement_world_m"], dtype=float)
+        confidence = float(factor["confidence"])
+        if not 0 <= first < second < len(positions):
+            raise ValueError("secondary visual factor endpoints are outside trajectory")
+        if target_delta.shape != (3,) or not np.all(np.isfinite(target_delta)):
+            raise ValueError("secondary visual factor contains an invalid displacement")
+        if not np.isfinite(confidence) or not 0.0 <= confidence <= 1.0:
+            raise ValueError("secondary visual factor confidence must lie in [0, 1]")
+        secondary_targets.append(target_delta)
+        secondary_prior_weights.append(confidence)
+    secondary_prior_weights = np.asarray(secondary_prior_weights)
+    secondary_robust_weights = np.ones(len(secondary_factors))
+    secondary_sigma_m = 0.008
     imu_position_weights = np.ones(node_count - 1)
     imu_velocity_weights = np.ones(node_count - 1)
     relative_motion_weights = (
@@ -2191,6 +2211,7 @@ def refine_positions_visual_inertial(
             + 3
             + 3 * max(node_count - 2, 0)
             + 3 * len(relative_motion_weights)
+            + 3 * len(secondary_factors)
             + 6 * (node_count - 1)
             + 3 * len(accepted)
             + 6
@@ -2253,6 +2274,18 @@ def refine_positions_visual_inertial(
                     reference_delta - visual_delta
                 ) * weight
                 row += 3
+        for edge_index, factor in enumerate(secondary_factors):
+            first, second = int(factor["first_index"]), int(factor["second_index"])
+            weight = np.sqrt(
+                secondary_prior_weights[edge_index] * secondary_robust_weights[edge_index]
+            ) / secondary_sigma_m
+            add_frame_correction(design, row, first, -weight)
+            add_frame_correction(design, row, second, weight)
+            add_scale_delta(design, row, first, second, weight)
+            target[row : row + 3] = weight * (
+                secondary_targets[edge_index] - (body_positions[second] - body_positions[first])
+            )
+            row += 3
         for node, preintegration in enumerate(preintegrations):
             first = int(node_indices[node])
             second = int(node_indices[node + 1])
@@ -2342,6 +2375,16 @@ def refine_positions_visual_inertial(
                 relative_motion_weights[node] = min(
                     1.0, 0.008 / max(residual, 1e-12)
                 )
+        for edge_index, factor in enumerate(secondary_factors):
+            first, second = int(factor["first_index"]), int(factor["second_index"])
+            corrected_delta = (
+                body_positions[second] - body_positions[first]
+                + correction_at(second, position_correction)
+                - correction_at(first, position_correction)
+                + scale_delta * (positions[second] - positions[first])
+            )
+            residual = np.linalg.norm(corrected_delta - secondary_targets[edge_index])
+            secondary_robust_weights[edge_index] = min(1.0, 0.008 / max(residual, 1e-12))
         for node, preintegration in enumerate(preintegrations):
             first = int(node_indices[node])
             second = int(node_indices[node + 1])
@@ -2448,7 +2491,25 @@ def refine_positions_visual_inertial(
                     - reference_delta
                 )
             )
+    secondary_quality = {}
+    if secondary_visual_factors is not None:
+        before_secondary, after_secondary = [], []
+        for factor, target_delta in zip(secondary_factors, secondary_targets):
+            first, second = int(factor["first_index"]), int(factor["second_index"])
+            delta = body_positions[second] - body_positions[first]
+            before_secondary.append(np.linalg.norm(delta - target_delta))
+            after_secondary.append(np.linalg.norm(delta + correction[second] - correction[first] - target_delta))
+        secondary_quality["secondary_visual_motion"] = {
+            "edges": len(secondary_factors),
+            "sigma_m": secondary_sigma_m,
+            "prior_confidence_median": float(np.median(secondary_prior_weights)) if len(secondary_prior_weights) else None,
+            "robust_weight_median": float(np.median(secondary_robust_weights)) if len(secondary_robust_weights) else None,
+            "rmse_before_m": float(np.sqrt(np.mean(np.square(before_secondary)))) if before_secondary else None,
+            "rmse_after_m": float(np.sqrt(np.mean(np.square(after_secondary)))) if after_secondary else None,
+            "external_ground_truth_used": False,
+        }
     return refined, {
+        **secondary_quality,
         "mode": (
             "keyframe_graph_visual_stereo_imu_preintegration"
             if correction_node_indices is not None
@@ -2670,6 +2731,104 @@ def write_trajectory(
             writer.writerow(updated)
 
 
+def prepare_secondary_visual_inputs(
+    args: argparse.Namespace,
+    primary_times: np.ndarray,
+    primary_positions: np.ndarray,
+    primary_camera_rotations: Rotation,
+    primary_stereo_report: dict,
+    config: dict,
+    imu_times: np.ndarray,
+    gyro: np.ndarray,
+) -> tuple[list[dict] | None, dict | None]:
+    """Use the right learned frontend as local body-motion proposals.
+
+    The derived right stereo reports only calibrate/check these proposals;
+    their shared stereo measurements are not added to the primary stereo rows.
+    """
+    trajectory = getattr(args, "secondary_right_trajectory", None)
+    if trajectory is None:
+        return None, None
+    if args.stream != "infrared_left" or args.position_mode not in {
+        "joint-inertial", "keyframe-graph"
+    }:
+        raise ValueError("secondary right frontend requires left-IR joint position fusion")
+    paths = [args.secondary_right_stereo_report] + (
+        getattr(args, "secondary_right_additional_stereo_report", None) or []
+    )
+    reports = []
+    for path in paths:
+        report = load_json_report(path)
+        validate_onboard_report(report, path, "umi_mast3r_stereo_scale_v2")
+        if Path(report.get("session", "")).resolve() != args.session.resolve():
+            raise ValueError("secondary right report session does not match fusion session")
+        if report.get("observation_frame") != "infrared_right_camera_i":
+            raise ValueError("secondary frontend stereo report must use right-IR coordinates")
+        if abs(float(report["factory_stereo_calibration"]["baseline_m"]) - float(
+            primary_stereo_report["factory_stereo_calibration"]["baseline_m"]
+        )) > 1e-9:
+            raise ValueError("secondary frontend uses a different factory baseline")
+        report["report_path"] = str(path.resolve())
+        reports.append(report)
+    right_stereo = merge_stereo_reports(reports[0], reports[1:])
+    right_imu = load_json_report(args.secondary_right_imu_scale_report)
+    validate_onboard_report(
+        right_imu, args.secondary_right_imu_scale_report, "umi_mast3r_imu_scale_v1"
+    )
+    validate_imu_scale_report_binding(right_imu, trajectory, False)
+    if Path(right_stereo.get("trajectory", "")).resolve() != Path(
+        right_imu.get("trajectory", "")
+    ).resolve():
+        raise ValueError("secondary stereo and IMU reports use different learned trajectories")
+    times, positions, rotations, _ = load_trajectory(trajectory)
+    right_imu_scale = float(right_imu["scale"])
+    right_stereo_scale = float(right_stereo["scale_m_per_mast3r_unit"])
+    if not all(np.isfinite(scale) and scale > 0.0 for scale in (right_imu_scale, right_stereo_scale)):
+        raise ValueError("secondary frontend scales must be positive and finite")
+    quality = scale_consistency(right_imu_scale, right_stereo_scale)
+    ratio = quality["joint_scale_m_per_mast3r_unit"] / quality["imu_scale_m_per_mast3r_unit"]
+    positions = positions[0] + ratio * (positions - positions[0])
+    right_extrinsic = body_t_trajectory_camera_from_stereo_report(
+        config["body_T_camera"], right_stereo
+    )
+    right_mono = camera_epoch_to_monotonic(
+        args.session / "d405_frames.csv", "infrared_right", times
+    )
+    rotations, orientation_quality = refine_orientations(
+        rotations, regular_node_indices(len(times), args.orientation_node_stride),
+        right_mono, imu_times, gyro,
+        Rotation.from_matrix(right_extrinsic[:3, :3]), config["td_s"],
+        right_stereo.get("observations", []),
+    )
+    primary_body_rotations = primary_camera_rotations * Rotation.from_matrix(
+        config["body_T_camera"][:3, :3]
+    ).inv()
+    observations = right_stereo.get("observations", [])
+    factors, preparation = build_secondary_visual_factors(
+        primary_times, primary_body_rotations.as_matrix(), times, positions, rotations.as_matrix(),
+        right_extrinsic, observations,
+        [stereo_observation_confidence(observation, float(
+            right_stereo["scale_m_per_mast3r_unit"]
+        )) for observation in observations],
+        primary_metric_camera_positions=primary_positions,
+        primary_body_t_camera=config["body_T_camera"],
+    )
+    preparation.update({
+        "inputs": {
+            "trajectory": str(trajectory.resolve()),
+            "stereo_reports": [str(path.resolve()) for path in paths],
+            "imu_scale_report": str(args.secondary_right_imu_scale_report.resolve()),
+        },
+        "effective_body_T_right_ir": right_extrinsic.tolist(),
+        "metric_scale_consistency": quality,
+        "orientation_refinement": orientation_quality,
+        "policy": "local_right_learned_body_motion_stereo_checked_no_global_shape_alignment",
+        "shared_stereo_measurements_added": 0,
+        "external_ground_truth_used": False,
+    })
+    return factors, preparation
+
+
 def run(args: argparse.Namespace) -> dict:
     input_already_metric = getattr(args, "input_already_metric", False)
     if input_already_metric and (
@@ -2786,6 +2945,9 @@ def run(args: argparse.Namespace) -> dict:
         config["td_s"],
         stereo_report.get("observations", []),
     )
+    secondary_visual_factors, secondary_visual_preparation = prepare_secondary_visual_inputs(
+        args, times, positions, refined_rotations, stereo_report, config, imu_times, gyro
+    )
     relative_motion_positions_body = None
     relative_motion_valid = None
     relative_motion_alignment = None
@@ -2873,6 +3035,7 @@ def run(args: argparse.Namespace) -> dict:
             correction_cap_mode=args.joint_correction_cap_mode,
             correction_interpolation_mode=args.joint_correction_interpolation,
             solve_metric_scale=getattr(args, "joint_metric_scale_optimization", False),
+            secondary_visual_factors=secondary_visual_factors,
         )
     elif position_mode == "keyframe-graph":
         if args.keyframe_dir is None:
@@ -2909,6 +3072,7 @@ def run(args: argparse.Namespace) -> dict:
             correction_cap_mode=args.joint_correction_cap_mode,
             correction_interpolation_mode=args.joint_correction_interpolation,
             solve_metric_scale=getattr(args, "joint_metric_scale_optimization", False),
+            secondary_visual_factors=secondary_visual_factors,
         )
     elif position_mode == "incremental":
         refined_positions, position_quality = refine_positions_incremental(
@@ -3033,6 +3197,8 @@ def run(args: argparse.Namespace) -> dict:
     # 默认 "fail" ⇒ blocking is failures ⇒ 行为与产物逐字节不变。
     blocking = blocking_failures(failures, args.scale_disagreement_policy)
     report = {
+        **({"dual_ir_complementarity": secondary_visual_preparation}
+           if secondary_visual_preparation is not None else {}),
         "schema": "umi_mast3r_stereo_imu_fusion_v2",
         "result": "PASS" if not blocking else "FAIL",
         "failures": failures,
@@ -3186,6 +3352,10 @@ def main() -> int:
     parser.add_argument("--relative-motion-trajectory", type=Path)
     parser.add_argument("--relative-motion-report", type=Path)
     parser.add_argument("--relative-motion-sigma-m", type=float, default=0.008)
+    parser.add_argument("--secondary-right-trajectory", type=Path)
+    parser.add_argument("--secondary-right-stereo-report", type=Path)
+    parser.add_argument("--secondary-right-additional-stereo-report", type=Path, action="append")
+    parser.add_argument("--secondary-right-imu-scale-report", type=Path)
     parser.add_argument("--visual-position-sigma-m", type=float, default=0.020)
     parser.add_argument("--auto-visual-position-sigma", action="store_true")
     parser.add_argument("--weak-visual-position-sigma-m", type=float, default=0.040)
@@ -3248,6 +3418,14 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
+    secondary_paths = (
+        args.secondary_right_trajectory, args.secondary_right_stereo_report,
+        args.secondary_right_imu_scale_report,
+    )
+    if any(secondary_paths) and not all(secondary_paths):
+        parser.error("secondary right frontend requires trajectory, stereo and IMU scale reports")
+    if args.secondary_right_additional_stereo_report and not all(secondary_paths):
+        parser.error("secondary additional stereo reports require the secondary right frontend")
     if args.input_already_metric and (args.imu_scale_report is None or args.metric_scale_mode != "imu"):
         parser.error("--input-already-metric requires --imu-scale-report and --metric-scale-mode imu")
     if args.joint_metric_scale_optimization and args.position_mode not in {
