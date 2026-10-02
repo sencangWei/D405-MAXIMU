@@ -660,3 +660,14 @@ Existing raw reports, timestamps, production and score gates unchanged.
 Second-stage matched LEFT-only two-arm evaluator remains under independent
 review. Common accepted-pair intersection is explicit, so its control is not
 the prior complete dual-eye production policy. No full27restoration claim.
+
+Source wrapper eab8ec37 backed to userowned sencang branch and fetched/
+restored3files byte-identical at /tmp/umi-sift-source-backup-20261002.dcVKzX.
+Root caught second-stage comparator naming mismatch before launch:
+local_motion_factors are original batch_adapters_v2/both, not constantgauge
+best combined. Renamed reference_raw_baseline and added identical raw learned
+factor context/path/hash/count regression. Independent post-fix review
+APPROVE bounded source-measurement isolation and backup, not best-current
+comparison or production. Fresh source/evaluator/physical tests31PASS0.24s.
+If this source hypothesis improves, same-source current-best replay is still
+required before claiming improvement over18fullPASS/19translationPASS.
