@@ -546,6 +546,82 @@ def test_run_record_passes_recovery_reference_paths_to_run_arm(monkeypatch, tmp_
         assert recovery_path in raw_paths
 
 
+def test_aggregate_reports_bidirectional_variants_not_paired_globals():
+    result = {
+        "variants": {
+            probe.SCALAR_VARIANT: {"score": {"result": "PASS", "ate_translation_max_m": 0.006}},
+            probe.SE3_VARIANT: {"score": {"result": "FAIL", "ate_translation_max_m": 0.014}},
+        }
+    }
+
+    aggregates = probe.aggregate([result])
+
+    assert set(aggregates) == {probe.SCALAR_VARIANT, probe.SE3_VARIANT}
+    assert aggregates[probe.SCALAR_VARIANT]["scored_count"] == 1
+    assert aggregates[probe.SE3_VARIANT]["worst_max_m"] == 0.014
+
+
+def test_paired_run_arm_does_not_replay_old_combined_for_bidirectional_scalar(monkeypatch, tmp_path):
+    baseline_artifact = tmp_path / "baseline"
+    constant_artifact = tmp_path / "constant"
+    variant_dir = tmp_path / "variant"
+    combined_artifact = tmp_path / "combined"
+    for directory in (baseline_artifact, constant_artifact, variant_dir, combined_artifact):
+        directory.mkdir(parents=True, exist_ok=True)
+    (constant_artifact / "local_motion_factors.json").write_text("[]", encoding="utf-8")
+    estimate = variant_dir / "body_trajectory_fused.csv"
+    estimate.write_text("t,x,y,z\n", encoding="utf-8")
+    for name in ("candidate_manifest.json", "graph_report.json"):
+        _write_json(variant_dir / name, {
+            "external_ground_truth_used": False,
+            "slam_supervision": False,
+        })
+    called = {"replay": 0, "metadata": 0}
+
+    def fake_solver(*args):
+        probe.paired.physical.corpus.score_frozen({}, estimate)
+        return {"score": {"result": "PASS"}}
+
+    monkeypatch.setattr(probe.paired.physical, "run_solver_variant", fake_solver)
+    monkeypatch.setattr(probe.paired, "read_json", lambda path: [])
+    monkeypatch.setattr(probe.paired, "file_hash", lambda path: "sha")
+    monkeypatch.setattr(probe.paired, "snapshot_paths", lambda paths: {str(path): "sha" for path in paths})
+    monkeypatch.setattr(probe.paired, "assert_hashes_unchanged", lambda hashes: None)
+    monkeypatch.setattr(probe.paired.physical.corpus, "score_frozen", lambda *args, **kwargs: {"result": "PASS"})
+
+    def forbid_replay(*args, **kwargs):
+        called["replay"] += 1
+        raise AssertionError("old combined replay must not run for bidirectional scalar")
+
+    def metadata(*args, **kwargs):
+        called["metadata"] += 1
+
+    monkeypatch.setattr(probe.paired, "validate_combined_replay", forbid_replay)
+    monkeypatch.setattr(probe.paired, "postprocess_candidate_metadata", metadata)
+
+    result = probe.paired.run_arm(
+        record={"id": "rec"},
+        baseline_artifact=baseline_artifact,
+        variant=probe.SCALAR_VARIANT,
+        variant_dir=variant_dir,
+        state=object(),
+        baseline_candidate={},
+        stereo_rows=[],
+        stereo_report={},
+        raw_paths=[],
+        constant_artifact=constant_artifact,
+        constant_paths=[],
+        frozen_hashes={},
+        combined_reference_artifact=combined_artifact,
+        source_override_sha256={},
+        arm_role="native_scalar_bidirectional_baseline",
+        control_replay=None,
+    )
+
+    assert result["score"]["result"] == "PASS"
+    assert called == {"replay": 0, "metadata": 1}
+
+
 def test_frozen_code_paths_uses_captured_original_not_patched_recursion(monkeypatch, tmp_path):
     original = probe.ORIGINAL_PAIRED_FROZEN_CODE_PATHS
     monkeypatch.setattr(probe.paired, "frozen_code_paths", probe.frozen_code_paths)

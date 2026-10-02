@@ -1162,3 +1162,23 @@ No backend/no scorer launched. Root accidentally printed fullmatched1588pair
 keys in readonlyoutput(41k tokens); subsequentreports must summarize counts,
 notdump arrays. Sourcev3 now2/4appendices written, thirdrecordrunning; consumed
 producer/helperunchanged. Back up reviewedconsumer2files+ledger before score.
+
+Consumer635c045ec01fa37fb5c33ad695d4be07ecb05cea backed to sencangbranch,
+3files restored byte-identical at /tmp/umi-se3-consumer-backup-20261003.Rj4GT3,
+205fresh restored-dependent testsPASS. Before any actualscore root detected
+another integration defect: consumerpatches paired.ORIGINAL_VARIANT toscalar,
+but reused paired.run_arm:647 condition would require same-native scalarcontrol
+replay oldcombined trajectory within1e-7m. That is not the proposedcontrol and
+would incorrectlyfail. Requested TDD real score-hook isolation and correctly
+named summaryaggregate (aggregate also consumes oldvariantglobals), no general
+replayvalidation removal/productionedits. Sourcev3stillfrozen/now3of4appendices
+complete at16m08s, fourthrunning, consumerbackendstill0launched.
+
+Oldvariant replay integration fix nowTDD18focused/207relatedPASS; reviewer
+freshAPPROVE. Adapter no longer aliases old paired.ORIGINAL_VARIANT; uses its
+own two-arm summary aggregate. Newtest calls the real paired.run_arm scorehook,
+fails if oldcombined replay validator is invoked, and verifies actualmetadata
+hook. Original oldcontrol validation untouched. Rootfullraw recomputation across
+second/third source allrows EXACTPASS, confidence delta0; held4 nativeleft
+2541attempt/1770accepted,right2541/1765; ind2 left2101/1398,right1700/1248.
+No freshATEyet. Back up adapterfix before frozen4source final score run.

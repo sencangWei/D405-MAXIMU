@@ -598,6 +598,29 @@ def validate_recovery_reference(
     }, [summary_path, source_stage_preflight, *paths]
 
 
+def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
+    output = {}
+    for variant in (SCALAR_VARIANT, SE3_VARIANT):
+        scores = [
+            result.get("variants", {}).get(variant, {}).get("score")
+            for result in results
+            if result.get("variants", {}).get(variant, {}).get("score") is not None
+        ]
+        output[variant] = {
+            "scored_count": len(scores),
+            "precision_pass_count": sum(score.get("result") == "PASS" for score in scores),
+            "max_within_10mm_count": sum(
+                score.get("ate_translation_max_m", float("inf")) <= 0.010
+                for score in scores
+            ),
+            "worst_max_m": max(
+                (score.get("ate_translation_max_m") for score in scores),
+                default=None,
+            ),
+        }
+    return output
+
+
 def run_record(
     record: dict[str, Any],
     baseline: Path,
@@ -748,8 +771,6 @@ def main(argv: list[str] | None = None) -> int:
             (paired, "source_upgrade_scope", bidirectional_source_upgrade_scope),
             (paired, "frozen_code_paths", frozen_code_paths),
             (paired, "SCHEMA", SCHEMA),
-            (paired, "ORIGINAL_VARIANT", SCALAR_VARIANT),
-            (paired, "REFINED_VARIANT", SE3_VARIANT),
         ):
             stack.enter_context(patch.object(owner, name, value))
         manifest = paired.read_json(args.manifest)
@@ -819,7 +840,7 @@ def main(argv: list[str] | None = None) -> int:
             result["elapsed_s"] = time.monotonic() - started
             summary["results"].append(result)
             summary["completed_count"] = index
-            summary["aggregates"] = paired.aggregate(summary["results"])
+            summary["aggregates"] = aggregate(summary["results"])
             paired.write_json(args.output / "summary.json", summary)
         summary["status"] = (
             "COMPLETED"
