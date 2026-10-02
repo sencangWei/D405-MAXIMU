@@ -541,3 +541,71 @@ This does not support a uniquelybroken local rawstereo geometry atcurrent
 failure. Whole-record badcyclesexist butalsoin passingcontrols; notselection
 or groundsforfiltering. Nextboundeddiagnostics inspect graphassembly and
 actual LSQR convergence before proposing any new model/factor change.
+
+Combined fullVI numerical replay4cases: all16LSQRcalls istop2/finite,
+relative normalgrad2.45e-8..5.40e-8, max replaypositiondifference2.12e-8m.
+No current numericalfailure explanation; no scaled/directrerun triggered.
+Acceleration biasJac finite-difference review errors7e-10..3e-9; no signbug.
+Potential robustnessgaps (IMUcoverageclamping, LSQRdiagnostic omission) are
+separate fromcurrentpeak and mustnotbe soldas a10mm accuracyfix.
+
+Longmetricgraph census4cases: take06 has15 >=2s sharedstereo edges crossing
+peak+/-1s, maximumduration8s; heldout4 haszero such crossings yetpasses.
+No missinglongedges explanation. Earlier Sep28 local/window/shapeBA already
+failedgeneralization; do notrepeatthatlane orblindfullp/R/v/g/ba/bg build.
+Reviewerrequires source-onlygyro-bias Schur/positioncoupling evidencefirst;
+currentweakbiasdiagnostic andzero stagedRpassgain do notsatisfyit.
+
+Nextboundedall24census tests representationconsistency of learnedconfidence:
+constantgauge/physicallever changeddisplacementvectors while preserving old
+own_stereo_residual_m/confidence metadata intentionallytoisolategeometry.
+Compare residuals inactualnewcommongauge before any experiment; no threshold
+sweep,GTfactorconstruction,perrecordrouting orproductionchange authorized.
+Emptydiagfix409fbaced3c788db9a57c2622d93b4523fd061de remotelyrestored3files
+byte-identical at/tmp/umi-empty-diag-fix-backup-20261002.FcPflH.
+
+All24 confidence-representation census:68975learnedfactors/35254sharedrows,
+zero missingpairs. Old/newconfidence mostlycorr~.999; take06residualmedian
+4.32->4.57mm/P9517.53->18.31mm, confidence ratioP991.055, only17/2985
+materialchanges underdiagnostic screen. No representationweightpatch justified.
+Rawreference review: all24same calibration/bodyconfig/queryoffset,
+fulltimestampoverlap. Ordinaryfailures have no sourceTracker200mmjump pattern;
+fixedlever-error explanatoryR2median.021, take06.0188. The alreadyknown
+Sep29take03 rawjump remainsseparateinvalidreference caveat, noGTrefitting.
+
+Following systematicdebugging architecture-review rule, no fourthposition/
+rotation/weightpatch is attempted. Nextnewobservable isreciprocalphysicalSE3:
+classical producer computesforwardandreversePnP, butscalarcombiner retains
+onlyforward metric3D displacement. Existingfullvectorvalidator has no
+productioncaller. Newboundedstandalone4record/12uniformacceptedpair replay
+will captureoriginalcombineinputs/results withoutmutation, assess3D/Rclosure,
+and preservehistoricalsource-reproducibility uncertainty. No qualitygate,
+factor,metricmean,trajectory orproductionpromotion fromthisdiagnostic.
+Freshoriginal5 regressionfiles78PASS11.45s; thisiscodevalidationnotaccuracy.
+
+Important conceptualcorrection: do NOT describe thecurrentlocalpositionblock
+as unobservable/globaltranslationgauge. Firstpanchor andallframeVINSchain,
+plus15metriclongcrossings, make localshiftobservable; SE3scoring removesglobal
+gauge. Source-onlyfixed1s-grid 3mm triangularbump addsrelative-factorcost:
+33-34s3.948,34-35s7.850,35-36s6.468, notzero. Uniformglobal3mmtranslation
+adds5.68e-14 torelativefactorsonly, notanchoredfullobjective. Therefore
+"absoluteoffsetblindness" earlierwording iswithdrawn; possibleweakmode or
+biased/correlatedbridgeforces remainsunproved. Gradient force decomposition
+mayidentify competing sources, butmustnotbe translatedintoGT-selectedgates.
+
+Accepted reciprocal3D diagnostic v3 closed four records, 12 uniform pairs
+each: take06 closure median0.328/P952.526/max2.734mm, RclosureP950.218deg;
+heldout2 0.684/3.553/4.403mm and0.350deg; heldout4 0.526/2.180/3.325mm
+and0.264deg; ind2 0.623/3.306/5.819mm and0.448deg. All48 replayed forward
+vectors exactly match saved source vectors; no missed/incomplete captures,
+hash failures or emittedfactors. Historicalsourcehash verification remains
+false explicitly. v1/v2 are debug artifacts, onlyv3 authoritative.
+Noncommuting frame regression fixed inverse to -Z_ji.T*d_j; reverse direct
+check is -Z_ij*d_j. Independentreview APPROVE diagnostic/backup only,
+fresh35testsPASS0.25s. This is not an accuracyfix and does not support a
+uniquelybad reciprocalvector explanation for retainedtake06.
+Next readonly source-class force/stiffness decomposition uses fixed1s grid
+3mm triangular p perturbations along all3axes, replayed original fullVI
+state/finalsolve weights. Check against objective finite differences and
+stationarity; compare4records before proposing model changes. No GTselected
+direction, weightpatch, geometrygate or productionpromotion.
