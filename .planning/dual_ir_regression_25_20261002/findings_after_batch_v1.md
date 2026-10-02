@@ -705,5 +705,37 @@ parity; staleRIGHTderivedgeometry canwinfixedconfidence, tobeaudited.
 Ready legacycoverage:16direct+8adapterneeded+1unobservable, not25direct.
 Of8readyadapterneeded,4havepayload/datasetbutlackoldgraph;4havevalidgraph
 outside reports anddatasetatkeyframe_dir. No missingrawpayload found for8.
-Do not writes himgraphs or discardthese; genericimmutableinputadapterneeded
+Do not write shimgraphs or discardthese; genericimmutableinputadapterneeded
 onlyif currentbest probe supports expansion.
+
+PartialLEFT sourceupgrade atcurrentbestcontext CLOSED4/4, controlreplays
+EXACT0p/Rdelta for all4, sameconstant learnedfactorSHA botharms.
+MaximumATE(mm) original->refined:
+held2 6.18289->6.03514 PASS->PASS;
+held4 9.44479->9.53230 PASS->PASS (max/P95regressslightly);
+ind2 14.40292->14.16120 FAIL->FAIL (meanregressslightly);
+take06 14.75637->14.46512 FAIL->FAIL.
+NOadditionalPASS; full25best remains18full/19translation, no promotion.
+Metricwinnercensus all6015sharedpairs: originalL/R/tie3255/2695/65,
+partialrefined3436/2531/48,303winnerchanges.767LEFTbodyvectorschanged;
+192stilltakeRIGHT-onlyoldderivedgeometry (198withRIGHTincludedties).
+Perrecordtake06/held2/held4/ind2 suppressed49/38/79/26.
+This confirms incomplete source propagation, not proofitcausesATEfailure.
+Nextfixedsourceconsistencytest derivesRIGHTmetricreports fromrefinedLEFT
+via existingconversion (one sharedgeometricfactor, NOTindependentright
+measurement). RIGHTlearningfrontends/constantlearnedfactors stayfixed,
+geometry/refconfidence are updatedthroughnativeexistingpolicy only.
+
+Consistent RIGHT source stage v1/v2 CLOSED four failures each BEFORE solver:
+v1 wrongly compared full RIGHT factory metadata against LEFT (native RIGHT
+adds right_rotation_from_left); v2 wrongly required raw RIGHT source trajectory
+to equal downstream IMU-metric trajectory. Both are new probe interface bugs,
+not recording failures or precision outcomes. All failure artifacts retained.
+Preparer now validates shared factory fields exactly plus fresh DB3 RIGHT R,
+preserves original RIGHT factory metadata; raw geometry trajectory remains
+the original trajectory_frames.csv for native scale/gates while downstream
+imu_metric_trajectory.csv remains baseline-hash-bound and unchanged. Both
+are source-guarded and timestamp-checked. DB3 hash deduplicated per record.
+Four real-layout lightweight preflights verified paths/lineage/calibration.
+Fresh related42tests PASS0.31s; independent review approves bounded4 source
+v3 then paired currentbest comparison, NOT production or all25 promotion.

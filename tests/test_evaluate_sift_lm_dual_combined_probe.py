@@ -83,9 +83,12 @@ def test_postprocess_separates_baseline_hashes_override_and_learned_context(tmp_
     assert candidate["source_override_sha256"] == override
     assert candidate["source_upgrade_scope"] == {
         "partial_source_upgrade": True,
+        "consistent_geometry_source_upgrade": False,
         "left_refined_sift_lm_reports": True,
+        "right_refined_sift_lm_reports": False,
         "right_geometry_source": "original_right_reports_unchanged",
         "stale_right_derived_geometry_unchanged": True,
+        "right_eye_used_as_independent_evidence": False,
     }
     assert candidate["learned_factor_context"]["source"] == "constant_ir_gauge_selected"
     assert candidate["learned_factor_context"]["identical_between_arms"] is True
@@ -124,6 +127,190 @@ def test_consumed_hash_guard_rejects_midrun_mutation(tmp_path):
 
     with pytest.raises(ValueError, match="consumed source changed"):
         probe.assert_hashes_unchanged(before)
+
+
+def test_override_right_loader_validates_hash_frame_and_dedup(monkeypatch, tmp_path):
+    session = tmp_path / "session"
+    session.mkdir()
+    report_paths = [tmp_path / f"right_{index}.json" for index in range(4)]
+    for index, path in enumerate(report_paths):
+        path.write_text(f"right-{index}", encoding="utf-8")
+    trajectory = tmp_path / "imu_metric_trajectory.csv"
+    trajectory.write_text("trajectory", encoding="utf-8")
+    baseline_candidate = {"eye_reports": {"right": {}}}
+    overrides = {str(path.resolve()): path.read_text(encoding="utf-8") for path in report_paths}
+    frame = {"value": "infrared_right_camera_i"}
+    observations = {"value": [{"accepted": True}]}
+
+    monkeypatch.setattr(probe.physical, "eye_trajectory_path_from_baseline", lambda candidate, eye: trajectory)
+    monkeypatch.setattr(probe.source_eval, "validate_candidate_hashes", lambda candidate, paths: {"trajectory": "hash"})
+    monkeypatch.setattr(probe, "file_hash", lambda path: Path(path).read_text(encoding="utf-8"))
+    monkeypatch.setattr(
+        probe.fusion,
+        "load_trajectory",
+        lambda path: (np.asarray([0.0, 0.1]), np.zeros((2, 3)), Rotation.identity(2), []),
+    )
+    monkeypatch.setattr(probe.fusion, "validate_onboard_report", lambda report, path, schema: None)
+    monkeypatch.setattr(
+        probe.fusion,
+        "load_json_report",
+        lambda path: {
+            "session": str(session.resolve()),
+            "observation_frame": frame["value"],
+        },
+    )
+    monkeypatch.setattr(
+        probe.fusion,
+        "merge_stereo_reports",
+        lambda primary, optional, optional_policy: {
+            "factory_stereo_calibration": {"baseline_m": 0.018},
+            "scale_m_per_mast3r_unit": 1.0,
+            "observations": observations["value"],
+            "merged_report_paths": [str(path.resolve()) for path in report_paths],
+            "merged_report_count": 4,
+        },
+    )
+    monkeypatch.setattr(
+        probe.physical,
+        "validate_eye_metadata",
+        lambda candidate, eye: {
+            "factory_stereo_calibration": {"baseline_m": 0.018},
+            "effective_body_T_camera": np.eye(4).tolist(),
+        },
+    )
+    monkeypatch.setattr(probe.fusion, "stereo_observation_confidence", lambda observation, scale: 0.7)
+    monkeypatch.setattr(
+        probe.physical,
+        "reference_bound_eye_candidate",
+        lambda reference_times, trajectory_times, eye, observation, confidence, body_t_camera: (
+            {
+                "eye": eye,
+                "reference_first_index": 0,
+                "reference_second_index": 1,
+                "observation_confidence": confidence,
+            },
+            None,
+        ),
+    )
+
+    candidates, report, paths = probe.load_override_eye_candidates_from_reports(
+        {"id": "case", "session": str(session)},
+        "right",
+        baseline_candidate,
+        np.asarray([0.0, 0.1]),
+        report_paths,
+        refined_override_sha256=overrides,
+    )
+    assert candidates == [{
+        "eye": "right",
+        "reference_first_index": 0,
+        "reference_second_index": 1,
+        "observation_confidence": 0.7,
+    }]
+    assert report["measurement_frame"] == "body_i"
+    assert report["right_eye_used_as_independent_evidence"] is False
+    assert paths == [trajectory, *report_paths]
+
+    bad_overrides = dict(overrides)
+    bad_overrides[str(report_paths[0].resolve())] = "wrong"
+    with pytest.raises(ValueError, match="source override hash changed"):
+        probe.load_override_eye_candidates_from_reports(
+            {"id": "case", "session": str(session)},
+            "right",
+            baseline_candidate,
+            np.asarray([0.0, 0.1]),
+            report_paths,
+            refined_override_sha256=bad_overrides,
+        )
+
+    frame["value"] = "infrared_left_camera_i"
+    with pytest.raises(ValueError, match="frame mismatch"):
+        probe.load_override_eye_candidates_from_reports(
+            {"id": "case", "session": str(session)},
+            "right",
+            baseline_candidate,
+            np.asarray([0.0, 0.1]),
+            report_paths,
+            refined_override_sha256=overrides,
+        )
+    frame["value"] = "infrared_right_camera_i"
+
+    observations["value"] = [{"accepted": True}, {"accepted": True}]
+    with pytest.raises(ValueError, match="duplicate same-eye"):
+        probe.load_override_eye_candidates_from_reports(
+            {"id": "case", "session": str(session)},
+            "right",
+            baseline_candidate,
+            np.asarray([0.0, 0.1]),
+            report_paths,
+            refined_override_sha256=overrides,
+        )
+
+
+def test_refined_loader_accepts_explicit_consistent_right_source(monkeypatch, tmp_path):
+    left_paths = [tmp_path / f"left_{index}.json" for index in range(4)]
+    right_paths = [tmp_path / f"right_{index}.json" for index in range(4)]
+    for path in [*left_paths, *right_paths]:
+        path.write_text(path.name, encoding="utf-8")
+    overrides = {str(path.resolve()): path.read_text(encoding="utf-8") for path in [*left_paths, *right_paths]}
+    stage_record = {
+        "refined_left_sources": [str(path.resolve()) for path in left_paths],
+        "refined_right_sources": [str(path.resolve()) for path in right_paths],
+        "source_override_sha256": overrides,
+        "right_derivation_left_source_sha256": {
+            str(right_path.resolve()): {
+                "left_source_path": str(left_paths[index].resolve()),
+                "left_source_sha256": left_paths[index].read_text(encoding="utf-8"),
+            }
+            for index, right_path in enumerate(right_paths)
+        },
+    }
+    left_candidates = [{"eye": "left", "reference_first_index": 0, "reference_second_index": 1,
+                        "observation_confidence": 0.4}]
+    right_candidates = [{"eye": "right", "reference_first_index": 0, "reference_second_index": 1,
+                         "observation_confidence": 0.8}]
+
+    monkeypatch.setattr(
+        probe.source_eval,
+        "load_left_candidates_from_reports",
+        lambda record, baseline_candidate, reference_times, report_paths, refined_override_sha256:
+            (left_candidates, {"eye": "left"}, list(report_paths)),
+    )
+    monkeypatch.setattr(
+        probe,
+        "load_override_eye_candidates_from_reports",
+        lambda record, eye, baseline_candidate, reference_times, report_paths, refined_override_sha256:
+            (right_candidates, {"eye": eye}, list(report_paths)),
+    )
+    monkeypatch.setattr(
+        probe.physical,
+        "load_eye_candidates",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("original RIGHT must not load")),
+    )
+
+    candidates, report, paths, source_hashes = probe.load_refined_all_eye_candidates(
+        {"id": "case", "session": str(tmp_path / "session")},
+        {"input_sha256": {"baseline": "hash"}},
+        np.asarray([0.0, 0.1]),
+        stage_record,
+    )
+
+    assert candidates == [*left_candidates, *right_candidates]
+    assert paths == [*left_paths, *right_paths]
+    assert source_hashes == overrides
+    assert report["right_eye_unchanged_original_source"] is False
+    assert report["right_geometry_source"] == "refined_right_reports_consistent_with_left_source"
+    assert report["right_eye_used_as_independent_evidence"] is False
+    assert probe.refined_arm_role(stage_record) == "refined_left_right_consistent_source_override"
+    assert probe.source_upgrade_scope(overrides, probe.refined_arm_role(stage_record)) == {
+        "partial_source_upgrade": False,
+        "consistent_geometry_source_upgrade": True,
+        "left_refined_sift_lm_reports": True,
+        "right_refined_sift_lm_reports": True,
+        "right_geometry_source": "refined_right_reports_consistent_with_left_source",
+        "stale_right_derived_geometry_unchanged": False,
+        "right_eye_used_as_independent_evidence": False,
+    }
 
 
 def state():

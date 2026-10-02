@@ -1,0 +1,56 @@
+{
+  "schema": "umi_sift_lm_right_source_override_preflight_v1",
+  "status": "PREFLIGHT_WITH_FAILURES",
+  "development_only": true,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "policy": {
+    "name": "derive_right_geometry_from_refined_left_sift_lm",
+    "development_only": true,
+    "measurement_only": true,
+    "external_ground_truth_used": false,
+    "slam_supervision": false,
+    "right_frontend_policy": "unchanged cached RIGHT trajectory; geometry only is re-expressed from refined LEFT",
+    "confidence_policy": "derive_right_ir_stereo_scale native report scale/confidence semantics",
+    "shared_factor_policy": "downstream physical dedup keeps one selected geometric factor, not independent double evidence",
+    "source_stage": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/preflight_report.json",
+    "source_stage_sha256": "99491783ac8d21d279611ede29714086eb7dfb39fad8aee16af1de82291d97b2",
+    "derive_right_ir_stereo_scale_sha256": "f3e77947111cdffb27069f2122533599e278b3f488db8ca830f5a521ee089242",
+    "this_script_sha256": "f58ac862769500bf85a4a9c59076063df055066e238e41e29423044b7d4fba37"
+  },
+  "manifest": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002_adapters.json",
+  "baseline": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2",
+  "source_stage_root": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1",
+  "record_count": 4,
+  "ready_record_count": 0,
+  "refined_right_source_record_count": 0,
+  "refined_source_count": 0,
+  "factor_output_count": 0,
+  "adapter_not_launched": true,
+  "solver_not_launched": true,
+  "scoring_not_launched": true,
+  "records": [],
+  "refined_sources": [],
+  "failures": [
+    {
+      "id": "20260927_heldout2",
+      "stage": "prepare_right_sources",
+      "error": "ValueError: original RIGHT report factory calibration mismatch: /home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout2/right_cache/stereo_scale_right_report.json"
+    },
+    {
+      "id": "20260927_heldout4",
+      "stage": "prepare_right_sources",
+      "error": "ValueError: original RIGHT report factory calibration mismatch: /home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_heldout4/right_cache/stereo_scale_right_report.json"
+    },
+    {
+      "id": "20260927_ind2",
+      "stage": "prepare_right_sources",
+      "error": "ValueError: original RIGHT report factory calibration mismatch: /home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/stereo_scale_right_report.json"
+    },
+    {
+      "id": "20260930_take06",
+      "stage": "prepare_right_sources",
+      "error": "ValueError: original RIGHT report factory calibration mismatch: /home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_right_report.json"
+    }
+  ]
+}

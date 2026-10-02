@@ -196,6 +196,137 @@ def validate_combined_replay(control_estimate: Path, combined_estimate: Path) ->
     }
 
 
+def validate_override_report_paths(
+    report_paths: list[Path],
+    override_sha256: dict[str, str],
+    *,
+    label: str,
+) -> dict[str, str]:
+    hashes = {}
+    for path in report_paths:
+        resolved = str(path.resolve())
+        if resolved not in override_sha256:
+            raise ValueError(f"{label} report missing source override hash: {resolved}")
+        digest = file_hash(path)
+        if digest != override_sha256[resolved]:
+            raise ValueError(f"{label} report source override hash changed: {resolved}")
+        hashes[resolved] = digest
+    return hashes
+
+
+def validate_right_derivation_evidence(
+    stage_record: dict[str, Any],
+    right_paths: list[Path],
+) -> dict[str, Any]:
+    evidence = stage_record.get("right_derivation_left_source_sha256")
+    if not isinstance(evidence, dict) or not evidence:
+        raise ValueError("refined RIGHT sources require right_derivation_left_source_sha256 evidence")
+    left_paths = [str(Path(path).resolve()) for path in stage_record["refined_left_sources"]]
+    left_hashes = {
+        source: stage_record["source_override_sha256"][source]
+        for source in left_paths
+    }
+    validated = {}
+    for right_path in right_paths:
+        resolved_right = str(right_path.resolve())
+        if resolved_right not in evidence:
+            raise ValueError(f"refined RIGHT source missing derivation evidence: {resolved_right}")
+        row = evidence[resolved_right]
+        if not isinstance(row, dict):
+            raise ValueError(f"refined RIGHT derivation evidence malformed: {resolved_right}")
+        left_source = row.get("left_source_path")
+        left_digest = row.get("left_source_sha256")
+        if not left_source or left_digest is None:
+            raise ValueError(f"refined RIGHT derivation evidence lacks left path/hash: {resolved_right}")
+        resolved_left = str(Path(left_source).resolve())
+        if resolved_left not in left_hashes or left_hashes[resolved_left] != left_digest:
+            raise ValueError(f"refined RIGHT derivation does not bind a refined LEFT source: {resolved_right}")
+        validated[resolved_right] = {
+            "left_source_path": resolved_left,
+            "left_source_sha256": left_digest,
+        }
+    return validated
+
+
+def load_override_eye_candidates_from_reports(
+    record: dict[str, Any],
+    eye: str,
+    baseline_candidate: dict[str, Any],
+    reference_times: np.ndarray,
+    report_paths: list[Path],
+    *,
+    refined_override_sha256: dict[str, str],
+) -> tuple[list[dict[str, Any]], dict[str, Any], list[Path]]:
+    if len(report_paths) != len(physical.eye_report_names(eye)):
+        raise ValueError(f"expected the four {eye.upper()} stereo reports")
+    trajectory_path = physical.eye_trajectory_path_from_baseline(baseline_candidate, eye)
+    source_eval.validate_candidate_hashes(baseline_candidate, [trajectory_path])
+    validate_override_report_paths(report_paths, refined_override_sha256, label=f"refined {eye.upper()}")
+    trajectory_times, _positions, _rotations, _rows = fusion.load_trajectory(trajectory_path)
+    reports = []
+    frame = f"infrared_{eye}_camera_i"
+    for index, path in enumerate(report_paths):
+        report = fusion.load_json_report(path)
+        if index == 0:
+            fusion.validate_onboard_report(report, path, "umi_mast3r_stereo_scale_v2")
+        if Path(report.get("session", "")).resolve() != Path(record["session"]).resolve():
+            raise ValueError(f"{eye.upper()} refined report session mismatch: {path}")
+        if report.get("observation_frame") != frame:
+            raise ValueError(f"{eye.upper()} refined report frame mismatch: {path}")
+        report["report_path"] = str(path.resolve())
+        reports.append(report)
+    merged = fusion.merge_stereo_reports(
+        reports[0],
+        reports[1:],
+        optional_policy=physical.OPTIONAL_STEREO_POLICY,
+    )
+    metadata = physical.validate_eye_metadata(baseline_candidate, eye)
+    if merged.get("factory_stereo_calibration") != metadata["factory_stereo_calibration"]:
+        raise ValueError(f"{eye.upper()} refined factory stereo calibration metadata mismatch")
+    reference_scale = float(merged["scale_m_per_mast3r_unit"])
+    candidates = []
+    skipped: dict[str, int] = {}
+    accepted_raw = 0
+    rejected_raw = 0
+    for observation in merged.get("observations", []):
+        if not observation.get("accepted", False):
+            rejected_raw += 1
+            continue
+        accepted_raw += 1
+        candidate, reason = physical.reference_bound_eye_candidate(
+            reference_times,
+            trajectory_times,
+            eye,
+            observation,
+            fusion.stereo_observation_confidence(observation, reference_scale),
+            metadata["effective_body_T_camera"],
+        )
+        if reason is None:
+            candidates.append(candidate)
+        else:
+            skipped[reason] = skipped.get(reason, 0) + 1
+    physical.validate_no_same_eye_reference_duplicates(candidates)
+    report = {
+        "schema": "sift_lm_refined_eye_candidates_v1",
+        "eye": eye,
+        "candidate_count": len(candidates),
+        "accepted_raw_observation_count": accepted_raw,
+        "rejected_raw_observation_count": rejected_raw,
+        "skipped_candidate_counts": skipped,
+        "merged_report_paths": merged.get("merged_report_paths", []),
+        "merged_report_count": merged.get("merged_report_count"),
+        "optional_stereo_policy": physical.OPTIONAL_STEREO_POLICY,
+        "optional_report_rejections": merged.get("optional_report_rejections", []),
+        "metric_trajectory": str(trajectory_path.resolve()),
+        "scale_m_per_mast3r_unit": reference_scale,
+        "factory_stereo_calibration": metadata["factory_stereo_calibration"],
+        "effective_body_T_camera": metadata["effective_body_T_camera"],
+        "measurement_frame": "body_i",
+        "right_eye_used_as_independent_evidence": False,
+    }
+    return candidates, report, [trajectory_path, *report_paths]
+
+
 def load_refined_all_eye_candidates(
     record: dict[str, Any],
     baseline_candidate: dict[str, Any],
@@ -211,24 +342,84 @@ def load_refined_all_eye_candidates(
         refined_paths,
         refined_override_sha256=overrides,
     )
-    right_candidates, right_report, right_paths = physical.load_eye_candidates(
-        record,
-        "right",
-        baseline_candidate,
-        reference_times,
-    )
+    refined_right_sources = stage_record.get("refined_right_sources")
+    if refined_right_sources is None:
+        right_candidates, right_report, right_paths = physical.load_eye_candidates(
+            record,
+            "right",
+            baseline_candidate,
+            reference_times,
+        )
+        right_source = "original_right_reports_unchanged"
+        right_derivation = None
+    else:
+        if not isinstance(refined_right_sources, list) or not refined_right_sources:
+            raise ValueError("refined_right_sources must be a non-empty list when present")
+        right_report_paths = [Path(path) for path in refined_right_sources]
+        right_derivation = validate_right_derivation_evidence(stage_record, right_report_paths)
+        right_candidates, right_report, right_paths = load_override_eye_candidates_from_reports(
+            record,
+            "right",
+            baseline_candidate,
+            reference_times,
+            right_report_paths,
+            refined_override_sha256=overrides,
+        )
+        right_report["right_derivation_left_source_sha256"] = right_derivation
+        right_source = "refined_right_reports_consistent_with_left_source"
     return (
         [*left_candidates, *right_candidates],
         {
-            "schema": "sift_lm_refined_left_original_right_eye_candidates_v1",
+            "schema": "sift_lm_dual_refined_eye_candidates_v1",
             "left": left_report,
             "right": right_report,
-            "right_eye_unchanged_original_source": True,
+            "right_eye_unchanged_original_source": refined_right_sources is None,
+            "right_geometry_source": right_source,
             "left_source_override_sha256": overrides,
+            "right_source_override_sha256": (
+                {str(Path(path).resolve()): overrides[str(Path(path).resolve())] for path in refined_right_sources}
+                if refined_right_sources is not None
+                else {}
+            ),
+            "right_derivation_left_source_sha256": right_derivation,
+            "right_eye_used_as_independent_evidence": False,
         },
         [*left_paths, *right_paths],
         overrides,
     )
+
+
+def refined_arm_role(stage_record: dict[str, Any]) -> str:
+    if stage_record.get("refined_right_sources") is None:
+        return "refined_left_override_original_right"
+    return "refined_left_right_consistent_source_override"
+
+
+def source_upgrade_scope(source_override_sha256: dict[str, str], arm_role: str) -> dict[str, Any]:
+    if not source_override_sha256:
+        return {
+            "partial_source_upgrade": False,
+            "consistent_geometry_source_upgrade": False,
+            "left_refined_sift_lm_reports": False,
+            "right_refined_sift_lm_reports": False,
+            "right_geometry_source": "original_right_reports_unchanged",
+            "stale_right_derived_geometry_unchanged": False,
+            "right_eye_used_as_independent_evidence": False,
+        }
+    both_eyes = arm_role == "refined_left_right_consistent_source_override"
+    return {
+        "partial_source_upgrade": not both_eyes,
+        "consistent_geometry_source_upgrade": both_eyes,
+        "left_refined_sift_lm_reports": True,
+        "right_refined_sift_lm_reports": both_eyes,
+        "right_geometry_source": (
+            "refined_right_reports_consistent_with_left_source"
+            if both_eyes
+            else "original_right_reports_unchanged"
+        ),
+        "stale_right_derived_geometry_unchanged": not both_eyes,
+        "right_eye_used_as_independent_evidence": False,
+    }
 
 
 def pair_candidates(candidates: list[dict[str, Any]]) -> dict[tuple[int, int], list[dict[str, Any]]]:
@@ -304,12 +495,7 @@ def postprocess_candidate_metadata(
         "control_replay_agreement": control_replay,
         "arm_role": arm_role,
     }
-    candidate["source_upgrade_scope"] = {
-        "partial_source_upgrade": bool(source_override_sha256),
-        "left_refined_sift_lm_reports": bool(source_override_sha256),
-        "right_geometry_source": "original_right_reports_unchanged",
-        "stale_right_derived_geometry_unchanged": bool(source_override_sha256),
-    }
+    candidate["source_upgrade_scope"] = source_upgrade_scope(source_override_sha256, arm_role)
     candidate["learned_factor_context"] = {
         "source": "constant_ir_gauge_selected",
         "identical_between_arms": True,
@@ -493,7 +679,7 @@ def run_record(
         }
         arms = {
             ORIGINAL_VARIANT: (original_rows, original_report, original_paths, {}, "currentbest_original_control"),
-            REFINED_VARIANT: (refined_rows, refined_report, refined_paths, overrides, "refined_left_override_original_right"),
+            REFINED_VARIANT: (refined_rows, refined_report, refined_paths, overrides, refined_arm_role(stage_record)),
         }
     except base.StopCodeChanged:
         raise
