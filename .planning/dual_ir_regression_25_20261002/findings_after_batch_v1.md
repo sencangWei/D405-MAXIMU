@@ -671,3 +671,23 @@ APPROVE bounded source-measurement isolation and backup, not best-current
 comparison or production. Fresh source/evaluator/physical tests31PASS0.24s.
 If this source hypothesis improves, same-source current-best replay is still
 required before claiming improvement over18fullPASS/19translationPASS.
+
+Four source-only replays CLOSED4/4, nofailures; all guardedinputs unchanged.
+Unique refinedSIFT accepted/total held2 267/267, held4 322/322, ind2 261/261,
+take06 303/303. Four matchedLEFT two-arm fullVI scores CLOSED4/4 at
+sift_lm_physical_four_score_v1: unrefined->refined maximumATE(mm)
+held2 6.35419->6.12628 PASS->PASS;
+held4 10.29777->10.25752 FAIL->FAIL;
+ind2 14.60402->13.90986 FAIL->FAIL;
+take06 17.32348->16.57184 FAIL->FAIL.
+Allfour raw/refined acceptedpairsets identical (1493/1675/1353/1494),
+zero droppedpairs, complete output timelines, no scoregate change.
+Bodyvectors changed161/215/185/206, confidencechanged258/322/247/283 via
+same existing observationconfidence formula. This is SIFT-LM+gyrosource
+effect including geometry/confidence, not solely a vector-only ablation.
+Smallconsistentimprovement but NOextraPASS and NOTbestcurrentcontext.
+Next exactdual/constantgauge/physical comparator must control-replay current
+best trajectory<1e-7m before attributing any sourceupgrade; implementation
+reuses existingbackend/selection, noGTpolicy and separateoverrides.
+Capability f006c61c backed to sencang, fetched/restored5files byte-identical
+at /tmp/umi-sift-source-score-backup-20261002.qYmv2R. Production unchanged.

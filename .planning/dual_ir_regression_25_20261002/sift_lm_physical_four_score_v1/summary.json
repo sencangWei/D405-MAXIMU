@@ -1,0 +1,262 @@
+{
+  "schema": "umi_sift_lm_physical_source_probe_v1",
+  "status": "COMPLETED",
+  "development_only": true,
+  "blind_test": false,
+  "production_promoted": false,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "dataset_count": 4,
+  "completed_count": 4,
+  "manifest_sha256": "60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759",
+  "baseline_summary_sha256": "1114785a4581157b8363bb51987ac2f59591f472082ad71ebfa84f30a0845505",
+  "source_stage_preflight_sha256": "99491783ac8d21d279611ede29714086eb7dfb39fad8aee16af1de82291d97b2",
+  "baseline": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2",
+  "source_stage": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1",
+  "variants": [
+    "left_unrefined_matched_control",
+    "left_sift_lm_refined_matched"
+  ],
+  "reference_raw_baseline_policy": "reference_only_raw_adapter_v2_not_combined_source_arm",
+  "code_sha256": {
+    "/home/robot/ego_vio_humble/scripts/run_dual_ir_regression_corpus.py": "9ad2d2c032557913bca6fd1ccf1c60029c0057a957dd3fc06e05477e14b9d597",
+    "/home/robot/ego_vio_humble/scripts/fuse_mast3r_stereo_imu.py": "7335c95b464e26a8a1d31f27ca1c0620c756346366310004d573015527df191e",
+    "/home/robot/ego_vio_humble/scripts/fuse_mast3r_dual_ir_symmetric.py": "59083a9a483af737b56673723bd71012ed6566cc9b1c8d99fc7d3ab353dbb8d8",
+    "/home/robot/ego_vio_humble/ego_vio/vio/symmetric_ir_factors.py": "42173dd4114d4f21172570b163e0cd64a060b342b27cbfd7ae1850c6b30d325d",
+    "/home/robot/ego_vio_humble/scripts/prepare_dual_ir_eye_cache.py": "75bd4cba6dca3e41a31402d5a711e9851f903721329f0b456a2ed20dd5dc0edf",
+    "/home/robot/ego_vio_humble/ego_vio/vio/dual_ir_factors.py": "9bae6c63c77a550c094568f55a392b5896d62d9728e010d01c6ccee4c3b4e553",
+    "/home/robot/ego_vio_humble/scripts/derive_right_ir_stereo_scale.py": "f3e77947111cdffb27069f2122533599e278b3f488db8ca830f5a521ee089242",
+    "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_imu.py": "07ba2b50f37548d95cbf4945537b49ad7df8d81d8e4b26117bc9b05a0c653882",
+    "/home/robot/ego_vio_humble/scripts/mast3r_slam_precision_workflow.sh": "8333d15b89ad29ec1180477dbcf676c737897aa3dbf9c20829bb41dcb1d774a3",
+    "/home/robot/ego_vio_humble/scripts/score_steamvr_slam.py": "55b867ad7e888c21160c739839a691141e377bb460aed8aedc3b3c808214275e",
+    "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+    "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+    "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml": "ac2577063dce6f017307f2bbe45485cb272f84b152eec86d9cb31962f9d4d84a",
+    "/home/robot/ego_vio_humble/scripts/run_learned_segment_probe.py": "19965182ca188419e127193a456741602db6f734f897af59e69c28ccd747cafc",
+    "/home/robot/ego_vio_humble/ego_vio/vio/physical_stereo_lever.py": "8c591ab525744653f090a6dedc8b497effa8d28c24b3449e6c648a7707b66cae",
+    "/home/robot/ego_vio_humble/scripts/run_physical_stereo_lever_probe.py": "ee0f7b8d896151ba61b038ad451e2a78c56d0ebdd35ffe85a91644df197788a2",
+    "/home/robot/ego_vio_humble/scripts/run_sift_lm_physical_probe.py": "bb833777975c8c139b35634d780d0051575b8f5bb77cee1bce4335c4cc7f58d3",
+    "/home/robot/ego_vio_humble/scripts/evaluate_sift_lm_physical_source_probe.py": "3da5f8e7c15880829a4069da1ad59ef18d3d2f76219751f7b2ac7b7f00ac7f34",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_source_v1/preflight_report.json": "99491783ac8d21d279611ede29714086eb7dfb39fad8aee16af1de82291d97b2"
+  },
+  "results": [
+    {
+      "id": "20260927_heldout2",
+      "status": "COMPLETED",
+      "reference_raw_baseline": {
+        "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout2/both",
+        "candidate_manifest_sha256": "a2a54904ed2d6168833d25102b4d49395b70362c4c07d463f29bd87d0cd32769",
+        "graph_report_sha256": "a2713a67876c90a797483b2d0831d831c8c1e989b3be43ad7eb99b1d14ffdff5",
+        "body_trajectory_fused_sha256": "6c232e356c101119e0e5cd02475fa7c54d93acbc2e1f26f05350636c3600a48f",
+        "local_motion_factors_sha256": "a98dbf1ae0a425c8d8cabb88b081c2169fa338ab1913c0ac3d25c9a6330118a1",
+        "role": "reference_only_raw_adapter_v2_not_combined_source_arm"
+      },
+      "variants": {
+        "left_unrefined_matched_control": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260927_heldout2/left_unrefined_matched_control",
+          "score": {
+            "result": "PASS",
+            "failures": [],
+            "samples": 1141,
+            "ate_translation_mean_m": 0.002731853507942883,
+            "ate_translation_p95_m": 0.005553544454394469,
+            "ate_translation_max_m": 0.006354193923880218,
+            "ate_translation_rmse_m": 0.0030065045460503266,
+            "ate_translation_within_10mm_ratio": 1.0,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "7e2f90295b65982f8fd974e35259b4c470cc1c6138a8848221e9a58f88b98724",
+          "matched_pair_count": 1493
+        },
+        "left_sift_lm_refined_matched": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260927_heldout2/left_sift_lm_refined_matched",
+          "score": {
+            "result": "PASS",
+            "failures": [],
+            "samples": 1141,
+            "ate_translation_mean_m": 0.002631503816900159,
+            "ate_translation_p95_m": 0.005130677024724576,
+            "ate_translation_max_m": 0.006126277133415402,
+            "ate_translation_rmse_m": 0.0028795085659625687,
+            "ate_translation_within_10mm_ratio": 1.0,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "7a11928be9d2d8a912b7292219429e99ca07528b1e1bd33be0a0fe2c57f88f9d",
+          "matched_pair_count": 1493
+        }
+      },
+      "elapsed_s": 9.465764909982681
+    },
+    {
+      "id": "20260927_heldout4",
+      "status": "COMPLETED",
+      "reference_raw_baseline": {
+        "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_heldout4/both",
+        "candidate_manifest_sha256": "35b90171bfd27dcb921702ac05e774b5de26b2d5e4326dd97236cf03a4cb841b",
+        "graph_report_sha256": "a10dd03975993f80fcdaeb9be233f276f0a2ad215d726ed6ce05a689cb6e766b",
+        "body_trajectory_fused_sha256": "65d44494edf9c211dc5c9d64a7ee786371a82875e590c0b43266d9893012f416",
+        "local_motion_factors_sha256": "d9000d1d1e9eb7b770fb1ee16d3f3b84cc80fe9a67fcf21b46eb3cb3ec95efe6",
+        "role": "reference_only_raw_adapter_v2_not_combined_source_arm"
+      },
+      "variants": {
+        "left_unrefined_matched_control": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260927_heldout4/left_unrefined_matched_control",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_max_over_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.004239854763080001,
+            "ate_translation_p95_m": 0.006433272610287481,
+            "ate_translation_max_m": 0.010297766838083698,
+            "ate_translation_rmse_m": 0.004514527980900656,
+            "ate_translation_within_10mm_ratio": 0.9860017497812773,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "d5d77343f41086031e00b7866ed446c9abe957df116f02e5ab057d9b4ee56b73",
+          "matched_pair_count": 1675
+        },
+        "left_sift_lm_refined_matched": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260927_heldout4/left_sift_lm_refined_matched",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_max_over_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.003992817919881373,
+            "ate_translation_p95_m": 0.006205391451957662,
+            "ate_translation_max_m": 0.010257516060175546,
+            "ate_translation_rmse_m": 0.00426593402597278,
+            "ate_translation_within_10mm_ratio": 0.9868766404199475,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "32877b8c6d670f84532c997102e7e52715271c5ce8ae901faf4eeccae4b21508",
+          "matched_pair_count": 1675
+        }
+      },
+      "elapsed_s": 9.070621654012939
+    },
+    {
+      "id": "20260927_ind2",
+      "status": "COMPLETED",
+      "reference_raw_baseline": {
+        "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260927_ind2/both",
+        "candidate_manifest_sha256": "50de78c05159c65ab9371f322f4d226b0a97752c40e9f1d6ae1cd2b2deda84ea",
+        "graph_report_sha256": "13df9f97ea139afce8edd0ab179f8cb46220c3dbd02838830471be8002627d53",
+        "body_trajectory_fused_sha256": "a4609720b7b24ea5a430247f9586a0778b27b4de6e070caccea4330226da2aae",
+        "local_motion_factors_sha256": "84058d983536fbb52a4d4404e4258a7abd4ea5c3bc33c811cec13424c03d6673",
+        "role": "reference_only_raw_adapter_v2_not_combined_source_arm"
+      },
+      "variants": {
+        "left_unrefined_matched_control": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260927_ind2/left_unrefined_matched_control",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_p95_over_limit",
+              "ate_translation_max_over_limit",
+              "within_10mm_ratio_below_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.004935962905584787,
+            "ate_translation_p95_m": 0.011807143335350455,
+            "ate_translation_max_m": 0.01460401764806046,
+            "ate_translation_rmse_m": 0.00572547890476611,
+            "ate_translation_within_10mm_ratio": 0.8853893263342082,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "5ef7018bdcd5610f7d426e5b7b1d186c8912aabbb6f19bd8db9cece70be0d6cc",
+          "matched_pair_count": 1353
+        },
+        "left_sift_lm_refined_matched": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260927_ind2/left_sift_lm_refined_matched",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_p95_over_limit",
+              "ate_translation_max_over_limit",
+              "within_10mm_ratio_below_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.004885316029983254,
+            "ate_translation_p95_m": 0.011166132046478783,
+            "ate_translation_max_m": 0.013909860424602778,
+            "ate_translation_rmse_m": 0.005622792737782874,
+            "ate_translation_within_10mm_ratio": 0.8880139982502188,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "092192000b8bda918b8ba90ad6f8c3a22fffa8131d7276985e00e3d96cb4d068",
+          "matched_pair_count": 1353
+        }
+      },
+      "elapsed_s": 9.08949785499135
+    },
+    {
+      "id": "20260930_take06",
+      "status": "COMPLETED",
+      "reference_raw_baseline": {
+        "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2/20260930_take06/both",
+        "candidate_manifest_sha256": "92d175d2e8df8ad3c075d1ff111ef4c690ecbcb996b467b3871f786bddac7be6",
+        "graph_report_sha256": "db3a680eb01a02c0caed058805b7410b286006a0089047385629e6636b6f85e4",
+        "body_trajectory_fused_sha256": "366cc80bc37d3ac03e51fc1f95e0b97e84df193d8a00c50cc9481543249c2a3f",
+        "local_motion_factors_sha256": "b89f6e71703639ad86411eaa5737c76f4d7da9eadfd3d5fae26c5055d3193a9f",
+        "role": "reference_only_raw_adapter_v2_not_combined_source_arm"
+      },
+      "variants": {
+        "left_unrefined_matched_control": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260930_take06/left_unrefined_matched_control",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_max_over_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.003945245386343051,
+            "ate_translation_p95_m": 0.007517038997392303,
+            "ate_translation_max_m": 0.017323479527244307,
+            "ate_translation_rmse_m": 0.0044150934788271335,
+            "ate_translation_within_10mm_ratio": 0.9903762029746281,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "5be71018bb8a029de461e4fa346b0841f1c5688f5030b96e758c45ccff00ac2c",
+          "matched_pair_count": 1494
+        },
+        "left_sift_lm_refined_matched": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sift_lm_physical_four_score_v1/20260930_take06/left_sift_lm_refined_matched",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_max_over_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.003602286999735772,
+            "ate_translation_p95_m": 0.007316660131396458,
+            "ate_translation_max_m": 0.016571838837823014,
+            "ate_translation_rmse_m": 0.004066281903707519,
+            "ate_translation_within_10mm_ratio": 0.9912510936132983,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "7a82a642b45e69ed67a5299d4f90c3aa259aec87ef9bba5a2bfcef8a337d7440",
+          "matched_pair_count": 1494
+        }
+      },
+      "elapsed_s": 9.47815784800332
+    }
+  ],
+  "aggregates": {
+    "left_unrefined_matched_control": {
+      "scored_count": 4,
+      "precision_pass_count": 1,
+      "max_within_10mm_count": 1,
+      "worst_max_m": 0.017323479527244307
+    },
+    "left_sift_lm_refined_matched": {
+      "scored_count": 4,
+      "precision_pass_count": 1,
+      "max_within_10mm_count": 1,
+      "worst_max_m": 0.016571838837823014
+    }
+  }
+}
