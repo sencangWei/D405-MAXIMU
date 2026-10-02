@@ -801,3 +801,21 @@ primaryreport pairs per record. This changes diagnostic sampling only,
 not tracking gates, frame retention, graph factors, weights or scores.
 No independentRIGHT factor promotion until stronger source coverage and
 guarded paired currentbest replay show an actual precision improvement.
+
+Visual-stratified 4x24 source pilot CLOSED with allfour hashguards PASS,
+exact12accepted+12non-lowexcitation-rejected sourcepairs each, 0factors/GT.
+FreshLEFT/RIGHT crossmatrix both/Lonly/Ronly/neither:
+held2 20/1/0/3; held4 19/0/0/5; ind2 17/2/4/1; take06 19/0/2/3.
+Therefore complementary availability is genuinely bidirectional, but native
+FORWARD-only source acceptance is not a usable-factor claim. Bothaccepted
+closure median/max(mm): held2 .586/7.172; held4 .744/5.032;
+ind2 .436/24.068; take06 .885/20.003. Twoeyesagreeusuallyyetcanconflict2cm,
+despite BOTH native forward PnP acceptance and reprojectionP95 below4px.
+Next bounded source audit adds the SAME native temporal forward/reverse
+combine_bidirectional_scale policy, with raw forward and reverse outputs
+retained. No newly-added vector gate, threshold tuning, graph, supervision,
+frame trimming, precision report or backend run implied. Do not blindly
+promote forward-only RIGHT estimates on these internal disagreement cases.
+Visual diagnostic capability 4734e79e remote-restored byte-identical, plus
+30fresh tests against clean remote dependencies PASS at
+/tmp/umi-right-visual-diagnostic-backup-20261003.D5Ij5i.
