@@ -819,3 +819,30 @@ promote forward-only RIGHT estimates on these internal disagreement cases.
 Visual diagnostic capability 4734e79e remote-restored byte-identical, plus
 30fresh tests against clean remote dependencies PASS at
 /tmp/umi-right-visual-diagnostic-backup-20261003.D5Ij5i.
+
+Native bidirectional four-record source audit CLOSED, same 4x24 predeclared
+visual pairs, all source guards PASS, no GT/factors/backend/scoring. Native
+combined crossmatrix both/Lonly/Ronly/neither:
+held2 19/0/1/4; held4 19/0/0/5; ind2 15/1/5/3; take06 18/0/2/4.
+Bothaccepted factory closure median/P95/max(mm):
+held2 .426/3.390/7.172; held4 .744/4.058/5.032;
+ind2 .436/1.415/1.776; take06 .869/4.736/6.330.
+Existing native reverse-rejection policy excludes severe20-24mm forward
+conflicts while preserving RIGHT-only complement. No threshold was tuned.
+This is internal measurement consistency, NOT absolute trajectory accuracy.
+Capability3758a3d1 restored from sencang at
+/tmp/umi-right-bidirectional-diagnostic-backup-20261003.1DDwHq;
+33fresh tests against clean remote dependencies PASS.
+
+Next actual trajectory experiment: fixed-pair RIGHT source geometry refresh
+using realRIGHT pixels and calibrated stereo depth, with unchanged refined
+LEFT4 sources and unchanged report-level scale/quality/factory/session. Native
+forward/reverse accepted rows replace geometry; native failures retain the
+corrected-LEFT-derived RIGHT fallback with explicit per-row provenance.
+Rejected input rows and all pairs/timestamps remain exactly unchanged. This
+bounded experiment does NOT yet recover missing pairs or fully-independent
+RIGHT report-level scale. Same currentbest learned factors/backend/scorer,
+exact original-control replay and no loss of old passing controls required.
+Reviewer identified pre-image-load row-validation and stale native-field
+bugs; executor fixing before expensive launch. Root evaluator consumes this
+mixed provenance only through explicit hash/pair/global-scale evidence.

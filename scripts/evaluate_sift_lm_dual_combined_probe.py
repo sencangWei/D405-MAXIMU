@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Evaluate SIFT-LM LEFT overrides in the current best dual physical context.
+"""Evaluate explicitly bound stereo source overrides in the best dual context.
 
 This development runner keeps the current-best context fixed:
 
 * shared stereo selection is the existing dual LEFT/RIGHT physical policy
-* RIGHT reports remain the original raw cached reports
+* RIGHT is original, corrected LEFT-derived, or an explicitly proven mixed
+  independent-pixel refresh with unchanged derived fallbacks
 * learned factors are the selected constant-gauge factors, identical in both arms
 * VINS/IMU/backend/scorer/timestamps are unchanged
 
-The only source change in the refined arm is the LEFT refined SIFT-LM stereo
-reports produced by ``run_sift_lm_physical_probe.py --run``.  The original arm
+The source stage declares every changed LEFT/RIGHT report and its provenance.
+Shared pair selection and report-level scale remain controlled. The original arm
 must replay the existing current-best combined trajectory within 1e-7 m, or the
 record is not accepted for comparison.
 """
@@ -248,6 +249,85 @@ def validate_right_derivation_evidence(
     return validated
 
 
+def validate_right_geometry_refresh_evidence(
+    stage_record: dict[str, Any], right_paths: list[Path],
+) -> tuple[dict[str, Any], list[Path]]:
+    """Bind mixed RIGHT pixel measurements and unchanged fallbacks to their sources."""
+    proof = stage_record["independent_right_geometry_refresh"]
+    if proof.get("schema") != "umi_independent_right_geometry_refresh_v1":
+        raise ValueError("RIGHT geometry refresh schema mismatch")
+    base.require_onboard_report(proof, "RIGHT geometry refresh evidence")
+    reports = proof.get("reports", {})
+    if set(reports) != {str(path.resolve()) for path in right_paths}:
+        raise ValueError("RIGHT geometry refresh report paths mismatch")
+    consumed = [Path(proof["source_stage_preflight"])]
+    if file_hash(consumed[0]) != proof["source_stage_preflight_sha256"]:
+        raise ValueError("RIGHT geometry refresh original stage hash mismatch")
+    counts = {"refreshed_row_count": 0, "fallback_row_count": 0}
+    provenance_keys = {
+        "independent_right_geometry_update", "independent_right_geometry_update_status",
+        "fallback_left_derived_geometry_used", "independent_right_geometry_failure_reason",
+    }
+    for path in right_paths:
+        binding = reports[str(path.resolve())]
+        if binding.get("pairs_preserved") is not True or binding.get("global_scale_preserved") is not True:
+            raise ValueError("RIGHT geometry refresh preservation contract missing")
+        fallback = Path(binding["fallback_right_source_path"])
+        raw = Path(binding["raw_right_geometry_trajectory"])
+        for source, expected in ((fallback, binding["fallback_right_source_sha256"]),
+                                 (raw, binding["raw_right_geometry_trajectory_sha256"])):
+            if file_hash(source) != expected:
+                raise ValueError(f"RIGHT geometry refresh source hash mismatch: {source}")
+        consumed.extend([path, fallback, raw])
+        old, new = read_json(fallback), read_json(path)
+        if "derived_from_left_stereo_report" in new:
+            raise ValueError("independent RIGHT report incorrectly claims LEFT derivation")
+        policy = new["geometry_refresh_policy"]
+        base.require_onboard_report(policy, "RIGHT geometry refresh policy")
+        if (Path(policy["fallback_right_source_path"]).resolve() != fallback.resolve()
+                or policy["fallback_right_source_sha256"] != binding["fallback_right_source_sha256"]):
+            raise ValueError("RIGHT geometry refresh fallback policy mismatch")
+        for key in ("session", "trajectory", "observation_frame", "result", "quality",
+                    "factory_stereo_calibration", "scale_m_per_mast3r_unit"):
+            if old.get(key) != new.get(key):
+                raise ValueError(f"RIGHT geometry refresh global metadata changed: {key}")
+        if Path(old["trajectory"]).resolve() != raw.resolve():
+            raise ValueError("RIGHT geometry refresh raw trajectory mismatch")
+        old_rows, new_rows = old["observations"], new["observations"]
+        if len(old_rows) != len(new_rows):
+            raise ValueError("RIGHT geometry refresh pair count changed")
+        local = {"refreshed_row_count": 0, "fallback_row_count": 0}
+        for before, after in zip(old_rows, new_rows):
+            for key in ("accepted", "first_index", "second_index", "first_t_sec", "second_t_sec"):
+                if before.get(key) != after.get(key):
+                    raise ValueError("RIGHT geometry refresh pair/timestamp changed")
+            if before.get("accepted") is not True:
+                if before != after:
+                    raise ValueError("RIGHT geometry refresh rejected row changed")
+            elif after.get("independent_right_geometry_update") is True:
+                vector = np.asarray(after["metric_displacement_camera_i_m"], dtype=float)
+                quaternion = np.asarray(after["pnp_rotation_quaternion_xyzw"], dtype=float)
+                if (after.get("fallback_left_derived_geometry_used") is not False
+                        or after.get("metric_displacement_frame") != "infrared_right_camera_i"
+                        or vector.shape != (3,) or quaternion.shape != (4,)
+                        or not np.all(np.isfinite(vector)) or not np.all(np.isfinite(quaternion))
+                        or not np.isclose(np.linalg.norm(quaternion), 1.0, atol=1e-6)):
+                    raise ValueError("RIGHT geometry refresh native measurement invalid")
+                local["refreshed_row_count"] += 1
+            elif (after.get("independent_right_geometry_update") is False
+                  and after.get("fallback_left_derived_geometry_used") is True):
+                if {key: value for key, value in after.items() if key not in provenance_keys} != before:
+                    raise ValueError("RIGHT geometry refresh fallback geometry changed")
+                local["fallback_row_count"] += 1
+            else:
+                raise ValueError("RIGHT geometry refresh accepted row lacks provenance")
+        for key, value in local.items():
+            if binding.get(key) != value:
+                raise ValueError("RIGHT geometry refresh row count evidence mismatch")
+            counts[key] += value
+    return {**proof, **counts}, list(dict.fromkeys(consumed))
+
+
 def load_override_eye_candidates_from_reports(
     record: dict[str, Any],
     eye: str,
@@ -343,6 +423,8 @@ def load_refined_all_eye_candidates(
         refined_override_sha256=overrides,
     )
     refined_right_sources = stage_record.get("refined_right_sources")
+    refresh_evidence = None
+    refresh_paths = []
     if refined_right_sources is None:
         right_candidates, right_report, right_paths = physical.load_eye_candidates(
             record,
@@ -356,7 +438,11 @@ def load_refined_all_eye_candidates(
         if not isinstance(refined_right_sources, list) or not refined_right_sources:
             raise ValueError("refined_right_sources must be a non-empty list when present")
         right_report_paths = [Path(path) for path in refined_right_sources]
-        right_derivation = validate_right_derivation_evidence(stage_record, right_report_paths)
+        if "independent_right_geometry_refresh" in stage_record:
+            refresh_evidence, refresh_paths = validate_right_geometry_refresh_evidence(stage_record, right_report_paths)
+            right_derivation = None
+        else:
+            right_derivation = validate_right_derivation_evidence(stage_record, right_report_paths)
         right_candidates, right_report, right_paths = load_override_eye_candidates_from_reports(
             record,
             "right",
@@ -366,7 +452,12 @@ def load_refined_all_eye_candidates(
             refined_override_sha256=overrides,
         )
         right_report["right_derivation_left_source_sha256"] = right_derivation
-        right_source = "refined_right_reports_consistent_with_left_source"
+        right_source = (
+            "independent_right_pixels_with_explicit_derived_fallback" if refresh_evidence
+            else "refined_right_reports_consistent_with_left_source"
+        )
+        if refresh_evidence:
+            right_report["independent_right_geometry_refresh"] = refresh_evidence
     return (
         [*left_candidates, *right_candidates],
         {
@@ -383,19 +474,35 @@ def load_refined_all_eye_candidates(
             ),
             "right_derivation_left_source_sha256": right_derivation,
             "right_eye_used_as_independent_evidence": False,
+            "independent_right_geometry_refresh": refresh_evidence,
         },
-        [*left_paths, *right_paths],
+        [*left_paths, *right_paths, *refresh_paths],
         overrides,
     )
 
 
 def refined_arm_role(stage_record: dict[str, Any]) -> str:
+    if "independent_right_geometry_refresh" in stage_record:
+        return "refined_left_independent_right_geometry_override"
     if stage_record.get("refined_right_sources") is None:
         return "refined_left_override_original_right"
     return "refined_left_right_consistent_source_override"
 
 
 def source_upgrade_scope(source_override_sha256: dict[str, str], arm_role: str) -> dict[str, Any]:
+    if source_override_sha256 and arm_role == "refined_left_independent_right_geometry_override":
+        return {
+            "partial_source_upgrade": True,
+            "consistent_geometry_source_upgrade": False,
+            "left_refined_sift_lm_reports": True,
+            "right_refined_sift_lm_reports": True,
+            "right_geometry_source": "independent_right_pixels_with_explicit_derived_fallback",
+            "fixed_pair_geometry_refresh_only": True,
+            "global_scale_frozen_for_confidence_normalization": True,
+            "stale_right_derived_geometry_unchanged": False,
+            "right_eye_used_as_independent_evidence": False,
+            "shared_factor_policy": "one physical factor per pair; no double weighting",
+        }
     if not source_override_sha256:
         return {
             "partial_source_upgrade": False,

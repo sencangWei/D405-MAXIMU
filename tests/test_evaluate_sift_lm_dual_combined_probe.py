@@ -129,6 +129,100 @@ def test_consumed_hash_guard_rejects_midrun_mutation(tmp_path):
         probe.assert_hashes_unchanged(before)
 
 
+def geometry_refresh_fixture(tmp_path):
+    raw = tmp_path / "raw.csv"
+    raw.write_text("raw trajectory", encoding="utf-8")
+    stage = tmp_path / "old_stage.json"
+    write_json(stage, {"external_ground_truth_used": False, "slam_supervision": False})
+    old = tmp_path / "fallback.json"
+    new = tmp_path / "new.json"
+    rows = [
+        {"accepted": True, "first_index": 0, "second_index": 1,
+         "first_t_sec": 10.0, "second_t_sec": 10.1, "scale": 0.2},
+        {"accepted": True, "first_index": 1, "second_index": 2,
+         "first_t_sec": 10.1, "second_t_sec": 10.2, "scale": 0.3},
+        {"accepted": False, "first_index": 2, "second_index": 3},
+    ]
+    report = {"session": "/session", "trajectory": str(raw),
+              "observation_frame": "infrared_right_camera_i", "result": "PASS",
+              "quality": {"value": 1}, "scale_m_per_mast3r_unit": 0.25,
+              "factory_stereo_calibration": {"baseline_m": 0.018},
+              "observations": rows, "derived_from_left_stereo_report": "left.json"}
+    write_json(old, report)
+    updated = dict(report)
+    updated.pop("derived_from_left_stereo_report")
+    updated["observations"] = [
+        {**rows[0], "scale": 0.22, "independent_right_geometry_update": True,
+         "independent_right_geometry_update_status": "native_bidirectional_accepted",
+         "fallback_left_derived_geometry_used": False,
+         "metric_displacement_frame": "infrared_right_camera_i",
+         "metric_displacement_camera_i_m": [0.01, 0, 0],
+         "pnp_rotation_quaternion_xyzw": [0, 0, 0, 1]},
+        {**rows[1], "independent_right_geometry_update": False,
+         "independent_right_geometry_update_status": "native_rejected_fallback_preserved",
+         "fallback_left_derived_geometry_used": True,
+         "independent_right_geometry_failure_reason": "pnp_failed"},
+        rows[2],
+    ]
+    updated["geometry_refresh_policy"] = {
+        "external_ground_truth_used": False, "slam_supervision": False,
+        "fallback_right_source_path": str(old),
+        "fallback_right_source_sha256": probe.file_hash(old),
+    }
+    write_json(new, updated)
+    evidence = {
+        "schema": "umi_independent_right_geometry_refresh_v1",
+        "external_ground_truth_used": False, "slam_supervision": False,
+        "source_stage_preflight": str(stage),
+        "source_stage_preflight_sha256": probe.file_hash(stage),
+        "reports": {str(new): {
+            "fallback_right_source_path": str(old),
+            "fallback_right_source_sha256": probe.file_hash(old),
+            "raw_right_geometry_trajectory": str(raw),
+            "raw_right_geometry_trajectory_sha256": probe.file_hash(raw),
+            "refreshed_row_count": 1, "fallback_row_count": 1,
+            "pairs_preserved": True, "global_scale_preserved": True,
+        }},
+    }
+    return {"independent_right_geometry_refresh": evidence}, new, updated
+
+
+def test_geometry_refresh_proof_preserves_pair_and_fallback_contract(tmp_path):
+    stage, path, updated = geometry_refresh_fixture(tmp_path)
+    validated, consumed = probe.validate_right_geometry_refresh_evidence(stage, [path])
+    assert validated["refreshed_row_count"] == 1
+    assert validated["fallback_row_count"] == 1
+    assert len(consumed) == 4
+    assert path in consumed
+    assert probe.refined_arm_role(stage) == "refined_left_independent_right_geometry_override"
+    scope = probe.source_upgrade_scope({str(path): "hash"}, probe.refined_arm_role(stage))
+    assert scope["right_geometry_source"] == "independent_right_pixels_with_explicit_derived_fallback"
+    assert scope["right_eye_used_as_independent_evidence"] is False
+    updated["observations"][1]["scale"] = 0.8
+    write_json(path, updated)
+    with pytest.raises(ValueError, match="fallback geometry changed"):
+        probe.validate_right_geometry_refresh_evidence(stage, [path])
+
+
+@pytest.mark.parametrize("change", ["pair", "scale", "count", "derived", "hash"])
+def test_geometry_refresh_proof_rejects_contract_changes(tmp_path, change):
+    stage, path, updated = geometry_refresh_fixture(tmp_path)
+    proof = stage["independent_right_geometry_refresh"]["reports"][str(path)]
+    if change == "pair":
+        updated["observations"][0]["first_t_sec"] += 1
+    elif change == "scale":
+        updated["scale_m_per_mast3r_unit"] = 2
+    elif change == "count":
+        proof["refreshed_row_count"] = 2
+    elif change == "derived":
+        updated["derived_from_left_stereo_report"] = "left.json"
+    else:
+        proof["raw_right_geometry_trajectory_sha256"] = "wrong"
+    write_json(path, updated)
+    with pytest.raises(ValueError):
+        probe.validate_right_geometry_refresh_evidence(stage, [path])
+
+
 def test_override_right_loader_validates_hash_frame_and_dedup(monkeypatch, tmp_path):
     session = tmp_path / "session"
     session.mkdir()
