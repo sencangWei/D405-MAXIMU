@@ -757,3 +757,19 @@ pixels and calibrated stereo depth; cannot swap images with positive LEFT
 SGBM or reinterpret LEFTdisparity at RIGHTpixels. No weights/threshold sweep.
 Capability c3313ba1 remote-restored8files byte-identical from sencang at
 /tmp/umi-right-source-backup-20261003.DDdVXG; latestresultsnotyetbacked.
+
+2026-10-03 continuation: consistent four-record result evidence was backed
+in b3e011a38b696e3be38ea84480d3cca02a7dfc3c, restored byte-identical at
+/tmp/umi-source-consistency-evidence-20261003.M0SekW.
+New independent RIGHT pixel motion helper reuses native LEFT PnP in a
+mirrored rectified-camera representation, then restores proper RIGHT-frame
+rotation and translation (reflection is not treated as a rotation).
+Known-motion tests cover nonidentity world pose, heterogeneous depths,
+positive/negative disparity signs, native LM refinement and real rounded
+D405 baseline metadata. Related 35 tests freshly PASS. This is source
+capability, NOT a real-trajectory precision claim or production promotion.
+Bounded diagnostic client samples six accepted and six rejected LEFT rows
+per record, recomputes fresh SIFT/PnP for BOTH eyes, emits no factors and
+reads no GT. Lightweight four-record paths/timestamp preflight PASS:
+1199 raw poses per eye, exactly equal time arrays, all source paths present.
+Independent client review remains pending before real DB3 pilot launch.
