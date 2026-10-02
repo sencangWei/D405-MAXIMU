@@ -739,3 +739,21 @@ are source-guarded and timestamp-checked. DB3 hash deduplicated per record.
 Four real-layout lightweight preflights verified paths/lineage/calibration.
 Fresh related42tests PASS0.31s; independent review approves bounded4 source
 v3 then paired currentbest comparison, NOT production or all25 promotion.
+
+Consistent source v3 CLOSED4/4ready, all16RIGHTreportsPASS, nofactoroutputs,
+allconsumed-source guards verified. Paired currentbest score CLOSED4/4 with
+EXACT0p/Rcontrolreplay and fulltimestampoverlap1/samples1141,1143,1143,1143.
+MaximumATE(mm)original->consistentrefined:
+held2 6.182894->6.019389 PASS->PASS;
+held4 9.444787->9.595465 PASS->PASS (P95/maxslightlyworse);
+ind2 14.402923->13.725837 FAIL->FAIL;
+take06 14.756369->14.439234 FAIL->FAIL.
+All4mean/RMSEdecreased; 3/4P95improve. NOnewPASS. This is bounded geometric
+source consistency evidence, not production/all25 promotion or a10mmfix.
+NativeRIGHTgeometry remains LEFT-derived: 2learningfrontends are independent
+but these metric stereo rows share one measurement source. Nextbounded
+readonly audit assesses trulyRIGHT-centric temporalPnP using actualRIGHT
+pixels and calibrated stereo depth; cannot swap images with positive LEFT
+SGBM or reinterpret LEFTdisparity at RIGHTpixels. No weights/threshold sweep.
+Capability c3313ba1 remote-restored8files byte-identical from sencang at
+/tmp/umi-right-source-backup-20261003.DDdVXG; latestresultsnotyetbacked.
