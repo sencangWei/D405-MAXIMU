@@ -846,3 +846,30 @@ exact original-control replay and no loss of old passing controls required.
 Reviewer identified pre-image-load row-validation and stale native-field
 bugs; executor fixing before expensive launch. Root evaluator consumes this
 mixed provenance only through explicit hash/pair/global-scale evidence.
+
+Actual four-record independentRIGHT fixed-pair source refresh launched from
+capability b65a8f41 (session74511 / PID2124933), no shared-code edits while
+running. Firstheld2 source CLOSED:1525 independent updates/2 explicitfallbacks,
+2166 originalrejectionsunchanged; firstheld4 CLOSED:1661 updates/13fallbacks,
+2019 originalrejectionsunchanged. Remainingind2/take06 running; NO newATE yet.
+Firstrecord exactpair/time/global-scale/factory/session/quality invariants
+freshly verified on allfourreports. Native source acceptance alone does not
+prove accurate absolute motion: firstprimary new-vs-old RIGHT vector delta
+median.706/P954.776/max30.518mm. Actual matched trajectory scoring required.
+b65a8f41 remote-restored6changedfiles byte-identical and66relatedtests PASS
+at /tmp/umi-independent-right-refresh-backup-20261003.jYU2j5; core78tests PASS.
+
+Bounded throughput helper (not integrated into frozen running experiment):
+ego_vio/vio/cached_ir_correspondences.py caches only per-record SIFT features,
+fixed native4000/.01/15/.75 parameters, explicitLRUbound and frameimageSHA
+binding across roles/eviction. Fresh73relatedtests PASS; independentreview
+APPROVE, additional56ordered syntheticpairs exactraw-output equality.
+Four real-record readonly equality probe: first4accepted pairs andreverse
+each, 32directedpairs/15414matchingpoints, exactpointarrays/order/dtype/valid.
+Perrecord matches and raw/coldcache/warmcache(seconds):
+held2 3746 /1.3195/.7103/.0423; held4 5149 /1.1122/.7319/.0715;
+ind2 3011 /1.0226/.7030/.0357; take06 3508 /1.0767/.6807/.0506.
+Fiveframes/10featureentries each. NoPnP/factors/backend/scoring/GPU emitted.
+This proves correspondence equivalence and repeated-match throughput only,
+NOT an end-to-end speedup or precision improvement. Existing source producer
+and evaluator unchanged by this helper; integrate only after frozenrun closes.
