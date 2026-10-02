@@ -647,3 +647,16 @@ forRIGHT aswellasLEFT; maincaughtthisbeforeanyLMrun: refinementonlyneedsLEFT
 legacygraph. Targettake06/held2/ind2 originalleftgraphpathsarepresent.
 Do not invent shimgraphs or declarea blockerfromderivedRIGHT missinggraph.
 Fresh39targetedtestsPASS0.29s; sourceprobeimplementationstillpendingreview.
+
+2026-10-02 source-only bounded launch: independent reviewer approved
+run_sift_lm_physical_probe.py after complete before/after source mutation
+guards and truthful run/preflight labels. New wrapper tests6PASS; combined
+source/evaluator tests11PASS0.25s. All25 preflightv3 retains24ready and
+unobservabletake05; READY does not imply legacy direct-callable for all24.
+Actual four-record source-only replay launched at sift_lm_physical_four_source_v1
+for take06/heldout2/heldout4/ind2. heldout2 has reported50refinedSIFTpairs;
+this is source-generation progress, NOT solver/scoring or a precision gain.
+Existing raw reports, timestamps, production and score gates unchanged.
+Second-stage matched LEFT-only two-arm evaluator remains under independent
+review. Common accepted-pair intersection is explicit, so its control is not
+the prior complete dual-eye production policy. No full27restoration claim.
