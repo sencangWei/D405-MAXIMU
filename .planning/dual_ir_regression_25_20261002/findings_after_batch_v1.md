@@ -1392,3 +1392,68 @@ processed/scored/retained/technicalcounts distinct; terminal baseline
 PREPARATION_OR_INPUT_FAILED is retained, no accuracy denominator erasure.
 Real full25merge NOT run while sessions42941/85809 remain active. No algorithm,
 source/consumer/helper files consumed by those jobs were edited.
+
+Merger capability223fa0d808d2e883bd0c167cd7a07ce0a6e60824 normally pushed
+and fetched from owned sencang/codex/dual-ir-frontend-20261001; restored
+/tmp/umi-corpus-merger-backup-20261003.fkvqRU,3files byte-identical and
+10fresh restored merger tests PASS. No reports/ staged or forcepush.
+Live source progress:ind2 plus heldout2(963.907s) and dev1(1042.575s) now
+3native-ready records total/0technicalfail in these three. Only ind2 has
+paired ATE so far; heldout2/dev1 have NOT been scored yet. Session42941 now
+extracts heldout4;85809 now extracts dev2. Consumers remain autochained after
+each respective source shard finishes; complete25merge still pending.
+
+Fresh live poll:heldout4 now native-ready in929.598s; total4/25native-ready
+(ind2/heldout2/heldout4/dev1),0technical failures among completed records,
+still only1paired ATE. Its recovery appendix retains1733attempted native
+observations,212accepted,0invalid rejected diagnostic exclusions; noGT or
+SLAM supervision. Bound real right-refresh parent SHA
+30a95f61abb963e65036a99fb60c4ba9f515e913e2f5aeea72b86961716a1f2f.
+Session42941 automatically advanced to20260930_take06;85809stilldev2.
+Both live handles and advancing CPU-time verified; no restart, source policy
+change, input mutation, full25merge, or new precision PASS claim.
+
+Next live poll:dev2 native-ready972.488s, total5/25native-ready0technical
+failures; B automatically startedheldout1, A remainstake06. Dev2 native
+recovery1429attempted163accepted0invaliddiagnosticexclusions, noGT orSLAM
+supervision. Root independent post-output SHA recheck for heldout4 and dev2
+checks47distinct filebindings each with0mismatches and correct realparent
+SHA; this is integrity evidence, not ATE. Initial ad-hoc check misread
+guarded_before as path->hash instead of role->{path,sha256}; after inspecting
+actual schema, corrected read-only check passed, no producer/source edits.
+Dev2 parent SHA6dd27487f8dbc39b38a34be521b3ec7cbbc7516971fa255f374334a8e5c210b7.
+Only ind2 has paired score so far; all25 cross-record accuracy still pending.
+
+Independent read-only cap-evidence audit completed without new sweeps or
+optimizer/scorer runs. Prior17/10/16/17/17PASS counts (none/10/25/40/100mm)
+belong to batch_adapters_v2/summary.json, not current combined/native contexts;
+24scored25total withtake05unscored and raw-GT-jumptake03retained. That older
+artifact freezes13code dependencies; current combined freezes17, has18full
+precision PASS but19translation-maxPASS (take07rotationgateFAIL). Both bind
+manifestSHA60acb1271f28e982def29c04fde6b5e21c272c57d10c68a76f24d3b16cecf759.
+Current run_physical_stereo_lever_probe passes max_correction_m=None;
+root fresh graph checks for originalcombinedind2 and nativepairedind2 show
+policy_max_correction_mm=null,position_correction_limit_m=null,
+correction_scale=1,correction_clipped_frames=0. Remaining native10.359mm is
+not a25mm correction truncation. Dormant correction_cap_mode=global does not
+activate a cap. No currentcombined/native25cap sweep exists; do not relabel
+the old adapter ablation as current performance or rerun closed cap families.
+
+Automatic A-chain session42941 exited0 after source3 and paired3 COMPLETED.
+Native multiday3 preflightSHA86b73c2a7d3a2a995865a164104f4c3e20e9a925e0898b1395d204c0a534f82a;
+paired summarySHA20d91c247ce39fe63c4468ab046253417530badfa1ee84104b685e26c88df940.
+heldout2 original->native mean/P95/max2.520396/5.135144/6.182894 ->
+2.218621/3.965668/5.566291mm,1141samples,PASS->PASS;
+heldout4 mean/P95/max3.795611/5.589462/9.444787 ->
+3.446527/5.915232/8.323621mm,1143samples,PASS->PASS: P95 worsens despite
+mean/RMSE/max improvement, do not hide that regression;
+take06 mean/P95/max3.179971/5.687678/14.756367 ->
+2.843058/5.013755/13.478656mm,1143samples,FAILmax->FAILmax.
+With ind2 this makes4/25paired comparisons,2precisionPASS2FAIL before/after;
+all4max improve but0newPASS. Total6/25source-ready0technicalfails; B85809
+still extractsheldout1 and must continue remaining21 frozen queue.
+Independent actual-source/consumer/scorebinding review APPROVES3recordshard:
+parent/RIGHT/native proof validators PASS, noGT sources, raw/metric timelines
+equal, original source guards unchanged, matching score/precision.json for
+both variants. Originalcontrol maxdelta <=2.8337254630594168e-8m,rotations0.
+No complete25merge, closed-familyrerun, selectionchange or productionpromotion.
