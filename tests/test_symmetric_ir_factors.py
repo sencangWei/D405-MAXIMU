@@ -95,11 +95,12 @@ def track(
     }
 
 
-def build(tracks):
+def build(tracks, **kwargs):
     return build_symmetric_ir_factors(
         np.array([0.0, 0.02], dtype=float),
         np.repeat(np.eye(3)[None, :, :], 2, axis=0),
         tracks,
+        **kwargs,
     )
 
 
@@ -207,6 +208,224 @@ def test_alternate_degradation_suppresses_each_eye_by_own_stereo_residual():
     assert by_eye["right"]["own_confidence"] == pytest.approx(1.0)
     assert by_eye["left"]["confidence"] < by_eye["right"]["confidence"]
     assert sum(factor["confidence"] for factor in factors) == pytest.approx(1.0)
+
+
+def test_stereo_weight_policy_ablation_defaults_to_physical_observation_confidence():
+    times = np.array([0.0, 0.02])
+    left_bad_track = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.116, 0.02, 0.0]],
+        observations=[observation(0, 1, times, [0.100, 0.02, 0.0], eye="left")],
+        confidences=[1.0],
+    )
+    right_good_track = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.100, -0.02, 0.0]],
+        observations=[observation(0, 1, times, [0.100, -0.02, 0.0], eye="right")],
+        confidences=[0.8],
+    )
+
+    _, observation_rows, observation_summary = build([left_bad_track, right_good_track])
+    _, residual_rows, residual_summary = build_symmetric_ir_factors(
+        np.array([0.0, 0.02], dtype=float),
+        np.repeat(np.eye(3)[None, :, :], 2, axis=0),
+        [left_bad_track, right_good_track],
+        stereo_weight_policy="residual-aware",
+    )
+
+    assert observation_summary["stereo_weight_policy"] == "observation"
+    assert residual_summary["stereo_weight_policy"] == "residual-aware"
+    np.testing.assert_allclose(
+        observation_rows[0]["metric_displacement_camera_i_m"],
+        [0.100, 0.02, 0.0],
+        atol=1e-12,
+    )
+    assert observation_rows[0]["pnp_inlier_ratio"] == pytest.approx(1.0)
+    np.testing.assert_allclose(
+        residual_rows[0]["metric_displacement_camera_i_m"],
+        [0.100, -0.02, 0.0],
+        atol=1e-12,
+    )
+    assert residual_rows[0]["pnp_inlier_ratio"] == pytest.approx(0.8)
+    with pytest.raises(ValueError, match="unsupported stereo weight policy"):
+        build_symmetric_ir_factors(
+            np.array([0.0, 0.02], dtype=float),
+            np.repeat(np.eye(3)[None, :, :], 2, axis=0),
+            [left_bad_track, right_good_track],
+            stereo_weight_policy="bad",
+        )
+
+
+def test_learned_motion_consistency_default_is_identical_to_explicit_none():
+    left = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.100, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="left")],
+    )
+    right = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.130, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.130, 0.0, 0.0], eye="right")],
+    )
+
+    factors_a, stereo_a, summary_a = build([left, right])
+    factors_b, stereo_b, summary_b = build(
+        [left, right], learned_motion_consistency_limit_m=None
+    )
+
+    assert canonical_motion(factors_a) == canonical_motion(factors_b)
+    assert canonical_stereo(stereo_a) == canonical_stereo(stereo_b)
+    assert "learned_motion_consistency_schema" not in summary_a
+    assert "learned_motion_consistency_schema" not in summary_b
+
+
+def test_learned_motion_consistency_is_symmetric_under_track_permutation():
+    left = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.100, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="left")],
+    )
+    right = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.130, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="right")],
+    )
+
+    direct = build([left, right], learned_motion_consistency_limit_m=0.015)
+    swapped = build([right, left], learned_motion_consistency_limit_m=0.015)
+
+    assert canonical_motion(direct[0]) == canonical_motion(swapped[0])
+    assert canonical_stereo(direct[1]) == canonical_stereo(swapped[1])
+    assert direct[2]["learned_motion_consistency_own_rejected_factor_count"] == 1
+    assert swapped[2]["learned_motion_consistency_own_rejected_factor_count"] == 1
+
+
+def test_learned_motion_consistency_retains_right_when_left_fails_own_check():
+    left_bad = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.130, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="left")],
+    )
+    right_good = track("right")
+
+    factors, stereo_rows, summary = build(
+        [left_bad, right_good], learned_motion_consistency_limit_m=0.015
+    )
+
+    assert [factor["eye"] for factor in factors] == ["right"]
+    assert len(stereo_rows) == 1
+    assert summary["learned_motion_consistency_own_rejected_factor_count"] == 1
+    assert summary["learned_motion_consistency_retained_solo_pair_count"] == 1
+    assert summary[
+        "learned_motion_consistency_ungated_paired_max_own_residual_p50_m"
+    ] == pytest.approx(0.030)
+
+
+def test_learned_motion_consistency_retains_left_when_right_fails_own_check():
+    left_good = track("left")
+    right_bad = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.130, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="right")],
+    )
+
+    factors, _, summary = build(
+        [left_good, right_bad], learned_motion_consistency_limit_m=0.015
+    )
+
+    assert [factor["eye"] for factor in factors] == ["left"]
+    assert summary["learned_motion_consistency_own_rejected_factor_count"] == 1
+    assert summary["learned_motion_consistency_retained_solo_pair_count"] == 1
+
+
+def test_learned_motion_consistency_retains_both_when_they_agree_even_if_wrong():
+    left = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.120, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.120, 0.0, 0.0], eye="left")],
+    )
+    right = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.120, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.120, 0.0, 0.0], eye="right")],
+    )
+
+    factors, _, summary = build([left, right], learned_motion_consistency_limit_m=0.015)
+
+    assert [factor["eye"] for factor in factors] == ["left", "right"]
+    assert summary["learned_motion_consistency_retained_both_pair_count"] == 1
+    assert summary["learned_motion_consistency_cross_ambiguous_pair_count"] == 0
+
+
+def test_learned_motion_consistency_suppresses_both_when_valid_eyes_disagree():
+    left = track("left")
+    right = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.120, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.120, 0.0, 0.0], eye="right")],
+    )
+
+    factors, stereo_rows, summary = build(
+        [left, right], learned_motion_consistency_limit_m=0.015
+    )
+
+    assert factors == []
+    assert len(stereo_rows) == 1
+    assert summary["learned_motion_consistency_cross_ambiguous_pair_count"] == 1
+    assert summary["learned_motion_consistency_cross_ambiguous_factor_count"] == 2
+    assert summary[
+        "learned_motion_consistency_ungated_paired_left_right_diff_p50_m"
+    ] == pytest.approx(0.020)
+
+
+def test_learned_motion_consistency_keeps_stereo_only_when_both_eyes_fail_own_check():
+    left = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.130, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="left")],
+    )
+    right = track(
+        "right",
+        body_positions=[[0.0, 0.0, 0.0], [0.070, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="right")],
+    )
+
+    factors, stereo_rows, summary = build(
+        [left, right], learned_motion_consistency_limit_m=0.015
+    )
+
+    assert factors == []
+    assert len(stereo_rows) == 1
+    assert summary["learned_motion_consistency_own_rejected_factor_count"] == 2
+    assert summary["learned_motion_consistency_retained_solo_pair_count"] == 0
+    assert summary["learned_motion_consistency_retained_both_pair_count"] == 0
+
+
+def test_learned_motion_consistency_solo_track_must_pass_own_check():
+    valid_factors, valid_stereo, valid_summary = build(
+        [track("left")], learned_motion_consistency_limit_m=0.015
+    )
+    invalid = track(
+        "left",
+        body_positions=[[0.0, 0.0, 0.0], [0.130, 0.0, 0.0]],
+        observations=[observation(0, 1, [0.0, 0.02], [0.100, 0.0, 0.0], eye="left")],
+    )
+    invalid_factors, invalid_stereo, invalid_summary = build(
+        [invalid], learned_motion_consistency_limit_m=0.015
+    )
+
+    assert [factor["eye"] for factor in valid_factors] == ["left"]
+    assert len(valid_stereo) == 1
+    assert valid_summary["learned_motion_consistency_retained_solo_pair_count"] == 1
+    assert invalid_factors == []
+    assert len(invalid_stereo) == 1
+    assert invalid_summary["learned_motion_consistency_own_rejected_factor_count"] == 1
+
+
+def test_learned_motion_consistency_limit_must_be_finite_positive():
+    for limit in (0.0, -1.0, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="finite and positive"):
+            build([track("left")], learned_motion_consistency_limit_m=limit)
 
 
 def test_missing_one_endpoint_lets_other_eye_survive():
@@ -339,3 +558,24 @@ def test_wrong_eye_frame_raises_before_any_frame_conversion():
 
     with pytest.raises(ValueError, match="infrared_left_camera_i"):
         build([wrong])
+
+
+def test_residual_aware_stereo_ablation_is_symmetric_and_does_not_boost_confidence():
+    times = np.array([0.0, 0.02])
+    left = track("left", observations=[observation(0, 1, times, [0.14, 0, 0])], confidences=[0.9])
+    right = track("right", confidences=[0.6])
+    rotations = np.repeat(np.eye(3)[None], 2, axis=0)
+    baseline = build_symmetric_ir_factors(times, rotations, [left, right])
+    first = build_symmetric_ir_factors(times, rotations, [left, right], stereo_weight_policy="residual-aware")
+    swapped = build_symmetric_ir_factors(times, rotations, [right, left], stereo_weight_policy="residual-aware")
+    assert canonical_motion(first[0]) == canonical_motion(baseline[0])
+    assert canonical_stereo(first[1]) == canonical_stereo(swapped[1])
+    np.testing.assert_allclose(baseline[1][0]["metric_displacement_camera_i_m"], [0.14, 0, 0])
+    np.testing.assert_allclose(first[1][0]["metric_displacement_camera_i_m"], [0.1, 0, 0])
+    assert first[1][0]["pnp_inlier_ratio"] == pytest.approx(0.6)
+    assert first[2]["stereo_selection_changed_pairs"] == 1
+
+
+def test_unknown_stereo_weight_policy_rejected():
+    with pytest.raises(ValueError, match="stereo weight policy"):
+        build_symmetric_ir_factors([0, 0.02], np.repeat(np.eye(3)[None], 2, axis=0), [], stereo_weight_policy="external-error")

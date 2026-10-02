@@ -1,4 +1,5 @@
 import importlib.util
+import argparse
 from pathlib import Path
 import sys
 import json
@@ -46,6 +47,29 @@ def test_reference_uses_recorded_camera_times_not_extrapolated_vins_tail(tmp_pat
     np.testing.assert_allclose(mono, [20, 20.033, 20.066, 20.099])
     assert report["unbound_timestamps"] == [1000.132]
     assert report["unbound_samples"] == 1
+
+
+def test_ablation_policy_defaults_and_validation():
+    defaults = runner.symmetric_policy(SimpleNamespace())
+    assert defaults == {
+        "max_correction_m": 1.0,
+        "max_correction_mm": 1000.0,
+        "correction_cap_mode": "global",
+        "eyes": "both",
+        "stereo_weight_policy": "observation",
+        "disable_learned_motion": False,
+        "learned_motion_consistency_limit_m": None,
+    }
+    assert runner.parse_optional_correction_mm("none") is None
+    assert runner.parse_optional_correction_mm("25") == pytest.approx(0.025)
+    with pytest.raises(argparse.ArgumentTypeError):
+        runner.parse_optional_correction_mm("nan")
+    with pytest.raises(ValueError, match="unsupported correction cap mode"):
+        runner.symmetric_policy(SimpleNamespace(correction_cap_mode="bad"))
+    with pytest.raises(ValueError, match="unsupported eye policy"):
+        runner.symmetric_policy(SimpleNamespace(eyes="middle"))
+    with pytest.raises(ValueError, match="unsupported stereo weight policy"):
+        runner.symmetric_policy(SimpleNamespace(stereo_weight_policy="bad"))
 
 
 def test_wrapper_outputs_body_poses_and_never_marks_experiment_accepted(tmp_path, monkeypatch):
@@ -102,13 +126,31 @@ def test_wrapper_outputs_body_poses_and_never_marks_experiment_accepted(tmp_path
 
     monkeypatch.setattr(runner, "load_eye", load_eye)
     output = tmp_path / "experiment"
-    runner.run(SimpleNamespace(session=session, vins_dir=vins_dir,
-                              left_dir=tmp_path / "left", right_dir=tmp_path / "right", output_dir=output))
+    runner.run(SimpleNamespace(
+        session=session, vins_dir=vins_dir,
+        left_dir=tmp_path / "left", right_dir=tmp_path / "right", output_dir=output,
+        max_correction_m=None,
+        correction_cap_mode="per-node",
+        eyes="left",
+        stereo_weight_policy="residual-aware",
+        disable_learned_motion=True,
+    ))
     report = json.loads((output / "graph_report.json").read_text())
     manifest = json.loads((output / "candidate_manifest.json").read_text())
     assert report["output_frame"] == "body_imu_origin"
     assert report["output_samples"] == 21
     assert manifest["primary_eye"] is None
+    assert manifest["policy_arguments"] == {
+        "max_correction_mm": None,
+        "correction_cap_mode": "per-node",
+        "eyes": "left",
+        "stereo_weight_policy": "residual-aware",
+        "disable_learned_motion": True,
+        "learned_motion_consistency_limit_m": None,
+    }
+    assert report["policy_arguments"] == manifest["policy_arguments"]
+    assert report["joint_position_solver"]["position_correction_limit_m"] is None
+    assert "secondary_visual_motion" not in report["joint_position_solver"]
     assert report["accepted"] is manifest["accepted"] is False
     assert report["external_ground_truth_used"] is False
     assert (output / "body_trajectory_fused.csv").exists()

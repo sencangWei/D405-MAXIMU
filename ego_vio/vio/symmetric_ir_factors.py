@@ -111,13 +111,21 @@ def _stereo_row(
     }
 
 
-def _choose_stereo_row(candidates: list[dict[str, Any]]) -> dict[str, Any]:
-    best_confidence = max(candidate["observation_confidence"] for candidate in candidates)
+def _choose_stereo_row(
+    candidates: list[dict[str, Any]], stereo_weight_policy: str
+) -> dict[str, Any]:
+    if stereo_weight_policy == "observation":
+        confidence_key = "observation_confidence"
+    elif stereo_weight_policy == "residual-aware":
+        confidence_key = "own_confidence"
+    else:
+        raise ValueError(f"unsupported stereo weight policy: {stereo_weight_policy}")
+    best_confidence = max(candidate[confidence_key] for candidate in candidates)
     tied = [
         candidate
         for candidate in candidates
         if np.isclose(
-            candidate["observation_confidence"], best_confidence, rtol=0.0, atol=0.0
+            candidate[confidence_key], best_confidence, rtol=0.0, atol=0.0
         )
     ]
     if len(tied) == 1:
@@ -165,10 +173,28 @@ def _store_eye_candidate(
     return True
 
 
+def _quantile_summary(prefix: str, values: list[float]) -> dict[str, float | None]:
+    if not values:
+        return {
+            f"{prefix}_p50_m": None,
+            f"{prefix}_p90_m": None,
+            f"{prefix}_p95_m": None,
+        }
+    array = np.asarray(values, dtype=float)
+    return {
+        f"{prefix}_p50_m": float(np.percentile(array, 50)),
+        f"{prefix}_p90_m": float(np.percentile(array, 90)),
+        f"{prefix}_p95_m": float(np.percentile(array, 95)),
+    }
+
+
 def build_symmetric_ir_factors(
     reference_times: Sequence[float],
     reference_body_rotations: Sequence[Any],
     tracks: Sequence[dict[str, Any]],
+    *,
+    stereo_weight_policy: str = "observation",
+    learned_motion_consistency_limit_m: float | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     """Build eye-symmetric local MASt3R relative-motion proposals.
 
@@ -178,6 +204,13 @@ def build_symmetric_ir_factors(
     and ``infrared_right_camera_i`` for right tracks.
     """
 
+    if stereo_weight_policy not in ("observation", "residual-aware"):
+        raise ValueError(f"unsupported stereo weight policy: {stereo_weight_policy}")
+    if learned_motion_consistency_limit_m is not None and (
+        not np.isfinite(learned_motion_consistency_limit_m)
+        or learned_motion_consistency_limit_m <= 0.0
+    ):
+        raise ValueError("learned motion consistency limit must be finite and positive")
     reference_times_array = _as_strict_times("reference_times", reference_times)
     reference_rotations = _as_rotations(
         "reference_body_rotations",
@@ -287,24 +320,107 @@ def build_symmetric_ir_factors(
                 counters["duplicate_motion_pair_count"] += 1
                 counters["stereo_duplicate_count"] += 1
 
+    changed_stereo_pairs = 0
+    consistency_own_rejected_factors = 0
+    consistency_cross_ambiguous_pairs = 0
+    consistency_cross_ambiguous_factors = 0
+    consistency_retained_solo_pairs = 0
+    consistency_retained_both_pairs = 0
+    consistency_paired_max_own_residuals: list[float] = []
+    consistency_paired_lr_diffs: list[float] = []
     motion_factors: list[dict[str, Any]] = []
     stereo_observations: list[dict[str, Any]] = []
     for pair in sorted(by_pair):
         candidates = sorted(by_pair[pair].values(), key=lambda item: item["eye"])
-        own_sum = sum(candidate["own_confidence"] for candidate in candidates)
-        own_max = max(candidate["own_confidence"] for candidate in candidates)
+        learned_candidates = candidates
+        if learned_motion_consistency_limit_m is not None:
+            valid_candidates = [
+                candidate for candidate in candidates
+                if candidate["own_stereo_residual_m"] <= learned_motion_consistency_limit_m
+            ]
+            consistency_own_rejected_factors += len(candidates) - len(valid_candidates)
+            if len(candidates) == 2:
+                left, right = candidates
+                lr_diff = float(np.linalg.norm(
+                    left["motion_world_target"] - right["motion_world_target"]
+                ))
+                consistency_paired_lr_diffs.append(lr_diff)
+                consistency_paired_max_own_residuals.append(float(max(
+                    candidate["own_stereo_residual_m"] for candidate in candidates
+                )))
+                if len(valid_candidates) == 2:
+                    if lr_diff > learned_motion_consistency_limit_m:
+                        learned_candidates = []
+                        consistency_cross_ambiguous_pairs += 1
+                        consistency_cross_ambiguous_factors += 2
+                    else:
+                        learned_candidates = valid_candidates
+                        consistency_retained_both_pairs += 1
+                elif len(valid_candidates) == 1:
+                    learned_candidates = valid_candidates
+                    consistency_retained_solo_pairs += 1
+                else:
+                    learned_candidates = []
+            elif len(valid_candidates) == 1:
+                learned_candidates = valid_candidates
+                consistency_retained_solo_pairs += 1
+            else:
+                learned_candidates = []
+        own_sum = sum(candidate["own_confidence"] for candidate in learned_candidates)
+        own_max = (
+            max(candidate["own_confidence"] for candidate in learned_candidates)
+            if learned_candidates else 0.0
+        )
         confidence_scale = min(1.0, own_max / own_sum) if own_sum > 0.0 else 0.0
-        for candidate in candidates:
+        for candidate in learned_candidates:
             motion_factors.append(
                 _motion_factor(candidate, candidate["own_confidence"] * confidence_scale)
             )
-        stereo_observations.append(_choose_stereo_row(candidates))
+        selected = _choose_stereo_row(candidates, stereo_weight_policy)
+        baseline = _choose_stereo_row(candidates, "observation")
+        if selected != baseline:
+            changed_stereo_pairs += 1
+        stereo_observations.append(selected)
 
     accepted_confidences = [float(factor["confidence"]) for factor in motion_factors]
     summary: dict[str, Any] = {
         **counters,
+        "stereo_weight_policy": stereo_weight_policy,
+        "stereo_selection_changed_pairs": changed_stereo_pairs,
         "factor_count": len(motion_factors),
         "stereo_observation_count": len(stereo_observations),
     }
+    if learned_motion_consistency_limit_m is not None:
+        summary.update({
+            "learned_motion_consistency_schema": (
+                "own_residual_and_left_right_world_disagreement_v1"
+            ),
+            "learned_motion_consistency_limit_m": float(
+                learned_motion_consistency_limit_m
+            ),
+            "learned_motion_consistency_own_rejected_factor_count": (
+                consistency_own_rejected_factors
+            ),
+            "learned_motion_consistency_cross_ambiguous_pair_count": (
+                consistency_cross_ambiguous_pairs
+            ),
+            "learned_motion_consistency_cross_ambiguous_factor_count": (
+                consistency_cross_ambiguous_factors
+            ),
+            "learned_motion_consistency_retained_solo_pair_count": (
+                consistency_retained_solo_pairs
+            ),
+            "learned_motion_consistency_retained_both_pair_count": (
+                consistency_retained_both_pairs
+            ),
+            **_quantile_summary(
+                "learned_motion_consistency_ungated_paired_max_own_residual",
+                consistency_paired_max_own_residuals,
+            ),
+            **_quantile_summary(
+                "learned_motion_consistency_ungated_paired_left_right_diff",
+                consistency_paired_lr_diffs,
+            ),
+        })
     summary.update(_confidence_summary(accepted_confidences))
     return motion_factors, stereo_observations, summary

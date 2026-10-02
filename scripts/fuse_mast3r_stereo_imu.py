@@ -281,7 +281,7 @@ def cap_interpolated_position_corrections(
     frame_left: np.ndarray,
     frame_right: np.ndarray,
     frame_alpha: np.ndarray,
-    maximum_norm_m: float,
+    maximum_norm_m: float | None,
     mode: str,
     interpolation_mode: str = "linear",
     node_indices: np.ndarray | None = None,
@@ -289,6 +289,12 @@ def cap_interpolated_position_corrections(
     base_correction: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, float]:
     """Limit graph corrections while preserving the requested cap policy."""
+    if mode not in {"global", "per-frame", "per-node"}:
+        raise ValueError(f"unsupported correction cap mode: {mode}")
+    if maximum_norm_m is not None and (
+        not np.isfinite(maximum_norm_m) or maximum_norm_m <= 0.0
+    ):
+        raise ValueError("maximum correction norm must be finite and positive")
     base_frames, base_nodes = (
         base_correction if base_correction is not None
         else (np.zeros((len(frame_left), 3)), np.zeros_like(node_corrections))
@@ -312,6 +318,8 @@ def cap_interpolated_position_corrections(
 
     requested = interpolate(node_corrections)
     requested_norm = np.linalg.norm(requested, axis=1)
+    if maximum_norm_m is None:
+        return requested, requested_norm, 1.0
     if mode == "global":
         minimum_scale = min(
             1.0,
@@ -339,7 +347,7 @@ def cap_interpolated_position_corrections(
             capped = interpolation_scales[:, None] * capped
             minimum_scale = min(minimum_scale, float(np.min(interpolation_scales)))
         return capped, requested_norm, minimum_scale
-    raise ValueError(f"unsupported correction cap mode: {mode}")
+    raise AssertionError("unreachable correction cap mode")
 
 
 def scale_consistency(
@@ -2551,7 +2559,9 @@ def refine_positions_visual_inertial(
         "position_correction_median_m": float(np.median(correction_norm)),
         "position_correction_p95_m": float(np.percentile(correction_norm, 95)),
         "position_correction_max_m": float(np.max(correction_norm)),
-        "position_correction_limit_m": float(max_correction_m),
+        "position_correction_limit_m": (
+            None if max_correction_m is None else float(max_correction_m)
+        ),
         "correction_scale": float(correction_scale),
         "correction_cap_mode": correction_cap_mode,
         "correction_interpolation_mode": correction_interpolation_mode,

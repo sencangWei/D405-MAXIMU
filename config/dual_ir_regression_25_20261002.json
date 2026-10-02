@@ -1,0 +1,881 @@
+{
+  "schema": "umi_dual_ir_regression_corpus_v1",
+  "purpose": "Frozen source inventory for dual-IR regression cache completion. This is a development/regression source manifest, not a blind-test claim.",
+  "created_utc": "2026-10-02",
+  "root": "/home/robot/ego_vio_humble",
+  "excluded_static_or_no_motion": [
+    {
+      "capture_dir": "reports/steamvr_umi_sessions/20260927_150314_steamvr_fusion_heldout_take3",
+      "reason": "no-motion/static take; replaced by moving retry 20260927_150519"
+    }
+  ],
+  "status_semantics": {
+    "capture_status": "source/capture-only status, not SLAM accuracy PASS",
+    "product_fusion_score_result": "existing scorer result when product fusion score artifact exists",
+    "null_cache": "artifact not identified in this frozen inventory"
+  },
+  "summary": {
+    "record_count": 25,
+    "unique_session_count": 25,
+    "capture_status_counts": {
+      "PASS_CAPTURE_ONLY_NOT_CALIBRATED": 25
+    },
+    "vins_cache_count": 25,
+    "left_complete_count": 20,
+    "left_partial_count": 5,
+    "right_complete_count": 3,
+    "right_missing_count": 22,
+    "product_fusion_score_count": 15,
+    "scoring_reference_count": 25
+  },
+  "records": [
+    {
+      "id": "20260927_dev1",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_133525_steamvr_fusion_validation_take1",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_133525_steamvr_fusion_validation_take1/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133529",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133529",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take1/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev1/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev1/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_dev2",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_133741_steamvr_fusion_validation_take2",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_133741_steamvr_fusion_validation_take2/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133744",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_133744",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/metric_rescue_stage_fix/take2/rescue/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_validation_20260927/run_1340/take2_retry_environment/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev2/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev2/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/dev2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_heldout1",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_150519_steamvr_fusion_heldout_take3_moving_retry",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_150519_steamvr_fusion_heldout_take3_moving_retry/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150523",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150523",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take1/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout1/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout1/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_heldout2",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_150812_steamvr_fusion_heldout_take4_of6",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_150812_steamvr_fusion_heldout_take4_of6/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_150816",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take2/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout2/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout2/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_heldout3",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_150958_steamvr_fusion_heldout_take5_of6",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_150958_steamvr_fusion_heldout_take5_of6/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151002",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take3/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout3/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout3/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout3",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_heldout4",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_151138_steamvr_fusion_heldout_take6_of6",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_151138_steamvr_fusion_heldout_take6_of6/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_151141",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_fusion_heldout_20260927/run_frozen_four/take4/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout4/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout4/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_metric_scale_20260927/verified_v1_six/heldout4",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_ind1",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_181211_joint_scale_independent_take1_of4",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_181211_joint_scale_independent_take1_of4/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181216",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181216",
+      "left_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_ind2",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_181447_joint_scale_independent_take2_of4",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_181447_joint_scale_independent_take2_of4/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501",
+      "left_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/rescue/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/vins_input_retry1",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/official_score",
+      "product_fusion_score_result": "FAIL",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_ind3",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_181736_joint_scale_independent_take3_of4",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_181736_joint_scale_independent_take3_of4/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181740",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181740",
+      "left_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/vins_input",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3/official_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take3",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260927_ind4",
+      "cohort": "20260927",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_182002_joint_scale_independent_take4_of4",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260927_182002_joint_scale_independent_take4_of4/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_182007",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_182007",
+      "left_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/fusion/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/vins_input_retry1",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/official_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4/official_score",
+      "product_fusion_score_result": "FAIL",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take4",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take01",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_194923",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_194923",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take02",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195058",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195058",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take03",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195231",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195231",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195227_slam_validation_take03/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take04",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195348",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195348",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "partial_missing_imu_scale",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json"
+      ],
+      "left_imu_scale_report": null,
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take05",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195518",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195518",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "partial_missing_imu_scale",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json"
+      ],
+      "left_imu_scale_report": null,
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05/evaluation_20260929_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195515_slam_validation_take05/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take06",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195723",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195723",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "partial_missing_imu_scale",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json"
+      ],
+      "left_imu_scale_report": null,
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06/evaluation_20260929_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195720_slam_validation_take06/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take07",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_200026",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_200026",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "partial_missing_imu_scale",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json"
+      ],
+      "left_imu_scale_report": null,
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07/evaluation_20260929_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200024_slam_validation_take07/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take08",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_200237",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_200237",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2/fusion_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200234_slam_validation_take08/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260929_take09",
+      "cohort": "20260929",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_200406",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_200406",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r",
+      "left_status": "partial_missing_imu_scale",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/stereo_scale_bidirectional_report.json"
+      ],
+      "left_imu_scale_report": null,
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09/evaluation_20260929_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09/evaluation_20260929_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_200403_slam_validation_take09/evaluation_20260929_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260930_take01",
+      "cohort": "20260930",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_164115",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_164115",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/fusion_guarded/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_164057_slam_validation_six_take01/evaluation_20260930_v1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260930_take02",
+      "cohort": "20260930",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165024",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165024",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_guarded/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_guarded/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/vins",
+      "right_dir": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2",
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1/fusion_score",
+      "product_fusion_score_result": "PASS",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165020_slam_validation_six_take02_retry/evaluation_20260930_v1",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "full_right_trajectory_four_stereo_reports_imu_scale",
+      "right_stereo_reports": [
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2/stereo_scale_multisecond_right_report.json"
+      ],
+      "right_imu_scale_report": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2/imu_scale_report.json",
+      "right_run_manifest": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take2/run_manifest.json",
+      "right_input_sha256": {
+        "source_frames_csv_sha256": "2d70a7415f2bc8f865d27ecb81b4b32d390371de006fc7132468b5434c4477f4",
+        "config_sha256": "ac2577063dce6f017307f2bbe45485cb272f84b152eec86d9cb31962f9d4d84a",
+        "toolchain_commit": "fb23c374cd26857e2bf1e0edfccbe0e217b6ebd6",
+        "checkpoint_sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2",
+        "elapsed_s": 170
+      }
+    },
+    {
+      "id": "20260930_take03",
+      "cohort": "20260930",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165311",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165311",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/fusion_guarded/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165307_slam_validation_six_take03/evaluation_20260930_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260930_take04",
+      "cohort": "20260930",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165518",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165518",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_guarded/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/vins",
+      "right_dir": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4",
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2/fusion_score",
+      "product_fusion_score_result": "FAIL",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165515_slam_validation_six_take04/evaluation_20260930_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "full_right_trajectory_four_stereo_reports_imu_scale",
+      "right_stereo_reports": [
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4/stereo_scale_multisecond_right_report.json"
+      ],
+      "right_imu_scale_report": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4/imu_scale_report.json",
+      "right_run_manifest": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take4/run_manifest.json",
+      "right_input_sha256": {
+        "source_frames_csv_sha256": "6cdf69a1f601189b7a4a676a697dd678a8ea5ad789f4a23b640a805f68646ebb",
+        "config_sha256": "ac2577063dce6f017307f2bbe45485cb272f84b152eec86d9cb31962f9d4d84a",
+        "toolchain_commit": "fb23c374cd26857e2bf1e0edfccbe0e217b6ebd6",
+        "checkpoint_sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2",
+        "elapsed_s": 183
+      }
+    },
+    {
+      "id": "20260930_take05",
+      "cohort": "20260930",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165745",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_165745",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_guarded/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/vins",
+      "right_dir": null,
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_score",
+      "product_fusion_score_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2/fusion_score",
+      "product_fusion_score_result": "FAIL",
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_165741_slam_validation_six_take05/evaluation_20260930_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "missing",
+      "right_stereo_reports": [],
+      "right_imu_scale_report": null,
+      "right_run_manifest": null,
+      "right_input_sha256": null
+    },
+    {
+      "id": "20260930_take06",
+      "cohort": "20260930",
+      "capture_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06",
+      "capture_manifest": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/capture_manifest.json",
+      "capture_status": "PASS_CAPTURE_ONLY_NOT_CALIBRATED",
+      "session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_170018",
+      "raw_session_path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260930_170018",
+      "left_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r",
+      "left_status": "full",
+      "left_stereo_reports": [
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_bidirectional_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_long_hops_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_dense10hz_report.json",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/stereo_scale_multisecond_report.json"
+      ],
+      "left_imu_scale_report": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/fusion_guarded/baseline/mast3r/imu_scale_report.json",
+      "vins_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/vins",
+      "right_dir": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6",
+      "reference_manifest": "/home/robot/ego_vio_humble/reports/steamvr_reference_frozen_20260927_v1/reference_manifest.json",
+      "scoring_reference_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2/vins_score",
+      "product_fusion_score_dir": null,
+      "product_fusion_score_result": null,
+      "audit": {
+        "processing_dir": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/evaluation_20260930_v2",
+        "source_status_not_slam_status": true
+      },
+      "right_status": "full_right_trajectory_four_stereo_reports_imu_scale",
+      "right_stereo_reports": [
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_long_hops_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_dense10hz_right_report.json",
+        "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/stereo_scale_multisecond_right_report.json"
+      ],
+      "right_imu_scale_report": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/imu_scale_report.json",
+      "right_run_manifest": "/home/robot/ego_vio_humble/.planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take6/run_manifest.json",
+      "right_input_sha256": {
+        "source_frames_csv_sha256": "22b62bb86511e7386917bff54881c23ff0c59a0e8f1d2b2c1cefe17c411119e6",
+        "config_sha256": "ac2577063dce6f017307f2bbe45485cb272f84b152eec86d9cb31962f9d4d84a",
+        "toolchain_commit": "fb23c374cd26857e2bf1e0edfccbe0e217b6ebd6",
+        "checkpoint_sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2",
+        "elapsed_s": 196
+      }
+    }
+  ],
+  "unresolved": [
+    "Right cache is complete only for Sep30 take02/take04/take06 under .planning/frontend_observation_20260930/dual_ir_same_code_20261002/right_take{2,4,6}.",
+    "Sep29 take04/take05/take06/take07/take09 selected evaluation dirs contain left trajectory and stereo report but no left imu_scale_report.json in this inventory.",
+    "Product fusion score artifacts are absent for Sep29 take02/take03/take04/take05/take06/take07/take09 and Sep30 take01/take03/take06; scoring reference is captured from vins_score where present."
+  ]
+}

@@ -26,6 +26,57 @@ from ego_vio.vio.symmetric_ir_factors import build_symmetric_ir_factors
 
 VINS_CONFIG = Path("/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml")
 IMU_CONFIG = ROOT / "config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml"
+CORRECTION_CAP_MODES = {"global", "per-frame", "per-node"}
+EYE_POLICIES = {"both", "left", "right"}
+STEREO_WEIGHT_POLICIES = {"observation", "residual-aware"}
+
+
+def parse_optional_correction_mm(value: str) -> float | None:
+    if value.lower() == "none":
+        return None
+    try:
+        millimeters = float(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "--max-correction-mm must be 'none' or a finite positive number"
+        ) from exc
+    if not np.isfinite(millimeters) or millimeters <= 0.0:
+        raise argparse.ArgumentTypeError(
+            "--max-correction-mm must be 'none' or a finite positive number"
+        )
+    return millimeters / 1000.0
+
+
+def symmetric_policy(args) -> dict:
+    max_correction_m = getattr(args, "max_correction_m", 1.0)
+    cap_mode = getattr(args, "correction_cap_mode", "global")
+    eyes = getattr(args, "eyes", "both")
+    stereo_weight_policy = getattr(args, "stereo_weight_policy", "observation")
+    disable_learned_motion = bool(getattr(args, "disable_learned_motion", False))
+    consistency_limit_m = getattr(args, "learned_motion_consistency_limit_m", None)
+    if max_correction_m is not None and (
+        not np.isfinite(max_correction_m) or max_correction_m <= 0.0
+    ):
+        raise ValueError("--max-correction-mm must be none or finite positive")
+    if cap_mode not in CORRECTION_CAP_MODES:
+        raise ValueError(f"unsupported correction cap mode: {cap_mode}")
+    if eyes not in EYE_POLICIES:
+        raise ValueError(f"unsupported eye policy: {eyes}")
+    if stereo_weight_policy not in STEREO_WEIGHT_POLICIES:
+        raise ValueError(f"unsupported stereo weight policy: {stereo_weight_policy}")
+    if consistency_limit_m is not None and (not np.isfinite(consistency_limit_m) or consistency_limit_m <= 0):
+        raise ValueError("learned motion consistency limit must be none or finite positive")
+    return {
+        "max_correction_m": max_correction_m,
+        "max_correction_mm": (
+            None if max_correction_m is None else 1000.0 * max_correction_m
+        ),
+        "correction_cap_mode": cap_mode,
+        "eyes": eyes,
+        "stereo_weight_policy": stereo_weight_policy,
+        "disable_learned_motion": disable_learned_motion,
+        "learned_motion_consistency_limit_m": consistency_limit_m,
+    }
 
 
 def validate_factory_calibration(left, right):
@@ -135,6 +186,7 @@ def load_eye(directory, eye, session, config, imu_times, gyro):
 
 
 def run(args):
+    policy = symmetric_policy(args)
     output = args.output_dir.resolve()
     if output.exists() or args.output_dir.is_symlink():
         raise ValueError("output directory must be new; existing products are preserved")
@@ -153,19 +205,24 @@ def run(args):
     times, positions, rotations, rows, mono, binding = bind_body_reference(
         args.session / "d405_frames.csv", times, positions, rotations, rows
     )
-    tracks, eye_reports, inputs = [], {}, []
+    all_tracks, eye_reports, inputs = {}, {}, []
     for eye, directory in (("left", args.left_dir), ("right", args.right_dir)):
         track, report, paths = load_eye(directory, eye, args.session, config, imu_times, gyro)
-        tracks.append(track)
+        all_tracks[eye] = track
         eye_reports[eye] = report
         inputs.extend(paths)
     validate_factory_calibration(
         eye_reports["left"]["factory_stereo_calibration"],
         eye_reports["right"]["factory_stereo_calibration"],
     )
+    selected_eyes = ("left", "right") if policy["eyes"] == "both" else (policy["eyes"],)
+    tracks = [all_tracks[eye] for eye in selected_eyes]
     motion_factors, stereo_observations, complementarity = build_symmetric_ir_factors(
-        times, rotations.as_matrix(), tracks
+        times, rotations.as_matrix(), tracks,
+        stereo_weight_policy=policy["stereo_weight_policy"],
+        learned_motion_consistency_limit_m=policy["learned_motion_consistency_limit_m"],
     )
+    graph_motion_factors = None if policy["disable_learned_motion"] else motion_factors
     inputs.extend([
         vins_path, vins_report_path, VINS_CONFIG, IMU_CONFIG,
         args.session / "d405_frames.csv", args.session / "external_imu/imu.bin",
@@ -184,6 +241,14 @@ def run(args):
         "shared_gauge": "VINS_body_world_first_node_only",
         "primary_eye": None, "shared_scale_state": False,
         "body_t_camera_in_solver": np.eye(4).tolist(),
+        "policy_arguments": {
+            "max_correction_mm": policy["max_correction_mm"],
+            "correction_cap_mode": policy["correction_cap_mode"],
+            "eyes": policy["eyes"],
+            "stereo_weight_policy": policy["stereo_weight_policy"],
+            "disable_learned_motion": policy["disable_learned_motion"],
+            "learned_motion_consistency_limit_m": policy["learned_motion_consistency_limit_m"],
+        },
         "imu": imu_info,
     }
     (output / "candidate_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -191,11 +256,13 @@ def run(args):
     (output / "shared_stereo_observations.json").write_text(json.dumps(stereo_observations, indent=2) + "\n")
     positions, graph_report = fusion.refine_positions_visual_inertial(
         positions, rotations, stereo_observations, mono, imu_times, gyro, accel,
-        np.eye(4), config["td_s"], node_stride=1, max_correction_m=1.0,
+        np.eye(4), config["td_s"], node_stride=1,
+        max_correction_m=policy["max_correction_m"],
         relative_motion_positions_body=positions,
         relative_motion_valid=np.ones(len(times), dtype=bool),
-        secondary_visual_factors=motion_factors,
+        secondary_visual_factors=graph_motion_factors,
         use_visual_position_prior=False, solve_metric_scale=False,
+        correction_cap_mode=policy["correction_cap_mode"],
         stereo_factor_confidences=np.asarray([
             observation["pnp_inlier_ratio"] for observation in stereo_observations
         ]),
@@ -206,6 +273,7 @@ def run(args):
         "external_ground_truth_used": False, "slam_supervision": False,
         "output_frame": "body_imu_origin", "output_samples": len(rows),
         "td_s": config["td_s"], "complementarity": complementarity,
+        "policy_arguments": manifest["policy_arguments"],
         "joint_position_solver": graph_report,
     }
     fusion.write_trajectory(output / "body_trajectory_fused.csv", rows, positions, rotations)
@@ -217,4 +285,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("session", "left-dir", "right-dir", "vins-dir", "output-dir"):
         parser.add_argument(f"--{name}", type=Path, required=True)
+    parser.add_argument(
+        "--max-correction-mm",
+        dest="max_correction_m",
+        type=parse_optional_correction_mm,
+        default=1.0,
+        help="post-solve correction cap in mm, or 'none' to disable it; default 1000",
+    )
+    parser.add_argument(
+        "--correction-cap-mode",
+        choices=sorted(CORRECTION_CAP_MODES),
+        default="global",
+    )
+    parser.add_argument("--eyes", choices=sorted(EYE_POLICIES), default="both")
+    parser.add_argument(
+        "--stereo-weight-policy",
+        choices=sorted(STEREO_WEIGHT_POLICIES),
+        default="observation",
+    )
+    parser.add_argument("--disable-learned-motion", action="store_true")
+    parser.add_argument("--learned-motion-consistency-mm", dest="learned_motion_consistency_limit_m",
+                        type=parse_optional_correction_mm, default=None,
+                        help="experimental learned-edge consistency bound in mm, or none (default)")
     run(parser.parse_args())
