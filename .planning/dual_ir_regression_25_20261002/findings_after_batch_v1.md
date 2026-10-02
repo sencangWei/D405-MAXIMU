@@ -323,3 +323,39 @@ before scoring; nonconvergence yields unscored failure, never fallback.
 precision result is pending. Output `joint_stereo_se3_first_v1/`. Scope remains
 pose-only: acceleration,velocity,gravity absent. No claim of10mm/full visual-
 inertial repair. Production code/GT policy untouched; strict all25 goal active.
+
+### Combined close and first-pilot numerical failure
+
+`gauge_physical_combined_batch_v1/summary.json` closed25/25,24 scores, zero17
+frozen-code hash changes,MainPID0/ExecMainStatus3. Physical-only control still17
+precisionPASS; combined gauge+physical has18 completeprecisionPASS,19 maximum
+translation<=10mm. Sep29take07 now max9.863734mm but stillFAIL on rotationRMSE;
+do NOT count it as fullPASS. Sep30take06 max14.756369mm remainsFAIL. RawTracker
+contaminatedtake03 remains223.760108mm and primary-unobservabletake05 unscored.
+
+Firstpose-onlypilotv1 fixed-R exhausted200 nonlinearfunctionevaluations without
+convergence (cost241.755201->220.360981), so it was NOT scored. Generic nonlinear
+finite-difference solver is inappropriate for this fixed-R linear control.
+Ownjob stopped,MainPID0/inactive/dead verified; originaldiagnostic/results
+retained and explicittermination.json says incomplete. Nextnumericalrepair
+uses exactsamefactorloss/weights: direct sparsefixed-R solution and vectorized
+jointresidual. This is infrastructure correction, NOT acceptedprecisiongain.
+
+NewSE3 capability committed56cd9127530a41a534965a21b40189b5e423b44c and pushed
+nonforce toowned sencang/codex/dual-ir-frontend-20261001. Fetchedremote restored
+to/tmp/umi-joint-se3-backup-20261002.ZsrP8S; all8changedfiles byteidentical.
+
+Independent combined-evidence review confirms no oldbaselinePASS lost, all24
+scored timestamps/quaternions/overlap counts unchanged and referenceprovenance
+unchanged except expected artifact paths. Exacttake07 rotationRMSE2.213955deg
+comesfrom position-basedSE3alignment; outputquaternions didnotchange atall.
+Attitude-alignedrotationRMSE0.825579deg and rotationRPE~0.29720deg unchanged.
+Keep currentfullscoreFAIL; do not silently substitutealternativealignment.
+
+Exactnumericalrepair passed peerreview and202 fresh targetedtests,compile and
+diffcheck. Scalar/vectorized residualequality and sparsefixed-R vsdenseleast-
+squares tests hold; originalJacobian sparsity unchanged. No factorweight or
+scoring change. 400nodeperturbedfixed-R benchmark36.71s->0.06455s,LSMRstatus2
+converged; numericalspeedup is NOT precisiongain. Firstv2take06 restarted under
+900sboundedownCPUservice `umi-joint-stereo-se3-first-v2-20261002`, realresults
+pending. Originalfailedv1 artifacts remain untouched.

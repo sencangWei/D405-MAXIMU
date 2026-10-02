@@ -15,7 +15,8 @@ from typing import Any, Sequence
 
 import numpy as np
 from scipy.optimize import least_squares
-from scipy.sparse import lil_matrix
+from scipy.sparse import coo_matrix, lil_matrix
+from scipy.sparse.linalg import lsmr
 from scipy.spatial.transform import Rotation
 
 from ego_vio.vio.dual_ir_factors import (
@@ -122,14 +123,6 @@ def solve_joint_stereo_se3(
         optimize_rotations,
     )
     x0 = _pack(rotations0, positions0, optimize_rotations)
-    sparsity = _jacobian_sparsity(
-        times.size,
-        stereo,
-        gyro,
-        vins,
-        learned,
-        optimize_rotations,
-    )
 
     def residual(parameters: np.ndarray) -> np.ndarray:
         rotations, positions = _unpack(
@@ -138,78 +131,56 @@ def solve_joint_stereo_se3(
             positions0,
             optimize_rotations,
         )
-        values: list[np.ndarray] = []
-        for factor in stereo:
-            predicted_r = (
-                factor.body_r_camera.T
-                @ rotations[factor.second].T
-                @ rotations[factor.first]
-                @ factor.body_r_camera
-            )
-            rotation_error = Rotation.from_matrix(
-                factor.rotation_camera_j_from_i.T @ predicted_r
-            ).as_rotvec()
-            first_camera_world = positions[factor.first] + (
-                rotations[factor.first] @ factor.body_t_camera
-            )
-            second_camera_world = positions[factor.second] + (
-                rotations[factor.second] @ factor.body_t_camera
-            )
-            predicted_t = (
-                factor.body_r_camera.T
-                @ rotations[factor.first].T
-                @ (second_camera_world - first_camera_world)
-            )
-            confidence_scale = np.sqrt(factor.confidence)
-            values.append(
-                confidence_scale * rotation_error / factor.rotation_sigma_rad
-            )
-            values.append(
-                confidence_scale
-                * (predicted_t - factor.displacement_camera_i_m)
-                / STEREO_TRANSLATION_SIGMA_M
-            )
-        for factor in gyro:
-            predicted = rotations[factor.first].T @ rotations[factor.second]
-            values.append(
-                np.sqrt(factor.confidence)
-                * Rotation.from_matrix(
-                    factor.delta_rotation_body_i_to_body_j.T @ predicted
-                ).as_rotvec()
-                / factor.rotation_sigma_rad
-            )
-        for factor in vins:
-            values.append(
-                np.sqrt(factor.confidence)
-                * (
-                    (positions[factor.second] - positions[factor.first])
-                    - factor.displacement_world_m
-                )
-                / factor.sigma_m
-            )
-        for factor in learned:
-            values.append(
-                np.sqrt(factor.confidence)
-                * (
-                    (positions[factor.second] - positions[factor.first])
-                    - factor.displacement_world_m
-                )
-                / factor.sigma_m
-            )
-        return np.concatenate(values) if values else np.zeros(0)
+        return _residual_vectorized(rotations, positions, stereo, gyro, vins, learned)
 
     before = residual(x0)
-    result = least_squares(
-        residual,
-        x0,
-        jac_sparsity=sparsity,
-        max_nfev=200,
-        xtol=1e-10,
-        ftol=1e-10,
-        gtol=1e-10,
-    )
-    rotations, positions = _unpack(result.x, rotations0, positions0, optimize_rotations)
-    after = residual(result.x)
+    if optimize_rotations:
+        sparsity = _jacobian_sparsity(
+            times.size,
+            stereo,
+            gyro,
+            vins,
+            learned,
+            optimize_rotations,
+        )
+        result = least_squares(
+            residual,
+            x0,
+            jac_sparsity=sparsity,
+            max_nfev=200,
+            xtol=1e-10,
+            ftol=1e-10,
+            gtol=1e-10,
+        )
+        rotations, positions = _unpack(result.x, rotations0, positions0, optimize_rotations)
+        solver_name = "scipy_least_squares_sparse_finite_difference"
+        solver_success = bool(result.success)
+        solver_status = int(result.status)
+        solver_message = str(result.message)
+        solver_nfev = int(result.nfev)
+        fixed_linear = None
+    else:
+        linear = _fixed_rotation_linear_system(rotations0, positions0, stereo, vins, learned)
+        solution = lsmr(linear["matrix"], linear["rhs"], atol=1e-10, btol=1e-10, maxiter=2000)
+        positions = positions0.copy()
+        positions[1:] = np.asarray(solution[0], dtype=float).reshape((times.size - 1, 3))
+        rotations = rotations0.copy()
+        solver_name = "scipy_sparse_lsmr_fixed_rotation_exact_linear_objective"
+        solver_status = int(solution[1])
+        solver_success = solver_status in {0, 1, 2, 4, 5}
+        solver_message = _lsmr_status_message(solver_status)
+        solver_nfev = int(solution[2])
+        fixed_linear = {
+            "matrix_shape": tuple(int(value) for value in linear["matrix"].shape),
+            "matrix_nnz": int(linear["matrix"].nnz),
+            "lsmr_normr": float(solution[3]),
+            "lsmr_normar": float(solution[4]),
+            "lsmr_conda": float(solution[6]),
+        }
+    if not optimize_rotations:
+        after = residual(_pack(rotations, positions, optimize_rotations))
+    else:
+        after = residual(result.x)
     return {
         "schema": "umi_joint_stereo_se3_pose_only_v1",
         "status": "EXPERIMENTAL_NOT_ACCEPTED",
@@ -256,10 +227,12 @@ def solve_joint_stereo_se3(
             "missing_physics": ["acceleration", "velocity", "gravity"],
             "cost_before": float(np.dot(before, before)),
             "cost_after": float(np.dot(after, after)),
-            "least_squares_success": bool(result.success),
-            "least_squares_status": int(result.status),
-            "least_squares_message": str(result.message),
-            "nfev": int(result.nfev),
+            "least_squares_success": solver_success,
+            "least_squares_status": solver_status,
+            "least_squares_message": solver_message,
+            "nfev": solver_nfev,
+            "solver": solver_name,
+            "fixed_rotation_linear_solver": fixed_linear,
         },
     }
 
@@ -292,6 +265,208 @@ def _unpack(
         ).as_matrix()
     positions[1:] = parameters[split:].reshape((count - 1, 3))
     return rotations, positions
+
+
+def _residual_vectorized(
+    rotations: np.ndarray,
+    positions: np.ndarray,
+    stereo: list[_StereoFactor],
+    gyro: list[_RotationFactor],
+    vins: list[_DisplacementFactor],
+    learned: list[_DisplacementFactor],
+) -> np.ndarray:
+    values: list[np.ndarray] = []
+    if stereo:
+        first = np.asarray([factor.first for factor in stereo], dtype=int)
+        second = np.asarray([factor.second for factor in stereo], dtype=int)
+        body_r_camera = np.asarray([factor.body_r_camera for factor in stereo])
+        body_t_camera = np.asarray([factor.body_t_camera for factor in stereo])
+        measured_r = np.asarray([factor.rotation_camera_j_from_i for factor in stereo])
+        measured_t = np.asarray([factor.displacement_camera_i_m for factor in stereo])
+        confidence = np.sqrt(np.asarray([factor.confidence for factor in stereo]))[:, None]
+        rotation_sigma = np.asarray([factor.rotation_sigma_rad for factor in stereo])[:, None]
+        predicted_r = np.einsum(
+            "nij,njk,nkl,nlm->nim",
+            np.swapaxes(body_r_camera, 1, 2),
+            np.swapaxes(rotations[second], 1, 2),
+            rotations[first],
+            body_r_camera,
+        )
+        rotation_error = Rotation.from_matrix(
+            np.einsum("nij,njk->nik", np.swapaxes(measured_r, 1, 2), predicted_r)
+        ).as_rotvec()
+        camera_delta_world = (
+            positions[second]
+            + np.einsum("nij,nj->ni", rotations[second], body_t_camera)
+            - positions[first]
+            - np.einsum("nij,nj->ni", rotations[first], body_t_camera)
+        )
+        predicted_t = np.einsum(
+            "nij,nj->ni",
+            np.einsum(
+                "nij,njk->nik",
+                np.swapaxes(body_r_camera, 1, 2),
+                np.swapaxes(rotations[first], 1, 2),
+            ),
+            camera_delta_world,
+        )
+        values.append(
+            np.column_stack(
+                [
+                    confidence * rotation_error / rotation_sigma,
+                    confidence * (predicted_t - measured_t) / STEREO_TRANSLATION_SIGMA_M,
+                ]
+            ).ravel()
+        )
+    if gyro:
+        first = np.asarray([factor.first for factor in gyro], dtype=int)
+        second = np.asarray([factor.second for factor in gyro], dtype=int)
+        measured = np.asarray([factor.delta_rotation_body_i_to_body_j for factor in gyro])
+        confidence = np.sqrt(np.asarray([factor.confidence for factor in gyro]))[:, None]
+        sigma = np.asarray([factor.rotation_sigma_rad for factor in gyro])[:, None]
+        predicted = np.einsum(
+            "nij,njk->nik",
+            np.swapaxes(rotations[first], 1, 2),
+            rotations[second],
+        )
+        values.append(
+            (
+                confidence
+                * Rotation.from_matrix(
+                    np.einsum("nij,njk->nik", np.swapaxes(measured, 1, 2), predicted)
+                ).as_rotvec()
+                / sigma
+            ).ravel()
+        )
+    values.extend(_displacement_residuals(positions, vins))
+    values.extend(_displacement_residuals(positions, learned))
+    return np.concatenate(values) if values else np.zeros(0)
+
+
+def _residual_scalar(
+    rotations: np.ndarray,
+    positions: np.ndarray,
+    stereo: list[_StereoFactor],
+    gyro: list[_RotationFactor],
+    vins: list[_DisplacementFactor],
+    learned: list[_DisplacementFactor],
+) -> np.ndarray:
+    values: list[np.ndarray] = []
+    for factor in stereo:
+        predicted_r = (
+            factor.body_r_camera.T
+            @ rotations[factor.second].T
+            @ rotations[factor.first]
+            @ factor.body_r_camera
+        )
+        rotation_error = Rotation.from_matrix(
+            factor.rotation_camera_j_from_i.T @ predicted_r
+        ).as_rotvec()
+        first_camera_world = positions[factor.first] + (
+            rotations[factor.first] @ factor.body_t_camera
+        )
+        second_camera_world = positions[factor.second] + (
+            rotations[factor.second] @ factor.body_t_camera
+        )
+        predicted_t = (
+            factor.body_r_camera.T
+            @ rotations[factor.first].T
+            @ (second_camera_world - first_camera_world)
+        )
+        confidence_scale = np.sqrt(factor.confidence)
+        values.append(confidence_scale * rotation_error / factor.rotation_sigma_rad)
+        values.append(
+            confidence_scale
+            * (predicted_t - factor.displacement_camera_i_m)
+            / STEREO_TRANSLATION_SIGMA_M
+        )
+    for factor in gyro:
+        predicted = rotations[factor.first].T @ rotations[factor.second]
+        values.append(
+            np.sqrt(factor.confidence)
+            * Rotation.from_matrix(
+                factor.delta_rotation_body_i_to_body_j.T @ predicted
+            ).as_rotvec()
+            / factor.rotation_sigma_rad
+        )
+    values.extend(_displacement_residuals(positions, vins))
+    values.extend(_displacement_residuals(positions, learned))
+    return np.concatenate(values) if values else np.zeros(0)
+
+
+def _displacement_residuals(
+    positions: np.ndarray,
+    factors: list[_DisplacementFactor],
+) -> list[np.ndarray]:
+    if not factors:
+        return []
+    first = np.asarray([factor.first for factor in factors], dtype=int)
+    second = np.asarray([factor.second for factor in factors], dtype=int)
+    measured = np.asarray([factor.displacement_world_m for factor in factors])
+    confidence = np.sqrt(np.asarray([factor.confidence for factor in factors]))[:, None]
+    sigma = np.asarray([factor.sigma_m for factor in factors])[:, None]
+    return [((confidence * ((positions[second] - positions[first]) - measured) / sigma).ravel())]
+
+
+def _fixed_rotation_linear_system(
+    rotations: np.ndarray,
+    positions0: np.ndarray,
+    stereo: list[_StereoFactor],
+    vins: list[_DisplacementFactor],
+    learned: list[_DisplacementFactor],
+) -> dict[str, Any]:
+    rows: list[int] = []
+    cols: list[int] = []
+    data: list[float] = []
+    rhs: list[float] = []
+    row = 0
+    node_count = positions0.shape[0]
+
+    def add_block(first: int, second: int, matrix: np.ndarray, target: np.ndarray, scale: float) -> None:
+        nonlocal row
+        target_scaled = scale * target
+        rhs.extend(target_scaled.tolist())
+        for local_axis in range(3):
+            for node, sign in ((first, -1.0), (second, 1.0)):
+                if node == 0:
+                    rhs[row + local_axis] -= sign * scale * float(matrix[local_axis] @ positions0[0])
+                    continue
+                col_base = 3 * (node - 1)
+                for xyz in range(3):
+                    rows.append(row + local_axis)
+                    cols.append(col_base + xyz)
+                    data.append(sign * scale * float(matrix[local_axis, xyz]))
+        row += 3
+
+    for factor in stereo:
+        matrix = factor.body_r_camera.T @ rotations[factor.first].T
+        lever = rotations[factor.second] @ factor.body_t_camera - rotations[factor.first] @ factor.body_t_camera
+        target = factor.displacement_camera_i_m - matrix @ lever
+        scale = np.sqrt(factor.confidence) / STEREO_TRANSLATION_SIGMA_M
+        add_block(factor.first, factor.second, matrix, target, scale)
+    for factor in (*vins, *learned):
+        matrix = np.eye(3)
+        scale = np.sqrt(factor.confidence) / factor.sigma_m
+        add_block(factor.first, factor.second, matrix, factor.displacement_world_m, scale)
+    matrix = coo_matrix(
+        (data, (rows, cols)),
+        shape=(row, 3 * max(0, node_count - 1)),
+    ).tocsr()
+    return {"matrix": matrix, "rhs": np.asarray(rhs, dtype=float)}
+
+
+def _lsmr_status_message(status: int) -> str:
+    messages = {
+        0: "x=0 is an exact solution",
+        1: "Ax-b is small enough",
+        2: "least-squares normal equation residual is small enough",
+        3: "condition number estimate exceeded conlim",
+        4: "Ax-b is small enough for machine precision",
+        5: "least-squares residual is small enough for machine precision",
+        6: "condition number estimate exceeded machine precision",
+        7: "iteration limit reached",
+    }
+    return messages.get(int(status), f"unknown lsmr status {status}")
 
 
 def _validate_stereo_factors(

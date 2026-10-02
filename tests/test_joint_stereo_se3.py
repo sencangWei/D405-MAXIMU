@@ -1,9 +1,11 @@
 import inspect
+import time
 
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
+import ego_vio.vio.joint_stereo_se3 as joint
 from ego_vio.vio.joint_stereo_se3 import solve_joint_stereo_se3
 
 
@@ -84,6 +86,28 @@ def all_factors(positions, rotations, extrinsic):
     gyro = [gyro_factor(i, i + 1, rotations) for i in range(3)]
     learned = [learned_edge(i, i + 1, positions) for i in range(3)]
     return stereo, gyro, learned
+
+
+def validated_factors(times, stereo, gyro, learned, positions):
+    stereo_valid = joint._validate_stereo_factors(stereo, times)
+    gyro_valid = joint._validate_rotation_factors(gyro, times, "gyro_relative_rotations")
+    learned_valid = joint._validate_displacement_factors(
+        learned,
+        times,
+        "learned_displacement_edges",
+        joint.LEARNED_DISPLACEMENT_SIGMA_M,
+    )
+    vins = [
+        joint._DisplacementFactor(
+            index,
+            index + 1,
+            positions[index + 1] - positions[index],
+            1.0,
+            joint.VINS_DISPLACEMENT_SIGMA_M,
+        )
+        for index in range(times.size - 1)
+    ]
+    return stereo_valid, gyro_valid, vins, learned_valid
 
 
 def assert_pose_close(result, positions, rotations, *, atol_p=2e-4, atol_r=2e-4):
@@ -177,6 +201,199 @@ def test_fixed_rotation_control_keeps_same_state_when_inputs_are_consistent():
     np.testing.assert_allclose(result["positions"], positions, atol=1e-10)
     np.testing.assert_allclose(result["rotations"], rotations, atol=1e-12)
     assert result["diagnostic"]["cost_after"] < 1e-18
+
+
+def test_vectorized_residual_matches_scalar_residual_for_nontrivial_state():
+    times, positions, rotations, extrinsic = scene()
+    stereo, gyro, learned = all_factors(positions, rotations, extrinsic)
+    stereo.append(stereo_factor(0, 2, positions, rotations, extrinsic, confidence=0.7))
+    gyro.append(gyro_factor(0, 2, rotations, confidence=0.6, sigma=0.02))
+    learned.append(learned_edge(0, 2, positions, confidence=0.8))
+    stereo_valid, gyro_valid, vins, learned_valid = validated_factors(
+        times,
+        stereo,
+        gyro,
+        learned,
+        positions,
+    )
+    perturbed_positions = positions + np.array([
+        [0.0, 0.0, 0.0],
+        [0.012, -0.003, 0.005],
+        [-0.004, 0.008, -0.006],
+        [0.006, -0.009, 0.004],
+    ])
+    perturbed_rotations = rotations.copy()
+    perturbed_rotations[1:] = (
+        Rotation.from_rotvec(
+            [[0.02, -0.01, 0.015], [-0.025, 0.012, -0.01], [0.01, 0.018, -0.02]]
+        )
+        * Rotation.from_matrix(rotations[1:])
+    ).as_matrix()
+
+    vectorized = joint._residual_vectorized(
+        perturbed_rotations,
+        perturbed_positions,
+        stereo_valid,
+        gyro_valid,
+        vins,
+        learned_valid,
+    )
+    scalar = joint._residual_scalar(
+        perturbed_rotations,
+        perturbed_positions,
+        stereo_valid,
+        gyro_valid,
+        vins,
+        learned_valid,
+    )
+
+    np.testing.assert_allclose(vectorized, scalar, atol=1e-12)
+
+
+def test_fixed_rotation_direct_solution_matches_dense_lstsq_and_keeps_rotation_cost_constant():
+    times, positions, rotations, extrinsic = scene()
+    stereo, gyro, learned = all_factors(positions, rotations, extrinsic)
+    initial_positions = positions.copy()
+    initial_positions[1:] += np.array([
+        [0.019, -0.011, 0.007],
+        [-0.017, 0.013, -0.004],
+        [0.008, -0.014, 0.011],
+    ])
+    stereo_valid, gyro_valid, vins, learned_valid = validated_factors(
+        times,
+        stereo,
+        gyro,
+        learned,
+        initial_positions,
+    )
+    linear = joint._fixed_rotation_linear_system(
+        rotations,
+        initial_positions,
+        stereo_valid,
+        vins,
+        learned_valid,
+    )
+    dense_solution, *_ = np.linalg.lstsq(
+        linear["matrix"].toarray(),
+        linear["rhs"],
+        rcond=None,
+    )
+
+    result = solve_joint_stereo_se3(
+        times,
+        initial_positions,
+        rotations,
+        stereo,
+        gyro,
+        learned,
+        optimize_rotations=False,
+    )
+
+    np.testing.assert_allclose(result["positions"][1:].ravel(), dense_solution, atol=1e-10)
+    np.testing.assert_allclose(result["rotations"], rotations, atol=1e-12)
+    diagnostic = result["diagnostic"]
+    assert diagnostic["solver"] == "scipy_sparse_lsmr_fixed_rotation_exact_linear_objective"
+    assert diagnostic["fixed_rotation_linear_solver"]["matrix_shape"] == linear["matrix"].shape
+    before_rotation_cost = np.dot(
+        joint._residual_vectorized(rotations, initial_positions, [], gyro_valid, [], []),
+        joint._residual_vectorized(rotations, initial_positions, [], gyro_valid, [], []),
+    )
+    after_rotation_cost = np.dot(
+        joint._residual_vectorized(rotations, result["positions"], [], gyro_valid, [], []),
+        joint._residual_vectorized(rotations, result["positions"], [], gyro_valid, [], []),
+    )
+    assert after_rotation_cost == pytest.approx(before_rotation_cost, abs=1e-18)
+
+
+def test_fixed_rotation_lsmr_iteration_limit_is_reported_not_forced_success(monkeypatch):
+    times, positions, rotations, extrinsic = scene()
+    stereo, gyro, learned = all_factors(positions, rotations, extrinsic)
+
+    def fake_lsmr(matrix, rhs, *, atol, btol, maxiter):
+        return (
+            np.zeros(matrix.shape[1]),
+            7,
+            maxiter,
+            float(np.linalg.norm(rhs)),
+            1.0,
+            0.0,
+            1.0e12,
+            0.0,
+        )
+
+    monkeypatch.setattr(joint, "lsmr", fake_lsmr)
+
+    result = solve_joint_stereo_se3(
+        times,
+        positions,
+        rotations,
+        stereo,
+        gyro,
+        learned,
+        optimize_rotations=False,
+    )
+
+    assert result["diagnostic"]["least_squares_success"] is False
+    assert result["diagnostic"]["least_squares_status"] == 7
+    assert "iteration limit" in result["diagnostic"]["least_squares_message"]
+
+
+def test_fixed_rotation_400_node_perturbed_benchmark_uses_direct_sparse_solver():
+    node_count = 400
+    times = np.arange(node_count, dtype=float) * 0.02
+    rotations = Rotation.from_rotvec(
+        np.column_stack(
+            [
+                0.001 * np.arange(node_count),
+                -0.0004 * np.arange(node_count),
+                0.0008 * np.arange(node_count),
+            ]
+        )
+    ).as_matrix()
+    positions = np.column_stack(
+        [
+            0.03 * np.arange(node_count),
+            0.002 * np.sin(np.arange(node_count) / 9.0),
+            -0.001 * np.cos(np.arange(node_count) / 11.0),
+        ]
+    )
+    extrinsic = body_t_camera()
+    stereo = [
+        stereo_factor(index, index + 1, positions, rotations, extrinsic)
+        for index in range(node_count - 1)
+    ]
+    gyro = [
+        gyro_factor(index, index + 1, rotations)
+        for index in range(node_count - 1)
+    ]
+    learned = [
+        learned_edge(index, index + 1, positions)
+        for index in range(node_count - 1)
+    ]
+    initial_positions = positions.copy()
+    initial_positions[1:] += np.column_stack(
+        [
+            0.005 * np.sin(np.arange(1, node_count) / 7.0),
+            -0.004 * np.cos(np.arange(1, node_count) / 5.0),
+            0.003 * np.sin(np.arange(1, node_count) / 13.0),
+        ]
+    )
+
+    start = time.perf_counter()
+    result = solve_joint_stereo_se3(
+        times,
+        initial_positions,
+        rotations,
+        stereo,
+        gyro,
+        learned,
+        optimize_rotations=False,
+    )
+    elapsed_s = time.perf_counter() - start
+
+    assert result["diagnostic"]["solver"] == "scipy_sparse_lsmr_fixed_rotation_exact_linear_objective"
+    assert result["diagnostic"]["fixed_rotation_linear_solver"]["matrix_shape"] == (3 * 3 * (node_count - 1), 3 * (node_count - 1))
+    assert elapsed_s < 5.0
 
 
 def test_world_gauge_equivariance():
