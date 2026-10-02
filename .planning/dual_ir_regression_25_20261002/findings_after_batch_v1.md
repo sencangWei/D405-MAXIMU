@@ -1336,3 +1336,59 @@ Consumer independently APPROVED first paired score at SHA
 tests SHA9564537b1732e19f41ff37d6d2acbee49366e4d53e652d2a9037a0666e143a95.
 Fresh root related80tests PASS,93probe tests PASS; no GT source supervision,
 no production promotion or accuracy improvement claim before paired output.
+
+First original-corpus paired ind2 COMPLETED1/1 with both1143sample timelines:
+original mean/P95/max4.971906/11.527309/14.402923mm,89.3263%within10mm;
+native corpus mean/P95/max3.504038/8.497484/10.359045mm,99.6500%within10mm.
+Native max still FAIL, no extra precision PASS and no production promotion.
+Original control reproduces currentcombined max position delta1.732e-9m,
+rotation delta0; exact1143sample timeline retained. Original shared rows1353,
+native shared rows1468, recovered native candidates152;
+counts are distinct and never conflated. First scorer elapsed17.017s.
+Consumer capability f794d24886ab4133a3e64cf0d9458dbfaf91669b pushed normally,
+fetched from owned sencang and restored at
+/tmp/umi-corpus-consumer-backup-20261003.NCZzux;3files byte-identical and
+23fresh restored consumer tests PASS with fetched scripts/ego_vio dependencies.
+Two frozen independent chains now run the remaining24records without approval
+handoff: session42941(multiday3:heldout2/heldout4/20260930_take06), session85809
+(remaining21, includes unobservable20260929_take05 retained). Each finishes
+native sources then automatically paired backend/scoring. Source technical
+failures remain rows; no dataset removed from original25denominator. All use
+the identical original-corpus policy/code and immutable source metadata. No
+per-record tuning or GT-informed selection; first1 is not full-corpus proof.
+
+Independent read-only post-output ind2 scorer recomputation matches every
+precision statistic. Remaining >10mm frames1103/1104/1105/1107, elapsed
+36.764762..36.898100s; peak10.359045mm at36.831432s. These diagnostic GT
+locations are NOT input windows/selectors. Timestamp delta0, quaternion
+delta0,22baseline preserved inputs identical; original1353/native1468unique
+physical pairs, no double-eye factor. Native recovered shared winners115.
+Near exact diagnostic block(1101..1109),4recovered rows incl2>=1s. Native
+shared solved residuals: current n65 p95/max2.793/4.857mm; recovered n4
+p95/max2.265/2.432mm. Unchanged learned LEFT n65 p95/max9.774/11.205mm;
+RIGHT n42 p95/max44.178/50.130mm. Thus not absent native coverage; large
+RIGHT learned vs physical consistency conflict is a hypothesis requiring
+multi-record passing/failing contrasts, not a new gate/weight/filter decision.
+
+Read-only whole-current-corpus24scored survey falsifies standalone RIGHT
+learned-residual gate: PASS heldout2 RIGHTownP95=71.98mm, higher than FAIL
+ind2 baseline20.26mm. PASS median LEFT/RIGHTownP95=9.79/10.81mm, FAILmedian
+14.27/18.46mm; extrema PASS RIGHT71.98 vs FAIL71.64mm. High RIGHT residual
+is common and not a sufficient failure discriminator. Residual definitions
+were checked against actual world/body endpoint and camera->world stereo
+solver consumption; all24sharedpairsets unique. Keep pending native25
+cross-record deltas as next evidence, do not revive single-arm weight/gates.
+Root actual consumer SOURCE metadata binding pre-image survey24PASS,
+1retained unobservable/0errors; actual derived LEFT paths/hashes bound.
+
+Immutable full25paired-shard merger independently APPROVED pending actual
+terminal inputs. NEWscript SHA8095d358e47586efce413f2cca99e114e34fb6b4e8705202abe6b8391c1cac1f,
+tests SHA2da14bf925f248f52dd2cd8863be2aaaec05017856b189cbb079057356895011.
+Fresh root related53tests PASS; actual first ind2shard loaded read-only with
+22common algorithmhashes,source metadata/code/estimate/scorebindings PASS.
+Different source-stage directories bound separately; common source metadata,
+policy/algorithm hashes/current contexts must match. Exact25coverage required,
+processed/scored/retained/technicalcounts distinct; terminal baseline
+PREPARATION_OR_INPUT_FAILED is retained, no accuracy denominator erasure.
+Real full25merge NOT run while sessions42941/85809 remain active. No algorithm,
+source/consumer/helper files consumed by those jobs were edited.
