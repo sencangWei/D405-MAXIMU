@@ -162,3 +162,27 @@ equivalence and ATE are explicitly untested. Independent review found no
 mathematical blocker; static type tooling was unavailable, with compile/import
 and tests used as substitutes. A fresh focused CPU suite passed 26/26 tests.
 Do not switch the frozen accuracy candidate to this derivative mid-cohort.
+
+The ROS launch fix passed a fresh 28-test queue/evaluator suite and the ten
+incremental-retention tests; independent review approved the two-file change.
+The real RIGHT derive CLI now opens the DB read-only and writes its report.
+It returns the existing quality-failure code 2, not a module-import crash: one
+isolated position step at frame 576 is 40.514 mm. The same current-code OFF RIGHT,
+conditioned on the identical LEFT ON raw observation source, has the same frame
+576 jump at 40.783 mm. Thus this defect is present without the retained metric
+component. The diagnostic has explicit shared-geometry/selection-bias labels in
+ind2_retained_stage_comparison_v1.json; no ATE or independent RIGHT pixel geometry
+is claimed. The existing primary continuity gate remains strict. Keep the
+effective LEFT scale improvement and investigate the shared RIGHT jump separately.
+
+The isolated derivative source/benchmark and seven small frozen pose fixtures
+were pushed to owned sencang at 149e2ac3f83895af3c2d4a9ae393584e13cba710. A fresh
+remote archive restored to /tmp/umi-metric-analytic-restore-iNMNWA matches all 12
+newly committed files byte-for-byte; the restored analytic test suite passed
+14/14. Native runtime/data/calibration/model packaging and full trajectory
+equivalence remain outside this source-only backup claim.
+
+run_fast10_after_ros_fix_v2.sh prepares a new source-consistent fixed10 run after
+the current guarded queue/producer finish. Its terminal-artifact reuse index
+keeps completed LEFT/RIGHT outputs and the known take02 coverage failure; it
+does not terminate native jobs, overwrite outputs, or clean up linked sources.

@@ -1,6 +1,7 @@
 import csv
 import json
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -14,7 +15,18 @@ import evaluate_metric_joint_frontend as fresh  # noqa: E402
 
 
 def _has_script(command: list[str], name: str) -> bool:
-    return any(Path(part).name == name for part in command)
+    return any(Path(part.rstrip(";")).name == name for part in _command_tokens(command))
+
+
+def _command_tokens(command: list[str]) -> list[str]:
+    if len(command) >= 3 and command[0] == "bash" and command[1] == "-lc":
+        return shlex.split(command[2])
+    return list(command)
+
+
+def _arg(command: list[str], name: str) -> str:
+    tokens = _command_tokens(command)
+    return tokens[tokens.index(name) + 1].rstrip(";")
 
 
 def _write_json(path: Path, value: dict) -> Path:
@@ -131,19 +143,16 @@ def _stereo_report(path: Path, *, trajectory: str, eye: str = "left", right_deri
 
 def _metric_outputs(command: list[str]) -> None:
     if "align_mast3r_scale_with_stereo.py" in " ".join(command):
-        text = command[-1]
-        # Last shell token is the report path; output path follows --output.
-        parts = text.split()
-        report = Path(parts[parts.index("--report") + 1].strip("'\""))
-        output = Path(parts[parts.index("--output") + 1].strip("'\""))
-        trajectory = parts[parts.index("--trajectory") + 1].strip("'\"")
+        report = Path(_arg(command, "--report"))
+        output = Path(_arg(command, "--output"))
+        trajectory = _arg(command, "--trajectory")
         output.write_text("t_sec,tx,ty,tz,qx,qy,qz,qw\n0,0,0,0,0,0,0,1\n", encoding="utf-8")
         _stereo_report(report, trajectory=trajectory, eye="left")
         return
     if _has_script(command, "derive_right_ir_stereo_scale.py"):
-        out = Path(command[command.index("--output") + 1])
-        left = command[command.index("--left-stereo-report") + 1]
-        traj = command[command.index("--right-trajectory") + 1]
+        out = Path(_arg(command, "--output"))
+        left = _arg(command, "--left-stereo-report")
+        traj = _arg(command, "--right-trajectory")
         _stereo_report(out, trajectory=traj, eye="right", right_derived=left)
         return
     if _has_script(command, "align_mast3r_scale_with_imu.py"):
@@ -217,6 +226,45 @@ def test_orchestrates_existing_clis_and_truthful_outputs(tmp_path: Path) -> None
     assert row["fresh_metric_joint_frontend_eval"]["right_geometry_source"] == report["right_geometry_source"]
 
 
+def test_right_stereo_derivation_uses_ros_setup_wrapper(tmp_path: Path) -> None:
+    manifest, session, _vins = _record_fixture(tmp_path)
+    left = _frontend(tmp_path / "left", "left", session=session)
+    right = _frontend(tmp_path / "right", "right", session=session)
+    derive_commands: list[list[str]] = []
+
+    def fake_runner(command, cwd=None, **_kwargs):
+        _metric_outputs(command)
+        if _has_script(command, "derive_right_ir_stereo_scale.py"):
+            derive_commands.append(command)
+            assert command[:2] == ["bash", "-lc"]
+            assert "source /opt/ros/humble/setup.bash" in command[2]
+            assert "source /home/robot/ros2_ws/install/setup.bash" in command[2]
+        if _has_script(command, "fuse_mast3r_dual_ir_symmetric.py"):
+            out = Path(command[command.index("--output-dir") + 1])
+            _write_json(out / "candidate_manifest.json", {"schema": "umi_dual_ir_symmetric_experiment_v1"})
+            _write_json(out / "graph_report.json", {"schema": "umi_dual_ir_symmetric_graph_diagnostic_v1"})
+            _write_json(out / "local_motion_factors.json", [])
+            _write_json(out / "shared_stereo_observations.json", [])
+            (out / "body_trajectory_fused.csv").write_text("t_sec,tx,ty,tz,qx,qy,qz,qw\n0,0,0,0,0,0,0,1\n", encoding="utf-8")
+        if _has_script(command, "score_steamvr_slam.py"):
+            _score_outputs(command, result="PASS", maximum_m=0.001)
+        if _has_script(command, "run_constant_ir_gauge_probe.py") or _has_script(command, "run_physical_stereo_lever_probe.py"):
+            out = Path(command[command.index("--output") + 1])
+            _write_json(out / "summary.json", {"status": "COMPLETED", "results": [{"id": "rid", "status": "COMPLETED"}]})
+        return SimpleNamespace(returncode=0)
+
+    fresh.run_pipeline(
+        manifest_path=manifest,
+        record_id="rid",
+        left_frontend=left,
+        right_frontend=right,
+        output=tmp_path / "out",
+        command_runner=fake_runner,
+    )
+
+    assert len(derive_commands) == len(fresh.STEREO_WINDOWS)
+
+
 @pytest.mark.parametrize("failed_eye", ["left", "right"])
 def test_optional_quality_failure_is_retained_without_deriving_from_failed_left(tmp_path: Path, failed_eye: str) -> None:
     manifest, session, _vins = _record_fixture(tmp_path)
@@ -225,7 +273,7 @@ def test_optional_quality_failure_is_retained_without_deriving_from_failed_left(
 
     def fake_runner(command, cwd=None, **_kwargs):
         if _has_script(command, "derive_right_ir_stereo_scale.py"):
-            source = Path(command[command.index("--left-stereo-report") + 1])
+            source = Path(_arg(command, "--left-stereo-report"))
             assert json.loads(source.read_text())["result"] == "PASS"
         _metric_outputs(command)
         if _has_script(command, "fuse_mast3r_dual_ir_symmetric.py"):
@@ -244,11 +292,10 @@ def test_optional_quality_failure_is_retained_without_deriving_from_failed_left(
         if "long_hops" in " ".join(command):
             if failed_eye == "left" and "align_mast3r_scale_with_stereo.py" in " ".join(command):
                 rc = 3
-                parts = command[-1].split()
-                path = Path(parts[parts.index("--report") + 1].strip("'\""))
+                path = Path(_arg(command, "--report"))
             elif failed_eye == "right" and _has_script(command, "derive_right_ir_stereo_scale.py"):
                 rc = 2
-                path = Path(command[command.index("--output") + 1])
+                path = Path(_arg(command, "--output"))
             if rc:
                 failed = json.loads(path.read_text())
                 failed.update(result="FAIL", failures=["synthetic optional quality failure"])
@@ -416,8 +463,8 @@ def test_rejects_right_report_without_left_derived_provenance(tmp_path: Path) ->
     def bad_runner(command, cwd=None, **_kwargs):
         _metric_outputs(command)
         if _has_script(command, "derive_right_ir_stereo_scale.py"):
-            out = Path(command[command.index("--output") + 1])
-            traj = command[command.index("--right-trajectory") + 1]
+            out = Path(_arg(command, "--output"))
+            traj = _arg(command, "--right-trajectory")
             _stereo_report(out, trajectory=traj, eye="right", right_derived=None)
         return SimpleNamespace(returncode=0)
 

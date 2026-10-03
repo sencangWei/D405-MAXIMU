@@ -542,12 +542,19 @@ def run_pipeline(
             right_log.write_text("SKIPPED_LEFT_QUALITY_FAILED: no RIGHT geometry was derived\n", encoding="utf-8")
             right_rc = None
         else:
-            right_rc = _run([
-                sys.executable, str(ROOT / "scripts/derive_right_ir_stereo_scale.py"),
+            right_args = [
+                str(ROOT / "scripts/derive_right_ir_stereo_scale.py"),
                 "--left-stereo-report", str(left_report_path),
                 "--right-trajectory", str(right_traj),
                 "--output", str(right_report_path),
-            ], command_runner, stage=f"right_derive_{window['right_report']}", log_dir=log_dir, allowed=(0,) if is_primary else OPTIONAL_RETURN_CODES)
+            ]
+            right_rc = _run(
+                _ros_stereo_command(toolchain_python, right_args),
+                command_runner,
+                stage=f"right_derive_{window['right_report']}",
+                log_dir=log_dir,
+                allowed=(0,) if is_primary else OPTIONAL_RETURN_CODES,
+            )
         if not right_report_path.is_file():
             raise FileNotFoundError(f"right stereo report was not written: {right_report_path}")
         right_report = read_json(right_report_path)

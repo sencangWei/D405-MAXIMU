@@ -1,0 +1,42 @@
+{
+  "schema": "umi_metric_joint_retained_stage_comparison_v1",
+  "record_id": "20260927_ind2",
+  "diagnostic_only": true,
+  "external_ground_truth_used": false,
+  "production_promoted": false,
+  "ate_or_precision_evaluation": false,
+  "left_actual_raw_primary": {
+    "on_report": "full_metric_joint_frontend_evaluation_v1/20260927_ind2/candidate/left_cache/stereo_scale_bidirectional_report.json",
+    "on_report_sha256": "3fd0d120b3980c7deb39cdb76028d0f1f4a992068316157796d1a4da7d36bba9",
+    "on_result": "PASS",
+    "on_relative_p90_p10": 0.40931866960395,
+    "on_jump_count": 0,
+    "off_report": "full_metric_joint_frontend_evaluation_v1/20260927_ind2/control/left_cache/stereo_scale_bidirectional_report.json",
+    "off_report_sha256": "7028de18a95079c98dc10d3ce5780818fcbac2af9345171157dba2d8736adcb2",
+    "off_result": "FAIL",
+    "off_failure": "stereo scale dispersion too high: relative_p90_p10=0.571"
+  },
+  "right_shared_left_geometry_diagnostic": {
+    "observation_source": "LEFT ON accepted raw stereo observations, converted with factory left-to-right extrinsic",
+    "independent_right_pixel_geometry": false,
+    "selection_bias": "LEFT ON acceptance selection; not fresh OFF bidirectional RIGHT raw observations",
+    "on_report": "right_derive_ros_dependency_smoke_v1/report.json",
+    "on_report_sha256": "05a3421cf2b1bfe55732a5e7e7011aa653b32afe82a834ada6241a9f1452f54c",
+    "on_result": "FAIL",
+    "on_relative_p90_p10": 0.42063901837580675,
+    "on_jump_count": 1,
+    "on_first_jump_index": 576,
+    "on_max_step_m": 0.04051382145701429,
+    "off_report": "right_off_shared_geometry_smoke_v1/report.json",
+    "off_report_sha256": "235169cb5587703f99af2b50681a85325c50982f0c47251fce7d034674181a27",
+    "off_result": "FAIL",
+    "off_relative_p90_p10": 0.492913464249511,
+    "off_jump_count": 1,
+    "off_first_jump_index": 576,
+    "off_max_step_m": 0.04078265702689432,
+    "failure": "isolated_position_step_jump",
+    "absolute_step_limit_m": 0.03,
+    "local_median_multiplier": 5.0
+  },
+  "decision": "retain metric component as promising; existing RIGHT jump remains unresolved; fixed10 ATE/no-regression acceptance still required"
+}
