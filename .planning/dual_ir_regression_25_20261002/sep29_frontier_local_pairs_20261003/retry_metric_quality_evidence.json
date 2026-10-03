@@ -1,0 +1,63 @@
+{
+  "schema": "umi_restored_frontend_metric_quality_diagnostic_v1",
+  "record": "20260929_take02",
+  "status": "SOURCE_CONTINUITY_FAIL",
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "production_promoted": false,
+  "precision_result": null,
+  "native_source_trajectory_sha256": "f50045dd2a3ce08a95d6d59f83b5b340d50b9c22725078ebcf4378c93b442d06",
+  "factory_stereo_baseline_m": 0.018083254,
+  "source_sync_max_delta_ms": 0.0,
+  "stereo_sync_max_skew_ms": 0.0,
+  "short": {
+    "path": "retry_metric_quality_v1/stereo_short_report.json",
+    "sha256": "889f276229d542973c5242c40c64c0296299e64ca5fd12ef3d0ee520e8919d79",
+    "returncode": 3,
+    "result": "FAIL",
+    "candidate_pairs": 1190,
+    "accepted_observations": 699,
+    "robust_inliers": 685,
+    "scale_m_per_mast3r_unit": 0.3704053526450242,
+    "relative_p90_p10": 0.27266934865318376,
+    "failures": ["isolated_position_step_jump"],
+    "first_jump_index": 808,
+    "jump_count": 1,
+    "max_step_m": 0.03722911207226238,
+    "timestamp_gap_count": 0
+  },
+  "long": {
+    "path": "retry_metric_quality_v1/stereo_long_report.json",
+    "sha256": "eef9fbbcfced0e91038af2a8841dffa0d4c9b3455625471560dd792d6de4d5bd",
+    "returncode": 3,
+    "result": "FAIL",
+    "candidate_pairs": 687,
+    "accepted_observations": 169,
+    "robust_inliers": 168,
+    "scale_m_per_mast3r_unit": 0.3632688295798062,
+    "relative_p90_p10": 0.25667161150473405,
+    "failures": ["isolated_position_step_jump"],
+    "first_jump_index": 808,
+    "jump_count": 1,
+    "max_step_m": 0.03651182649551774,
+    "timestamp_gap_count": 0
+  },
+  "imu_scale_stage": {
+    "returncode": 1,
+    "error": "ValueError: attitude selection needs a validated stereo scale",
+    "metric_trajectory_written": false,
+    "report_written": false
+  },
+  "boundary_diagnostic_at_short_scale": {
+    "frame_indices": [808, 809],
+    "online_step_mm": 8.73939180213407,
+    "final_step_mm": 37.22911207226238,
+    "frame809_optimization_points": 59625,
+    "frame809_total_points": 147456,
+    "frame809_saved_keyframe_index": 106,
+    "frame809_full_translation_equals_final_keyframe_translation": true,
+    "online_largest_step_index": 877,
+    "online_largest_step_mm": 138.27205153234002
+  },
+  "interpretation": "Actual restored frontend fails continuity after final keyframe optimization; neither coverage alone nor switching to online poses is an accepted repair. No source/precision gates were relaxed, old source binding was not reused for new poses."
+}
