@@ -1,0 +1,129 @@
+{
+  "schema": "umi_timeline_gap_fusion_trial_v1",
+  "status": "COMPLETED",
+  "development_only": true,
+  "blind_test": false,
+  "production_promoted": false,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "dataset": "20260929_take02",
+  "manifest_sha256": "8bf52fe7dd20a4e393b43718e7bb90dd75d62ae7d8b38a422d4a87c09cd0f18f",
+  "baseline_summary_sha256": "1114785a4581157b8363bb51987ac2f59591f472082ad71ebfa84f30a0845505",
+  "source_stage_preflight_sha256": "717c69a7736343b808c7c8765fc3d7e3ee2304a34cfd4e9c2e0bf0b75c6e0027",
+  "gap_report_sha256": "1f0b1cf7c5ade312fb0c64b65953cdbf78e5c296e3b9476a8b84288946141ba6",
+  "variants": [
+    "native_cached_recovery_control",
+    "native_cached_recovery_timeline_gap"
+  ],
+  "code_sha256": {
+    "/home/robot/ego_vio_humble/scripts/run_dual_ir_regression_corpus.py": "9ad2d2c032557913bca6fd1ccf1c60029c0057a957dd3fc06e05477e14b9d597",
+    "/home/robot/ego_vio_humble/scripts/fuse_mast3r_stereo_imu.py": "7335c95b464e26a8a1d31f27ca1c0620c756346366310004d573015527df191e",
+    "/home/robot/ego_vio_humble/scripts/fuse_mast3r_dual_ir_symmetric.py": "59083a9a483af737b56673723bd71012ed6566cc9b1c8d99fc7d3ab353dbb8d8",
+    "/home/robot/ego_vio_humble/ego_vio/vio/symmetric_ir_factors.py": "42173dd4114d4f21172570b163e0cd64a060b342b27cbfd7ae1850c6b30d325d",
+    "/home/robot/ego_vio_humble/scripts/prepare_dual_ir_eye_cache.py": "75bd4cba6dca3e41a31402d5a711e9851f903721329f0b456a2ed20dd5dc0edf",
+    "/home/robot/ego_vio_humble/ego_vio/vio/dual_ir_factors.py": "9bae6c63c77a550c094568f55a392b5896d62d9728e010d01c6ccee4c3b4e553",
+    "/home/robot/ego_vio_humble/scripts/derive_right_ir_stereo_scale.py": "f3e77947111cdffb27069f2122533599e278b3f488db8ca830f5a521ee089242",
+    "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_imu.py": "07ba2b50f37548d95cbf4945537b49ad7df8d81d8e4b26117bc9b05a0c653882",
+    "/home/robot/ego_vio_humble/scripts/mast3r_slam_precision_workflow.sh": "8333d15b89ad29ec1180477dbcf676c737897aa3dbf9c20829bb41dcb1d774a3",
+    "/home/robot/ego_vio_humble/scripts/score_steamvr_slam.py": "55b867ad7e888c21160c739839a691141e377bb460aed8aedc3b3c808214275e",
+    "/home/robot/umi_docker2_product_1.0.0-20260829/docker2_release/formal_runtime_calibration/vins_config.yaml": "87338c341a7bfea71194528fc2c735a55ee85d1d1558141f096dd00a97059331",
+    "/home/robot/ego_vio_humble/config/imu_runtime_accel_calibrated_raw_gyro_20260816.yaml": "a5bef23410ee9e8db6100f31692d1a948ba10970da1442d0480171ee4a44f239",
+    "/home/robot/ego_vio_humble/config/mast3r_slam_d405_offline.yaml": "ac2577063dce6f017307f2bbe45485cb272f84b152eec86d9cb31962f9d4d84a",
+    "/home/robot/ego_vio_humble/scripts/run_learned_segment_probe.py": "19965182ca188419e127193a456741602db6f734f897af59e69c28ccd747cafc",
+    "/home/robot/ego_vio_humble/ego_vio/vio/physical_stereo_lever.py": "8c591ab525744653f090a6dedc8b497effa8d28c24b3449e6c648a7707b66cae",
+    "/home/robot/ego_vio_humble/scripts/run_physical_stereo_lever_probe.py": "ee0f7b8d896151ba61b038ad451e2a78c56d0ebdd35ffe85a91644df197788a2",
+    "/home/robot/ego_vio_humble/ego_vio/vio/recovered_stereo_pairs.py": "1077c748ef100b798f0b49bf3d794dab018740faacdbfcd519132ceb18ab3b60",
+    "/home/robot/ego_vio_humble/ego_vio/vio/timeline_gap_stereo_candidates.py": "3e7dd1f74049b057a43452a232461631f30c46edd1e5855211608bbe456b4f31",
+    "/home/robot/ego_vio_humble/scripts/evaluate_independent_ir_corpus_probe.py": "4b6343daea2dc98945ed76bae949c72bfe8d71ad6d896f130c87bdf66a57edcf",
+    "/home/robot/ego_vio_humble/scripts/evaluate_sift_lm_dual_combined_probe.py": "9d52b996cc1693ea2ab102d49077b8fdabed95519d38aae51eb6f17ace0180d8",
+    "/home/robot/ego_vio_humble/scripts/probe_independent_ir_timeline_gap.py": "a7991f77eebe1b52a5f9c2d269273fa69b1944f21f586ca4f6f8eb617efc07e8",
+    "/home/robot/ego_vio_humble/scripts/run_timeline_gap_fusion_trial.py": "5cc986c63f3d3b3d3a5acf2f8dda9d82c2865196d5a629fa4507e8385af2d6ab",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_ir_corpus_native_remaining21_v1/preflight_report.json": "717c69a7736343b808c7c8765fc3d7e3ee2304a34cfd4e9c2e0bf0b75c6e0027",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/timeline_gap_overlap40_probe_v1/20260929_take02/timeline_gap_probe.json": "1f0b1cf7c5ade312fb0c64b65953cdbf78e5c296e3b9476a8b84288946141ba6"
+  },
+  "results": [
+    {
+      "id": "20260929_take02",
+      "status": "COMPLETED",
+      "variants": {
+        "native_cached_recovery_control": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/timeline_gap_overlap40_trial_take02_v1/20260929_take02/native_cached_recovery_control",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_rmse_over_limit",
+              "ate_translation_p95_over_limit",
+              "ate_translation_max_over_limit",
+              "within_10mm_ratio_below_limit",
+              "ate_rotation_rmse_over_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.00891685891957142,
+            "ate_translation_p95_m": 0.01831813466233509,
+            "ate_translation_max_m": 0.018747829646764115,
+            "ate_translation_rmse_m": 0.010140803569164724,
+            "ate_translation_within_10mm_ratio": 0.689413823272091,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "53e47ad6f263c5f46cca361c8f1721187916d16acf8214a51f85860daf15ab9e",
+          "motion_factor_source": "constant_ir_gauge_selected",
+          "stereo_transform": {
+            "schema": "timeline_gap_trial_native_recovery_control_v1",
+            "row_count": 745,
+            "max_vector_delta_m": 0.15430194749587733
+          },
+          "arm_role": "native_cached_recovery_only"
+        },
+        "native_cached_recovery_timeline_gap": {
+          "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/timeline_gap_overlap40_trial_take02_v1/20260929_take02/native_cached_recovery_timeline_gap",
+          "score": {
+            "result": "FAIL",
+            "failures": [
+              "ate_translation_rmse_over_limit",
+              "ate_translation_p95_over_limit",
+              "ate_translation_max_over_limit",
+              "within_10mm_ratio_below_limit",
+              "ate_rotation_rmse_over_limit"
+            ],
+            "samples": 1143,
+            "ate_translation_mean_m": 0.009119158143660811,
+            "ate_translation_p95_m": 0.020605398587054735,
+            "ate_translation_max_m": 0.02121253088320892,
+            "ate_translation_rmse_m": 0.010557630738401397,
+            "ate_translation_within_10mm_ratio": 0.757655293088364,
+            "timestamp_overlap_ratio": 1.0
+          },
+          "estimate_sha256": "ead0a214b2bcec7ab0153327c6e30e55bb4cb410f0727ad99fd5c50e0b457de8",
+          "motion_factor_source": "constant_ir_gauge_selected",
+          "stereo_transform": {
+            "schema": "timeline_gap_trial_native_recovery_plus_gap_v1",
+            "row_count": 745,
+            "max_vector_delta_m": 0.15430194749587733
+          },
+          "arm_role": "native_cached_recovery_plus_timeline_gap"
+        }
+      },
+      "reference_current_best": {
+        "artifact_dir": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/gauge_physical_combined_batch_v1/20260929_take02/physical_stereo_constant_gauge",
+        "role": "frozen_currentbest_comparator_not_replayed_control",
+        "schema": "umi_physical_stereo_lever_candidate_v1",
+        "candidate_manifest_sha256": "e2c74992b3c9f4685caeaf5148d1e3ea5e0da5b399f234a6b18d2b58caa9cf95",
+        "graph_report_sha256": "4493ce970eac137d757b8ae3494c5871140617694d91b9792ed4dc264f6c8ff0",
+        "body_trajectory_fused_sha256": "86faf42270606877ef8d34515be6fce7cedc6a1ed57f73153afee3b3171395ce"
+      },
+      "elapsed_s": 21.49331027001608
+    }
+  ],
+  "aggregates": {
+    "native_cached_recovery_control": {
+      "scored_count": 1,
+      "precision_pass_count": 0,
+      "worst_max_m": 0.018747829646764115
+    },
+    "native_cached_recovery_timeline_gap": {
+      "scored_count": 1,
+      "precision_pass_count": 0,
+      "worst_max_m": 0.02121253088320892
+    }
+  }
+}
