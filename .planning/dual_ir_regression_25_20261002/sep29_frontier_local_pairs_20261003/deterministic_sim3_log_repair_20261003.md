@@ -56,3 +56,43 @@ Next: finish exact same-cohort replay, then regenerate affected frontend
 trajectories and compare fixed failure5 FIRST plus passing5. Majority failure
 improvement and no passing-control crossing10mm justify an incremental
 development baseline; they do not replace final25/new-capture acceptance.
+
+## Completed same-cohort replay (10:52 UTC)
+
+All seven contexts completed, exit0. Every original production control,
+repeated joint solution and pose0 pin is exact; all repeat/pin maximum deltas
+are0. Native production sources remain hash-identical. Accepted chronological
+PnP maximum rotation disagreement in degrees (control -> joint):
+
+| Frozen context | Before | After |
+| --- | ---: | ---: |
+| RIGHT587 | 9.209804 | 7.529569 |
+| RIGHT592 | 10.671543 | 8.144640 |
+| RIGHT613 | 10.967111 | 8.439307 |
+| LEFT877 | 3.589815 | 2.905590 |
+| LEFT1044 | 3.589809 | 2.905586 |
+| passing held2/752 | 1.193247 | 1.109162 |
+| passing take01/738 | 1.189147 | 1.155092 |
+
+Common support ratios are >=.999643. Common native cost ratios are
+1.000073..1.007001; these small objective tradeoffs are retained, not hidden.
+The predeclared strict geometry criterion is still NOT met; the terminal
+verdict correctly separates it from NOT_EVALUATED_ATE and does not discard the
+candidate on the proxy alone. Seven contexts cover THREE recordings, not seven
+independent trajectories. The two local passing controls are not the fixed
+five passing-trajectory regression results.
+
+The formerly divergent actual LEFT877 factor5/edge295/frame270->0 was then
+loaded from this source-bound report (no repeated depth/PnP preparation).
+Four CPU linearizations under varied NumPy RNG states gave byte-identical
+residual/J/information, max deltas all0, and RNG unchanged on every call;
+elapsed0.023039s. Helper SHA matches the v2 summary. An earlier independent
+attempt to reprepare factors timed out at its declared bound and produced no
+repeat result; it was not counted as a pass.
+
+Fresh combined retention/math/solver/trial tests:27PASS. Source fix committed
+as cf49051a5bf59beecce0804502d23d2f532a2198 on the owned sencang remote;
+fresh fetch equals local HEAD, five committed files restored byte-identically
+into `/tmp/umi-deterministic-log-remote-20261003.OFSQKmQy`, restored17 testsPASS.
+Raw PT/images/native extension binaries remain local and are not claimed
+backed up. Completed v2 text evidence is retained separately below this file.
