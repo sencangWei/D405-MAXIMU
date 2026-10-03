@@ -282,3 +282,68 @@ improvement from a new local solver. Keep the queued true-local OFF/ON capture,
 replay and native-factor probe, then verify full trajectories and controls.
 All87 guarded source hashes were freshly unchanged around the read-only take07
 reconstruction. No weight, cap, model, continuity gate, or source version changed.
+
+## 2026-10-03 16:05 UTC: reference boundary correction, no candidate rollback
+
+Correction to the previous interval-frame interpretation: absence of take06
+frame1086 from both keyframe graphs does NOT establish an interval-state solver
+defect. The frozen reference itself contains larger steps next to this peak.
+Read-only reconstruction using the original `load_tracker` and
+`interpolate_tracker` functions, the frozen camera/Tracker offset and
+`tracker_T_body` reproduces reference positions within 8.316e-10 m. Raw
+source-clock binding for frames1080–1092 is unique and matches actual D405
+`set_index` (not just a guessed row offset). All input hashes stayed unchanged.
+
+| Native frame | Selected ATE mm | Selected step mm | Reference body step mm | Tracker translation step mm | Rotated-lever step mm |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1086 | 14.697581 | 1.953713 | 1.861120 | 2.174297 | 0.394949 |
+| 1087 | 8.533513 | 1.451413 | 6.520824 | 6.385578 | 0.326682 |
+| 1090 | 4.132653 | 1.856172 | 5.934095 | 5.948064 | 0.091482 |
+
+The larger changes already exist in original SteamVR matrices, before mapping
+or trajectory interpolation. Raw sequence4981 moves 7.084002 mm in 8.329561 ms;
+the norm of its recorded OpenVR `vVelocity` times that interval is 0.480542 mm.
+Raw sequence4991 moves 4.931873 mm in 8.333723 ms versus 0.465679 mm. Their
+rotated-lever changes are only 0.072115 and 0.047720 mm respectively. Both
+samples are connected/pose_valid, tracking_result200; query durations are
+13.317 and 5.004 us. Therefore the sampling/gap/validity checks passed, but
+they alone do not certify physical reference accuracy. These norm comparisons
+do not assume the API velocity vector's coordinate basis. They also do NOT
+prove that physical motion was impossible, establish a base-station cause,
+justify filtering points, or establish any new SLAM precision PASS.
+
+Exact take06 inputs:
+
+- Raw: `reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/tracker_camera_window_raw.csv`, SHA256 `4e91e7832f449b33e768281229d236fe93914365f8dd117154e23408d8326b08`.
+- Exported Tracker SHA256 `418203dfed1b50b4b03df5208de6809be018da237bdd33cfb5fb7aa949d6210b`.
+- Reference: the previous section's physical-stereo + constant-gauge score `steamvr_body_reference.csv`, SHA256 `76fdcad5f3dbe6e619961a20bed67afa284c2da385a05dc404563bd85c0380a1`.
+- Estimate unchanged, SHA256 `f4d0d263629ae7d7b7d479ee67816d01e45876d8008d8030200134783c47458e`.
+- D405 clock CSV SHA256 `22b62bb86511e7386917bff54881c23ff0c59a0e8f1d2b2c1cefe17c411119e6`; original calibration SHA256 `135e0fdb8862dc52871f1b0948c7d9495398ddefee1932490f293e97c8285519`.
+- Mapping epoch-minus-monotonic1790588072.1841109 s; frozen Tracker query offset -12.786861933161967 ms. This is NOT a replacement for formal VINS camera/IMU td.
+
+take07 is a different signature: an independent bounded audit finds continuous
+estimate/reference motion around frame1152 and tail1193, with ordinary adjacent
+Tracker query brackets, not take06-style reference recovery steps. Continuity
+does not itself prove physical reference accuracy or the precise upstream
+cause. Its actual remaining shape discrepancy stays a SLAM diagnostic target.
+
+The take07 audit additionally checked the actual recorded OpenVR `vVelocity`,
+not merely a velocity derived from position differences. In raw1135–1161 the
+largest adjacent raw query translation is 1.467 mm / 8.308 ms (API-velocity
+norm times dt 0.849 mm); in raw1188–1198 it is 1.619 mm / 8.226 ms (1.464 mm).
+At camera queries1152/1193, Tracker translation steps are 3.030/4.104 mm versus
+API-velocity distances2.946/4.092 mm. These are not take06's 7.084 mm recovery
+with only0.481 mm velocity distance. The raw CSV SHA256 is
+`39adc8aee97df0b6038d457d8d7fcb5e543fdfb2e99ce80bb3b4dc1197dd86c9`;
+reference SHA256 `850d06dd184841674fbde4aeabde4537fe8cea004c907c1bea8e170144bca08a`.
+All audited rows retain connected/pose_valid1 and tracking_result200. This is
+recorded-motion consistency evidence only, not a new truth-accuracy acceptance.
+
+Both scored failure records remain in the fixed cohort with original metrics
+and unchanged gates. Useful backend gains remain retained; neither incomplete
+control evidence nor maximum ATE still above10mm rejects the whole direction.
+The fixed10 producer and queued real local OFF/ON diagnostics remain live and
+unmodified; all87 guarded source hashes freshly match. No new production
+promotion, estimator code edit, reference rewrite or hardware action occurred.
+RK3576: a fresh bounded read-only SSH check still returned `No route to host`;
+real ARM candidate and all target/deployment/HIL acceptance remain unverified.
