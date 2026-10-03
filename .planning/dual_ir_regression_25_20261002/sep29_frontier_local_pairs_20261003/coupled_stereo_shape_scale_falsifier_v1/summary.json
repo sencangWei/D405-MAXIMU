@@ -1,0 +1,153 @@
+{
+  "schema": "coupled_stereo_shape_scale_falsifier_v1",
+  "candidate_status": "REJECTED_GEOMETRY_CRITERION",
+  "formal_result": "REJECT",
+  "criteria": {
+    "right_coupled_max_lt_deg": 2.0,
+    "passing_control_max_regress_le_deg": 0.05
+  },
+  "criterion_failures": [
+    "right587:right_max_not_below_2deg",
+    "right592:right_max_not_below_2deg",
+    "right613:right_max_not_below_2deg"
+  ],
+  "ate_claim": false,
+  "verdict_added_after_solve": true,
+  "verdict_note": "Predeclared geometry criterion evaluated after solve; runner_sha256 below binds the original solving runner, not this verdict amendment. No new solve or ATE validation is claimed.",
+  "diagnostic_only": true,
+  "external_ground_truth_used": false,
+  "precision_pass": false,
+  "production_promoted": false,
+  "source_summary_sha256": "52c3f368c99ca83c7767f2ad086fe4b0b04cfd0177d066cd5f82198afb3e52a7",
+  "plan_sha256": "9e2d4ceb2466e0ebe7ef6c2463d10a5943f95e11c5656988f83137d7f43576b6",
+  "runner_sha256": "caaf51313014215f95b3937144eb5184509a516d77658193be38c2a58a8cbe03",
+  "build_provenance": {
+    "schema": "mast3r_fixed_scale_backend_build_v1",
+    "module_name": "mast3r_fixed_scale_backend_v1",
+    "tool_root": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM",
+    "source_hashes": {
+      "gn_cpp": {
+        "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/backend/src/gn.cpp",
+        "sha256": "af24cdba7e3084661afefd23ff9d68dee9e7509ed962f0f5117370d3b1e70c56"
+      },
+      "gn_kernels_cu": {
+        "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/backend/src/gn_kernels.cu",
+        "sha256": "76dbac54f4f3e3c0839cd5f8aed1a3f5c2a3f19b88c23e7343323f843756d688"
+      },
+      "gn_h": {
+        "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/backend/include/gn.h",
+        "sha256": "e6a2f0c636086b0246e422f0e308aa1ba5ddf5e1b6b21525bcba3cc0f625e718"
+      }
+    },
+    "diagnostic_only": true,
+    "production_promoted": false,
+    "external_ground_truth_used": false
+  },
+  "jobs": [
+    {
+      "id": "right587",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.4353606925484216,
+          "max": 9.209803611275431
+        },
+        "coupled": {
+          "median": 0.19381815149983522,
+          "max": 9.43626138448043
+        }
+      },
+      "report_sha256": "37771eb20c9899c6a60e53310081079c6f955701241fbe0b7dda99eb4734d6e0"
+    },
+    {
+      "id": "right592",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.43471799231211783,
+          "max": 10.671542661312424
+        },
+        "coupled": {
+          "median": 0.20917534117094716,
+          "max": 10.835831259620944
+        }
+      },
+      "report_sha256": "c3123434e90e039d4891dd2cbf1b2f2068df511ce119d91a5631e039b277e201"
+    },
+    {
+      "id": "right613",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.292211390468154,
+          "max": 10.967110983554742
+        },
+        "coupled": {
+          "median": 0.20050291949016782,
+          "max": 11.035784553636665
+        }
+      },
+      "report_sha256": "ce00e0502969461be6953d46539f32a47e0b2d25b9bfaf26cc48089c3c645f49"
+    },
+    {
+      "id": "left877",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.2742333712237073,
+          "max": 3.589815250573025
+        },
+        "coupled": {
+          "median": 0.167970408222078,
+          "max": 1.419611353374659
+        }
+      },
+      "report_sha256": "df92638247bf04cad0acc3379cb62c0197ea3a7444855d9d891fbd97d062fece"
+    },
+    {
+      "id": "left1044",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.28959702032363904,
+          "max": 3.5898089473987627
+        },
+        "coupled": {
+          "median": 0.1768353957173173,
+          "max": 1.4195377542250722
+        }
+      },
+      "report_sha256": "d1c8b69beca96e6c33e9a9f8298fc9719b0d8030f253769f02b57df835ba21bb"
+    },
+    {
+      "id": "passing_held2_752",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.11084891387085843,
+          "max": 1.1932474458976143
+        },
+        "coupled": {
+          "median": 0.0738588258950204,
+          "max": 0.8186680210719934
+        }
+      },
+      "report_sha256": "3f6a333ca0139937506ad9e5348b9f387c01ef3d5597940ef85c596dedb82a1d"
+    },
+    {
+      "id": "passing_take01_738",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "control": {
+          "median": 0.30986491137359506,
+          "max": 1.1891472797155622
+        },
+        "coupled": {
+          "median": 0.12939662135329025,
+          "max": 1.0495886915335697
+        }
+      },
+      "report_sha256": "2ce04540a8850d0d326d57cb6f8389e74dfe88125f824a4b92bcdbc1661148c8"
+    }
+  ]
+}

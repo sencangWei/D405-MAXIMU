@@ -1,0 +1,1299 @@
+{
+  "schema": "pnp_match_partition_v1",
+  "trial": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/depth_shape_GN_falsifier_v1",
+  "trial_summary_sha256": "52c3f368c99ca83c7767f2ad086fe4b0b04cfd0177d066cd5f82198afb3e52a7",
+  "diagnostic_only": true,
+  "external_ground_truth_used": false,
+  "production_promoted": false,
+  "classification_threshold_px": 2.0,
+  "note": "Consistent/inconsistent are direct PnP reprojection classes, not RANSAC membership or causality proof.",
+  "jobs": [
+    {
+      "id": "right587",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 576,
+          "second_frame_id": 587,
+          "reason": "top_control_rotation",
+          "edge_index": 57,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 4654,
+            "inlier_ratio": 0.9308,
+            "reprojection_median_px": 0.5036942958831787,
+            "reprojection_p95_px": 1.2136532068252563
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 57,
+            "common_count": 37107,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 16413,
+                  "q_median": 3.4667186737060547,
+                  "pixel_median": 0.5903167142093708,
+                  "cost_sum": 13744.567063143377
+                },
+                "post": {
+                  "count": 16413,
+                  "q_median": 3.4667186737060547,
+                  "pixel_median": 4.910687575030116,
+                  "cost_sum": 401261.4278896119
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 417,
+                  "q_median": 3.029453992843628,
+                  "pixel_median": 1.7356763954615095,
+                  "cost_sum": 4912.57229561277
+                },
+                "post": {
+                  "count": 417,
+                  "q_median": 3.029453992843628,
+                  "pixel_median": 14.956875367140448,
+                  "cost_sum": 17586.496025080833
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 20277,
+                  "q_median": 2.9299843311309814,
+                  "pixel_median": 0.6895209666206009,
+                  "cost_sum": 45231.11656774124
+                },
+                "post": {
+                  "count": 20277,
+                  "q_median": 2.9299843311309814,
+                  "pixel_median": 16.091738445013476,
+                  "cost_sum": 901923.7025792694
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 16580,
+            "inconsistent": 537,
+            "depth_unsupported": 28541,
+            "both_depth": 17117
+          }
+        },
+        {
+          "first_frame_id": 502,
+          "second_frame_id": 521,
+          "reason": "top_control_rotation",
+          "edge_index": 51,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 2774,
+            "inlier_ratio": 0.5548,
+            "reprojection_median_px": 0.9703718423843384,
+            "reprojection_p95_px": 1.883757472038269
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 51,
+            "common_count": 59097,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 12837,
+                  "q_median": 2.4359991550445557,
+                  "pixel_median": 2.3343562446439696,
+                  "cost_sum": 75253.275780489
+                },
+                "post": {
+                  "count": 12837,
+                  "q_median": 2.4359991550445557,
+                  "pixel_median": 2.3505284250850775,
+                  "cost_sum": 75162.64510926843
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 9697,
+                  "q_median": 2.432351589202881,
+                  "pixel_median": 2.7015418496891166,
+                  "cost_sum": 72021.32192215348
+                },
+                "post": {
+                  "count": 9697,
+                  "q_median": 2.432351589202881,
+                  "pixel_median": 2.7141136268961357,
+                  "cost_sum": 71789.53906571885
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 36563,
+                  "q_median": 2.1699390411376953,
+                  "pixel_median": 3.410237008074459,
+                  "cost_sum": 390122.88171134697
+                },
+                "post": {
+                  "count": 36563,
+                  "q_median": 2.1699390411376953,
+                  "pixel_median": 3.421540367596558,
+                  "cost_sum": 389836.1357541043
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 15893,
+            "inconsistent": 10951,
+            "depth_unsupported": 46613,
+            "both_depth": 26844
+          }
+        },
+        {
+          "first_frame_id": 541,
+          "second_frame_id": 587,
+          "reason": "explicit_right587_retrieval",
+          "edge_index": 56,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 4280,
+            "inlier_ratio": 0.856,
+            "reprojection_median_px": 0.6165447235107422,
+            "reprojection_p95_px": 1.5585343837738037
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 56,
+            "common_count": 35163,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 11542,
+                  "q_median": 2.764543056488037,
+                  "pixel_median": 1.9770748337303568,
+                  "cost_sum": 47047.41343642843
+                },
+                "post": {
+                  "count": 11542,
+                  "q_median": 2.764543056488037,
+                  "pixel_median": 4.714462331281403,
+                  "cost_sum": 170524.09407829054
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 1919,
+                  "q_median": 2.0189735889434814,
+                  "pixel_median": 39.80231467347265,
+                  "cost_sum": 177626.06172240197
+                },
+                "post": {
+                  "count": 1919,
+                  "q_median": 2.0189735889434814,
+                  "pixel_median": 15.779829172298642,
+                  "cost_sum": 68271.7938002438
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 21702,
+                  "q_median": 2.250905990600586,
+                  "pixel_median": 65.31010789359706,
+                  "cost_sum": 3140942.9507541717
+                },
+                "post": {
+                  "count": 21702,
+                  "q_median": 2.250905990600586,
+                  "pixel_median": 16.307859455054434,
+                  "cost_sum": 897495.616848068
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 12856,
+            "inconsistent": 4043,
+            "depth_unsupported": 43302,
+            "both_depth": 16899
+          }
+        }
+      ]
+    },
+    {
+      "id": "right592",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 576,
+          "second_frame_id": 587,
+          "reason": "top_control_rotation",
+          "edge_index": 57,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 4654,
+            "inlier_ratio": 0.9308,
+            "reprojection_median_px": 0.5036942958831787,
+            "reprojection_p95_px": 1.2136532068252563
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 57,
+            "common_count": 37106,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 16413,
+                  "q_median": 3.4667186737060547,
+                  "pixel_median": 5.081990135970119,
+                  "cost_sum": 410759.27721342456
+                },
+                "post": {
+                  "count": 16413,
+                  "q_median": 3.4667186737060547,
+                  "pixel_median": 6.620224953541518,
+                  "cost_sum": 521333.43844592955
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 416,
+                  "q_median": 3.029453992843628,
+                  "pixel_median": 16.644480182120358,
+                  "cost_sum": 19012.128526932534
+                },
+                "post": {
+                  "count": 416,
+                  "q_median": 3.029453992843628,
+                  "pixel_median": 18.759098480139297,
+                  "cost_sum": 21796.738730904734
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 20277,
+                  "q_median": 2.9299843311309814,
+                  "pixel_median": 16.33759025680121,
+                  "cost_sum": 935084.9872071089
+                },
+                "post": {
+                  "count": 20277,
+                  "q_median": 2.9299843311309814,
+                  "pixel_median": 20.197529998626216,
+                  "cost_sum": 1146985.1268319455
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 16580,
+            "inconsistent": 537,
+            "depth_unsupported": 28541,
+            "both_depth": 17117
+          }
+        },
+        {
+          "first_frame_id": 502,
+          "second_frame_id": 521,
+          "reason": "top_control_rotation",
+          "edge_index": 51,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 2774,
+            "inlier_ratio": 0.5548,
+            "reprojection_median_px": 0.9703718423843384,
+            "reprojection_p95_px": 1.883757472038269
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 51,
+            "common_count": 59097,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 12837,
+                  "q_median": 2.4359991550445557,
+                  "pixel_median": 2.3505284250850775,
+                  "cost_sum": 75162.64510926843
+                },
+                "post": {
+                  "count": 12837,
+                  "q_median": 2.4359991550445557,
+                  "pixel_median": 2.3375328866431113,
+                  "cost_sum": 74974.98564991524
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 9697,
+                  "q_median": 2.432351589202881,
+                  "pixel_median": 2.7141136268961357,
+                  "cost_sum": 71789.53906571885
+                },
+                "post": {
+                  "count": 9697,
+                  "q_median": 2.432351589202881,
+                  "pixel_median": 2.6935908266381565,
+                  "cost_sum": 71712.93944318677
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 36563,
+                  "q_median": 2.1699390411376953,
+                  "pixel_median": 3.421540367596558,
+                  "cost_sum": 389836.1357541043
+                },
+                "post": {
+                  "count": 36563,
+                  "q_median": 2.1699390411376953,
+                  "pixel_median": 3.4144657952113,
+                  "cost_sum": 390892.3251054053
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 15893,
+            "inconsistent": 10951,
+            "depth_unsupported": 46613,
+            "both_depth": 26844
+          }
+        }
+      ]
+    },
+    {
+      "id": "right613",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 576,
+          "second_frame_id": 587,
+          "reason": "top_control_rotation",
+          "edge_index": 57,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 4654,
+            "inlier_ratio": 0.9308,
+            "reprojection_median_px": 0.5036942958831787,
+            "reprojection_p95_px": 1.2136532068252563
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 57,
+            "common_count": 37104,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 16413,
+                  "q_median": 3.4667186737060547,
+                  "pixel_median": 6.929509058343902,
+                  "cost_sum": 545833.4271888616
+                },
+                "post": {
+                  "count": 16413,
+                  "q_median": 3.4667186737060547,
+                  "pixel_median": 6.929505946129633,
+                  "cost_sum": 545833.831319706
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 414,
+                  "q_median": 3.047184467315674,
+                  "pixel_median": 18.778651414284436,
+                  "cost_sum": 22090.009087643244
+                },
+                "post": {
+                  "count": 414,
+                  "q_median": 3.047184467315674,
+                  "pixel_median": 18.778655216567284,
+                  "cost_sum": 22090.016839066193
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 20277,
+                  "q_median": 2.9299843311309814,
+                  "pixel_median": 21.05484164820292,
+                  "cost_sum": 1189360.301669299
+                },
+                "post": {
+                  "count": 20277,
+                  "q_median": 2.9299843311309814,
+                  "pixel_median": 21.054881950586854,
+                  "cost_sum": 1189361.3363657987
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 16580,
+            "inconsistent": 537,
+            "depth_unsupported": 28541,
+            "both_depth": 17117
+          }
+        },
+        {
+          "first_frame_id": 502,
+          "second_frame_id": 521,
+          "reason": "top_control_rotation",
+          "edge_index": 51,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 2774,
+            "inlier_ratio": 0.5548,
+            "reprojection_median_px": 0.9703718423843384,
+            "reprojection_p95_px": 1.883757472038269
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 51,
+            "common_count": 59097,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 12837,
+                  "q_median": 2.4359991550445557,
+                  "pixel_median": 2.3374296025761288,
+                  "cost_sum": 74945.9774777471
+                },
+                "post": {
+                  "count": 12837,
+                  "q_median": 2.4359991550445557,
+                  "pixel_median": 2.337434586417472,
+                  "cost_sum": 74946.03695216952
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 9697,
+                  "q_median": 2.432351589202881,
+                  "pixel_median": 2.6918178167870077,
+                  "cost_sum": 71701.11051885383
+                },
+                "post": {
+                  "count": 9697,
+                  "q_median": 2.432351589202881,
+                  "pixel_median": 2.6918233020224864,
+                  "cost_sum": 71701.14768058395
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 36563,
+                  "q_median": 2.1699390411376953,
+                  "pixel_median": 3.412898672281194,
+                  "cost_sum": 391060.24267240905
+                },
+                "post": {
+                  "count": 36563,
+                  "q_median": 2.1699390411376953,
+                  "pixel_median": 3.4129039664100307,
+                  "cost_sum": 391060.0869212393
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 15893,
+            "inconsistent": 10951,
+            "depth_unsupported": 46613,
+            "both_depth": 26844
+          }
+        }
+      ]
+    },
+    {
+      "id": "left877",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 508,
+          "second_frame_id": 526,
+          "reason": "top_control_rotation",
+          "edge_index": 55,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 3528,
+            "inlier_ratio": 0.7056,
+            "reprojection_median_px": 0.8082805871963501,
+            "reprojection_p95_px": 1.7889059782028198
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 55,
+            "common_count": 79814,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 24315,
+                  "q_median": 3.956536054611206,
+                  "pixel_median": 1.639960035192738,
+                  "cost_sum": 136641.68668974988
+                },
+                "post": {
+                  "count": 24315,
+                  "q_median": 3.956536054611206,
+                  "pixel_median": 1.6399222371495938,
+                  "cost_sum": 136641.7290458017
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 8933,
+                  "q_median": 3.032491683959961,
+                  "pixel_median": 2.1769246032214844,
+                  "cost_sum": 61297.47671718328
+                },
+                "post": {
+                  "count": 8933,
+                  "q_median": 3.032491683959961,
+                  "pixel_median": 2.176890066824572,
+                  "cost_sum": 61297.497010537496
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 46566,
+                  "q_median": 2.892472505569458,
+                  "pixel_median": 2.9163959813812523,
+                  "cost_sum": 421415.54860892415
+                },
+                "post": {
+                  "count": 46566,
+                  "q_median": 2.892472505569458,
+                  "pixel_median": 2.916365655411677,
+                  "cost_sum": 421416.6122055411
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 27252,
+            "inconsistent": 9441,
+            "depth_unsupported": 53983,
+            "both_depth": 36693
+          }
+        },
+        {
+          "first_frame_id": 485,
+          "second_frame_id": 491,
+          "reason": "top_control_rotation",
+          "edge_index": 35,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 4840,
+            "inlier_ratio": 0.968,
+            "reprojection_median_px": 0.4400845170021057,
+            "reprojection_p95_px": 1.154524564743042
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 35,
+            "common_count": 31151,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 17053,
+                  "q_median": 2.0607385635375977,
+                  "pixel_median": 2.086353167998865,
+                  "cost_sum": 97921.50306408318
+                },
+                "post": {
+                  "count": 17053,
+                  "q_median": 2.0607385635375977,
+                  "pixel_median": 2.086335072400379,
+                  "cost_sum": 97921.78324674348
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 462,
+                  "q_median": 1.9504324197769165,
+                  "pixel_median": 13.630990205499893,
+                  "cost_sum": 12724.986983657036
+                },
+                "post": {
+                  "count": 462,
+                  "q_median": 1.9504324197769165,
+                  "pixel_median": 13.631002110082195,
+                  "cost_sum": 12724.99841709257
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 13636,
+                  "q_median": 2.0521786212921143,
+                  "pixel_median": 6.592359845004565,
+                  "cost_sum": 269804.6837435957
+                },
+                "post": {
+                  "count": 13636,
+                  "q_median": 2.0521786212921143,
+                  "pixel_median": 6.59236355607176,
+                  "cost_sum": 269804.7060459689
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 23246,
+            "inconsistent": 1220,
+            "depth_unsupported": 31389,
+            "both_depth": 24466
+          }
+        }
+      ]
+    },
+    {
+      "id": "left1044",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 508,
+          "second_frame_id": 526,
+          "reason": "top_control_rotation",
+          "edge_index": 55,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 3528,
+            "inlier_ratio": 0.7056,
+            "reprojection_median_px": 0.8082805871963501,
+            "reprojection_p95_px": 1.7889059782028198
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 55,
+            "common_count": 79814,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 24315,
+                  "q_median": 3.956536054611206,
+                  "pixel_median": 1.6399589700684951,
+                  "cost_sum": 136641.57614426484
+                },
+                "post": {
+                  "count": 24315,
+                  "q_median": 3.956536054611206,
+                  "pixel_median": 1.6399619516637853,
+                  "cost_sum": 136641.56513391892
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 8933,
+                  "q_median": 3.032491683959961,
+                  "pixel_median": 2.1769518474995695,
+                  "cost_sum": 61297.52959279212
+                },
+                "post": {
+                  "count": 8933,
+                  "q_median": 3.032491683959961,
+                  "pixel_median": 2.1769609822530245,
+                  "cost_sum": 61297.549666691964
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 46566,
+                  "q_median": 2.892472505569458,
+                  "pixel_median": 2.9164273891208947,
+                  "cost_sum": 421416.05137809296
+                },
+                "post": {
+                  "count": 46566,
+                  "q_median": 2.892472505569458,
+                  "pixel_median": 2.916437336871161,
+                  "cost_sum": 421416.09261255467
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 27252,
+            "inconsistent": 9441,
+            "depth_unsupported": 53983,
+            "both_depth": 36693
+          }
+        },
+        {
+          "first_frame_id": 485,
+          "second_frame_id": 491,
+          "reason": "top_control_rotation",
+          "edge_index": 35,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 4840,
+            "inlier_ratio": 0.968,
+            "reprojection_median_px": 0.4400845170021057,
+            "reprojection_p95_px": 1.154524564743042
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 35,
+            "common_count": 31151,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 17053,
+                  "q_median": 2.0607385635375977,
+                  "pixel_median": 2.086320850200643,
+                  "cost_sum": 97921.02007023235
+                },
+                "post": {
+                  "count": 17053,
+                  "q_median": 2.0607385635375977,
+                  "pixel_median": 2.086352298001051,
+                  "cost_sum": 97921.85555620305
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 462,
+                  "q_median": 1.9504324197769165,
+                  "pixel_median": 13.631024440395638,
+                  "cost_sum": 12724.989833127165
+                },
+                "post": {
+                  "count": 462,
+                  "q_median": 1.9504324197769165,
+                  "pixel_median": 13.630990443310774,
+                  "cost_sum": 12724.99881112694
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 13636,
+                  "q_median": 2.0521786212921143,
+                  "pixel_median": 6.592368115162726,
+                  "cost_sum": 269804.5277930171
+                },
+                "post": {
+                  "count": 13636,
+                  "q_median": 2.0521786212921143,
+                  "pixel_median": 6.592363814458427,
+                  "cost_sum": 269804.8562718176
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 23246,
+            "inconsistent": 1220,
+            "depth_unsupported": 31389,
+            "both_depth": 24466
+          }
+        }
+      ]
+    },
+    {
+      "id": "passing_held2_752",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 539,
+          "second_frame_id": 556,
+          "reason": "top_control_rotation",
+          "edge_index": 4,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 3144,
+            "inlier_ratio": 0.6288,
+            "reprojection_median_px": 0.808000922203064,
+            "reprojection_p95_px": 1.8185194730758667
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 4,
+            "common_count": 63451,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 8304,
+                  "q_median": 5.63546895980835,
+                  "pixel_median": 1.4349766716755556,
+                  "cost_sum": 102226.2640456846
+                },
+                "post": {
+                  "count": 8304,
+                  "q_median": 5.63546895980835,
+                  "pixel_median": 1.4357340343038947,
+                  "cost_sum": 102234.07532280366
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 4531,
+                  "q_median": 4.03973388671875,
+                  "pixel_median": 1.8245673869567427,
+                  "cost_sum": 59041.98683031215
+                },
+                "post": {
+                  "count": 4531,
+                  "q_median": 4.03973388671875,
+                  "pixel_median": 1.824210290681042,
+                  "cost_sum": 59043.96242038259
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 50616,
+                  "q_median": 4.107318878173828,
+                  "pixel_median": 2.6563297424251875,
+                  "cost_sum": 1287020.1277815958
+                },
+                "post": {
+                  "count": 50616,
+                  "q_median": 4.107318878173828,
+                  "pixel_median": 2.6555969294222237,
+                  "cost_sum": 1287005.1464548479
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 8330,
+            "inconsistent": 4567,
+            "depth_unsupported": 56947,
+            "both_depth": 12897
+          }
+        },
+        {
+          "first_frame_id": 526,
+          "second_frame_id": 539,
+          "reason": "top_control_rotation",
+          "edge_index": 2,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 3287,
+            "inlier_ratio": 0.6574,
+            "reprojection_median_px": 0.8447788953781128,
+            "reprojection_p95_px": 1.8312008380889893
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 2,
+            "common_count": 55267,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 7822,
+                  "q_median": 3.9991836547851562,
+                  "pixel_median": 1.5210571325016902,
+                  "cost_sum": 31872.522970620124
+                },
+                "post": {
+                  "count": 7822,
+                  "q_median": 3.9991836547851562,
+                  "pixel_median": 1.5209267157631778,
+                  "cost_sum": 31871.051642861792
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 3927,
+                  "q_median": 3.6529977321624756,
+                  "pixel_median": 1.4430215963697512,
+                  "cost_sum": 17386.349375967467
+                },
+                "post": {
+                  "count": 3927,
+                  "q_median": 3.6529977321624756,
+                  "pixel_median": 1.4431359632763254,
+                  "cost_sum": 17386.23942810255
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 43518,
+                  "q_median": 3.0714898109436035,
+                  "pixel_median": 1.4551783838327284,
+                  "cost_sum": 208255.23539499706
+                },
+                "post": {
+                  "count": 43518,
+                  "q_median": 3.0714898109436035,
+                  "pixel_median": 1.4551392019654181,
+                  "cost_sum": 208252.225653238
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 8066,
+            "inconsistent": 4305,
+            "depth_unsupported": 55256,
+            "both_depth": 12371
+          }
+        }
+      ]
+    },
+    {
+      "id": "passing_take01_738",
+      "status": "AUDIT_COMPLETE",
+      "pairs": [
+        {
+          "first_frame_id": 412,
+          "second_frame_id": 429,
+          "reason": "top_control_rotation",
+          "edge_index": 59,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 3903,
+            "inlier_ratio": 0.7806,
+            "reprojection_median_px": 0.7414196133613586,
+            "reprojection_p95_px": 1.6752015352249146
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 59,
+            "common_count": 95279,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 29354,
+                  "q_median": 4.663219928741455,
+                  "pixel_median": 0.8771851597836912,
+                  "cost_sum": 83712.66351577653
+                },
+                "post": {
+                  "count": 29354,
+                  "q_median": 4.663219928741455,
+                  "pixel_median": 0.8771949783471321,
+                  "cost_sum": 83712.18386272303
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 7245,
+                  "q_median": 3.355180501937866,
+                  "pixel_median": 1.7625870249364934,
+                  "cost_sum": 54404.53433422663
+                },
+                "post": {
+                  "count": 7245,
+                  "q_median": 3.355180501937866,
+                  "pixel_median": 1.7625889782295396,
+                  "cost_sum": 54404.64869467901
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 58680,
+                  "q_median": 2.315906286239624,
+                  "pixel_median": 3.0304060505390766,
+                  "cost_sum": 471965.82734924264
+                },
+                "post": {
+                  "count": 58680,
+                  "q_median": 2.315906286239624,
+                  "pixel_median": 3.0304032429856718,
+                  "cost_sum": 471966.49619647407
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 29891,
+            "inconsistent": 7631,
+            "depth_unsupported": 73387,
+            "both_depth": 37522
+          }
+        },
+        {
+          "first_frame_id": 364,
+          "second_frame_id": 387,
+          "reason": "top_control_rotation",
+          "edge_index": 53,
+          "pnp_report": {
+            "accepted": true,
+            "candidate_points": 5000,
+            "inlier_points": 3947,
+            "inlier_ratio": 0.7894,
+            "reprojection_median_px": 0.571414589881897,
+            "reprojection_p95_px": 1.6774306297302246
+          },
+          "status": "PARTITION_COMPLETE",
+          "partition": {
+            "edge_index": 53,
+            "common_count": 43541,
+            "classes": {
+              "consistent": {
+                "pre": {
+                  "count": 11372,
+                  "q_median": 5.315624237060547,
+                  "pixel_median": 1.0041038037838161,
+                  "cost_sum": 63467.42191141423
+                },
+                "post": {
+                  "count": 11372,
+                  "q_median": 5.315624237060547,
+                  "pixel_median": 1.004111032331225,
+                  "cost_sum": 63467.54104315752
+                }
+              },
+              "inconsistent": {
+                "pre": {
+                  "count": 2918,
+                  "q_median": 3.6960887908935547,
+                  "pixel_median": 1.5287879492241963,
+                  "cost_sum": 33348.89205707581
+                },
+                "post": {
+                  "count": 2918,
+                  "q_median": 3.6960887908935547,
+                  "pixel_median": 1.5288022355847646,
+                  "cost_sum": 33348.90021878261
+                }
+              },
+              "depth_unsupported": {
+                "pre": {
+                  "count": 29251,
+                  "q_median": 3.900622844696045,
+                  "pixel_median": 1.5564229355091823,
+                  "cost_sum": 212121.04734063265
+                },
+                "post": {
+                  "count": 29251,
+                  "q_median": 3.900622844696045,
+                  "pixel_median": 1.5564128667603936,
+                  "cost_sum": 212121.03561522576
+                }
+              },
+              "pnp_unclassified": {
+                "pre": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                },
+                "post": {
+                  "count": 0,
+                  "q_median": null,
+                  "pixel_median": null,
+                  "cost_sum": 0.0
+                }
+              }
+            }
+          },
+          "class_counts_raw": {
+            "consistent": 11650,
+            "inconsistent": 2975,
+            "depth_unsupported": 30605,
+            "both_depth": 14625
+          }
+        }
+      ]
+    }
+  ]
+}
