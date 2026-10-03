@@ -313,3 +313,69 @@ and full relativeSim3). Text exports lose scale and cannot substitute for that
 runtime state. First reproduce the original full1199 export exactly, then run
 the structural candidate through genuine source gates and fixed failure-first
 5+passing5 regression. Full25 and new blind recordings follow only after that.
+
+## Final native export and full-source stereo validation (2026-10-03)
+
+The default-off `export_capture_hook/sitecustomize.py` captures the actual final
+128 keyframes and all1199 `tracked_poses`, including each original anchor index,
+full relativeSim3, clock scalar, dtype and device. Original native export executes
+first and is not modified. The hook needs the toolchain's `thirdparty/mast3r`
+directory on PYTHONPATH as well as the root; a native-venv startup assertion is
+required because Python can ignore sitecustomize import errors. The first capture
+had that import failure and is retained as an unsuccessful capture, not a source.
+
+The corrected replay in `left_retry_final_native_export_v2/` took119s and emitted
+1199 actual poses, not interpolated poses. Both original final and online CSVs
+are byte-identical to the previous retry source. The final graph1044 has128
+keyframes and624 directed edges. Its unchanged GN replay exactly matches all
+recorded final keyframe states. Adding the same17 ordinary states792..808 and
+18 accepted learned chain pairs preserves all624 original edges and GN
+parameters. The final808->809 step changes0.1005091->0.0118062 native units.
+Independent stereo checks improve6/21->12/21 accepted pairs; the same9 pairs
+remain low-excitation, and all three877 loop pairs remain accepted. No loops
+are deleted and no matching/source threshold is relaxed.
+
+`export_dense_window_native_trajectory.py` verifies source/dense tensor hashes,
+the exact original keyframe baseline, complete0..1198 coverage and all adjacent
+pair decisions before using the ORIGINAL native `save_full_traj` function.
+All non-window ordinary frames retain their original relativeSim3 and anchor
+index; the17 jointly optimized ordinary states are exported as explicit anchors.
+No interpolation, trajectory cropping, Tracker supervision or GT input is used.
+
+The first offline export failed its byte-equality gate: numpy.float32 f-string
+formatting differs from str(), and CPU vs native CUDA Sim3 composition differs
+at float rounding precision. Those fidelity issues were corrected, not tolerated
+with a weaker comparison. Exportv2 exactly reproduces the original full file:
+
+- Original/baseline SHA256: `aa21ec3a29bd24d1c53a6f549a43e6a42f8230c680ad068289f8da1138a5e00c`.
+- Variant SHA256: `b28a42e929b883d04b75a88b4be373a1acbdf10d2b33bc7860e3aa2343dc4793`.
+- Full native snapshot SHA256: `fc5dfe6ec5da79541207ace135d06929c65ed4ab31cd7a22e5b53a08c65108cd`.
+- Probe SHA256: `a65c6cf47ce28cc1d3a7745dfee95846974af559893da2008f63cf9591e0937d`.
+
+The existing converter's `--require-complete` check passes with1199 source
+poses. Fresh full-source short stereo scale validation evaluates all1190 pairs
+and returns PASS:697 accepted observations,688 robust inliers, scale0.3698707613
+m/native-unit and dispersion0.2790218. The unchanged full-trajectory continuity
+gate returns PASS with0 jumps,0 unverified gaps and maximum contiguous motion
+step26.1143mm. That is a MOTION STEP, not ATE. The previous37.229mm isolated
+source discontinuity is no longer present. This result is only full-source scale
+and continuity validation; no fusion10mm pass or production promotion is claimed.
+
+Independent code review approved the hook/exporter after the clock and device
+fixes. Fresh targeted tests:66 PASS (22 new hook/export +44 existing diagnostic
+and fixed10 tests). Large pointmap/runtime tensors remain local, outside git.
+
+The fixed development cohort is still exactly failure5 followed by passing5
+from Sep27–30 (`config/dual_ir_fast_regression_10_20261003.json`). Do not rerun
+full25 per edit, change the cohort to improve a score, discard failures, or claim
+cached old sources validate a new front-end candidate. Source-independent
+caches may be reused only with unchanged hashes; changed front-end outputs
+require new source-bound scale reports and downstream manifests. Full25 and
+new blind recordings follow only after fixed10 stabilizes.
+
+The current paired consumer still binds LEFT through the old baseline candidate
+manifest; the old RIGHT588-frame fallback is derived from that old LEFT source.
+Neither is a valid substitute for this new LEFT1199 source. Genuine complete
+RIGHT recovery and a new paired lineage (or an explicitly separate partial-source
+diagnostic contract) are needed before claiming a new fixed10 paired regression.
+The new full-source PASS does not erase this remaining failure or meet the goal.
