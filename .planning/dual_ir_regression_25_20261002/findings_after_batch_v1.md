@@ -1650,3 +1650,30 @@ fast10 before changing architecture. PASS take03 also has zero crossing factors
 but nearer support8.084s, so absence alone is not an automatic failure gate.
 Current B20processed19READY1retained = overall24processed23READY1retained/25,
 remaining1. Original source/paired/continuation chains remain untouched.
+
+2026-10-03 continued: B source stage is terminal NATIVE_SOURCES_COMPLETE,
+21processed20READY1retained0technicalfailures. Including the earlier4records,
+all25source records are accounted for:24READY1retained. Original B consumer
+is LIVE and producing paired scores; caches are not being re-extracted.
+Fast10 real-cache dry planning validates all10distinctselectedrecords with
+failure groups before passing groups;15workflow/telemetry tests fresh PASS.
+
+New isolated full-timeline geometry probe and11targetedtests now exist.
+Corrected source-only v5 pilots: Sep29take02 7/12both-eye bidirectionalaccepted,
+Sep30take03(successful truncated counterexample)11/12accepted. Selected native
+frame endpoints are beyond BOTHsavedfrontends. Direct DB3 images/factorycalib,
+selected VINS timestamp deltas<=2.384e-7s, separatecameraextrinsics/leverarms.
+Native baseline represented in these DB3 transforms18.083mm. NoGT/backend/
+scorer/productionpromotion. Root verified savedscriptSHA equalscurrent and
+before/afterguardsmatch. IndependentreviewAPPROVE after fixing initial prefix,
+BODY-as-camera, factorymetadata and preparedcache-sourcing plumbing bugs.
+Existingproducer/consumer/mergerSHAunchanged. Details and exact limitations:
+timeline_gap_pilot_20261003.md. Accepted intereye vectorclosuretake02 reaches
+10.934mm, therefore source acceptance is NOTprecisionPASS. A pure factorbridge
+is assigned in new files only; backendpilot has not been authorized/launched.
+
+Current B take02 retained as INCOMPLETE_VARIANTS, NOTscored/precisionfailed:
+controlreplaypositiondelta1.657e-5m exceeds unchanged1e-7midentitygate.
+Read-onlydebugger assigned to compare frozeninputs/rows/factors/numericalsolver
+evidence before newbackendtrial. No guard relaxed, nofailedsamplediscarded.
+The fullmax10mmgoal remains ACTIVE/unmet.
