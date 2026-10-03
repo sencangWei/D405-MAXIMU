@@ -377,7 +377,7 @@ def stereo_pointmap_checks(dataset, source, target, shape, source_xy, target_xy,
 
 
 @torch.inference_mode()
-def probe(model, dataset, source, target, cache):
+def probe(model, dataset, source, target, cache, *, with_stereo=True):
     X, C, D, _ = mast3r_asymmetric_inference(
         model, load_frame(dataset, source, cache), load_frame(dataset, target, cache)
     )
@@ -421,9 +421,18 @@ def probe(model, dataset, source, target, cache):
     matched_source = current[0, source_xy[:, 1], source_xy[:, 0]].cpu().numpy()
     matched_target = previous[0, target_xy[:, 1], target_xy[:, 0]].cpu().numpy()
     threshold = settings["dist_thresh"]
-    stereo_check = stereo_pointmap_checks(
-        dataset, source, target, (height, width), *stereo_xy, X, C, D
-    )
+    if with_stereo:
+        stereo_check = stereo_pointmap_checks(
+            dataset, source, target, (height, width), *stereo_xy, X, C, D
+        )
+    else:
+        stereo_check = {
+            "accepted": False,
+            "reason": "pointmap_only",
+            "pointmap_only": True,
+            "metric_available": False,
+            "metric_unavailable_reason": "stereo_pointmap_checks_skipped_by_pointmap_only",
+        }
     meter_scale = stereo_check.get("metric_scale")
     return {
         "source": source, "target": target,
@@ -451,14 +460,19 @@ def main():
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--pair", action="append", required=True, help="source:target")
+    parser.add_argument(
+        "--pointmap-only",
+        action="store_true",
+        help="skip stereo metric-depth checks and compare only model pointmap/matching diagnostics",
+    )
     args = parser.parse_args()
     load_config(str(args.config))
     model = load_mast3r(str(args.checkpoint), device="cuda:0").eval()
     cache = {}
     for pair in args.pair:
         source, target = (int(value) for value in pair.split(":"))
-        report = probe(model, args.dataset, source, target, cache)
-        print(json.dumps({
+        report = probe(model, args.dataset, source, target, cache, with_stereo=not args.pointmap_only)
+        output = {
             "source": source, "target": target,
             "projection_valid_fraction": report["projection_valid_fraction"],
             "original_3d_pass_fraction": report["original_3d_pass_fraction"],
@@ -485,7 +499,14 @@ def main():
             "model_source_to_stereo": report["stereo_pointmap"].get("model_source_to_stereo"),
             "model_target_to_stereo": report["stereo_pointmap"].get("model_target_to_stereo"),
             "stereo_consistent_model_inconsistent": report["stereo_pointmap"].get("stereo_consistent_model_inconsistent"),
-        }), flush=True)
+        }
+        if args.pointmap_only:
+            output.update({
+                "pointmap_only": True,
+                "metric_available": report["stereo_pointmap"].get("metric_available"),
+                "metric_unavailable_reason": report["stereo_pointmap"].get("metric_unavailable_reason"),
+            })
+        print(json.dumps(output), flush=True)
 
 
 if __name__ == "__main__":
