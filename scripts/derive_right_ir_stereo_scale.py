@@ -124,6 +124,9 @@ def main() -> int:
     except ValueError as error:
         scale, quality = None, {"error": str(error)}
         failures.append("right_stereo_scale_unobservable")
+    continuity = trajectory_step_continuity(positions, scale, times) if scale else None
+    if continuity is not None and continuity.get("result") == "FAIL":
+        failures.append(continuity.get("reason") or "trajectory_continuity_failed")
     report = dict(left)
     report.update(
         result="FAIL" if failures else "PASS",
@@ -134,7 +137,7 @@ def main() -> int:
         observations=observations,
         scale_m_per_mast3r_unit=scale,
         quality=quality,
-        trajectory_continuity=(trajectory_step_continuity(positions, scale, times) if scale else None),
+        trajectory_continuity=continuity,
         derived_from_left_stereo_report=str(args.left_stereo_report.resolve()),
         factory_stereo_calibration={
             **left["factory_stereo_calibration"],

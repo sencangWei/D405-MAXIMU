@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 import sys
 
@@ -132,3 +133,110 @@ def test_right_eye_imu_uses_factory_extrinsic_instead_of_left_camera_origin():
         complementary.body_t_camera_from_graph_report(
             body_t_left, graph_report, Path("/tmp/wrong.csv")
         )
+
+
+def _minimal_left_report(tmp_path: Path) -> Path:
+    path = tmp_path / "left_report.json"
+    path.write_text(
+        json.dumps(
+            {
+                "result": "PASS",
+                "observation_frame": "infrared_left_camera_i",
+                "db3": str(tmp_path / "input.db3"),
+                "factory_stereo_calibration": {"baseline_m": 0.018},
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _patch_main_dependencies(monkeypatch, *, continuity, robust_error=None):
+    monkeypatch.setattr(
+        right_stereo,
+        "load_stereo_calibration",
+        lambda _path: {
+            "baseline_m": 0.018,
+            "right_rotation_from_left": np.eye(3),
+            "right_translation_from_left_m": np.array([-0.018, 0.0, 0.0]),
+        },
+    )
+    monkeypatch.setattr(
+        right_stereo,
+        "load_trajectory",
+        lambda _path: (
+            np.array([1.0, 2.0]),
+            np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]),
+            np.array([[0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]]),
+        ),
+    )
+    if robust_error is None:
+        monkeypatch.setattr(right_stereo, "robust_scale", lambda *_args, **_kwargs: (0.25, {"ok": True}))
+    else:
+        def fail_scale(*_args, **_kwargs):
+            raise ValueError(robust_error)
+        monkeypatch.setattr(right_stereo, "robust_scale", fail_scale)
+    monkeypatch.setattr(right_stereo, "trajectory_step_continuity", lambda *_args, **_kwargs: continuity)
+
+
+def _run_main(monkeypatch, tmp_path: Path) -> tuple[int, dict]:
+    left = _minimal_left_report(tmp_path)
+    output = tmp_path / "right_report.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "derive_right_ir_stereo_scale.py",
+            "--left-stereo-report",
+            str(left),
+            "--right-trajectory",
+            str(tmp_path / "right.csv"),
+            "--output",
+            str(output),
+        ],
+    )
+    rc = right_stereo.main()
+    return rc, json.loads(output.read_text(encoding="utf-8"))
+
+
+def test_main_fails_when_right_trajectory_continuity_fails(monkeypatch, tmp_path):
+    _patch_main_dependencies(
+        monkeypatch,
+        continuity={
+            "result": "FAIL",
+            "reason": "isolated_position_step_jump",
+            "jump_count": 3,
+            "max_step_m": 0.0637092,
+        },
+    )
+
+    rc, report = _run_main(monkeypatch, tmp_path)
+
+    assert rc == 2
+    assert report["result"] == "FAIL"
+    assert report["failures"] == ["isolated_position_step_jump"]
+    assert report["scale_m_per_mast3r_unit"] == pytest.approx(0.25)
+    assert report["trajectory_continuity"]["jump_count"] == 3
+
+
+def test_main_passes_when_scale_and_continuity_pass(monkeypatch, tmp_path):
+    _patch_main_dependencies(monkeypatch, continuity={"result": "PASS", "reason": None})
+
+    rc, report = _run_main(monkeypatch, tmp_path)
+
+    assert rc == 0
+    assert report["result"] == "PASS"
+    assert report["failures"] == []
+    assert report["trajectory_continuity"] == {"result": "PASS", "reason": None}
+
+
+def test_main_scale_unobservable_remains_fail_without_continuity(monkeypatch, tmp_path):
+    _patch_main_dependencies(monkeypatch, continuity=None, robust_error="not enough observations")
+
+    rc, report = _run_main(monkeypatch, tmp_path)
+
+    assert rc == 2
+    assert report["result"] == "FAIL"
+    assert report["failures"] == ["right_stereo_scale_unobservable"]
+    assert report["trajectory_continuity"] is None

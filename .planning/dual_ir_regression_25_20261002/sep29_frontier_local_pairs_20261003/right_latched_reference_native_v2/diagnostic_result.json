@@ -1,0 +1,168 @@
+{
+  "schema": "umi_latched_reference_native_diagnostic_result_v1",
+  "dataset": "20260929_take02",
+  "eye": "right",
+  "diagnostic_only": true,
+  "production_promoted": false,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "input_frames": 1199,
+  "native_poses": 614,
+  "native_source_complete": false,
+  "first_missing_frame": 614,
+  "online_prefix_589_byte_identical_to_age12": true,
+  "source_main_sha256": "52fa042caa2157dc86c73af0b7c3d4db180b9854c2da5c412015f8c11a44ae95",
+  "patched_ast_source_sha256": "1a68fde66553d6d33ffc97071e0ed45fc3fa4455805846a2a956b72afad828cc",
+  "hashes": {
+    "mast3r.log": "c046331336bec22c9734dd5ef2e102d42d89e1036fbd0efdc1b935445270d103",
+    "match.csv": "fe9a1ee166f8ac2077c3edc1cd828e4bf990d65a219906cbb9472a77ffce460c",
+    "mast3r_logs/dataset_full.txt": "35eb3ec3cd188a5fb20337ad0385581928dc488d656db134fa9caf8acf37df2f",
+    "mast3r_logs/dataset_online.txt": "bc3ccddf3994dfdd526563ee42ae730aaa56aa5b726d48b64c47263c725230d6",
+    "native_export.pt": "75fbf1f9de3c65302c6c818bbe47743acce86e30f5664d8f6e9cffdc903d9360",
+    "trajectory_frames.csv": "a5f7d9e998b127d5c1950531ebaa549c1f0d56404cc2209c0316806bfb754824",
+    "trajectory_online_frames.csv": "6c415b358b3953d318a41772f41b1cbf09d2ae56564340c26f2ce1486c26417e",
+    "partial_right_scale_diagnostic.json": "daa4ee28a5513a2e0e17672185f82f301490122672694a26da6b916370176282",
+    "final_right_scale_diagnostic_v2.json": "576d26c9241b86280f1f4eb420e5418cfdf13c9ebf095d0ece231c514a2bcac8",
+    "online_right_scale_diagnostic_v2.json": "5b942e84441f958eb1e658d3aa70bfb82e575ff68133589e930a49c15f24904d"
+  },
+  "native_match_attempts": [
+    {
+      "frame_id": "588",
+      "n_match": "1396",
+      "n_match_Q": "1260",
+      "n_opt": "1260",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "588",
+      "n_match": "42905",
+      "n_match_Q": "31160",
+      "n_opt": "31160",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "589",
+      "n_match": "457",
+      "n_match_Q": "325",
+      "n_opt": "325",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "589",
+      "n_match": "53228",
+      "n_match_Q": "30251",
+      "n_opt": "30251",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "590",
+      "n_match": "436",
+      "n_match_Q": "241",
+      "n_opt": "241",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "590",
+      "n_match": "59584",
+      "n_match_Q": "20046",
+      "n_opt": "20046",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "591",
+      "n_match": "3757",
+      "n_match_Q": "3509",
+      "n_opt": "3509",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "591",
+      "n_match": "62838",
+      "n_match_Q": "37776",
+      "n_opt": "37776",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "592",
+      "n_match": "21746",
+      "n_match_Q": "19229",
+      "n_opt": "19229",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "614",
+      "n_match": "3067",
+      "n_match_Q": "2889",
+      "n_opt": "2889",
+      "n_total": "147456"
+    },
+    {
+      "frame_id": "614",
+      "n_match": "3204",
+      "n_match_Q": "2643",
+      "n_opt": "2643",
+      "n_total": "147456"
+    }
+  ],
+  "source_quality": {
+    "final": {
+      "result": "FAIL",
+      "scale_m_per_mast3r_unit": 0.437370232030388,
+      "quality": {
+        "accepted_observations": 280,
+        "robust_inliers": 253,
+        "median_before_filter": 0.4291241666987343,
+        "mad_before_filter": 0.017241545587933005,
+        "relative_p90_p10": 0.16053401553520263,
+        "scale_estimator": "robust_inverse_variance_weighted_mean",
+        "weight_p95_limit": 0.004618182408857913
+      },
+      "trajectory_continuity": {
+        "result": "FAIL",
+        "reason": "isolated_position_step_jump",
+        "jump_count": 3,
+        "first_jump_index": 586,
+        "max_step_m": 0.0637092038957102,
+        "max_contiguous_step_m": 0.0637092038957102,
+        "unverified_gap_count": 0,
+        "max_gap_s": 0,
+        "absolute_step_limit_m": 0.03,
+        "local_median_multiplier": 5
+      },
+      "failures": [
+        "isolated_position_step_jump"
+      ]
+    },
+    "online": {
+      "result": "FAIL",
+      "scale_m_per_mast3r_unit": 0.44457922085978996,
+      "quality": {
+        "accepted_observations": 280,
+        "robust_inliers": 275,
+        "median_before_filter": 0.433632547296258,
+        "mad_before_filter": 0.028781568078425468,
+        "relative_p90_p10": 0.25310567128519557,
+        "scale_estimator": "robust_inverse_variance_weighted_mean",
+        "weight_p95_limit": 0.004440129988228346
+      },
+      "trajectory_continuity": {
+        "result": "FAIL",
+        "reason": "isolated_position_step_jump",
+        "jump_count": 1,
+        "first_jump_index": 591,
+        "max_step_m": 0.05577158452009434,
+        "max_contiguous_step_m": 0.05577158452009434,
+        "unverified_gap_count": 0,
+        "max_gap_s": 0,
+        "absolute_step_limit_m": 0.03,
+        "local_median_multiplier": 5
+      },
+      "failures": [
+        "isolated_position_step_jump"
+      ]
+    }
+  },
+  "no_interpolation": true,
+  "fused_ate": "NOT_RUN_INVALID_SOURCE",
+  "next_action": "Preserve failed source; diagnose keyframe/reference transitions and graph/dense-state consistency. Partial-eye timelines are supported by existing bilateral factor contracts, but an internally discontinuous eye cannot be promoted merely because the other eye covers the tail. No age/threshold sweep."
+}

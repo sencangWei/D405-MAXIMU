@@ -424,3 +424,69 @@ Fresh targeted tests:46 PASS across retry-age, fast10 and dense/native export
 diagnostic tests. An earlier command used a nonexistent fast10 test filename
 and ran no tests; the corrected command was executed and its46-pass result
 read before this report. Goal remains ACTIVE and the10mm maximum is unmet.
+
+## Latched recovery reference and right-source false-PASS repair (2026-10-03)
+
+`run_native_latched_reference_diagnostic.py` keeps the normal first tracking
+attempt unchanged. A successful alternate reference is retained only while
+the active tail index remains unchanged; normal primary success or a changed
+tail clears it. The initial retry uses the fixed, already-tested12-frame seed
+allowance, not a parameter sweep. Every retry stays `update_reference=False`
+and matcher state is reset before/after. Existing keyframes and graph edges
+are not modified by the diagnostic retry path. The reviewed exact native main
+SHA, checkpoint and configuration are unchanged. Nine focused latch tests,
+the existing11 retry tests and independent code review pass.
+
+First launch `right_latched_reference_native_v1/` failed before tracking: wrong
+working directory made the native inherited `config/base.yaml` inaccessible.
+No trajectory from it is usable. The corrected launch runs FROM the toolchain
+root, preserving that failure log and using a freshv2 output directory. Helpers
+reading db3 also require BOTH ROS environment setups; the first scale helper
+invocation missed rosbag2_py and was rerun correctly. Neither launch failure is
+a SLAM matching failure or a reason to alter source/accuracy gates.
+
+The real `right_latched_reference_native_v2/` replay exits0 and exports614
+actual poses0..613, without interpolation or a fabricated tail. Online0..588
+is byte-identical to the age12 control. Frame589 now retries KF576 successfully
+with30251/147456 valid optimization points (20.5%); frames590 and591 also recover.
+Normal tracking returns at592. Other local recoveries607/609/610 are recorded.
+At614, BOTH primary and alternate fail the unchanged5% threshold:2889 and2643
+valid optimization points. Thus the original reference-lifecycle failure is
+recovered, but the full RIGHT source is still incomplete and not a10mm result.
+
+Source geometry also fails. Final614 scale is0.4373702320,280 accepted stereo
+observations/253 inliers, but has3 isolated step jumps (first586, max63.709mm).
+Online614 also fails continuity:1 jump at591, max55.772mm. Final large boundaries
+are586->587,587->588 and591->592, corresponding to alternate/native keyframe
+reference transitions. This is source motion-step evidence, NOT Tracker ATE.
+Neither final nor online candidate is admitted into a new fusion score.
+
+`derive_right_ir_stereo_scale.py` previously emitted top-levelPASS whenever
+scale was observable even with nested `trajectory_continuity.result=FAIL`.
+The surgical repair computes continuity once and propagates its canonical
+failure reason into top-levelFAIL and return code2. Existing thresholds, scale,
+observation values and trajectory are unchanged. RED reproduces rc0 on a failed
+continuity test; GREEN covers failed/pass continuity and unobservable scale.
+Real corrected final/online reports both exit2. The final report's scale and
+all observations are exactly equal to the preceding false-PASS artifact.
+
+Read-only manifest-bound audit of all25 historical candidate source reports
+finds4 records with a right-source false-PASS:20260927_ind2,20260929_take02,
+20260929_take06,20260930_take01. One record has no candidate manifest. All read
+report hashes match the candidate manifests. This is a cached SOURCE audit,
+not a new25 SLAM benchmark and not proof that this bug explains all ATE failures.
+Evidence: `right_scale_nested_continuity_corpus_audit_v1.json`.
+
+The old RIGHT588 baseline is not a safe fallback: it too declares topPASS while
+its nested continuity fails (one jump at586, max53.989mm). Do not recycle it as
+a valid partial-eye source. Architecture review clarified that bilateral factors
+CAN represent a shorter right timeline and complete left timeline: complete per-
+eye artifact sets and local raw/metric matching are required, not equal lengths.
+However all source gates still apply; full fused/reference coverage and10mm
+maximum are unchanged. A valid partial source can complement another eye, but
+an invalid partial source cannot be relabeledPASS or cropped to make this work.
+
+Fresh targeted tests:61 PASS, including6 right-scale tests. Reviews approve both
+latched diagnostic and continuity propagation. No production promotion, Tracker
+supervision, cap/age sweep or full25 rerun is claimed; fixed failing5+passing5
+remains the next regression stage after a source-valid paired candidate exists.

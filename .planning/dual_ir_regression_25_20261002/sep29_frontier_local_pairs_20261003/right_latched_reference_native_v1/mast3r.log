@@ -1,0 +1,15 @@
+{"diagnostic_only": true, "external_ground_truth_used": false, "native_argc": 12, "original_sha256": "52fa042caa2157dc86c73af0b7c3d4db180b9854c2da5c412015f8c11a44ae95", "patched_ast_source_sha256": "1a68fde66553d6d33ffc97071e0ed45fc3fa4455805846a2a956b72afad828cc", "previous_kf_retry_max_age": 12, "production_promoted": false, "schema": "mast3r_latched_reference_runtime_ast_diagnostic_v1", "source_main": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/main.py", "toolroot": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM"}
+Traceback (most recent call last):
+  File "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/run_native_latched_reference_diagnostic.py", line 221, in <module>
+    run()
+  File "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/run_native_latched_reference_diagnostic.py", line 217, in run
+    retry_runner.exec_patched_main(source_main, patched_tree, native_args, toolroot)
+  File "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/run_native_retry_age_diagnostic.py", line 127, in exec_patched_main
+    exec(code, module.__dict__)
+  File "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/main.py", line 355, in <module>
+    load_config(args.config)
+  File "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/config.py", line 29, in load_config
+    cfg_parent = load_config(inherit, is_parent=True)
+  File "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/config.py", line 25, in load_config
+    with open(path, "r") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'config/base.yaml'
