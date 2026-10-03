@@ -157,3 +157,34 @@ parse successfully; all 87 guarded live-queue source hashes remain unchanged.
 No native reverse decode/match, local-factor or ATE result is implied by these
 mock validations. The queue has moved from take06 LEFT to RIGHT; passing-five
 controls and the scheduled real input capture/replay are still pending.
+
+## Real-pair diagnostic wiring; not a new precision result (2026-10-03)
+
+`probe_local_tracking_metric.py` now connects the captured actual forward
+match, true native reverse decoder/matcher, original bidirectional stereo/PnP
+gate, and local seven-state OFF/ON solve. `local_tracking_pair_graph.py` uses
+raw forward validity, canonical current/reference pointmaps, actual native Q,
+and the unchanged local graph configuration. It rejects legacy filtered-mask
+aliases and invalid configuration rather than silently changing the inputs.
+
+The capture runner freezes raw current/reference stereo image hashes after
+verifying the preserved prefix identities. The probe verifies those images,
+capture/native/model/config inputs and all six probe helper files before ON
+and before/after retaining the actual pair artifact. Gate rejection and probe
+failure remain explicit diagnostic outcomes, not proof the direction is useless.
+No Tracker, VINS translation target, trajectory interpolation or new cap is used.
+
+Independent review approved this source-only slice after two artifact binding
+issues were repaired. Fresh main-owner nine-suite tests pass 150/150 in 4.02 s;
+the CLI help check and diff whitespace check pass. Source-change tests cover
+both accepted/rejected gate branches; CPU fake tests check actual reverse
+tensors, raw validity and native Q formula. These are not native GPU, real
+factor, ATE or production acceptance tests. All 87 guarded queue hashes still
+match. The live fixed10 queue has four terminal records and is on take06 RIGHT;
+passing-five controls are not yet scored.
+
+`probe_after_tracking_replay_v1.sh` schedules the six actual local probes only
+after the exact capture and CPU replay chain exits, freezes one helper revision
+for all six, and preserves independent failures without abandoning the candidate.
+Its runner still refuses a busy GPU. The retained keyframe candidate is not
+rolled back. Final full25 and independent new-recording acceptance remain open.

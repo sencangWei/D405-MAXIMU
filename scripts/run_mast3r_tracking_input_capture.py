@@ -102,6 +102,36 @@ def bound_source(source_run: Path) -> tuple[dict, dict, int]:
     return manifest, context, count
 
 
+def capture_image_hashes(runtime, captures: Path, snapshot_hashes: dict, identities: dict) -> tuple[list[int], dict[str, str]]:
+    """Freeze only the actual current/reference stereo inputs after capture."""
+    import torch
+
+    frame_ids = set()
+    for name, expected in snapshot_hashes.items():
+        path = captures / name
+        if sha(path) != expected:
+            raise ValueError("tracking snapshot changed before image binding")
+        payload = torch.load(path, map_location="cpu", weights_only=True)
+        track, gp = payload.get("track_entry", {}), payload.get("get_points_poses") or {}
+        current, reference = gp.get("frame_id"), gp.get("keyframe_id")
+        if (track.get("frame_id") != current or track.get("reference_frame_id") != reference
+                or any(type(fid) is not int or fid not in identities for fid in (current, reference))):
+            raise ValueError("captured current/reference pair is outside the bound prefix or mismatched")
+        frame_ids.update((current, reference))
+    image_hashes = {}
+    for fid in sorted(frame_ids):
+        if runtime.image_identity(fid) != identities[fid]:
+            raise ValueError("raw image changed after capture: " + str(fid))
+        row = runtime.rows[fid]
+        paths = (runtime.native / row["image"], runtime.paired / row["image"],
+                 runtime.paired / runtime.right_directory / row["image"])
+        for path in paths:
+            image_hashes[str(path.resolve(strict=True))] = sha(path)
+        if runtime.image_identity(fid) != identities[fid]:
+            raise ValueError("raw image changed during image hashing: " + str(fid))
+    return sorted(frame_ids), image_hashes
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-run", type=Path, required=True)
@@ -158,6 +188,9 @@ def main(argv: list[str] | None = None) -> int:
         if any(runtime.image_identity(fid) != identity for fid, identity in identities.items()):
             raise ValueError("raw image identities changed during prefix replay")
         manifest["snapshot_sha256"] = validate_capture(output / "captures", targets)
+        manifest["raw_image_frame_ids"], manifest["raw_image_sha256"] = capture_image_hashes(
+            runtime, output / "captures", manifest["snapshot_sha256"], identities
+        )
         manifest["status"] = "TRACKING_INPUTS_CAPTURED_NOT_SCORED"
         return 0
     except Exception as error:

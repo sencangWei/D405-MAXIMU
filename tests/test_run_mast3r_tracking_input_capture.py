@@ -120,3 +120,58 @@ def test_dry_run_validates_source_but_never_creates_output_or_model(monkeypatch,
     monkeypatch.setattr(runner, "require_idle_gpu", lambda: pytest.fail("must not reserve GPU"))
     assert runner.main(["--source-run", str(source_run), "--output", str(output), "--frame-id", "577"]) == 0
     assert not output.exists()
+
+
+def image_hash_fixture(tmp_path):
+    import torch
+    native, paired, captures = (tmp_path / name for name in ("native", "paired", "captures"))
+    for directory in (native, paired, paired / "right", captures):
+        directory.mkdir(parents=True, exist_ok=True)
+    rows = [{"image": f"{fid}.png"} for fid in range(3)]
+    for fid in range(3):
+        for directory in (native, paired, paired / "right"):
+            (directory / f"{fid}.png").write_bytes(bytes([fid + 1]))
+    def identity(fid):
+        return tuple((p.stat().st_size, p.stat().st_mtime_ns, p.stat().st_ctime_ns)
+                     for p in (native / rows[fid]["image"], paired / rows[fid]["image"], paired / "right" / rows[fid]["image"]))
+    runtime = SimpleNamespace(native=native, paired=paired, right_directory="right", rows=rows, image_identity=identity)
+    torch.save({"track_entry": {"frame_id": 2, "reference_frame_id": 0}, "get_points_poses": {"frame_id": 2, "keyframe_id": 0}}, captures / "capture.pt")
+    return runtime, captures, {"capture.pt": runner.sha(captures / "capture.pt")}, {fid: identity(fid) for fid in range(3)}
+
+
+def test_capture_binds_only_actual_current_reference_stereo_images(tmp_path):
+    runtime, captures, hashes, identities = image_hash_fixture(tmp_path)
+    frame_ids, image_hashes = runner.capture_image_hashes(runtime, captures, hashes, identities)
+    assert frame_ids == [0, 2]
+    assert len(image_hashes) == 6
+    assert all(Path(path).name in ("0.png", "2.png") and digest == runner.sha(Path(path))
+               for path, digest in image_hashes.items())
+
+
+def test_capture_rejects_raw_image_changed_after_recording(tmp_path):
+    runtime, captures, hashes, identities = image_hash_fixture(tmp_path)
+    (runtime.paired / "right/2.png").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="raw image changed"):
+        runner.capture_image_hashes(runtime, captures, hashes, identities)
+
+
+def test_capture_rejects_image_changed_during_hash(monkeypatch, tmp_path):
+    runtime, captures, hashes, identities = image_hash_fixture(tmp_path)
+    original_sha = runner.sha
+    def changing_sha(path):
+        digest = original_sha(path)
+        if Path(path).name == "2.png":
+            Path(path).write_bytes(b"changed while hashing")
+        return digest
+    monkeypatch.setattr(runner, "sha", changing_sha)
+    with pytest.raises(ValueError, match="raw image changed"):
+        runner.capture_image_hashes(runtime, captures, hashes, identities)
+
+
+def test_capture_rejects_reference_outside_original_prefix(tmp_path):
+    import torch
+    runtime, captures, hashes, identities = image_hash_fixture(tmp_path)
+    torch.save({"track_entry": {"frame_id": 2, "reference_frame_id": 99}, "get_points_poses": {"frame_id": 2, "keyframe_id": 99}}, captures / "capture.pt")
+    hashes["capture.pt"] = runner.sha(captures / "capture.pt")
+    with pytest.raises(ValueError, match="prefix"):
+        runner.capture_image_hashes(runtime, captures, hashes, identities)
