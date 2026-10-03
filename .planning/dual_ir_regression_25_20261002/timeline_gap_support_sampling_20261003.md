@@ -42,3 +42,39 @@ the earlier seven-pair failure pilot (mean 7.532/P95 14.143/max 16.820 mm),
 not just the regressed overlap40 result, without damaging the passing control.
 If unsuccessful, do not promote or launch fast10/full25 for this policy, and
 close support-sampling as a proposed fix. Actual outcomes will be appended.
+
+## Actual outcomes: reject this policy
+
+| Record | Arm | New pairs | Mean mm | P95 mm | Maximum mm | Result |
+|---|---|---:|---:|---:|---:|---|
+| Sep29 take02 | fresh native control | 0 | 8.917 | 18.318 | 18.748 | FAIL |
+| Sep29 take02 | nonoverlap | 7 | 10.460 | 23.223 | 23.685 | FAIL |
+| Sep30 take03 | fresh native control | 0 | 3.005 | 5.956 | 9.869 | PASS |
+| Sep30 take03 | nonoverlap | 8 | 4.128 | 10.475 | 12.974 | FAIL |
+
+Both actual trials completed, retaining 1143 samples and timestamp overlap 1.0.
+Controls reproduce preceding trials exactly. Estimate CSV hashes match saved
+summary hashes. Take02 retained 13 eye observations / seven new pairs (752
+total stereo rows); take03 retained 16 eye observations / eight new pairs (504
+rows). Code guards passed; trial completion is not precision acceptance.
+No crop, GT-supervised selection, threshold or solver parameter change occurred.
+
+Actual two-arm runtimes were 275.462 and 273.336 seconds, run concurrently.
+Each Python process had 47 threads; this scheduling context differs from prior
+short runs, so their latency cannot be attributed to the sampling policy alone.
+No new frontends or images were extracted. Avoid assuming parallel native
+linear algebra is faster without bounding and measuring thread usage.
+
+Summary SHA256:
+- `timeline_gap_nonoverlap_trial_take02_v1/summary.json`:
+  `bd9ef8d45a115ec1100bf97201e00535a9ca9e9b46003dbfab1b26f8d2aeb410`.
+- `timeline_gap_nonoverlap_trial_take03_v1/summary.json`:
+  `458d124b0df733534ad985946a9874375a3b4766a65d123888e2864a28df65f5`.
+
+This policy is worse than both the fresh failure control and the previous
+seven-pair pilot, and turns a passing control into a failure. Reject promotion;
+do not run fast10/full25 for it. Neither temporal overlap nor density has been
+demonstrated to explain/fix the main error. Close this geometry-only policy
+route and return to the exact learned frontend failure frontier. Keep the
+optional diagnostic code and evidence as a reproducible rejected experiment;
+production remains unchanged. The maximum-ATE <=10 mm goal is still unmet.
