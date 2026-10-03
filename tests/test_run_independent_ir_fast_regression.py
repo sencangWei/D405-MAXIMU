@@ -316,3 +316,54 @@ def test_subset_summary_rejects_tampered_preflight_and_context_mismatch(tmp_path
 
     with pytest.raises(ValueError, match="context mismatch"):
         fast.run(config_path, tmp_path / "context_out", context_runner)
+
+
+def _progress_rows():
+    def score(maximum):
+        return {"result": "PASS" if maximum <= .010 else "FAIL", "ate_translation_max_m": maximum,
+                "samples": 100, "timestamp_overlap_ratio": 1.}
+    return [{"id": name, "baseline_score": score(before), "candidate_score": score(after)}
+            for name, before, after in [("f1", .020, .014), ("f2", .018, .013), ("f3", .014, .015),
+                                        ("p1", .008, .009), ("p2", .009, .0095)]]
+
+
+def test_partial_improvement_retained_even_without10mm_completion():
+    result = fast.assess_incremental_progress(_progress_rows(), ["f1", "f2", "f3"], ["p1", "p2"])
+    assert result["status"] == "RETAIN_INCREMENTAL_PROGRESS"
+    assert result["improved_failures"] == ["f1", "f2"]
+    assert result["worsened_failures"] == ["f3"]
+    assert result["fixed10_all_pass"] is False
+    assert result["full25_acceptance"] is False
+    assert result["production_promoted"] is False
+
+
+def test_passing_control_crossing10mm_prevents_adoption_not_direction_rejection():
+    rows = _progress_rows()
+    rows[-1]["candidate_score"].update(result="FAIL", ate_translation_max_m=.01001)
+    result = fast.assess_incremental_progress(rows, ["f1", "f2", "f3"], ["p1", "p2"])
+    assert result["status"] == "CONTROL_REGRESSION_DO_NOT_ADOPT"
+    assert result["passing_regressions"] == ["p2"]
+    assert result["direction_proven_useless"] is False
+
+
+def test_missing_score_or_coverage_cannot_prove_retention_or_useless_direction():
+    rows = _progress_rows()
+    rows[0]["candidate_score"]["samples"] = 99
+    result = fast.assess_incremental_progress(rows, ["f1", "f2", "f3"], ["p1", "p2"])
+    assert result["status"] == "INCOMPLETE_COMPARISON"
+    assert result["direction_proven_useless"] is False
+    rows = _progress_rows()
+    rows[0]["candidate_score"]["ate_translation_max_m"] = float("nan")
+    assert fast.assess_incremental_progress(rows, ["f1", "f2", "f3"], ["p1", "p2"])["status"] == "INCOMPLETE_COMPARISON"
+
+
+def test_mixed_progress_kept_and_fixed_set_full_pass_is_not25_acceptance():
+    rows = _progress_rows()
+    rows[1]["candidate_score"]["ate_translation_max_m"] = .018
+    assert fast.assess_incremental_progress(rows, ["f1", "f2", "f3"], ["p1", "p2"])["status"] == "MIXED_PROGRESS_KEEP_EXPERIMENT"
+    for row in rows:
+        row["candidate_score"].update(result="PASS", ate_translation_max_m=.010)
+    result = fast.assess_incremental_progress(rows, ["f1", "f2", "f3"], ["p1", "p2"])
+    assert result["fixed10_all_pass"] is True
+    assert result["max_ate_requirement_m"] == .010
+    assert result["full25_acceptance"] is False

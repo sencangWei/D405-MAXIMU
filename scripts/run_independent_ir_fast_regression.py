@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import subprocess
 import sys
@@ -228,6 +229,64 @@ def _summary_path(path: Path) -> Path:
     return path / "summary.json"
 
 
+def assess_incremental_progress(rows: list[dict[str, Any]], failure_ids: list[str], passing_ids: list[str]) -> dict[str, Any]:
+    """Evaluation-only retention advice; never a solver/production selector.
+
+    Incomplete comparisons do not prove a direction is useless. A candidate can
+    improve a majority of historical failures without meeting final10mm yet.
+    """
+    expected = [*failure_ids, *passing_ids]
+    by_id = {row.get("id"): row for row in rows}
+    incomplete = []
+    if len(by_id) != len(rows) or set(by_id) != set(expected):
+        incomplete.append("cohort_missing_extra_or_duplicate")
+    improved, worsened, passing_regressions, unresolved = [], [], [], []
+    for record_id in expected:
+        row = by_id.get(record_id, {})
+        before, after = row.get("baseline_score", {}), row.get("candidate_score", {})
+        values = [score.get("ate_translation_max_m") for score in (before, after)]
+        if (any(not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) or v < 0 for v in values)
+                or any(score.get("result") not in {"PASS", "FAIL"} for score in (before, after))):
+            incomplete.append(record_id)
+            continue
+        samples = [score.get("samples") for score in (before, after)]
+        overlaps = [score.get("timestamp_overlap_ratio") for score in (before, after)]
+        if (any(not isinstance(v, int) or isinstance(v, bool) or v <= 0 for v in samples)
+                or samples[0] != samples[1]
+                or any(not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) or not 0 <= v <= 1 for v in overlaps)
+                or overlaps[1] < overlaps[0]):
+            incomplete.append(record_id + ":coverage_changed_or_missing")
+            continue
+        if after["result"] != "PASS" or values[1] > .010:
+            unresolved.append(record_id)
+        if record_id in passing_ids:
+            if before["result"] != "PASS" or values[0] > .010:
+                incomplete.append(record_id + ":passing_baseline_not_pass")
+            if after["result"] != "PASS" or values[1] > .010:
+                passing_regressions.append(record_id)
+        elif values[1] < values[0]:
+            improved.append(record_id)
+        elif values[1] > values[0]:
+            worsened.append(record_id)
+    if passing_regressions:
+        status = "CONTROL_REGRESSION_DO_NOT_ADOPT"
+    elif incomplete:
+        status = "INCOMPLETE_COMPARISON"
+    elif len(improved) > len(failure_ids) / 2:
+        status = "RETAIN_INCREMENTAL_PROGRESS"
+    elif improved:
+        status = "MIXED_PROGRESS_KEEP_EXPERIMENT"
+    else:
+        status = "NO_MEASURED_IMPROVEMENT"
+    return {"status": status, "development_evaluation_only": True,
+            "external_ground_truth_used_for_evaluation": True, "production_promoted": False,
+            "direction_proven_useless": False, "improved_failures": improved,
+            "worsened_failures": worsened, "passing_regressions": passing_regressions,
+            "unresolved_records": unresolved, "incomplete": incomplete,
+            "fixed10_all_pass": not incomplete and not unresolved and len(rows) == len(expected),
+            "full25_acceptance": False, "max_ate_requirement_m": .010}
+
+
 def _validate_subset_summary(
     summary_path: Path,
     *,
@@ -325,6 +384,7 @@ def run(config_path: Path, output_root: Path, command_runner: Callable[..., Any]
     write_json(output_root / "fast_regression_summary.json", summary)
     allowed = set(int(code) for code in config.get("allowed_consumer_exit_codes", [0, 3]))
     expected_context: dict[str, Any] | None = None
+    comparison_rows: list[dict[str, Any]] = []
     for index, group in enumerate(groups, start=1):
         group_name = _group_name(index, group)
         group_dir = output_root / group_name
@@ -362,6 +422,11 @@ def run(config_path: Path, output_root: Path, command_runner: Callable[..., Any]
         )
         if expected_context is None:
             expected_context = consumer_summary["context"]
+        for row in consumer_summary["raw"]["results"]:
+            variants = row.get("variants", {})
+            comparison_rows.append({"id": row["id"],
+                "baseline_score": variants.get(corpus.paired.ORIGINAL_VARIANT, {}).get("score", {}),
+                "candidate_score": variants.get(corpus.REFINED_VARIANT, {}).get("score", {})})
         telemetry = _validate_telemetry(group_dir / "lsqr_telemetry.json")
         group_record["status"] = "COMPLETED"
         group_record["consumer_status"] = consumer_summary["raw"]["status"]
@@ -372,6 +437,8 @@ def run(config_path: Path, output_root: Path, command_runner: Callable[..., Any]
         write_json(output_root / "fast_regression_summary.json", summary)
     summary["status"] = "COMPLETED"
     summary["completed_group_count"] = len(groups)
+    summary["incremental_progress"] = assess_incremental_progress(
+        comparison_rows, config["failure_records"], config["passing_records"])
     write_json(output_root / "fast_regression_summary.json", summary)
     return summary
 
