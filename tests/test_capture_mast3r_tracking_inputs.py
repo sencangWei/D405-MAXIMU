@@ -396,6 +396,160 @@ def test_asymmetric_inference_return_identity_and_clone_isolation(monkeypatch, t
     assert utils.mast3r_asymmetric_inference is mast3r_asymmetric_inference
 
 
+def install_fake_mast3r_utils(monkeypatch, match_impl):
+    utils = types.ModuleType("mast3r_slam.mast3r_utils")
+    matching = types.ModuleType("mast3r_slam.matching")
+    utils.config = {"matching": {"dist_thresh": 0.5, "radius": 3}}
+    utils.matching = matching
+    matching.match = match_impl
+
+    def mast3r_asymmetric_inference(model, frame_i, frame_j):
+        base = float(frame_i.frame_id)
+        return (
+            torch.full((2, 1, 2, 3), base),
+            torch.full((2, 1, 2), base + 1),
+            torch.full((2, 1, 2, 4), base + 2),
+            torch.full((2, 1, 2), base + 3),
+        )
+
+    utils.mast3r_asymmetric_inference = mast3r_asymmetric_inference
+    pkg = types.ModuleType("mast3r_slam")
+    pkg.mast3r_utils = utils
+    pkg.matching = matching
+    monkeypatch.setitem(sys.modules, "mast3r_slam", pkg)
+    monkeypatch.setitem(sys.modules, "mast3r_slam.mast3r_utils", utils)
+    monkeypatch.setitem(sys.modules, "mast3r_slam.matching", matching)
+    return utils, matching
+
+
+def test_matching_call_captures_warmstart_raw_valid_identity_and_pre_call_clones(monkeypatch, tmp_path):
+    module = import_module()
+    returned = (torch.tensor([[1, 0]]), torch.tensor([[[False], [True]]]))
+
+    def match(X11, X21, D11, D21, **kwargs):
+        assert kwargs["idx_1_to_2_init"].tolist() == [[1, 0]]
+        X11[0, 0, 0, 0] = 999.0
+        return returned
+
+    utils, matching = install_fake_mast3r_utils(monkeypatch, match)
+
+    class MatchingTracker(Tracker):
+        def track(self, frame, *args, **kwargs):
+            import mast3r_slam.mast3r_utils as imported_utils
+
+            X, _C, D, _Q = imported_utils.mast3r_asymmetric_inference(None, frame, self.keyframes.last_keyframe())
+            X11, X21, D11, D21 = X[0:1].clone(), X[1:2].clone(), D[0:1], D[1:2]
+            self.match_result = imported_utils.matching.match(
+                X11, X21, D11, D21,
+                idx_1_to_2_init=torch.tensor([[1, 0]]),
+                metric_distance_m=0.25,
+                metric_scale=2.0,
+            )
+            assert X11[0, 0, 0, 0].item() == 999.0
+            return False, [], False
+
+    tracker = MatchingTracker()
+    with module.capture_mast3r_tracking_inputs(
+        MatchingTracker, capture_dir=tmp_path, frame_ids={19}, enabled=True
+    ):
+        tracker.track(Frame(19))
+    assert tracker.match_result is returned
+    payload = torch.load(tmp_path / "mast3r_tracking_frame000019_attempt001.pt", weights_only=True)
+    call = payload["matching_calls"][0]
+    assert call["asymmetric_call_index"] == 0
+    assert call["idx_1_to_2_init"].tolist() == [[1, 0]]
+    assert call["metric_distance_m"] == 0.25
+    assert call["metric_scale"] == 2.0
+    assert call["matching_config"] == {"dist_thresh": 0.5, "radius": 3}
+    assert call["return"]["idx_1_to_2"].tolist() == [[1, 0]]
+    assert call["return"]["valid_match"].tolist() == [[[False], [True]]]
+    assert call["X11"][0, 0, 0, 0].item() == 19.0
+    assert utils.matching.match is match
+    assert matching.match is match
+
+
+def test_matching_nonselected_frame_passthrough_has_no_observation(monkeypatch, tmp_path):
+    module = import_module()
+    calls = []
+
+    def match(X11, X21, D11, D21, **kwargs):
+        calls.append("called")
+        return torch.tensor([[0]]), torch.ones(1, 1, 1, dtype=torch.bool)
+
+    install_fake_mast3r_utils(monkeypatch, match)
+
+    class MatchingTracker(Tracker):
+        def track(self, frame, *args, **kwargs):
+            import mast3r_slam.mast3r_utils as imported_utils
+
+            X, _C, D, _Q = imported_utils.mast3r_asymmetric_inference(None, frame, self.keyframes.last_keyframe())
+            imported_utils.matching.match(X[0:1], X[1:2], D[0:1], D[1:2])
+            return False, [], False
+
+    with module.capture_mast3r_tracking_inputs(
+        MatchingTracker, capture_dir=tmp_path, frame_ids={20}, enabled=True
+    ):
+        MatchingTracker().track(Frame(21))
+    assert calls == ["called"]
+    assert sorted(p.name for p in tmp_path.glob("*.pt")) == ["mast3r_tracking_frame000020_missing.pt"]
+
+
+def test_matching_restored_on_exception_and_error_recorded(monkeypatch, tmp_path):
+    module = import_module()
+
+    def match(X11, X21, D11, D21, **kwargs):
+        raise RuntimeError("match boom")
+
+    utils, _matching = install_fake_mast3r_utils(monkeypatch, match)
+
+    class MatchingTracker(Tracker):
+        def track(self, frame, *args, **kwargs):
+            import mast3r_slam.mast3r_utils as imported_utils
+
+            X, _C, D, _Q = imported_utils.mast3r_asymmetric_inference(None, frame, self.keyframes.last_keyframe())
+            imported_utils.matching.match(X[0:1], X[1:2], D[0:1], D[1:2])
+            return False, [], False
+
+    with pytest.raises(RuntimeError, match="match boom"):
+        with module.capture_mast3r_tracking_inputs(
+            MatchingTracker, capture_dir=tmp_path, frame_ids={22}, enabled=True
+        ):
+            MatchingTracker().track(Frame(22))
+    assert utils.matching.match is match
+    payload = torch.load(tmp_path / "mast3r_tracking_frame000022_attempt001.pt", weights_only=True)
+    assert payload["matching_calls"][0]["error"]["type"] == "RuntimeError"
+    assert payload["error"]["type"] == "RuntimeError"
+
+
+def test_multiple_asymmetric_calls_have_distinct_matching_associations(monkeypatch, tmp_path):
+    module = import_module()
+
+    def match(X11, X21, D11, D21, **kwargs):
+        value = int(X11[0, 0, 0, 0].item())
+        return torch.tensor([[value]]), torch.ones(1, 1, 1, dtype=torch.bool)
+
+    install_fake_mast3r_utils(monkeypatch, match)
+
+    class MultiMatchingTracker(Tracker):
+        def track(self, frame, *args, **kwargs):
+            import mast3r_slam.mast3r_utils as imported_utils
+
+            for offset in (0, 1):
+                fake_frame = Frame(frame.frame_id + offset)
+                X, _C, D, _Q = imported_utils.mast3r_asymmetric_inference(None, fake_frame, self.keyframes.last_keyframe())
+                imported_utils.matching.match(X[0:1], X[1:2], D[0:1], D[1:2])
+            return False, [], False
+
+    with module.capture_mast3r_tracking_inputs(
+        MultiMatchingTracker, capture_dir=tmp_path, frame_ids={23}, enabled=True
+    ):
+        MultiMatchingTracker().track(Frame(23))
+    payload = torch.load(tmp_path / "mast3r_tracking_frame000023_attempt001.pt", weights_only=True)
+    assert [c["matching_call_index"] for c in payload["matching_calls"]] == [0, 1]
+    assert [c["asymmetric_call_index"] for c in payload["matching_calls"]] == [0, 1]
+    assert [c["return"]["idx_1_to_2"].item() for c in payload["matching_calls"]] == [23, 24]
+
+
 def test_dataset_prefix_wrapper_delegates_len_attrs_setattr_and_subsample():
     module = import_module()
 
@@ -539,6 +693,8 @@ Path(os.environ["RUNPY_OUT"]).write_text(json.dumps({
     assert rc == 0
     observed = json.loads(output.read_text(encoding="utf-8"))
     assert observed == {"marker": "loaded-from-tool-root", "len": 3}
+    for name in ["mast3r_slam", "mast3r_slam.tracker", "mast3r_slam.dataloader"]:
+        sys.modules.pop(name, None)
 
 
 def test_cli_runpy_spawn_child_resolves_original_main(tmp_path):

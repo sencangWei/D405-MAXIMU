@@ -256,6 +256,12 @@ def capture_mast3r_tracking_inputs(
         if mast3r_utils is not None
         else None
     )
+    matching_module = getattr(mast3r_utils, "matching", None) if mast3r_utils is not None else None
+    original_matching_match = (
+        getattr(matching_module, "match", None)
+        if matching_module is not None
+        else None
+    )
 
     def track_wrapper(self, frame, *args, **kwargs):
         frame_id = _frame_id(frame)
@@ -271,6 +277,7 @@ def capture_mast3r_tracking_inputs(
             "opt_pose_calib_sim3": None,
             "solve_pose_increment": [],
             "mast3r_asymmetric_inference": [],
+            "matching_calls": [],
         }
         previous = getattr(self, _ACTIVE_ATTR, None)
         setattr(self, _ACTIVE_ATTR, record)
@@ -406,12 +413,56 @@ def capture_mast3r_tracking_inputs(
             )
         return result
 
+    def matching_match_wrapper(*args, **kwargs):
+        record = active_stack[-1] if active_stack else None
+        section = None
+        if record is not None and len(args) >= 4:
+            asymmetric_sections = record.get("mast3r_asymmetric_inference", [])
+            section = {
+                "matching_call_index": len(record.setdefault("matching_calls", [])),
+                "asymmetric_call_index": len(asymmetric_sections) - 1 if asymmetric_sections else None,
+                "asymmetric_call_count": len(asymmetric_sections),
+                "X11": _snapshot(args[0]),
+                "X21": _snapshot(args[1]),
+                "D11": _snapshot(args[2]),
+                "D21": _snapshot(args[3]),
+                "idx_1_to_2_init": _snapshot(
+                    kwargs.get("idx_1_to_2_init", args[4] if len(args) > 4 else None)
+                ),
+                "metric_distance_m": _snapshot(
+                    kwargs.get("metric_distance_m", args[5] if len(args) > 5 else 0.0)
+                ),
+                "metric_scale": _snapshot(
+                    kwargs.get("metric_scale", args[6] if len(args) > 6 else None)
+                ),
+                "matching_config": _snapshot(
+                    getattr(mast3r_utils, "config", {}).get("matching", None)
+                    if mast3r_utils is not None
+                    else None
+                ),
+            }
+            record["matching_calls"].append(section)
+        try:
+            result = original_matching_match(*args, **kwargs)
+        except BaseException as error:
+            if section is not None:
+                section["error"] = _error_payload(error)
+            raise
+        if section is not None:
+            section["return"] = {
+                "idx_1_to_2": _snapshot(result[0] if isinstance(result, tuple) and len(result) > 0 else None),
+                "valid_match": _snapshot(result[1] if isinstance(result, tuple) and len(result) > 1 else None),
+            }
+        return result
+
     frame_tracker_cls.track = track_wrapper
     frame_tracker_cls.get_points_poses = get_points_poses_wrapper
     frame_tracker_cls.opt_pose_calib_sim3 = opt_pose_calib_sim3_wrapper
     frame_tracker_cls.solve_pose_increment = solve_pose_increment_wrapper
     if mast3r_utils is not None and original_asymmetric_inference is not None:
         mast3r_utils.mast3r_asymmetric_inference = mast3r_asymmetric_inference_wrapper
+    if matching_module is not None and original_matching_match is not None:
+        matching_module.match = matching_match_wrapper
     try:
         yield writer
     finally:
@@ -421,6 +472,8 @@ def capture_mast3r_tracking_inputs(
         frame_tracker_cls.solve_pose_increment = originals["solve_pose_increment"]
         if mast3r_utils is not None and original_asymmetric_inference is not None:
             mast3r_utils.mast3r_asymmetric_inference = original_asymmetric_inference
+        if matching_module is not None and original_matching_match is not None:
+            matching_module.match = original_matching_match
         writer.write_missing()
         writer.write_summary()
 
