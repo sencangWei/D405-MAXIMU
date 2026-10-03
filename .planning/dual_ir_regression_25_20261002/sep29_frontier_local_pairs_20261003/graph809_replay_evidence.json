@@ -1,0 +1,44 @@
+{
+  "schema": "umi_native_graph_snapshot_diagnostic_v1",
+  "diagnostic_only": true,
+  "slam_supervision": false,
+  "production_promoted": false,
+  "precision_pass": false,
+  "record": "20260929_take02",
+  "snapshot": ".planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/graph809_inputs.pt",
+  "snapshot_sha256": "64b4494a826689e36c7c8d5b274fceabd9e88fc6895adb7bb995ac695918ecfa",
+  "snapshot_large_local_only": true,
+  "source": "left_retry_graph_snapshot/run_manifest.json",
+  "source_exit_code": 0,
+  "source_native_pose_count": 1199,
+  "source_workflow_reported_elapsed_s": 118,
+  "source_snapshot_only_trajectory_equals_previous_retry": true,
+  "source_trajectory_sha256": "f50045dd2a3ce08a95d6d59f83b5b340d50b9c22725078ebcf4378c93b442d06",
+  "solver": "unchanged mast3r_slam_backends.gauss_newton_calib, one frozen solve",
+  "snapshot_checks": {
+    "calibrated_gn_argument_count": 19,
+    "keyframe_count": 107,
+    "latest_raw_frame_id": 809,
+    "target_keyframe_index": 106,
+    "finite_tensor_values": true,
+    "edge_indices_in_pose_bounds": true
+  },
+  "positions_unit": "model_units_not_mm",
+  "settings": [288, 512, -10, 0.000001, 1.0, 10.0, 0.0, 1.5, 10, 0.00000001],
+  "target_before": [1.441691517829895, 0.29915857315063477, -0.9868229031562805, -0.1840054839849472, 0.6161316633224487, 0.5476782917976379, 0.5353243947029114, 0.3963984549045563],
+  "target_after": [1.473146677017212, 0.27348291873931885, -0.9794954061508179, -0.21950653195381165, 0.6155201196670532, 0.5524573922157288, 0.517438530921936, 0.44901829957962036],
+  "target_update_model_units": 0.04125965014100075,
+  "previous_update_model_units": 0.03332064673304558,
+  "max_update_model_units": 0.04125965014100075,
+  "max_update_frame": 809,
+  "incident_edges": [
+    {"edge_index": 252, "from_frame": 791, "to_frame": 809, "valid_fraction": 0.3982001543045044, "q_median": 0.9044974446296692},
+    {"edge_index": 505, "from_frame": 809, "to_frame": 791, "valid_fraction": 0.51043701171875, "q_median": 1.764868140220642}
+  ],
+  "interpretation": {
+    "first_solve_has_only_previous_keyframe_incident_edges": true,
+    "bad_retrieval_edge_at_first_solve_demonstrated": false,
+    "entire_final_37mm_step_explained_by_this_snapshot": false,
+    "next_bounded_check": "Compare parent-relative motion before this solve, after this solve and after subsequent graph updates; do not delete retrieval edges or relax source gates based on this snapshot."
+  }
+}

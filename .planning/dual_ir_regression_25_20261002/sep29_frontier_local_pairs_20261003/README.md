@@ -141,3 +141,29 @@ tail59 intervals median0.570deg/P952.478deg/max3.240deg. Original prefix58
 intervals P951.779deg; no precision/rotation acceptance is inferred from these
 numbers. Existing source stages bind old LEFT587/raw+metric hashes; inserting
 new1199 LEFT reports into them would violate provenance and index bounds.
+
+## Observation-only graph snapshot: narrower cause, not a repair
+
+A new exact1199-frame LEFT retry replay saved the existing default-off graph
+snapshot at raw frame809. It completed with exit0; workflow reported118s.
+Its native trajectory is byte-identical to the prior retry (SHA256f50045dd...),
+so capturing the snapshot did not change the measured source. The1.2GB snapshot
+remains local; its hash, tensor checks and one unchanged calibrated-GN replay
+are recorded in `graph809_replay_evidence.json`.
+
+The107-keyframe snapshot has finite tensors and in-bounds edge indices. Its
+first solve moves KF809 by0.04125965 **model units, not millimetres**, while
+KF791 moves0.03332065. At this solve KF809 has only two incident directions:
+791->809 and809->791. There is **no accepted retrieval incident edge at809**
+in this snapshot; deleting alleged false loops here is not evidence-backed.
+This initial update does not by itself explain the final37.229mm discontinuity.
+The remaining bounded diagnostic is parent-relative motion across this and
+subsequent graph updates. No failed source report is promoted, no continuity
+gate is relaxed, and no frontend/fusion precision improvement is claimed.
+
+Development regression remains the fixed failure-first5+passing5 set in
+`config/dual_ir_fast_regression_10_20261003.json`, not a repeat of all25 on every
+iteration. Its cached-backend run took460.7s;6 records passed,2 scored failures
+and2 technical/unscored cases remain. New frontend source changes require fresh
+source bindings and measurements. Full25 plus fresh recordings remain final
+acceptance requirements. Fresh fast-runner tests:6 PASS.
