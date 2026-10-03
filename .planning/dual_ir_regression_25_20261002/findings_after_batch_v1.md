@@ -1486,3 +1486,37 @@ This is diagnostic capability, not a new precision fix or production promotion.
 Latest RK3576 read-only SSH(pi@192.168.113.161) again exits255 No route to
 host before identity/authentication; target access and actual ARM candidate
 remain unverified. No board service/release/recording/network changes.
+
+2026-10-03 continuation after user objected to unrelated RK3576 probes:
+No more repetitive RK access checks mixed into SLAM progress. Its access/ARM
+candidate blocker remains explicit, with no board mutations or completion claim.
+B native take08 READY1104.739s;B15processed14READY1retained0technicalfail,
+overall19/25processed18READY1retained,remaining6. Only4paired ATE so far,
+2PASS2FAIL and no extraPASS. Live source PID2450675 CPU time advancing.
+
+Read-only actual-backend audit found no certain unit/coordinate-model bug:
+run_physical_stereo_lever_probe.py passes body_T_camera=I with body_i stereo
+rows, solve_metric_scale=False and max_correction_m=None. Actual graph scale
+enabled=false/ratio1.0. Stereo and learned-motion residual compromise is not
+causal proof; standalone learned-residual gate was already falsified by PASS
+heldout2. Do not reopen closed correction/weight/filter families.
+
+Diagnostic wrapper now additionally labels each LSQR call from actual
+physical.run_solver_variant record_id/variant with arm-local call index,
+not by inferred call counts. Arguments/results remain identical; both process
+bindings and context restore on exceptions. Two new regressions failed on the
+old wrapper, then42relatedtests PASS plus py_compile/diffcheck. Initial pytest
+attempt hit unrelated ROS launch_testing discovery; targeted rerun disabled
+plugin autoload and reached the intended tests. Independent review APPROVE,
+9focusedtests PASS. No active source/consumer/helper/solver file modified.
+
+Automatic continuation session19310 is live, waiting for B parentPID2450656
+with matching process start time, not a state-file-only wait. Exact command
+saved in continue_native25_then_lsqr_20261003.sh. After the current source AND
+paired chain terminates, strict original full25 merge must succeed before any
+diagnostic starts. Then unchanged-parameter telemetry reruns all three shards,
+strict-merges25 and checks every estimate SHA and precision statistic against
+the original full25 result. Existing outputs must be absent; only0/3 consumer
+returns tolerated; actual exceptions/invalid bindings stop. Current queue is
+untouched, no GT solver supervision/selection, no promotion/claimed precision
+gain from telemetry. Actual telemetry solving has NOT started yet.

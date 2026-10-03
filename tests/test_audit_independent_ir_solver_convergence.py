@@ -149,3 +149,57 @@ def test_writer_does_not_overwrite_file_created_after_precheck(tmp_path: Path, m
     with pytest.raises(FileExistsError):
         audit.write_json_new(out, {"status": "RECORDED"})
     assert out.read_text() == "competing writer"
+
+
+def test_calls_are_bound_to_actual_record_and_arm_without_changing_results(monkeypatch: pytest.MonkeyPatch) -> None:
+    sentinel = (np.array([1.0]), 2, 3, 0.1, 0.2, 5.0, 6.0, 0.5, 8.0, None)
+    arm_result = object()
+    seen = []
+
+    def fake_lsqr(matrix, rhs, *args, **kwargs):
+        return sentinel
+
+    def fake_arm(*args, **kwargs):
+        seen.append((args, kwargs))
+        for _ in range(2):
+            assert audit.physical.fusion.lsqr(np.eye(1), np.ones(1)) is sentinel
+        return arm_result
+
+    monkeypatch.setattr(audit.fusion, "lsqr", fake_lsqr)
+    monkeypatch.setattr(audit.physical, "run_solver_variant", fake_arm)
+    first_args = ({"id": "take1"}, Path("baseline"), "control", Path("out1"))
+    second_kwargs = {"record": {"id": "take2"}, "variant": "native"}
+
+    with audit.capture_fusion_lsqr() as calls:
+        assert audit.physical.run_solver_variant(*first_args) is arm_result
+        assert audit.physical.run_solver_variant(**second_kwargs) is arm_result
+
+    assert seen == [(first_args, {}), ((), second_kwargs)]
+    assert [(call["record_id"], call["variant"], call["lsqr_call_in_arm"]) for call in calls] == [
+        ("take1", "control", 1), ("take1", "control", 2),
+        ("take2", "native", 1), ("take2", "native", 2),
+    ]
+    assert audit.physical.run_solver_variant is fake_arm
+    assert audit.fusion.lsqr is fake_lsqr
+
+
+def test_arm_context_and_bindings_are_restored_on_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    sentinel = (np.array([1.0]), 2, 3, 0.1, 0.2, 5.0, 6.0, 0.5, 8.0, None)
+
+    def fake_lsqr(matrix, rhs, *args, **kwargs):
+        return sentinel
+
+    def failing_arm(*args, **kwargs):
+        audit.fusion.lsqr(np.eye(1), np.ones(1))
+        raise ValueError("arm failed")
+
+    monkeypatch.setattr(audit.fusion, "lsqr", fake_lsqr)
+    monkeypatch.setattr(audit.physical, "run_solver_variant", failing_arm)
+    with audit.capture_fusion_lsqr() as calls:
+        with pytest.raises(ValueError, match="arm failed"):
+            audit.physical.run_solver_variant({"id": "take1"}, Path("baseline"), "native")
+        audit.fusion.lsqr(np.eye(1), np.ones(1))
+    assert calls[0]["record_id"] == "take1"
+    assert "record_id" not in calls[1]
+    assert audit.physical.run_solver_variant is failing_arm
+    assert audit.fusion.lsqr is fake_lsqr

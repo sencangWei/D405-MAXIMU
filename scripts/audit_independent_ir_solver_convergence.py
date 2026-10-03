@@ -91,23 +91,48 @@ def _call_telemetry(matrix: Any, rhs: Any, kwargs: dict[str, Any], result: Any) 
 def capture_fusion_lsqr() -> Iterator[list[dict[str, Any]]]:
     """Capture telemetry at the canonical fusion LSQR seam.
 
-    The wrapped function returns exactly the original LSQR result object.  The
-    fusion module binding is restored on normal exit and exceptions.
+    Both wrappers return the exact original result objects and forward all
+    arguments unchanged.  Arm labels come from the actual runner call, not
+    guesses about how many LSQR calls each record produces.  Both bindings are
+    restored on normal exit and exceptions.
     """
 
     original = fusion.lsqr
+    original_arm = physical.run_solver_variant
     calls: list[dict[str, Any]] = []
+    arm_context: dict[str, Any] | None = None
+
+    def wrapped_arm(*args: Any, **kwargs: Any) -> Any:
+        nonlocal arm_context
+        previous = arm_context
+        record = args[0] if args else kwargs.get("record", {})
+        variant = args[2] if len(args) > 2 else kwargs.get("variant")
+        arm_context = {
+            "record_id": record.get("id") if isinstance(record, dict) else None,
+            "variant": variant,
+            "lsqr_call_in_arm": 0,
+        }
+        try:
+            return original_arm(*args, **kwargs)
+        finally:
+            arm_context = previous
 
     def wrapped(matrix: Any, rhs: Any, *args: Any, **kwargs: Any) -> Any:
         result = original(matrix, rhs, *args, **kwargs)
-        calls.append(_call_telemetry(matrix, rhs, kwargs, result))
+        entry = _call_telemetry(matrix, rhs, kwargs, result)
+        if arm_context is not None:
+            arm_context["lsqr_call_in_arm"] += 1
+            entry.update(arm_context)
+        calls.append(entry)
         return result
 
     fusion.lsqr = wrapped
+    physical.run_solver_variant = wrapped_arm
     try:
         yield calls
     finally:
         fusion.lsqr = original
+        physical.run_solver_variant = original_arm
 
 
 def _status(calls: list[dict[str, Any]], exception: str | None) -> str:
