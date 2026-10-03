@@ -98,6 +98,31 @@ error and failed-LEFT dependency error; targeted evaluator/optional-policy/RIGHT
 scale tests then passed 38/38, and independent review approved the two-file fix.
 No frontend objective, weight, cap, or precision threshold was changed.
 
+The updated evaluator source was pushed to the owned remote at bfee8e1740d5daf1632087da32e33286df9484fb.
+A fresh remote archive restored to /tmp/umi-optional-scale-restore-jamiA5 matches
+all four newly committed files byte-for-byte; its restored focused source suite
+passed 108/108 tests in 2.23 seconds. This remains source/contract evidence, not
+precision acceptance or native-runtime packaging.
+
+The fixed-ten continuation is now implemented in scripts/run_metric_joint_fast10.py.
+It records frontend/scale/evaluation failures and continues to the next record,
+never overwrites an output root, refuses RUNNING reuse, and skips unnecessary
+other-eye replay when a source-bound terminal coverage failure is already known.
+The queue binds every one of the actual frontend CODE_PATHS, model checkpoint,
+and selected paired source manifests/clocks/calibration files before producers.
+Objective/checkpoint mutation tests prove it stops before the next producer
+rather than mixing source versions across the cohort. Independent read-only
+review approved the repaired queue; the focused queue/evaluator/retention suite
+passed 37/37 tests in 20.42 seconds, including 14 queue tests.
+
+run_fast9_after_ind2_v1.sh is an offline continuation launcher. It waits for the
+exact current ind2 process/start-time identities before launching the remaining
+nine fixed records serially, so no second full GPU producer is introduced. It
+excludes ind2 (already being processed), preserves take02 RIGHT's known failure
+in the denominator, and schedules the remaining failure records before all five
+passing controls. Preparing this launcher is not evidence that it has launched
+or that any of the remaining trajectories have passed.
+
 Independent RK3576 deployment remains live-blocked by No route to host and the
 missing actual ARM candidate/native runtime. No QR, network, udev, package,
 recording deletion, reboot, or robot-motion changes were made.
