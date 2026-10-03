@@ -1,0 +1,75 @@
+{
+  "schema": "umi_native_parent_transport_cause_diagnostic_v1",
+  "record": "20260929_take02",
+  "diagnostic_only": true,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "production_promoted": false,
+  "precision_pass": false,
+  "trace": "backend809_events.jsonl",
+  "trace_sha256": "4693e3042f2a7e8eebb5460cd726d62f97bb6e11dd86d1fd3e7de1c2979efc51",
+  "trace_event_count": 255,
+  "hook": ".planning/metric_window_bundle_20260928/backend_hook/sitecustomize.py",
+  "hook_sha256": "ac9d09f8998c2d66bac3cd75f41a0386515e0c5f5ed820be2ba4a79f751d6040",
+  "trace_workflow": "left_retry_backend_trace/run_manifest.json",
+  "trace_workflow_elapsed_s": 118,
+  "workflow_exit_code": 0,
+  "native_pose_count": 1199,
+  "final_and_online_trajectories_byte_equal_to_previous_retry": true,
+  "warnings": ["System ROS helper interpreters could not import lietorch from observation hook; native MASt3R virtualenv imported hook and produced full trace", "CUDA IPC teardown warning; process exited zero"],
+  "reconstruction": {
+    "ordinary_frame": 808,
+    "parent_frame": 791,
+    "new_keyframe": 809,
+    "reference_state": "parent Sim3 before first frame809 graph solve, not final parent",
+    "relative_translation_formula": "R_parent_before.inv() * (online808_translation - parent_before_translation) / parent_before_scale",
+    "transport_formula": "parent_translation + parent_scale * R_parent * relative_translation",
+    "final808_matches_saved_full_error_model_units": 0.00000022533838898649852,
+    "final809_matches_saved_full_error_model_units": 0.0,
+    "after_target_solve_count": 22,
+    "final_graph_keyframe": 1044
+  },
+  "metric_values_are_diagnostic_only": true,
+  "diagnostic_scale_m_per_model_unit": 0.3704053526450242,
+  "diagnostic_scale_source": "retry_metric_quality_v1/stereo_short_report.json; complete source report remains FAIL",
+  "step808_to809_timeline": [
+    {"solve_raw_frame": 809, "before_step_mm_diagnostic": 8.739391812778429, "after_step_mm_diagnostic": 9.887779218262585},
+    {"solve_raw_frame": 865, "before_step_mm_diagnostic": 7.518083837040866, "after_step_mm_diagnostic": 7.513720953952252},
+    {"solve_raw_frame": 877, "before_step_mm_diagnostic": 7.513720953952252, "after_step_mm_diagnostic": 36.307997374558504},
+    {"solve_raw_frame": 891, "before_step_mm_diagnostic": 36.307997374558504, "after_step_mm_diagnostic": 37.19735786987995},
+    {"solve_raw_frame": 1044, "before_step_mm_diagnostic": 37.24994726064333, "after_step_mm_diagnostic": 37.22916579095858}
+  ],
+  "accepted_edges_at877": [
+    {"frames": [742, 877], "valid_fractions": [0.7424113154411316, 0.4578993022441864], "q_medians": [5.809322357177734, 3.035327434539795]},
+    {"frames": [731, 877], "valid_fractions": [0.6781955361366272, 0.3188340961933136], "q_medians": [0.9906571507453918, 0.12619434297084808]},
+    {"frames": [865, 877], "valid_fractions": [0.5490993857383728, 0.3157755434513092], "q_medians": [4.601380348205566, 1.4118328094482422]}
+  ],
+  "stereo_pair_diagnostic": {
+    "estimator": "existing estimate_pair_scale, classical LK/SIFT fallback, free PnP, no LM, 128 disparities, depth0.07-0.6m, OpenCV RNG seed0 per call",
+    "factory_baseline_m": 0.018083254,
+    "source_timestamp_skew_ms": 0.0,
+    "stereo_timestamp_skew_ms": 0.0,
+    "before877": [
+      {"frames": [742, 877], "accepted": false, "reason": "translation_direction_disagrees", "direction_cosine": 0.4294771018388713},
+      {"frames": [731, 877], "accepted": false, "reason": "insufficient_consistent_points", "sift_failure_reason": "rotation_disagrees"},
+      {"frames": [865, 877], "accepted": true, "scale": 0.2649235322593212, "distance_m": 0.1087532433030498, "rotation_error_deg": 0.3675028532289267, "bidirectional_scale_disagreement": 0.012514630066052903}
+    ],
+    "after877": [
+      {"frames": [742, 877], "accepted": true, "scale": 0.396206178715146, "distance_m": 0.09957006043174228, "rotation_error_deg": 0.41137885745254, "bidirectional_scale_disagreement": 0.19518520458784472},
+      {"frames": [731, 877], "accepted": true, "scale": 0.35969987071770415, "distance_m": 0.150621946035192, "rotation_error_deg": 0.495229449058199, "method": "sift", "bidirectional_check_available": false},
+      {"frames": [865, 877], "accepted": true, "scale": 0.3688206557705143, "distance_m": 0.1087532433030498, "rotation_error_deg": 0.7448334226969405, "bidirectional_scale_disagreement": 0.01262910806381192}
+    ],
+    "dense808_to809": [
+      {"source": "online", "accepted": false, "reason": "translation_direction_disagrees", "direction_cosine": -0.6914434813434285},
+      {"source": "final", "accepted": false, "reason": "rotation_disagrees", "rotation_error_deg": 5.591831984693409}
+    ]
+  },
+  "interpretation": {
+    "later877_graph_update_causes_dense_step_increase": true,
+    "false_loop_demonstrated": false,
+    "stereo_checks_prove_absolute_accuracy": false,
+    "transport_reconstruction_matches_actual_saved_output": true,
+    "interpolation_or_loop_deletion_is_a_validated_fix": false,
+    "scope": "Exact recovered Sep29take02 LEFT source only; not a common-cause claim for all25 or precision improvement"
+  }
+}

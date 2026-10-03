@@ -167,3 +167,37 @@ iteration. Its cached-backend run took460.7s;6 records passed,2 scored failures
 and2 technical/unscored cases remain. New frontend source changes require fresh
 source bindings and measurements. Full25 plus fresh recordings remain final
 acceptance requirements. Fresh fast-runner tests:6 PASS.
+
+## Subsequent graph update pinned: frame877, not first809 solve
+
+One existing observation-hook replay completed in118s with255 graph events.
+Its1199 native final **and online** trajectories are byte-identical to the prior
+retry. Using parent791's Sim3 **before** solve809, recovering frame808's stored
+relative translation and transporting it through every later solve reproduces
+actual final808 within2.253e-7 model units; frame809 matches exactly. The saved
+trace therefore explains the actual exported discontinuity, not a guessed
+parent or a different replay. Numeric evidence/hashes are recorded in
+`backend877_transport_evidence.json`; raw trace remains local.
+
+At the unchanged short diagnostic scale (not an accepted metric source), the
+808->809 step is9.888mm after solve809 and7.514mm after solve865. **Solve877
+changes it to36.308mm**, followed by37.197mm at891 and37.229mm at final1044.
+The solver accepts742->877,731->877 and865->877. This pins the triggering
+update, but does **not** prove these are false loops or that removing them is
+a valid repair.
+
+Independent existing free stereo-PnP checks actually become more consistent
+with those three keyframe relative poses after solve877: all three pass their
+existing pair checks then, versus direction/rotation failures for the two
+nonlocal pairs before. After scales are0.3962/0.3597/0.3688;742's forward/reverse
+scale spread is19.5%, and731 uses the single-direction SIFT fallback, so these
+are not absolute-accuracy truth. The865->877 bidirectional spread is1.26%.
+Raw808->809 stereo rejects both online direction and final rotation consistency;
+the online trajectory cannot be substituted as a geometrically valid fix.
+
+The source failure is now localized to a subsequent graph correction plus
+ordinary-frame single-parent transport disagreement. Root cause of the
+underlying conflicting learned geometry remains to be isolated. No metric
+or fusion source is promoted, no gate is changed, and there is still no new
+10mm precision result. Other scored fast10 failures are being checked
+independently so this one incomplete record does not monopolize optimization.
