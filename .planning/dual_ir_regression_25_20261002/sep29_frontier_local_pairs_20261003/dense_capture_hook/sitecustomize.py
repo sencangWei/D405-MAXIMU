@@ -1,8 +1,8 @@
-"""Default-off MASt3R tracking snapshot hook for one dense frame.
+"""Default-off MASt3R tracking snapshot hook for selected dense frames.
 
 Enable by placing this directory on PYTHONPATH and setting both:
-  MAST3R_DENSE_SNAPSHOT_FRAME=<frame_id>
-  MAST3R_DENSE_SNAPSHOT_PATH=<new .pt path>
+  MAST3R_DENSE_SNAPSHOT_FRAME=<frame_id>[,<frame_id>...]
+  MAST3R_DENSE_SNAPSHOT_PATH=<new .pt path or template containing {frame_id}>
 """
 import os
 
@@ -17,6 +17,20 @@ def _enabled():
 if _enabled():
     import torch
     from mast3r_slam.tracker import FrameTracker
+
+    def _requested_frames():
+        parts = os.environ["MAST3R_DENSE_SNAPSHOT_FRAME"].split(",")
+        if not parts or any(part.strip() == "" for part in parts):
+            raise ValueError("MAST3R_DENSE_SNAPSHOT_FRAME contains an empty item")
+        frames = [int(part) for part in parts]
+        if len(set(frames)) != len(frames) or any(frame < 0 for frame in frames):
+            raise ValueError("MAST3R_DENSE_SNAPSHOT_FRAME must be unique non-negative integers")
+        path = os.environ["MAST3R_DENSE_SNAPSHOT_PATH"]
+        if len(frames) > 1 and "{frame_id}" not in path:
+            raise ValueError("MAST3R_DENSE_SNAPSHOT_PATH must contain {frame_id} for multiple frames")
+        return set(frames), path
+
+    _REQUESTED_FRAMES, _SNAPSHOT_PATH = _requested_frames()
 
     _FRAME_FIELDS = (
         "img",
@@ -51,6 +65,7 @@ if _enabled():
         return index, keyframe
 
     def _capture_snapshot(frame, reference_index, reference_keyframe, result):
+        frame_id = int(frame.frame_id)
         frame_payload = {
             name: _clone_tensor(f"frame.{name}", getattr(frame, name, None))
             for name in _FRAME_FIELDS
@@ -66,7 +81,7 @@ if _enabled():
         )
         snapshot = {
             "schema": "mast3r_dense_frame_snapshot_v1",
-            "requested_frame_id": int(os.environ["MAST3R_DENSE_SNAPSHOT_FRAME"]),
+            "requested_frame_id": frame_id,
             "frame": frame_payload,
             "reference": {
                 "index": int(reference_index),
@@ -80,7 +95,8 @@ if _enabled():
                 "try_reloc": bool(result[2]),
             },
         }
-        with open(os.environ["MAST3R_DENSE_SNAPSHOT_PATH"], "xb") as stream:
+        path = _SNAPSHOT_PATH.format(frame_id=frame_id)
+        with open(path, "xb") as stream:
             torch.save(snapshot, stream)
 
     if not getattr(FrameTracker.track, "_dense_snapshot_wrapped", False):
@@ -103,13 +119,12 @@ if _enabled():
                 reference_keyframe_index=reference_keyframe_index,
                 update_reference=update_reference,
             )
-            requested = os.environ["MAST3R_DENSE_SNAPSHOT_FRAME"]
             if (
                 update_reference
                 and not bool(result[0])
-                and str(int(frame.frame_id)) == requested
                 and isinstance(result, tuple)
                 and len(result) >= 3
+                and int(frame.frame_id) in _REQUESTED_FRAMES
                 and result[2] is False
             ):
                 _capture_snapshot(frame, reference_index, reference_keyframe, result)

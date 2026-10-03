@@ -1,0 +1,1284 @@
+{
+  "schema": "umi_dense_native_window_stereo_diagnostic_v1",
+  "diagnostic_only": true,
+  "precision_pass": false,
+  "production_promoted": false,
+  "external_ground_truth_used": false,
+  "probe": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/take01_dense_window_graph738_probe_v1.json",
+  "probe_sha256": "01addc4d171094b5c945f87865729776fe28717bf7c049cf4bc5ac3367fb127b",
+  "estimator_sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f",
+  "factory_baseline_m": 0.018083254,
+  "settings": {
+    "opencv_seed": 0,
+    "threads": 2,
+    "disparities": 128,
+    "depth_range_m": [
+      0.07,
+      0.6
+    ],
+    "rotation_mode": "free"
+  },
+  "summary": {
+    "baseline_after": {
+      "pair_count": 27,
+      "accepted_count": 8,
+      "rejection_reasons": {
+        "bidirectional_scale_disagrees": 2,
+        "translation_excitation_low": 17
+      }
+    },
+    "variant_after": {
+      "pair_count": 27,
+      "accepted_count": 8,
+      "rejection_reasons": {
+        "bidirectional_scale_disagrees": 2,
+        "translation_excitation_low": 17
+      }
+    }
+  },
+  "pairs": [
+    {
+      "frames": [
+        711,
+        712
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000711.png": "2a8c66662e6af3841b4e51b57cb2d6f82337edc26f78dcfd174cb80b5a35ebfc",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000711.png": "2597b36f99dab87f18ab6d24a836a76a182fcfe4469c3f930fcb4e5e96836dcc",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000712.png": "1fd6eb2b53345c2c28363cc178720f01ea0805f170d22beaf532b2c6707163b6",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000712.png": "9c9f237e35e9d3e7772a816553c6077086f37b672143301917684cbe493096d2"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        712,
+        713
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000712.png": "1fd6eb2b53345c2c28363cc178720f01ea0805f170d22beaf532b2c6707163b6",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000712.png": "9c9f237e35e9d3e7772a816553c6077086f37b672143301917684cbe493096d2",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000713.png": "015676cd51b211852d763da96b5f72dd880e18548ea97cecb735f9c2cf309737",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000713.png": "93c88de29dd18dc4c57e55052c69550e911f38e41512235e7c749832e0cffa86"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        713,
+        714
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000713.png": "015676cd51b211852d763da96b5f72dd880e18548ea97cecb735f9c2cf309737",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000713.png": "93c88de29dd18dc4c57e55052c69550e911f38e41512235e7c749832e0cffa86",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000714.png": "29c0da653d1c0888ec7eb86dbee8abafd0b8b65a1feb79ae5cd02cd95819edfc",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000714.png": "946be2e3347be8f06b790bab839170b2f277a23c5c7cc9e79a47816a1cc3418b"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        714,
+        715
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000714.png": "29c0da653d1c0888ec7eb86dbee8abafd0b8b65a1feb79ae5cd02cd95819edfc",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000714.png": "946be2e3347be8f06b790bab839170b2f277a23c5c7cc9e79a47816a1cc3418b",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000715.png": "95162d14149f101973834622762e4259be0ac394447ff0f81317881a0f62db5d",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000715.png": "57e1c2d011201aadfed2c7526714f00e68ac53d923f68f36782e107c00ec093f"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        715,
+        716
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000715.png": "95162d14149f101973834622762e4259be0ac394447ff0f81317881a0f62db5d",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000715.png": "57e1c2d011201aadfed2c7526714f00e68ac53d923f68f36782e107c00ec093f",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000716.png": "a88546840e22dd9eb01b5d7b1cdebf5069008a768d0097cde77ec7ce696e652c",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000716.png": "21accfca9238460499b815941e5a52ba3122ddd66a9a1c721226cc5a600848c3"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        716,
+        717
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000716.png": "a88546840e22dd9eb01b5d7b1cdebf5069008a768d0097cde77ec7ce696e652c",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000716.png": "21accfca9238460499b815941e5a52ba3122ddd66a9a1c721226cc5a600848c3",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000717.png": "eb2c9ab04499f4ba6a097a4dbf6053328931e609fa9a6c6c3366c8407c4b2a17",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000717.png": "61f0e9c0bc7e85db4e7e59e20b514a5acc1f9755c4cf557c80d929c502db61c9"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        717,
+        718
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000717.png": "eb2c9ab04499f4ba6a097a4dbf6053328931e609fa9a6c6c3366c8407c4b2a17",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000717.png": "61f0e9c0bc7e85db4e7e59e20b514a5acc1f9755c4cf557c80d929c502db61c9",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000718.png": "7de886a1613d8850dfb0aecd010b1295f945d3e3c64347c0ad206dc8a790b507",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000718.png": "8817ef73d036cd5500dd4cc5f10f8f24464c8512e8103bce0178dafff2eea22e"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        718,
+        719
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000718.png": "7de886a1613d8850dfb0aecd010b1295f945d3e3c64347c0ad206dc8a790b507",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000718.png": "8817ef73d036cd5500dd4cc5f10f8f24464c8512e8103bce0178dafff2eea22e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000719.png": "5687480595e482685c04febf00c38c839c991b6727574a657dbb8488d5dc6528",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000719.png": "e5dfbde434905ae7038260e7ae32df32726634951b7d985175e775515383d55e"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        719,
+        720
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000719.png": "5687480595e482685c04febf00c38c839c991b6727574a657dbb8488d5dc6528",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000719.png": "e5dfbde434905ae7038260e7ae32df32726634951b7d985175e775515383d55e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000720.png": "8759895ca1a8524cc81d45df6a6503ef92c3c62e2c699e9444bf41d4ba90c22d",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000720.png": "5548d9da57c792d9964856f5e39858ef86467524b663edb0e5bd39050d3c2792"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        720,
+        721
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000720.png": "8759895ca1a8524cc81d45df6a6503ef92c3c62e2c699e9444bf41d4ba90c22d",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000720.png": "5548d9da57c792d9964856f5e39858ef86467524b663edb0e5bd39050d3c2792",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000721.png": "4a996cc1b6450794e16982dc29b8425181f0c0c34e7cdaf4707bd8af8ea78ccc",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000721.png": "6f4d9d2980517d3a3a354ae8ec39007d942a77290aa2c9f1729829920a977af0"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        721,
+        722
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000721.png": "4a996cc1b6450794e16982dc29b8425181f0c0c34e7cdaf4707bd8af8ea78ccc",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000721.png": "6f4d9d2980517d3a3a354ae8ec39007d942a77290aa2c9f1729829920a977af0",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000722.png": "eb602d1f213162461c6a777aaf1cee8feba5e32f43291f2554891e0f975f139e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000722.png": "411919a676e837926ad9466997ffffd3c5a5d481ab87658a1a8c40a951c06dc6"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        722,
+        723
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000722.png": "eb602d1f213162461c6a777aaf1cee8feba5e32f43291f2554891e0f975f139e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000722.png": "411919a676e837926ad9466997ffffd3c5a5d481ab87658a1a8c40a951c06dc6",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000723.png": "3ba02af7e52eff9d6749d3a6f0dd1cb478a807e6daf5984c9aa850aa466ce46e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000723.png": "27fa6844121eb1ca2fbaeabafe1e38164692d1e40a640119b80f39d9c0dd803f"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        723,
+        724
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000723.png": "3ba02af7e52eff9d6749d3a6f0dd1cb478a807e6daf5984c9aa850aa466ce46e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000723.png": "27fa6844121eb1ca2fbaeabafe1e38164692d1e40a640119b80f39d9c0dd803f",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000724.png": "9db2688495cbdacd6ffa2543d121bda52410c121b4e800f9c75989a16d823a08",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000724.png": "9948e298f60ae15c92eef1e883085c941b83e2c1cfda4fbd6e7b5bd5d50a7fb2"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        724,
+        725
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000724.png": "9db2688495cbdacd6ffa2543d121bda52410c121b4e800f9c75989a16d823a08",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000724.png": "9948e298f60ae15c92eef1e883085c941b83e2c1cfda4fbd6e7b5bd5d50a7fb2",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000725.png": "0ea0f18e2b521ca57e9e2051bca3552560f28442d2eee6fde577ce6fa1312d9a",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000725.png": "2914564cf14c13a80bf84f1fa21985a3ad707f5649b9bb5996f8654d77eef6be"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        725,
+        726
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000725.png": "0ea0f18e2b521ca57e9e2051bca3552560f28442d2eee6fde577ce6fa1312d9a",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000725.png": "2914564cf14c13a80bf84f1fa21985a3ad707f5649b9bb5996f8654d77eef6be",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000726.png": "e6808d00777925c058ff4fb9c77325efa7881735e7ee67e450d1c6fdd29d5c29",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000726.png": "178d15a8a220c9aaa33d577d631a86934cc929d821f4b7dc47e6204ce86c9c62"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        726,
+        727
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000726.png": "e6808d00777925c058ff4fb9c77325efa7881735e7ee67e450d1c6fdd29d5c29",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000726.png": "178d15a8a220c9aaa33d577d631a86934cc929d821f4b7dc47e6204ce86c9c62",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000727.png": "c1adec3b6dae4715c809261db6eba0ffbe384d8ac37ecf1af201c1fb21837002",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000727.png": "5cf1fd1354cd00a9b9bdfb2d9caa7ad6c25e495e9d3dc85d6288dbc9d23b9f95"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        727,
+        728
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000727.png": "c1adec3b6dae4715c809261db6eba0ffbe384d8ac37ecf1af201c1fb21837002",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000727.png": "5cf1fd1354cd00a9b9bdfb2d9caa7ad6c25e495e9d3dc85d6288dbc9d23b9f95",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000728.png": "79def800640355b02264c1fdb5da5cf06cdddb06fc0693164bd2c224dfe90395",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000728.png": "41c8d2ccfb7d41def5990c44999710d839c9a7d013d90b25e09361bafd884398"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      },
+      "variant_after": {
+        "accepted": false,
+        "reason": "translation_excitation_low",
+        "method": "lk"
+      }
+    },
+    {
+      "frames": [
+        728,
+        729
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000728.png": "79def800640355b02264c1fdb5da5cf06cdddb06fc0693164bd2c224dfe90395",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000728.png": "41c8d2ccfb7d41def5990c44999710d839c9a7d013d90b25e09361bafd884398",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000729.png": "853a9e356fc0cc70e504cf128db7620ffdedabd14e13e06ea8ed5b4fd9f7d9ea",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000729.png": "8dff5fc8818c3511a7341282ce23c02d6747a3cf2191541deda61e4c4bc73562"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.23369060744775125,
+        "metric_distance_m": 0.003272606030760417,
+        "metric_displacement_camera_i_m": [
+          0.0008266242724112083,
+          0.00017100244789636592,
+          -0.0031618666492506517
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.011369433716692284,
+        "direction_cosine": 0.8131388890689611,
+        "rotation_error_deg": 0.46639913588223897,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.00508009129387956,
+          -0.0011855213770606587,
+          -0.0012679428321338085,
+          0.9999855896624135
+        ],
+        "tracked_points": 676,
+        "pnp_inliers": 559,
+        "pnp_inlier_ratio": 0.8269230769230769,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.8409807085990906,
+        "pnp_reprojection_p95_px": 1.6671277284622192,
+        "median_depth_m": 0.2299099158791285,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.23405591681369148,
+        "reverse_scale": 0.23330176970664238,
+        "bidirectional_relative_disagreement": 0.0032272802129950243,
+        "reverse_metric_distance_m": 0.003213063396440195,
+        "reverse_pnp_inlier_ratio": 0.8059467918622848,
+        "reverse_rotation_error_deg": 0.438670540615083
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.331072356536005,
+        "metric_distance_m": 0.003272606030760417,
+        "metric_displacement_camera_i_m": [
+          0.0008266242724112083,
+          0.00017100244789636592,
+          -0.0031618666492506517
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.009396058480525486,
+        "direction_cosine": 0.9569013099570667,
+        "rotation_error_deg": 0.24409467375995852,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.00508009129387956,
+          -0.0011855213770606587,
+          -0.0012679428321338085,
+          0.9999855896624135
+        ],
+        "tracked_points": 676,
+        "pnp_inliers": 559,
+        "pnp_inlier_ratio": 0.8269230769230769,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.8409807085990906,
+        "pnp_reprojection_p95_px": 1.6671277284622192,
+        "median_depth_m": 0.2299099158791285,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.33328453673405645,
+        "reverse_scale": 0.3287176970847692,
+        "bidirectional_relative_disagreement": 0.013797052082265513,
+        "reverse_metric_distance_m": 0.003213063396440195,
+        "reverse_pnp_inlier_ratio": 0.8059467918622848,
+        "reverse_rotation_error_deg": 0.22071961271343132
+      }
+    },
+    {
+      "frames": [
+        729,
+        730
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000729.png": "853a9e356fc0cc70e504cf128db7620ffdedabd14e13e06ea8ed5b4fd9f7d9ea",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000729.png": "8dff5fc8818c3511a7341282ce23c02d6747a3cf2191541deda61e4c4bc73562",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000730.png": "4a2437446754263c49fa22484b5b4c959017f1f71137d20f38060fff069ca98f",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000730.png": "fc7c1b917751d18cf6d5a0f23d922d327ae2a7eeccdee34c0e0d005116be7fd4"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.25877801176055115,
+        "metric_distance_m": 0.003250857409516866,
+        "metric_displacement_camera_i_m": [
+          0.0014352688493783614,
+          8.034457298486433e-06,
+          -0.0029168497860724233
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.011730432378811736,
+        "direction_cosine": 0.9207893656610604,
+        "rotation_error_deg": 0.3339775489298171,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.0044413017691358045,
+          -0.0008994167328883794,
+          -0.0025112471789949797,
+          0.9999865796728185
+        ],
+        "tracked_points": 363,
+        "pnp_inliers": 322,
+        "pnp_inlier_ratio": 0.8870523415977961,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.42605453729629517,
+        "pnp_reprojection_p95_px": 1.1954671144485474,
+        "median_depth_m": 0.22176670752449584,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.2551785676178811,
+        "reverse_scale": 0.262321660202369,
+        "bidirectional_relative_disagreement": 0.027606142762777765,
+        "reverse_metric_distance_m": 0.0032907421733107596,
+        "reverse_pnp_inlier_ratio": 0.8793103448275862,
+        "reverse_rotation_error_deg": 0.32036678938484314
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.2945039090313147,
+        "metric_distance_m": 0.003250857409516866,
+        "metric_displacement_camera_i_m": [
+          0.0014352688493783614,
+          8.034457298486433e-06,
+          -0.0029168497860724233
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.010787383666185438,
+        "direction_cosine": 0.9653707529597833,
+        "rotation_error_deg": 0.20851474492179528,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.0044413017691358045,
+          -0.0008994167328883794,
+          -0.0025112471789949797,
+          0.9999865796728185
+        ],
+        "tracked_points": 363,
+        "pnp_inliers": 322,
+        "pnp_inlier_ratio": 0.8870523415977961,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.42605453729629517,
+        "pnp_reprojection_p95_px": 1.1954671144485474,
+        "median_depth_m": 0.22176670752449584,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.2909215767515133,
+        "reverse_scale": 0.29803071086465976,
+        "bidirectional_relative_disagreement": 0.024141630018693665,
+        "reverse_metric_distance_m": 0.0032907421733107596,
+        "reverse_pnp_inlier_ratio": 0.8793103448275862,
+        "reverse_rotation_error_deg": 0.18546536493602178
+      }
+    },
+    {
+      "frames": [
+        730,
+        731
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000730.png": "4a2437446754263c49fa22484b5b4c959017f1f71137d20f38060fff069ca98f",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000730.png": "fc7c1b917751d18cf6d5a0f23d922d327ae2a7eeccdee34c0e0d005116be7fd4",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000731.png": "ade304367f3c0e6101c48891af15c9d9f2fcbc1a1ed20c26d402331ee8b24745",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000731.png": "c5167fbb894d07c6547908b355ea9f450f96edf2c19d52ff040b65f53d17a84b"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.26769207895307096,
+        "metric_distance_m": 0.003243297700669632,
+        "metric_displacement_camera_i_m": [
+          0.0015320181079599355,
+          -0.000169437529681997,
+          -0.002853627764020221
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.011200427784444657,
+        "direction_cosine": 0.9149885038986176,
+        "rotation_error_deg": 0.33416090345281835,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.0034059869481159293,
+          -0.002301323854827525,
+          -0.002365860615035046,
+          0.9999887528692384
+        ],
+        "tracked_points": 745,
+        "pnp_inliers": 642,
+        "pnp_inlier_ratio": 0.8617449664429531,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.5791289806365967,
+        "pnp_reprojection_p95_px": 1.460278868675232,
+        "median_depth_m": 0.22712986852871583,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.264952390028795,
+        "reverse_scale": 0.2702904617648249,
+        "bidirectional_relative_disagreement": 0.019946354138656183,
+        "reverse_metric_distance_m": 0.0033106571449251407,
+        "reverse_pnp_inlier_ratio": 0.8720112517580872,
+        "reverse_rotation_error_deg": 0.34127765267409205
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.27759571736690264,
+        "metric_distance_m": 0.003243297700669632,
+        "metric_displacement_camera_i_m": [
+          0.0015320181079599355,
+          -0.000169437529681997,
+          -0.002853627764020221
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.011499466684213538,
+        "direction_cosine": 0.9745543567647171,
+        "rotation_error_deg": 0.18639292506986863,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.0034059869481159293,
+          -0.002301323854827525,
+          -0.002365860615035046,
+          0.9999887528692384
+        ],
+        "tracked_points": 745,
+        "pnp_inliers": 642,
+        "pnp_inlier_ratio": 0.8617449664429531,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.5791289806365967,
+        "pnp_reprojection_p95_px": 1.460278868675232,
+        "median_depth_m": 0.22712986852871583,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.2748623037285445,
+        "reverse_scale": 0.2801881485558562,
+        "bidirectional_relative_disagreement": 0.019190489100197505,
+        "reverse_metric_distance_m": 0.0033106571449251407,
+        "reverse_pnp_inlier_ratio": 0.8720112517580872,
+        "reverse_rotation_error_deg": 0.19353560368772496
+      }
+    },
+    {
+      "frames": [
+        731,
+        732
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000731.png": "ade304367f3c0e6101c48891af15c9d9f2fcbc1a1ed20c26d402331ee8b24745",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000731.png": "c5167fbb894d07c6547908b355ea9f450f96edf2c19d52ff040b65f53d17a84b",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000732.png": "f198893a662fc3a31a2417aa548da0b9e65c393f65b94b3fa4cd8b5265eb449a",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000732.png": "075f5b87a12c8bdee872ed083da305e5f846bb71a7f01b635d98bb7987f7307c"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "scale": 0.2180987200954693,
+        "metric_distance_m": 0.003525828997372449,
+        "metric_displacement_camera_i_m": [
+          0.0006360160711463129,
+          0.00048181255665513244,
+          -0.003434357339620538
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.014045373746683465,
+        "direction_cosine": 0.8688107221583958,
+        "rotation_error_deg": 0.4331170972567835,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.005486077824618503,
+          -0.006465109657218926,
+          -0.001621970173376535,
+          0.9999627365657078
+        ],
+        "tracked_points": 797,
+        "pnp_inliers": 565,
+        "pnp_inlier_ratio": 0.7089084065244667,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 1.0243891477584839,
+        "pnp_reprojection_p95_px": 2.178314685821533,
+        "median_depth_m": 0.236569774903335,
+        "method": "lk",
+        "reason": "bidirectional_scale_disagrees",
+        "forward_scale": 0.2180987200954693,
+        "reverse_scale": 0.29608054750514423,
+        "bidirectional_relative_disagreement": 0.3033254443477366
+      },
+      "variant_after": {
+        "accepted": false,
+        "scale": 0.21023015214383603,
+        "metric_distance_m": 0.003525828997372449,
+        "metric_displacement_camera_i_m": [
+          0.0006360160711463129,
+          0.00048181255665513244,
+          -0.003434357339620538
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.014267327748407771,
+        "direction_cosine": 0.8506999305607267,
+        "rotation_error_deg": 0.46198674179639787,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.005486077824618503,
+          -0.006465109657218926,
+          -0.001621970173376535,
+          0.9999627365657078
+        ],
+        "tracked_points": 797,
+        "pnp_inliers": 565,
+        "pnp_inlier_ratio": 0.7089084065244667,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 1.0243891477584839,
+        "pnp_reprojection_p95_px": 2.178314685821533,
+        "median_depth_m": 0.236569774903335,
+        "method": "lk",
+        "reason": "bidirectional_scale_disagrees",
+        "forward_scale": 0.21023015214383603,
+        "reverse_scale": 0.2881495064685688,
+        "bidirectional_relative_disagreement": 0.31269074882260184
+      }
+    },
+    {
+      "frames": [
+        732,
+        733
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000732.png": "f198893a662fc3a31a2417aa548da0b9e65c393f65b94b3fa4cd8b5265eb449a",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000732.png": "075f5b87a12c8bdee872ed083da305e5f846bb71a7f01b635d98bb7987f7307c",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000733.png": "272025aa4693b9d484783b2aac212fa85c8f1e860700d17882fe634ff3dc203e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000733.png": "1213670c0f7e5330162479892a38e882c0ab0c0b89a2e4674c6cf6b8a7558da0"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.22959041341402744,
+        "metric_distance_m": 0.003896158481610256,
+        "metric_displacement_camera_i_m": [
+          0.0019111724788716403,
+          -0.00036253599523084856,
+          -0.0033758018783674407
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.01626133025130949,
+        "direction_cosine": 0.9787451181796953,
+        "rotation_error_deg": 0.22130923976319386,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.004346225993583541,
+          -0.009783822798679832,
+          -0.0009075540265681772,
+          0.9999422800725778
+        ],
+        "tracked_points": 1370,
+        "pnp_inliers": 1256,
+        "pnp_inlier_ratio": 0.9167883211678832,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.5340741872787476,
+        "pnp_reprojection_p95_px": 1.5043452978134155,
+        "median_depth_m": 0.22150519018071696,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.23450394491701385,
+        "reverse_scale": 0.2242614370204499,
+        "bidirectional_relative_disagreement": 0.044652488177323486,
+        "reverse_metric_distance_m": 0.0037554994319595088,
+        "reverse_pnp_inlier_ratio": 0.9098228663446055,
+        "reverse_rotation_error_deg": 0.2537317442739611
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.24779436926374512,
+        "metric_distance_m": 0.003896158481610256,
+        "metric_displacement_camera_i_m": [
+          0.0019111724788716403,
+          -0.00036253599523084856,
+          -0.0033758018783674407
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.015218930539278176,
+        "direction_cosine": 0.9886156036411139,
+        "rotation_error_deg": 0.15376676176732323,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.004346225993583541,
+          -0.009783822798679832,
+          -0.0009075540265681772,
+          0.9999422800725778
+        ],
+        "tracked_points": 1370,
+        "pnp_inliers": 1256,
+        "pnp_inlier_ratio": 0.9167883211678832,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.5340741872787476,
+        "pnp_reprojection_p95_px": 1.5043452978134155,
+        "median_depth_m": 0.22150519018071696,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.2530928871274852,
+        "reverse_scale": 0.24204785545801116,
+        "bidirectional_relative_disagreement": 0.04461370563771314,
+        "reverse_metric_distance_m": 0.0037554994319595088,
+        "reverse_pnp_inlier_ratio": 0.9098228663446055,
+        "reverse_rotation_error_deg": 0.19423355731092798
+      }
+    },
+    {
+      "frames": [
+        733,
+        734
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000733.png": "272025aa4693b9d484783b2aac212fa85c8f1e860700d17882fe634ff3dc203e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000733.png": "1213670c0f7e5330162479892a38e882c0ab0c0b89a2e4674c6cf6b8a7558da0",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000734.png": "070431694c8ed9b612fdec26907147206da23d9cfd8ec874d0f203966495dd1e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000734.png": "b000affad8061f2608bb2a1c47504855270cbddba148a75ca482ad09d9a63149"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.2297403699080007,
+        "metric_distance_m": 0.0035629771250643674,
+        "metric_displacement_camera_i_m": [
+          0.0018189500617565042,
+          -0.0004018764564471084,
+          -0.003037222741308492
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.01537965121773457,
+        "direction_cosine": 0.9610367176766488,
+        "rotation_error_deg": 0.3262015629009263,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.0046912846414417075,
+          -0.013171893295145936,
+          0.0003240139871070169,
+          0.9999021892617149
+        ],
+        "tracked_points": 997,
+        "pnp_inliers": 804,
+        "pnp_inlier_ratio": 0.8064192577733199,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.8104313611984253,
+        "pnp_reprojection_p95_px": 1.7320810556411743,
+        "median_depth_m": 0.23450237362452933,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.22264170968197172,
+        "reverse_scale": 0.23639538694590517,
+        "bidirectional_relative_disagreement": 0.05992403387425138,
+        "reverse_metric_distance_m": 0.0037154083665642194,
+        "reverse_pnp_inlier_ratio": 0.7910447761194029,
+        "reverse_rotation_error_deg": 0.2680447219730435
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.26572402534766887,
+        "metric_distance_m": 0.0035629771250643674,
+        "metric_displacement_camera_i_m": [
+          0.0018189500617565042,
+          -0.0004018764564471084,
+          -0.003037222741308492
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.01358848757324808,
+        "direction_cosine": 0.9957159610251145,
+        "rotation_error_deg": 0.06751101198526897,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.0046912846414417075,
+          -0.013171893295145936,
+          0.0003240139871070169,
+          0.9999021892617149
+        ],
+        "tracked_points": 997,
+        "pnp_inliers": 804,
+        "pnp_inlier_ratio": 0.8064192577733199,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.8104313611984253,
+        "pnp_reprojection_p95_px": 1.7320810556411743,
+        "median_depth_m": 0.23450237362452933,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.2610822707876937,
+        "reverse_scale": 0.2700756853368506,
+        "bidirectional_relative_disagreement": 0.03386342780130802,
+        "reverse_metric_distance_m": 0.0037154083665642194,
+        "reverse_pnp_inlier_ratio": 0.7910447761194029,
+        "reverse_rotation_error_deg": 0.12423482141792358
+      }
+    },
+    {
+      "frames": [
+        734,
+        735
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000734.png": "070431694c8ed9b612fdec26907147206da23d9cfd8ec874d0f203966495dd1e",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000734.png": "b000affad8061f2608bb2a1c47504855270cbddba148a75ca482ad09d9a63149",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000735.png": "8ef4112f2617912061256e303851f251d190808bd157d6439793470cfe04f4d3",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000735.png": "f4715dc4e73f62ddeef501781427d25068ba32ba391688365b911037ff9d5fda"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.23301917178772,
+        "metric_distance_m": 0.0037634870547933754,
+        "metric_displacement_camera_i_m": [
+          0.0011658774406439892,
+          0.0001206519025126828,
+          -0.003576312028251283
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.015333781993321341,
+        "direction_cosine": 0.9139974556605309,
+        "rotation_error_deg": 0.3726212767766664,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.006509017782929587,
+          -0.01144846046803953,
+          0.0005839225596423469,
+          0.9999131084623591
+        ],
+        "tracked_points": 682,
+        "pnp_inliers": 461,
+        "pnp_inlier_ratio": 0.6759530791788856,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 1.1679697036743164,
+        "pnp_reprojection_p95_px": 2.3265702724456787,
+        "median_depth_m": 0.26124673334248677,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.22432936597055503,
+        "reverse_scale": 0.24087927140417706,
+        "bidirectional_relative_disagreement": 0.07115046499143501,
+        "reverse_metric_distance_m": 0.0039785637495887176,
+        "reverse_pnp_inlier_ratio": 0.668693009118541,
+        "reverse_rotation_error_deg": 0.31175566514481
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.2599999335174475,
+        "metric_distance_m": 0.0037634870547933754,
+        "metric_displacement_camera_i_m": [
+          0.0011658774406439892,
+          0.0001206519025126828,
+          -0.003576312028251283
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.014269712551347756,
+        "direction_cosine": 0.9555617366524598,
+        "rotation_error_deg": 0.2413758273815768,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.006509017782929587,
+          -0.01144846046803953,
+          0.0005839225596423469,
+          0.9999131084623591
+        ],
+        "tracked_points": 682,
+        "pnp_inliers": 461,
+        "pnp_inlier_ratio": 0.6759530791788856,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 1.1679697036743164,
+        "pnp_reprojection_p95_px": 2.3265702724456787,
+        "median_depth_m": 0.26124673334248677,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.25201938812760094,
+        "reverse_scale": 0.26721849318122565,
+        "bidirectional_relative_disagreement": 0.05854389905186733,
+        "reverse_metric_distance_m": 0.0039785637495887176,
+        "reverse_pnp_inlier_ratio": 0.668693009118541,
+        "reverse_rotation_error_deg": 0.19503497175478118
+      }
+    },
+    {
+      "frames": [
+        735,
+        736
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000735.png": "8ef4112f2617912061256e303851f251d190808bd157d6439793470cfe04f4d3",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000735.png": "f4715dc4e73f62ddeef501781427d25068ba32ba391688365b911037ff9d5fda",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000736.png": "f24065536042c6cf9d9be7c28e53fd772eeaeaef4b7f8dcc721a62ccafd1c830",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000736.png": "285122e13727cd83102f3df438c0b7ff3b5c9639ce5346e88aa6ac9a46fd25f1"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.29153776269395043,
+        "metric_distance_m": 0.0038492006627931265,
+        "metric_displacement_camera_i_m": [
+          0.0017903979850623498,
+          3.246199941046439e-05,
+          -0.003407310818831472
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.010607031924558611,
+        "direction_cosine": 0.7977072237121942,
+        "rotation_error_deg": 0.3334051927517085,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.006049188625750989,
+          -0.007108305469261812,
+          1.7988573389416447e-05,
+          0.9999564385445683
+        ],
+        "tracked_points": 1742,
+        "pnp_inliers": 1575,
+        "pnp_inlier_ratio": 0.9041331802525833,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.46532565355300903,
+        "pnp_reprojection_p95_px": 1.343409538269043,
+        "median_depth_m": 0.23333714443881737,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.2894810910409904,
+        "reverse_scale": 0.29353071328748803,
+        "bidirectional_relative_disagreement": 0.013892076340245101,
+        "reverse_metric_distance_m": 0.0039054792981407208,
+        "reverse_pnp_inlier_ratio": 0.9063444108761329,
+        "reverse_rotation_error_deg": 0.33751668797176676
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.2792527470601837,
+        "metric_distance_m": 0.0038492006627931265,
+        "metric_displacement_camera_i_m": [
+          0.0017903979850623498,
+          3.246199941046439e-05,
+          -0.003407310818831472
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.013758741782286279,
+        "direction_cosine": 0.9905078983709613,
+        "rotation_error_deg": 0.1294009289921192,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.006049188625750989,
+          -0.007108305469261812,
+          1.7988573389416447e-05,
+          0.9999564385445683
+        ],
+        "tracked_points": 1742,
+        "pnp_inliers": 1575,
+        "pnp_inlier_ratio": 0.9041331802525833,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.46532565355300903,
+        "pnp_reprojection_p95_px": 1.343409538269043,
+        "median_depth_m": 0.23333714443881737,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.27710845361019515,
+        "reverse_scale": 0.28133060469862725,
+        "bidirectional_relative_disagreement": 0.015121259967805514,
+        "reverse_metric_distance_m": 0.0039054792981407208,
+        "reverse_pnp_inlier_ratio": 0.9063444108761329,
+        "reverse_rotation_error_deg": 0.130811047689072
+      }
+    },
+    {
+      "frames": [
+        736,
+        737
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000736.png": "f24065536042c6cf9d9be7c28e53fd772eeaeaef4b7f8dcc721a62ccafd1c830",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000736.png": "285122e13727cd83102f3df438c0b7ff3b5c9639ce5346e88aa6ac9a46fd25f1",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000737.png": "ee72cbb1ff32d0bce762b7363dc76afb29c9b54cc4258748158572c759cef6c6",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000737.png": "a5eef907c3f3bf470b6c4f4ff527753f46883bba40618799f5114c45bdf20e22"
+      },
+      "baseline_after": {
+        "accepted": true,
+        "scale": 0.2289689263116892,
+        "metric_distance_m": 0.004274094405763016,
+        "metric_displacement_camera_i_m": [
+          0.002611796386890366,
+          -0.00016679149317985853,
+          -0.003379139420119267
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.018080569402597918,
+        "direction_cosine": 0.9969680436589337,
+        "rotation_error_deg": 0.15710908845006102,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.005849069146842646,
+          -0.009227483784029072,
+          -0.0011366457743159815,
+          0.9999396731650938
+        ],
+        "tracked_points": 1296,
+        "pnp_inliers": 1025,
+        "pnp_inlier_ratio": 0.7908950617283951,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.8421101570129395,
+        "pnp_reprojection_p95_px": 1.8098875284194946,
+        "median_depth_m": 0.24268268898352452,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.23567485311136732,
+        "reverse_scale": 0.2214062536693807,
+        "bidirectional_relative_disagreement": 0.06243355601582971,
+        "reverse_metric_distance_m": 0.004011522406704009,
+        "reverse_pnp_inlier_ratio": 0.7961082910321489,
+        "reverse_rotation_error_deg": 0.17893110285909972
+      },
+      "variant_after": {
+        "accepted": true,
+        "scale": 0.2949569573829692,
+        "metric_distance_m": 0.004274094405763016,
+        "metric_displacement_camera_i_m": [
+          0.002611796386890366,
+          -0.00016679149317985853,
+          -0.003379139420119267
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.01394762777802248,
+        "direction_cosine": 0.9906771772284623,
+        "rotation_error_deg": 0.1547788061096888,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.005849069146842646,
+          -0.009227483784029072,
+          -0.0011366457743159815,
+          0.9999396731650938
+        ],
+        "tracked_points": 1296,
+        "pnp_inliers": 1025,
+        "pnp_inlier_ratio": 0.7908950617283951,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 0.8421101570129395,
+        "pnp_reprojection_p95_px": 1.8098875284194946,
+        "median_depth_m": 0.24268268898352452,
+        "method": "lk",
+        "scale_estimator": "bidirectional_pnp_weighted_mean",
+        "forward_scale": 0.3035819315296931,
+        "reverse_scale": 0.2852300608676094,
+        "bidirectional_relative_disagreement": 0.06233524758001443,
+        "reverse_metric_distance_m": 0.004011522406704009,
+        "reverse_pnp_inlier_ratio": 0.7961082910321489,
+        "reverse_rotation_error_deg": 0.12879750247269828
+      }
+    },
+    {
+      "frames": [
+        737,
+        738
+      ],
+      "image_sha256": {
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000737.png": "ee72cbb1ff32d0bce762b7363dc76afb29c9b54cc4258748158572c759cef6c6",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000737.png": "a5eef907c3f3bf470b6c4f4ff527753f46883bba40618799f5114c45bdf20e22",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000738.png": "fcb5105850a1431a425d0b7220da4ce0638114469a12f590f52c07a45220cc0a",
+        "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_194919_slam_validation_take01/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000738.png": "58b7e4130b76d29516e6c1d9bfcbbc694d00fad1c420bc2acbad61e33f49c80b"
+      },
+      "baseline_after": {
+        "accepted": false,
+        "scale": 0.21453369863383598,
+        "metric_distance_m": 0.004314958296343781,
+        "metric_displacement_camera_i_m": [
+          0.0023516101502006957,
+          -1.957152706128621e-06,
+          -0.0036178434142749146
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.019766872958275648,
+        "direction_cosine": 0.9827813097886238,
+        "rotation_error_deg": 0.22214476477041398,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.007652312096640805,
+          -0.011415776971885064,
+          -0.002367468447186955,
+          0.9999027538960253
+        ],
+        "tracked_points": 615,
+        "pnp_inliers": 407,
+        "pnp_inlier_ratio": 0.6617886178861788,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 1.4490019083023071,
+        "pnp_reprojection_p95_px": 2.5916128158569336,
+        "median_depth_m": 0.28374078742182474,
+        "method": "lk",
+        "reason": "bidirectional_scale_disagrees",
+        "forward_scale": 0.21453369863383598,
+        "reverse_scale": 0.27895132579967563,
+        "bidirectional_relative_disagreement": 0.26107226755173313
+      },
+      "variant_after": {
+        "accepted": false,
+        "scale": 0.3022367142934941,
+        "metric_distance_m": 0.004314958296343781,
+        "metric_displacement_camera_i_m": [
+          0.0023516101502006957,
+          -1.957152706128621e-06,
+          -0.0036178434142749146
+        ],
+        "metric_displacement_frame": "infrared_left_camera_i",
+        "mast3r_distance": 0.014111038330614774,
+        "direction_cosine": 0.9883928342779912,
+        "rotation_error_deg": 0.1356750964812751,
+        "pnp_rotation_quaternion_xyzw": [
+          -0.007652312096640805,
+          -0.011415776971885064,
+          -0.002367468447186955,
+          0.9999027538960253
+        ],
+        "tracked_points": 615,
+        "pnp_inliers": 407,
+        "pnp_inlier_ratio": 0.6617886178861788,
+        "pnp_refined": false,
+        "pnp_rotation_mode": "free",
+        "pnp_rotation_constrained": false,
+        "pnp_free_rotation_delta_deg": 0.0,
+        "pnp_reprojection_median_px": 1.4490019083023071,
+        "pnp_reprojection_p95_px": 2.5916128158569336,
+        "median_depth_m": 0.28374078742182474,
+        "method": "lk",
+        "reason": "bidirectional_scale_disagrees",
+        "forward_scale": 0.3022367142934941,
+        "reverse_scale": 0.38414307805083503,
+        "bidirectional_relative_disagreement": 0.238661932273938
+      }
+    }
+  ],
+  "interpretation": "Unchanged independent stereo estimator; no ATE, no accepted metric-scale source, no complete trajectory promotion."
+}

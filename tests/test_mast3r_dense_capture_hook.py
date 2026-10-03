@@ -98,7 +98,15 @@ class FakeFrame:
         self.N_updates = 4
 
 
-def import_hook(monkeypatch, tmp_path, *, enabled=True, original_result=(False, [], False)):
+def import_hook(
+    monkeypatch,
+    tmp_path,
+    *,
+    enabled=True,
+    original_result=(False, [], False),
+    frames="808",
+    path=None,
+):
     tracker_mod = types.ModuleType("mast3r_slam.tracker")
 
     class FrameTracker:
@@ -117,8 +125,8 @@ def import_hook(monkeypatch, tmp_path, *, enabled=True, original_result=(False, 
         monkeypatch.setitem(sys.modules, "torch", fake_torch)
         monkeypatch.setitem(sys.modules, "mast3r_slam", mast3r_mod)
         monkeypatch.setitem(sys.modules, "mast3r_slam.tracker", tracker_mod)
-        monkeypatch.setenv("MAST3R_DENSE_SNAPSHOT_FRAME", "808")
-        monkeypatch.setenv("MAST3R_DENSE_SNAPSHOT_PATH", str(tmp_path / "snap.pt"))
+        monkeypatch.setenv("MAST3R_DENSE_SNAPSHOT_FRAME", frames)
+        monkeypatch.setenv("MAST3R_DENSE_SNAPSHOT_PATH", path or str(tmp_path / "snap.pt"))
     else:
         fake_torch = None
         monkeypatch.delenv("MAST3R_DENSE_SNAPSHOT_FRAME", raising=False)
@@ -146,6 +154,7 @@ def test_successful_requested_frame_writes_cpu_clone_snapshot(monkeypatch, tmp_p
     payload, path = fake_torch.saved[0]
     assert path == str(tmp_path / "snap.pt")
     assert payload["schema"] == "mast3r_dense_frame_snapshot_v1"
+    assert payload["requested_frame_id"] == 808
     assert payload["frame"]["frame_id"] == 808
     assert payload["frame"]["img"].value == "mutated_img"
     assert payload["frame"]["img"] is not frame.img
@@ -172,6 +181,37 @@ def test_scalar_bool_like_false_new_keyframe_allows_snapshot(monkeypatch, tmp_pa
     result = FrameTracker().track(FakeFrame(808))
     assert bool(result[0]) is False
     assert len(fake_torch.saved) == 1
+
+
+def test_multiple_requested_frames_write_distinct_template_paths(monkeypatch, tmp_path):
+    _, FrameTracker, fake_torch = import_hook(
+        monkeypatch,
+        tmp_path,
+        frames="807,808",
+        path=str(tmp_path / "snap_{frame_id}.pt"),
+    )
+    tracker = FrameTracker()
+    tracker.track(FakeFrame(807))
+    tracker.track(FakeFrame(808))
+    assert (tmp_path / "snap_807.pt").read_bytes() == b"snapshot"
+    assert (tmp_path / "snap_808.pt").read_bytes() == b"snapshot"
+    assert [payload["requested_frame_id"] for payload, _ in fake_torch.saved] == [807, 808]
+
+
+def test_multiple_requested_frames_require_path_template(monkeypatch, tmp_path):
+    with pytest.raises(ValueError, match="\\{frame_id\\}"):
+        import_hook(monkeypatch, tmp_path, frames="807,808", path=str(tmp_path / "snap.pt"))
+
+
+@pytest.mark.parametrize("frames", ["808,808", "-1", "807,,808"])
+def test_bad_requested_frame_list_is_rejected(monkeypatch, tmp_path, frames):
+    with pytest.raises(ValueError, match="MAST3R_DENSE_SNAPSHOT_FRAME"):
+        import_hook(
+            monkeypatch,
+            tmp_path,
+            frames=frames,
+            path=str(tmp_path / "snap_{frame_id}.pt"),
+        )
 
 
 def test_failed_tracking_does_not_write_snapshot(monkeypatch, tmp_path):

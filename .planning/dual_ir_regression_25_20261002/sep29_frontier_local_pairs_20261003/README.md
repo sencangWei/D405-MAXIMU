@@ -252,3 +252,64 @@ pair without deleting loops, raising correction caps, interpolating points or
 changing the source gates. Remaining discriminators are continuous-window
 state consistency, other loop-pair preservation and multi-record controls.
 No production code is changed and no new10mm pass is claimed.
+
+## Continuous native window and two historical passing controls
+
+The default-off hook now accepts an explicit comma-separated frame list and
+requires a `{frame_id}` path template for multiple captures. Independent review
+approved the observational replay. Actual captures are:
+
+| Record | Ordinary interval | Parent / next KF | Captured GN | Replay seconds |
+| --- | --- | --- | --- | --- |
+| Sep29 take02 (source failure) | 792–808, 17 frames | 791 / 809 | 877 | 118 |
+| Sep27 heldout2 (historical pass) | 723–751, 29 frames | 722 / 752 | 752 | 110 |
+| Sep29 take01 (historical pass) | 712–737, 26 frames | 711 / 738 | 738 | 92 |
+
+Control windows were selected by native consecutive-keyframe gaps only, not
+local GT errors. All three full1199-frame final and online exports reproduce
+their respective existing sources byte-for-byte. The failure replay retains
+previous-KF retry; controls require no retry. The new graph877 capture equals
+the prior snapshot in all19 arguments; unchanged GN reproduces the recorded
+121-node after-state with maximum element difference0.0.
+
+`probe_dense_window_native_graph.py` uses actual captured pointmaps/confidence/
+encoded features/fullSim3 states, adds the entire ordinary interval to a copied
+native graph, and connects its adjacent chain with symmetric learned matches.
+All original graph edge rows and solver arguments remain unchanged. Rejected
+chains are not solved; input/output Sim3 arrays fail closed on invalid shape,
+scale, quaternion or finiteness. Independent review approved execution after
+that post-solve validity guard was added. No GT/Tracker input enters the solve.
+
+All three actual probes return `DENSE_WINDOW_SOLVED`:18/30/27 learned pairs
+pass the unchanged0.1 threshold, with minimum directional fractions
+0.29175/0.55258/0.25880 respectively. Failure808->809 step decreases from
+0.0980222 to0.0116792 native units (88.1%); this is NOT millimetric ATE.
+
+`check_dense_window_stereo.py` runs the existing free stereo-PnP estimator on
+every adjacent pair and the failure's three877 loop pairs. Its threshold,
+factory calibration, seed and method are unchanged. Actual results:
+
+| Scope | Baseline accepted | Explicit window accepted | Remaining unscored/rejected |
+| --- | --- | --- | --- |
+| Failure18 adjacent +3 loops | 6/21 | 12/21 | Same9 low-excitation pairs |
+| Heldout2 adjacent | 30/30 | 30/30 | None |
+| Take01 adjacent | 8/27 | 8/27 | Same17 low-excitation +2 bidirectional-scale rejects |
+
+All six direction/rotation failures in the first scope disappear without
+dropping any pair;742/731/865->877 stay accepted.808->809 direction cosine is
+0.99187, rotation discrepancy0.33676deg, bidirectional spread4.12%. The two
+passing-control windows gain no extra geometric rejection; this is not yet a
+full-record ATE non-regression claim. Raw disparity warnings are preserved.
+
+44 targeted CPU tests pass. Source/parameter/tensor/image hashes and all original
+and dense pose states are in the six `*_probe_v1.json`/`*_stereo_v1.json` reports.
+Large snapshot tensors stay local, outside git. Existing unrelated stereo helper
+edits are preserved; they only add functions, while the estimator used here is
+unchanged.
+
+The full candidate remains unscored and the10mm goal unmet. Safe next step is
+to capture the FINAL graph plus native `tracked_poses` (explicit anchor indices
+and full relativeSim3). Text exports lose scale and cannot substitute for that
+runtime state. First reproduce the original full1199 export exactly, then run
+the structural candidate through genuine source gates and fixed failure-first
+5+passing5 regression. Full25 and new blind recordings follow only after that.
