@@ -234,6 +234,7 @@ def run_record(
     gap_report_path: Path,
     output: Path,
     frozen_hashes: dict[str, str],
+    gap_support_policy: str = "all",
 ) -> dict[str, Any]:
     record_id = record["id"]
     record_dir = output / record_id
@@ -264,10 +265,12 @@ def run_record(
         native_rows,
         native_candidates,
         gap_report,
+        support_policy=gap_support_policy,
     )
     gap_report_for_solver = {
         **native_report,
         "schema": "timeline_gap_trial_native_recovery_plus_gap_v1",
+        "gap_support_policy": gap_support_policy,
         "timeline_gap_candidates": gap_diag,
     }
     constant_artifact, _constant_candidate, _constant_graph, constant_paths = physical.validate_constant_artifact(record, constant_gauge)
@@ -364,6 +367,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gap-report", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dataset", required=True)
+    parser.add_argument("--gap-support-policy", choices=("all", "nonoverlap"), default="all")
     args = parser.parse_args(argv)
     if args.output.exists() or args.output.is_symlink():
         parser.error("output must be new; previous results are never overwritten")
@@ -391,6 +395,7 @@ def main(argv: list[str] | None = None) -> int:
         "baseline_summary_sha256": file_hash(args.baseline / "summary.json"),
         "source_stage_preflight_sha256": source_stage["sha256"],
         "gap_report_sha256": file_hash(args.gap_report),
+        "gap_support_policy": args.gap_support_policy,
         "variants": [CONTROL_VARIANT, GAP_VARIANT],
         "code_sha256": frozen_hashes,
         "results": [],
@@ -411,6 +416,7 @@ def main(argv: list[str] | None = None) -> int:
             gap_report_path=args.gap_report.resolve(),
             output=args.output,
             frozen_hashes=frozen_hashes,
+            gap_support_policy=args.gap_support_policy,
         )
     except base.StopCodeChanged:
         summary["status"] = "STOP_CODE_CHANGED"

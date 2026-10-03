@@ -165,6 +165,7 @@ def test_run_record_orchestrates_two_arms_without_gt_or_replay(monkeypatch, tmp_
         rotations=Rotation.identity(2),
     )
     calls = []
+    gap_build_calls = []
 
     monkeypatch.setattr(trial.corpus_eval, "validate_source_stage_record", lambda rid, stage: {"id": rid, "left_source_paths": [], "right_source_paths": []})
     monkeypatch.setattr(trial.base, "validate_record_sources", lambda rec: None)
@@ -182,7 +183,11 @@ def test_run_record_orchestrates_two_arms_without_gt_or_replay(monkeypatch, tmp_
 
     monkeypatch.setattr(trial, "read_json", fake_read_json)
     monkeypatch.setattr(trial, "build_native_recovery_rows", lambda *args, **kwargs: ([{"first_index": 0, "second_index": 1, "first_t_sec": 100.0, "second_t_sec": 100.033, "accepted": True, "metric_displacement_frame": "body_i", "metric_displacement_camera_i_m": [0, 0, 0], "pnp_inlier_ratio": 0.5}], [{"eye": "left"}], {"native": True}, [gap]))
-    monkeypatch.setattr(trial, "build_timeline_gap_shared_rows", lambda *args, **kwargs: ([{"gap": True}], [{"eye": "left"}, {"eye": "right"}], {"appended_pair_count": 1, "external_ground_truth_used": False}))
+    def fake_gap_build(*args, **kwargs):
+        gap_build_calls.append(kwargs)
+        return ([{"gap": True}], [{"eye": "left"}, {"eye": "right"}], {"appended_pair_count": 1, "external_ground_truth_used": False})
+
+    monkeypatch.setattr(trial, "build_timeline_gap_shared_rows", fake_gap_build)
     monkeypatch.setattr(trial, "load_full_d405_times", lambda path: np.asarray([100.0, 100.033]))
     monkeypatch.setattr(trial.physical, "validate_constant_artifact", lambda rec, root: (const_artifact, {}, {}, [const_artifact / "local_motion_factors.json"]))
     monkeypatch.setattr(trial.paired, "validate_combined_reference", lambda rec, base_art, root: (comb_artifact, {"schema": "umi_physical_stereo_lever_candidate_v1"}, [comb_artifact / "candidate_manifest.json"]))
@@ -202,12 +207,15 @@ def test_run_record_orchestrates_two_arms_without_gt_or_replay(monkeypatch, tmp_
         gap_report_path=gap,
         output=output,
         frozen_hashes={},
+        gap_support_policy="nonoverlap",
     )
 
     assert result["status"] == "COMPLETED"
+    assert gap_build_calls == [{"support_policy": "nonoverlap"}]
     assert [call["variant"] for call in calls] == [trial.CONTROL_VARIANT, trial.GAP_VARIANT]
     assert calls[0]["rows"][0]["metric_displacement_frame"] == "body_i"
     assert calls[1]["rows"] == [{"gap": True}]
+    assert calls[1]["report"]["gap_support_policy"] == "nonoverlap"
     assert calls[1]["report"]["timeline_gap_candidates"]["appended_pair_count"] == 1
     assert any(str(gap) == path for call in calls for path in call["raw_paths"])
     assert result["reference_current_best"]["role"] == "frozen_currentbest_comparator_not_replayed_control"
@@ -251,7 +259,7 @@ def test_run_record_detects_gap_db3_mutation_inside_solver(monkeypatch, tmp_path
     monkeypatch.setattr(trial.base, "validate_baseline_trajectory_identity", lambda art, state, graph: None)
     monkeypatch.setattr(trial, "read_json", lambda path: json.loads(gap.read_text()) if Path(path).resolve() == gap.resolve() else [] if str(path).endswith("shared_stereo_observations.json") else [{"factor": 1}] if str(path).endswith("local_motion_factors.json") else {})
     monkeypatch.setattr(trial, "build_native_recovery_rows", lambda *args, **kwargs: ([{"accepted": True, "first_index": 0, "second_index": 1, "first_t_sec": 100.0, "second_t_sec": 100.033, "metric_displacement_frame": "body_i", "metric_displacement_camera_i_m": [0, 0, 0], "pnp_inlier_ratio": 0.5}], [{"eye": "left"}], {"native": True}, [gap]))
-    monkeypatch.setattr(trial, "build_timeline_gap_shared_rows", lambda *args, **kwargs: ([{"gap": True}], [{"eye": "left"}], {"appended_pair_count": 1}))
+    monkeypatch.setattr(trial, "build_timeline_gap_shared_rows", lambda *args, **kwargs: ([{"gap": True}], [{"eye": "left"}], {"appended_pair_count": 1, "support_sampling": {"support_policy": kwargs.get("support_policy")}}))
     monkeypatch.setattr(trial, "load_full_d405_times", lambda path: np.asarray([100.0, 100.033]))
     monkeypatch.setattr(trial.physical, "validate_constant_artifact", lambda rec, root: (const_artifact, {}, {}, [const_artifact / "local_motion_factors.json"]))
     monkeypatch.setattr(trial.paired, "validate_combined_reference", lambda rec, base_art, root: (comb_artifact, {"schema": "umi_physical_stereo_lever_candidate_v1"}, [comb_artifact / "candidate_manifest.json"]))
@@ -293,7 +301,13 @@ def test_main_records_terminal_failure_for_generic_exception(monkeypatch, tmp_pa
     monkeypatch.setattr(trial, "frozen_code_paths", lambda source_stage, gap_report: [manifest])
     monkeypatch.setattr(trial.base, "snapshot_hashes", lambda paths: {str(path): "hash" for path in paths})
     monkeypatch.setattr(trial.base, "code_changed", lambda hashes: False)
-    monkeypatch.setattr(trial, "run_record", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")))
+    run_calls = []
+
+    def boom(*args, **kwargs):
+        run_calls.append(kwargs)
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(trial, "run_record", boom)
 
     assert trial.main([
         "--manifest", str(manifest),
@@ -304,9 +318,12 @@ def test_main_records_terminal_failure_for_generic_exception(monkeypatch, tmp_pa
         "--gap-report", str(gap),
         "--output", str(output),
         "--dataset", "record",
+        "--gap-support-policy", "nonoverlap",
     ]) == 3
     summary = json.loads((output / "summary.json").read_text())
+    assert summary["gap_support_policy"] == "nonoverlap"
     assert summary["status"] == "COMPLETED_WITH_FAILURES"
+    assert run_calls[0]["gap_support_policy"] == "nonoverlap"
     assert summary["results"][0]["status"] == "FAILED_PRECHECK_OR_SOLVER_EXCEPTION"
     assert summary["results"][0]["denominator_retained"] is True
     assert "RuntimeError: boom" == summary["results"][0]["error"]
