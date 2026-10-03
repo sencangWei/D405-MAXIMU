@@ -71,3 +71,43 @@ whether inputs or numerical convergence caused this before the new backend
 pilot; do not widen the identity gate or discard the recording.
 
 The maximum-ATE<=10 mm goal remains unachieved.
+
+## Reviewed candidate bridge and closed native batch
+
+`ego_vio/vio/timeline_gap_stereo_candidates.py` now converts the actual full
+D405-tail reports into shared body_i rows using the existing reference binding,
+same-eye deduplication, max-confidence/equal-tie policy and physical lever
+transform. It calls the existing fusion confidence function, not a cloned
+formula. It rejects GT/Tracker/promotion/GPU flags and reports without direct
+DB3-image lineage. Neither the original timeline nor original rows are cropped.
+The helper returns fully transformed rows, never zero placeholder motions.
+
+Independent review: APPROVE after provenance and confidence fixes. Root fresh
+validation: 32 targeted tests PASS (6 bridge, 11 source probe, 6 fast10, 9 solver
+telemetry); compilation PASS. This proves the adapter contract, **not ATE**.
+
+The original B native paired batch is now terminal and the strict full25 merge
+is `COMPLETED_WITH_FAILURES`: 25 retained records, 22 scored, 2 technical control
+replay failures, 1 preparation/unobservable failure. Of the 22 scored records,
+the original control has 17 full precision PASS and the independent-native
+recovery arm has 19. Sep29 take04 improves max 10.902476 -> 6.858090 mm and
+Sep29 take07 becomes full PASS (max 9.863734 -> 8.677689 mm; its prior failure
+also included a rotation gate). Some previous passes regress in metrics while
+remaining PASS, e.g. Sep29 take09 max 7.997074 -> 9.054003 mm. The contaminated
+Sep29 take03 reference is retained, not removed to manufacture acceptance.
+
+Take02 strict replay failure is 16.574913 micrometres; a second technical replay
+failure at Sep30 take03 is 66.14 micrometres. Take02 recorded stereo rows,
+learned factors, timeline, rotations and all common input/source hashes match
+the frozen comparator. The remaining difference is in the newly solved position
+output; numerical sensitivity is a supported hypothesis, not yet a measured
+LSQR-cause proof. The existing 1e-7 m identity guard is unchanged.
+
+The saved continuation has merged all25 and started the fixed failure-first
+fast10 run from cached native sources. Fast10 includes all five development
+failures and five fixed passing controls. It is not a blind validation set.
+
+Next controlled trial uses two freshly solved arms (cached native recovery
+alone, then identical inputs plus full-timeline gap observations). The frozen
+currentbest is explicitly a cached comparator, not a claimed fresh control
+replay. No existing guard, solver setting or live corpus helper is modified.
