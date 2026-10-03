@@ -1571,3 +1571,82 @@ Previous telemetry backup0cea1ad62afb543be53a87b2e75a14d030489241 fetched from
 sencang was restored at /tmp/umi-lsqr-label-backup-20261003.uKgbwT:
 4target files byte-identical,9restoredtests PASS,bash-n PASS. New fast10 backup
 is pending fresh commit/push/fetched restore verification at this entry.
+
+Fast10 backup subsequently verified:45dfa5d79327a4f3c7c3e1d9de02560635839f5e
+normal pushed/fetched from sencang/codex/dual-ir-frontend-20261001. Six changed
+files restored byte-identical in /tmp/umi-fast10-backup-20261003.y47PsW;
+15restored tests PASS,bash-n PASS. No reports directory staged. This backs up
+workflow capability, not raw corpus caches or a claimed precision improvement.
+
+2026-10-03 continued read-only root-cause investigation while B runs:
+Current actual manifest SHA is8bf52fe7dd20a4e393b43718e7bb90dd75d62ae7d8b38a422d4a87c09cd0f18f,
+matching terminal native paired summaries. Do not reuse the older manifest
+hash60acb127 from previous context as current-state authority.
+
+Native ATE recomputed using evaluate_slam_ground_truth.load_trajectory and
+rigid_align, exact full timestamp equality (no crop/refit/extra scale):
+ind2 peak1105/36.8314s/max10.3590mm,4over10frames;
+heldout2 peak1117/37.2640s/max5.5663mm,0over10;
+heldout4 peak1141/38.0329s/max8.3236mm,0over10;
+take06 peak1030/34.3304s/max13.4787mm,4over10.
+Raw Tracker brackets at these peaks8.233/8.3162/8.3326/8.3205ms. Ind2 raw
+step max in peak+/-0.2s1.2068mm, heldout2 1.2314,heldout4 0.7058,take06 7.0840.
+
+Take06 raw Tracker rows4345->4346 (selected camera-window CSV; no invalid pose
+rows removed here) change[-0.2105,-0.1999,-7.0780]mm in8.330ms, rotation0.1046deg.
+Pose-minus-trapezoid-integrated OpenVR velocity residual7.15334mm there;
+whole-capture residual P95only0.23745mm. Neighbor residuals0.0368/0.4616/0.2230/
+0.0702/0.0185mm. Connected/pose_valid/tracking_result remain1/1/200. Saved
+lighthousedb start/end SHAidentical642b36448688fc780cdb462cef6e9f070b44bd9dba6f171afbe975c8fb25a440,
+revision64 unchanged. This is not evidence that a base was physically moved.
+Calibrated IMU80samples in camera peak+td +/-0.1s have acceleration norm
+9.58364..9.79735m/s2, gyro norm<=19.3873deg/s, median400.224Hz. VINS interpolated
+camera-frame consecutive displacements near peak1.7424/1.9707/1.8467/1.5953/
+1.4902/1.4821mm; native fusion likewise smooth while body reference1030->1031
+steps6.5208mm. Native ATE drops13.4787->7.3181mm AFTER the raw reference step.
+Inference: a non-kinematic Tracker position correction contaminates this local
+reference comparison; NOT proof that all take06 error is reference error, NOT
+a mandate for SLAM to follow it, and no gate/filter/denominator change is made.
+
+Cheap read-only original best full25 reference-kinematics census (24scored,
+1unscored retained) used each frozen score/reference_provenance.json to find
+Tracker raw CSV and fixed camera clock mapping/offset, and recomputed ORIGINAL
+SE3 peak. For every raw interval computed norm(delta_pose - mean(OpenVR velocity)
+*dt). At peak+/-0.2s maxima: ind2 0.495mm,take02(Sep29)0.655,take04 0.592,
+rotation-failtake07 0.316; all ordinary successful controls below1.405mm.
+Take06 7.153mm and known-reference-jumptake03 195.159mm stand out. Some PASS
+records have isolated>3mm residuals away from their peaks;3mm is descriptive
+only, NOT a new reference rejection or precision acceptance threshold.
+Thus Tracker discontinuity does NOT explain ind2/take02/take04. These cases
+remain algorithm investigation targets, not discarded bad-data cases.
+
+Independent native4 factor census found peak+/-1s crossing physical stereo
+edges159/133/60/169 and physical residual P95 2.25/2.00/1.09/3.30mm respectively.
+FAIL windows are not uniquely missing physical coverage. Learned L/R P95
+ind2 8.48/32.79mm,heldout2 7.58/152.61,heldout4 3.65/1.96,take06 22.03/32.62;
+large RIGHT residuals are already strongly downweighted. Standalone RIGHT
+residual gate again falsified by heldout2 PASS. New bounded read-only fast10
+ORIGINAL factor census is assigned before proposing any source/geometry fix.
+Goal remains ACTIVE/unmet. B85809 and fast10continuation96887 verified live;
+latest B19processed18READY1retained = overall23/25processed22READY1retained,
+remaining2. Technical extraction completion is not precision PASS.
+
+New fast10 ORIGINAL factor census saved separately in
+fast10_factor_census_20261003.md, NOT labeled native evidence. Take02(Sep29)
+has zero physical/learned edges crossing its37.264s peak +/-1s; last physical
+endpoint530 (~17.67s). Raw LEFT source587poses ends19.5253s; independent RIGHT
+588poses ends19.5587s. Original dataset frames.csv1199covers39.9261s;
+right frontend coverage report588/1199=.4904087,partial_track_allowed=true.
+LEFT mast3r.log repeated Failed to relocalize,Skipped frame587,then done.
+Device still moves in the missing tail (from18s: reference range417.101mm,
+VINS412.464mm; not a long stationary segment). Existing native recovery
+extractor _filtered_preflight_eye loops normal source-report observations,
+so it cannot propose any observation beyond those raw source trajectories.
+This is a concrete proposal/coverage limitation for take02, not yet proof that
+a particular replacement reaches10mm. Both independent frontends partial,
+not established that RIGHT input was cropped. Raw provenance run config/checkpoint
+independent and full dataset1199; bound only valid pose tail. Verify across
+fast10 before changing architecture. PASS take03 also has zero crossing factors
+but nearer support8.084s, so absence alone is not an automatic failure gate.
+Current B20processed19READY1retained = overall24processed23READY1retained/25,
+remaining1. Original source/paired/continuation chains remain untouched.
