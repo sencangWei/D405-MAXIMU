@@ -1,0 +1,44 @@
+{
+  "schema": "umi_dense_native_graph_stereo_falsifier_v1",
+  "diagnostic_only": true,
+  "production_promoted": false,
+  "precision_pass": false,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "record": "20260929_take02",
+  "frames": [808, 809],
+  "variant": "dense808_graph877_probe_v1.json",
+  "single_variable": "Explicit captured ordinary-frame808 state with original-threshold native learned edges791<->808<->809; every original graph edge and GN parameter retained",
+  "native_unit_step": {
+    "baseline_single_parent_transport": 0.09802219271659851,
+    "explicit_dense_state": 0.012495712377130985
+  },
+  "independent_pair_estimator": "Existing free stereo-PnP, LK with SIFT fallback, 128disparities, depth0.07-0.6m, OpenCV RNG seed0, threads2; no new parameters or LM",
+  "factory_baseline_m": 0.018083254,
+  "previous_diagnostics": {
+    "online_accepted": false,
+    "online_reason": "translation_direction_disagrees",
+    "final_accepted": false,
+    "final_reason": "rotation_disagrees",
+    "final_rotation_error_deg": 5.591831984693409
+  },
+  "explicit_dense_pair": {
+    "accepted": true,
+    "scale": 0.4350437801014573,
+    "metric_distance_m": 0.005557033483715977,
+    "direction_cosine": 0.9982673832233246,
+    "rotation_error_deg": 0.3001541957294177,
+    "tracked_points": 369,
+    "pnp_inliers": 332,
+    "pnp_inlier_ratio": 0.8997289972899729,
+    "pnp_refined": false,
+    "pnp_rotation_mode": "free",
+    "pnp_reprojection_median_px": 0.7577816247940063,
+    "pnp_reprojection_p95_px": 1.5880215167999268,
+    "method": "lk",
+    "bidirectional_relative_disagreement": 0.04279412668814304,
+    "reverse_pnp_inlier_ratio": 0.9008264462809917,
+    "reverse_rotation_error_deg": 0.27099225571298596
+  },
+  "interpretation": "Supports dense/graph structural inconsistency for this exact pair; does not prove full-trajectory ATE or absolute accuracy. Single-parent export is not equivalent to a dense geometric solve after loop correction. No full source or metric report is promoted; no whole-record candidate has yet been scored. Other loop-pair preservation and continuous-window/multi-record controls remain required."
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "umi_fast10_failed_record_diagnostic_v1",
+  "diagnostic_only": true,
+  "production_promoted": false,
+  "score_override_allowed": false,
+  "reference_used_for_diagnosis_not_solver": true,
+  "external_ground_truth_used_by_solver": false,
+  "regression_run": "independent_ir_fast10_lsqr_v1/fast_regression_summary.json",
+  "records": [
+    {
+      "id": "20260927_ind2",
+      "result": "FAIL",
+      "samples": 1143,
+      "max_ate_mm": 10.359044549631287,
+      "over_10mm_indices": [1103, 1104, 1105, 1107],
+      "elapsed_range_s": [36.765, 36.898],
+      "failure": "ate_translation_max_over_limit",
+      "prior_control_max_ate_mm": 14.403,
+      "stereo_edges_crossing_peak": 50,
+      "stereo_edges_midpoint_near_peak": 132,
+      "onboard_stereo_crossing_residual_mm": {
+        "p50": 0.909,
+        "p95": 2.997,
+        "max": 4.857
+      },
+      "conclusion": "Stereo coverage exists; missing observations are not demonstrated. Learned-factor conflict or residual allocation remains to be causally isolated; high per-eye residual is not enough to prove a bad eye.",
+      "next_minimal_discriminator": "Source-only local force/gradient split with frozen states and physical stereo comparisons, not another eye-weight sweep.",
+      "evidence_directory": "independent_ir_fast10_lsqr_v1/01_failure_independent_ir_corpus_native_ind2_v1/paired_output/20260927_ind2"
+    },
+    {
+      "id": "20260930_take06",
+      "result": "FAIL",
+      "samples": 1143,
+      "max_ate_mm": 13.478656445872879,
+      "over_10mm_indices": [1027, 1028, 1029, 1030],
+      "failure": "ate_translation_max_over_limit",
+      "prior_control_max_ate_mm": 14.756,
+      "stereo_edges_crossing_peak": 52,
+      "stereo_edges_midpoint_near_peak": 144,
+      "position_step_mm": {
+        "slam_at1031": 1.447,
+        "reference_at1031": 6.521,
+        "slam_at1034": 1.840,
+        "reference_at1034": 5.934
+      },
+      "raw_tracker_source": "reports/steamvr_umi_sessions/20260930_170015_slam_validation_six_take06/tracker.csv",
+      "raw_tracker_step_events": [
+        {"row": 4346, "step_mm": 7.084, "duration_ms": 8.33},
+        {"row": 4356, "step_mm": 4.932, "duration_ms": 8.33}
+      ],
+      "reference_transient_suspected": true,
+      "reference_transient_proved": false,
+      "conclusion": "ATE changes coincide with unusually large reference steps also present in raw SteamVR data, while fused position and both rotation streams remain continuous. Strong reference-transient suspicion, not proof of bad ground truth; no second independent truth source or tracking-valid status confirms it.",
+      "next_minimal_discriminator": "Compare exact raw optical/reference quality and physical stereo/IMU motion evidence without removing reference points or converting a filtered diagnosis into PASS.",
+      "evidence_directory": "independent_ir_fast10_lsqr_v1/02_failure_independent_ir_corpus_native_multiday3_v1/paired_output/20260930_take06"
+    }
+  ],
+  "full25_denominator_unchanged": true,
+  "precision_gate_unchanged_mm": 10
+}

@@ -227,3 +227,28 @@ original edge and solver setting. It must refuse an isolated state, wrong
 source images/config/checkpoint, or insufficient matching; it must not score
 or promote a diagnostic graph. After a source-valid repair exists, use the
 fixed failure-first5+passing5 regression set, not all25 per development cycle.
+
+## Bounded explicit-state falsifier: local structural improvement, not ATE
+
+`probe_dense_native_graph.py` passed independent review after its runtime
+binding/device/rejection/serialization defects were fixed; ten CPU tests pass.
+One real execution completed with `DENSE_EDGES_SOLVED`. Both learned pairs
+clear unchanged0.1 admission in both directions:791/808 fractions0.227/0.459,
+808/809 fractions0.383/0.366. Every one of the original584 directed edge rows
+is preserved. Original GN arguments/settings/gauge are unchanged; only the
+actual captured dense state and its learned geometric links are added.
+
+The808->809 distance after solve877 changes from0.0980222 model units under
+single-parent transport to0.0124957 under the explicit state. This is **not**
+an ATE result or a valid full metric source. Independent unchanged stereo-PnP
+then accepts808->809:direction cosine0.99827, rotation disagreement0.300deg,
+332/369 inliers, bidirectional scale spread4.28%, measured motion5.557mm.
+The prior online/final pair checks failed direction/rotation respectively.
+See `dense808_graph877_probe_v1.json` and
+`dense808_stereo_pair_diagnostic.json`; no external reference enters this probe.
+
+This supports the dense/graph structural hypothesis for the exact captured
+pair without deleting loops, raising correction caps, interpolating points or
+changing the source gates. Remaining discriminators are continuous-window
+state consistency, other loop-pair preservation and multi-record controls.
+No production code is changed and no new10mm pass is claimed.
