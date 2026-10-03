@@ -611,3 +611,75 @@ The user's latest validation policy remains:
 5. If a candidate fails, localize its first source/factor inconsistency before
    another targeted change. Once the fixed10 is stable, run full25 and fresh
    independent recordings for acceptance. This development set is not blind.
+
+## Stereo support partition and isolated fixed-scale falsifier (2026-10-03)
+
+The source-only support partition audit completed on all seven preceding
+graphs (28 directed edges), with original native common pre/post masks intact.
+At RIGHT576->587, both-stereo-supported16830 points have median Q3.454 and
+pixel residual0.601->5.040px; unsupported20277 points have Q2.930 and
+0.690->16.092px. The reverse direction also worsens in both classes.
+Passing heldout2 has substantially more unsupported50616 than supported12835
+points, without the same failure. Thus the simple "unsupported/low-confidence
+background causes the bad solve" explanation is not established. No residual
+mask, point deletion, confidence weight or threshold change follows from it.
+Measured evidence is `stereo_support_partition_audit_v1.json`.
+
+New source-constraint experiment, predeclared before its seven-graph run:
+keep original pointmaps, pixels, edges, matching/confidence, Huber and iteration
+settings. Derive target scales `s_i=s0*r_i/r0` from the frozen independently
+measured raw-stereo/native-depth median ratios for every original keyframe.
+Remove the seventh scale row/column BEFORE the SparseBlock solve; solve only
+translation/rotation. Reuse original calibrated CUDA residual/Jacobian and pose
+retraction, with zero scale increment. Pin frame0 as in the original kernel.
+This is not post-hoc trajectory warping or a new soft-prior weight sweep.
+
+The isolated source/build directory is `fixed_scale_native_backend_v1/`.
+No production files, installation, configuration, recordings or thresholds
+change. Original source hashes and explicit -O3/compute120 build flags are
+pinned. Local CUDA compilation required existing conda bin/nvvm/bin in PATH;
+no package or system configuration was changed. Four actual CUDA synthetic
+tests passed (multi-iteration fixed scales/pin, zero iterations, invalid target
+fails before mutation, byte-exact isolated original versus production control).
+CPU/static plus fixed10 runner verification:21 PASS. Native retained-Jacobian
+finite-difference tests are still missing; this diagnostic cannot be promoted
+on those tests alone.
+
+Falsifier criteria: original versus isolated native control must be byte-exact
+on each real graph; all target scales/pinned pose and repeated solves must be
+exact. On the same seven original chronological pair sets, RIGHT worst stereo
+PnP rotation disagreement should drop below2deg (toward its pre-GN geometry)
+without either passing control's maximum disagreement increasing. Otherwise
+reject this candidate before expensive full frontend/fixed10 execution, do not
+sweep weights/scales or call an internal diagnostic an ATE improvement.
+If supported, implement source-valid full frontends and run the fixed failure5
+then passing5 with refreshed affected sources. Full25 remains final acceptance,
+not the every-edit loop.
+
+### Terminal measured result: fixed-scale candidate rejected
+
+All seven real graph jobs completed. The original isolated control is
+byte-exact with the production CUDA solve on every graph; fixed-scale repeated
+solves, zero scale increments, target scales and frame0 pin are exact.
+The hypotheses' geometric criterion failed, so no full frontend/fixed10 ATE
+run or promotion follows for this variant:
+
+| Graph | Original worst stereo-PnP disagreement (deg) | Fixed scales (deg) |
+|---|---:|---:|
+| RIGHT587 |9.209804|9.571253|
+| RIGHT592 |10.671543|11.308754|
+| RIGHT613 |10.967111|11.599211|
+| LEFT877 |3.589815|3.722947|
+| LEFT1044 |3.589809|3.723057|
+| passing heldout2 |1.193247|1.174376|
+| passing take01 |1.189147|1.328916|
+
+This refutes the sufficiency of fixing the independent per-KF median scales
+ALONE under the original learned pointmaps. It does not prove scale is always
+irrelevant, or that combined pointmap geometry has been repaired. The earlier
+depth-shape trial improved LEFT but not RIGHT. Remaining source conflict must
+be localized (including the learned pointmap's calibrated ray geometry) before
+any new source change; do not combine more unconstrained weights or perform
+another full25 unchanged rerun. These numbers are degrees, NOT ATE millimetres.
+Production, calibration, gates and sensor recordings remain unchanged.
+Evidence: `fixed_stereo_scale_GN_falsifier_v1/summary.json` and seven job reports.

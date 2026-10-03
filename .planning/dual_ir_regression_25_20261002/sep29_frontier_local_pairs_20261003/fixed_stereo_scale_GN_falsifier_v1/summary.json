@@ -1,0 +1,180 @@
+{
+  "schema": "native_fixed_stereo_scale_GN_falsifier_v1",
+  "diagnostic_only": true,
+  "external_ground_truth_used": false,
+  "precision_pass": false,
+  "production_promoted": false,
+  "plan_sha256": "628a1fcfe8d954a6b378aff90e68403177aed1f3685781562735eb8648848f70",
+  "prior_summary_sha256": "52c3f368c99ca83c7767f2ad086fe4b0b04cfd0177d066cd5f82198afb3e52a7",
+  "build_provenance": {
+    "schema": "mast3r_fixed_scale_backend_build_v1",
+    "module_name": "mast3r_fixed_scale_backend_v1",
+    "tool_root": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM",
+    "source_hashes": {
+      "gn_cpp": {
+        "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/backend/src/gn.cpp",
+        "sha256": "af24cdba7e3084661afefd23ff9d68dee9e7509ed962f0f5117370d3b1e70c56"
+      },
+      "gn_kernels_cu": {
+        "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/backend/src/gn_kernels.cu",
+        "sha256": "76dbac54f4f3e3c0839cd5f8aed1a3f5c2a3f19b88c23e7343323f843756d688"
+      },
+      "gn_h": {
+        "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/backend/include/gn.h",
+        "sha256": "e6a2f0c636086b0246e422f0e308aa1ba5ddf5e1b6b21525bcba3cc0f625e718"
+      }
+    },
+    "diagnostic_only": true,
+    "production_promoted": false,
+    "external_ground_truth_used": false
+  },
+  "isolated_backend_sha256": "fbb63edd615408067dbcb84ec2a57b22c1da659b9024d62bf7d87928a4deab4b",
+  "source_sha256": {
+    "probe_fixed_stereo_scales.py": "fe5a99aab0587301fe888a56bb1ebae8d2cc137f67a13f0f78bf87244f99e356",
+    "build_backend.py": "d5c747c09b37ab26c3ff5d4db6d9f5029a09c14a9546c270558473655d6109d0",
+    "stereo_scale_targets.py": "107b13383e813266fc07cf9ac3f5ab2734f3974acc22b974804e298b354e3a2f"
+  },
+  "hypothesis": "Remove per-KF Sim3 scale DOF; fix s_i=s0*r_i/r0 from frozen raw stereo, original Xs unchanged.",
+  "jobs": [
+    {
+      "id": "right587",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 22,
+      "report_sha256": "cde53719ecabbeb8d9ec2107a5d83f57ba0aaa5dab8e2f23567d15ad2f6648c6",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.3853421077755025,
+          "max": 3.5265640441190067
+        },
+        "control": {
+          "median": 0.4353606925484216,
+          "max": 9.209803611275431
+        },
+        "fixed_scales": {
+          "median": 0.5018705152939114,
+          "max": 9.571253011168013
+        }
+      }
+    },
+    {
+      "id": "right592",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 22,
+      "report_sha256": "e2032091e55a758511d5390b20be34dd5ab5202d9a3ee4ee0fd73f7b7c085a86",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.4353606925484216,
+          "max": 9.209803611275431
+        },
+        "control": {
+          "median": 0.43471799231211783,
+          "max": 10.671542661312424
+        },
+        "fixed_scales": {
+          "median": 0.4882227617941186,
+          "max": 11.308754093468115
+        }
+      }
+    },
+    {
+      "id": "right613",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 35,
+      "report_sha256": "4e98747c50bb4e2692bea98d1b295ecc83f3b4e06daeb69673119b26b825ac1e",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.29221313592003906,
+          "max": 10.967105041159023
+        },
+        "control": {
+          "median": 0.292211390468154,
+          "max": 10.967110983554742
+        },
+        "fixed_scales": {
+          "median": 0.2841790618670623,
+          "max": 11.59921140348448
+        }
+      }
+    },
+    {
+      "id": "left877",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 114,
+      "report_sha256": "b8977dbb2fd35f8cdcc4078bae345ea102813ee9e67375daa3cd54975917c27f",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.2742377992415197,
+          "max": 9.660732109104284
+        },
+        "control": {
+          "median": 0.2742333712237073,
+          "max": 3.589815250573025
+        },
+        "fixed_scales": {
+          "median": 0.27295761869837576,
+          "max": 3.7229465818071077
+        }
+      }
+    },
+    {
+      "id": "left1044",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 121,
+      "report_sha256": "185e7fdf59b0e5ca751aacc8131ceeff68cad98ae82fc3272abce0313e18af57",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.2895958093836757,
+          "max": 3.5898072817366447
+        },
+        "control": {
+          "median": 0.28959702032363904,
+          "max": 3.5898089473987627
+        },
+        "fixed_scales": {
+          "median": 0.2824001439918098,
+          "max": 3.7230572394671992
+        }
+      }
+    },
+    {
+      "id": "passing_held2_752",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 23,
+      "report_sha256": "5e8b06053938e4e5f81263c6bee1a8468b707ab1c1cdb261919306efeafe3b64",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.12425107122758793,
+          "max": 1.1937346082568487
+        },
+        "control": {
+          "median": 0.11084891387085843,
+          "max": 1.1932474458976143
+        },
+        "fixed_scales": {
+          "median": 0.12243564482459077,
+          "max": 1.1743759131154143
+        }
+      }
+    },
+    {
+      "id": "passing_take01_738",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "accepted_chain_pairs": 41,
+      "report_sha256": "f80e3c96d02af33e486897060d6dda15a7734b0a50c8f3ccb807902efaaec94d",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.3098646881155068,
+          "max": 1.563955554464279
+        },
+        "control": {
+          "median": 0.30986491137359506,
+          "max": 1.1891472797155622
+        },
+        "fixed_scales": {
+          "median": 0.3047434958210251,
+          "max": 1.3289163866826301
+        }
+      }
+    }
+  ]
+}
