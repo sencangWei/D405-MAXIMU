@@ -230,3 +230,55 @@ those summaries before modifying them. The final focused suite passes 34/34,
 and independent review approves with no remaining issue in that scope. The
 earlier native reports keep their original runner hashes and are not relabeled
 as runs of this subsequent provenance-only fix.
+
+## 2026-10-03 15:49 UTC: fresh scores and retained backend gains
+
+The fixed10 queue has now completed its five failing-cohort records and started
+the passing control `20260927_heldout2` LEFT (1199 inputs). Three records remain
+explicit technical/quality failures, not exclusions: ind2 EVALUATION_FAILED,
+take02 COVERAGE_FAILED, take04 EVALUATION_FAILED. take07 and take06 completed
+scoring but still fail the unchanged accuracy gate. The queue remains live;
+no producer was stopped, restarted, or source-modified for this checkpoint.
+
+Fresh scores below are successive backend variants of each SAME NEW frontend,
+not strict frontend OFF/ON or historical-version comparisons. All six scores
+have 1143 samples and timestamp overlap 1.0. Keep the useful existing backend
+components; these rows alone do not establish whole-cohort non-regression.
+
+| Record | Backend | Mean mm | P95 mm | Maximum mm |
+| --- | --- | ---: | ---: | ---: |
+| 20260929_take07 | fresh symmetric | 4.401765 | 8.881092 | 15.272219 |
+| 20260929_take07 | constant gauge | 4.169034 | 8.060292 | 14.584341 |
+| 20260929_take07 | physical stereo + constant gauge | 4.014820 | 7.534899 | 12.109613 |
+| 20260930_take06 | fresh symmetric | 3.285687 | 5.714138 | 15.219813 |
+| 20260930_take06 | constant gauge | 3.274206 | 5.734147 | 14.960596 |
+| 20260930_take06 | physical stereo + constant gauge | 3.198423 | 5.611702 | 14.697581 |
+
+Score source: `full_metric_joint_fast10_v2/<record>/eval/` with
+`fresh_symmetric_baseline/<record>/both/score/precision.json`,
+`constant_gauge/<record>/selected/score/precision.json`, and
+`physical_stereo_lever/<record>/physical_stereo_constant_gauge/score/precision.json`.
+The selected estimate SHA256s remain
+`446659d2128f8077b3d50de8f45942dcd79ba08f17d9ab9777693c4665069604`
+(take07) and `f4d0d263629ae7d7b7d479ee67816d01e45876d8008d8030200134783c47458e`
+(take06). Workflow manifests confirm unchanged estimates, body origin, frozen
+reference manifest b5ac5b8f..., and no SLAM supervision.
+
+Read-only reconstruction using the original interpolation/SE3 scorer reproduced
+both selected reports to 1e-12 m (no estimate changes). take07 has 38 >10 mm
+samples: a 27-sample block at body elapsed 35.964091-36.830779 s, peak frame1152,
+and an 11-sample block at 37.730852-38.064224 s, peak frame1193. Exact timestamps
+map both peaks to the actual LEFT source clock (zero time mismatch). The final
+LEFT metric graph excludes both peaks: 1152 is bracketed by 1143/1162, and 1193
+lies after its last keyframe1162. This newly scored record is not the historical
+09-22 handoff's identically sized 27-frame block.
+
+take06 has only five >10 mm samples (within10 ratio 0.995625547), in one block
+at elapsed 34.197039-34.330377 s. Peak frame1086 has exact source-clock matching
+and is absent from BOTH retained metric graphs: LEFT brackets1060/1088, RIGHT
+1059/1087. This narrows the remaining diagnostic to interval-frame states;
+graph non-membership is locality evidence, NOT proof of causation or an ATE
+improvement from a new local solver. Keep the queued true-local OFF/ON capture,
+replay and native-factor probe, then verify full trajectories and controls.
+All87 guarded source hashes were freshly unchanged around the read-only take07
+reconstruction. No weight, cap, model, continuity gate, or source version changed.
