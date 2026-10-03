@@ -1,0 +1,2700 @@
+{
+  "schema": "umi_fresh_right_primary_stereo_diagnostic_v1",
+  "result": "PASS",
+  "failures": [],
+  "external_ground_truth_used": false,
+  "production_promoted": false,
+  "factors_emitted": 0,
+  "backend_run": false,
+  "scoring_run": false,
+  "model_loaded": false,
+  "accuracy_label": "geometry_diagnostic_only_not_slam_accuracy",
+  "capped_diagnostic": true,
+  "sampling": {
+    "frame_step": 5,
+    "max_hop": 5,
+    "max_pairs": 32,
+    "scheduled_pairs": 32
+  },
+  "fixed_parameters": {
+    "min_depth_m": 0.07,
+    "max_depth_m": 0.6,
+    "num_disparities": 128,
+    "min_observations": 4
+  },
+  "source_run": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right",
+  "source_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195348",
+  "frontend": {
+    "eye": "right",
+    "run_manifest": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/run_manifest.json",
+    "run_manifest_sha256": "131b458a35a3dca95bbae319dc09236415dc098fec7d4c41c7ff687dd54ab058",
+    "context": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/context.json",
+    "context_sha256": "9aa51697ff4e2cc31565aa48857ad3f92e18802a31371ead7f20e573109d905b",
+    "frames_csv": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/frames.csv",
+    "frames_csv_sha256": "41592a11fdba41e9fc72a133681ce6e2a586e95adcb515fe362f06c3cb15cc08",
+    "trajectory_frames": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/trajectory_frames.csv",
+    "trajectory_frames_sha256": "e89fc1689db79a1e52f5c7a01b184e100edf01d83362448650cae230fb2f22fe",
+    "frame_count": 1199,
+    "source_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195348",
+    "consumed_paths": [
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/run_manifest.json",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/context.json",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/frames.csv",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/trajectory_frames.csv",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/effective_config.yaml",
+      "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"
+    ],
+    "config": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/effective_config.yaml",
+    "config_sha256": "d7a7291f98d357cc46b77e0e73e6ed619f103c445344bd9defe456742ca82ceb",
+    "checkpoint": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
+    "checkpoint_sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2",
+    "metric_relative_joint_enabled": true
+  },
+  "timing": {
+    "time_binding": "trajectory t_sec -> d405_frames.infrared_right_device_ms",
+    "max_trajectory_delta_ms": 0.0,
+    "max_stereo_skew_ms": 0.0
+  },
+  "scale_m_per_mast3r_unit": 0.5053898917961005,
+  "quality": {
+    "accepted_observations": 7,
+    "robust_inliers": 6,
+    "median_before_filter": 0.49327534349843943,
+    "mad_before_filter": 0.011060114854332725,
+    "relative_p90_p10": 0.061436195359881256,
+    "scale_estimator": "robust_inverse_variance_weighted_mean",
+    "weight_p95_limit": 0.0024962167460128686
+  },
+  "trajectory_continuity": {
+    "result": "PASS",
+    "reason": null,
+    "jump_count": 0,
+    "first_jump_index": null,
+    "max_step_m": 0.01786040691798844,
+    "max_contiguous_step_m": 0.01786040691798844,
+    "unverified_gap_count": 0,
+    "max_gap_s": 0.0,
+    "absolute_step_limit_m": 0.03,
+    "local_median_multiplier": 5.0
+  },
+  "observation_frame": "infrared_right_camera_i",
+  "observations": [
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 0,
+      "second_index": 5,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682830.4508457,
+      "second_t_sec": 1790682830.617611,
+      "first_right_frame_number": 30,
+      "second_right_frame_number": 35
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 190,
+      "second_index": 195,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682836.7758155,
+      "second_t_sec": 1790682836.942484,
+      "first_right_frame_number": 220,
+      "second_right_frame_number": 225
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 380,
+      "second_index": 385,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682843.1092546,
+      "second_t_sec": 1790682843.275927,
+      "first_right_frame_number": 410,
+      "second_right_frame_number": 415
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 570,
+      "second_index": 575,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682849.44278,
+      "second_t_sec": 1790682849.6094487,
+      "first_right_frame_number": 600,
+      "second_right_frame_number": 605
+    },
+    {
+      "accepted": true,
+      "scale": 0.4742063029831898,
+      "metric_distance_m": 0.020633904315759392,
+      "metric_displacement_camera_i_m": [
+        -0.012609072220843188,
+        -0.013893352594014604,
+        -0.008587436098153071
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.04360555592587738,
+      "direction_cosine": 0.9950949469958235,
+      "rotation_error_deg": 0.3510699659499918,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.03444741498295162,
+        -0.005672411721477834,
+        -0.01586688259862477,
+        0.9992644501746551
+      ],
+      "tracked_points": 106,
+      "pnp_inliers": 74,
+      "pnp_inlier_ratio": 0.6981132075471698,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.9504490494728088,
+      "pnp_reprojection_p95_px": 1.8130110502243042,
+      "median_depth_m": 0.3708694392269914,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.47087334367000966,
+      "reverse_scale": 0.47760847756739694,
+      "bidirectional_relative_disagreement": 0.014201925111438618,
+      "reverse_metric_distance_m": 0.02089905635899924,
+      "reverse_pnp_inlier_ratio": 0.6666666666666666,
+      "reverse_rotation_error_deg": 0.2979007100382288,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 760,
+      "second_index": 765,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682855.7766936,
+      "second_t_sec": 1790682855.9433646,
+      "first_right_frame_number": 790,
+      "second_right_frame_number": 795
+    },
+    {
+      "accepted": true,
+      "scale": 0.49327534349843943,
+      "metric_distance_m": 0.024545500351989366,
+      "metric_displacement_camera_i_m": [
+        0.020867487534153205,
+        -0.011307096904967538,
+        -0.006259321937969347
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.049722768186717566,
+      "direction_cosine": 0.9992469171649424,
+      "rotation_error_deg": 0.27801909820682236,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.007453696574576375,
+        -0.03911783635673838,
+        -0.02646373749806033,
+        0.9988562999169477
+      ],
+      "tracked_points": 249,
+      "pnp_inliers": 109,
+      "pnp_inlier_ratio": 0.43775100401606426,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 1.1344753503799438,
+      "pnp_reprojection_p95_px": 1.9149645566940308,
+      "median_depth_m": 0.2854656554304681,
+      "method": "sift",
+      "lk_failure_reason": "pnp_failed",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 950,
+      "second_index": 955,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682862.110199,
+      "second_t_sec": 1790682862.2768817,
+      "first_right_frame_number": 980,
+      "second_right_frame_number": 985
+    },
+    {
+      "accepted": true,
+      "scale": 0.5929038984640764,
+      "metric_distance_m": 0.05162489609059318,
+      "metric_displacement_camera_i_m": [
+        -0.03252225991904261,
+        0.006323189433929673,
+        -0.0395910315792026
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.08431723627433964,
+      "direction_cosine": 0.9881356908782265,
+      "rotation_error_deg": 1.5820118179350624,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.03932439286128901,
+        0.08971808602592606,
+        0.06347511869358713,
+        0.99316421928741
+      ],
+      "tracked_points": 88,
+      "pnp_inliers": 57,
+      "pnp_inlier_ratio": 0.6477272727272727,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 1.1651049852371216,
+      "pnp_reprojection_p95_px": 1.980706810951233,
+      "median_depth_m": 0.3354221451308,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.605005626595942,
+      "reverse_scale": 0.5782395247684636,
+      "bidirectional_relative_disagreement": 0.045241853383661504,
+      "reverse_metric_distance_m": 0.04933254562591852,
+      "reverse_pnp_inlier_ratio": 0.5853658536585366,
+      "reverse_rotation_error_deg": 1.184576599712065,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 1145,
+      "second_index": 1150,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790682868.6103015,
+      "second_t_sec": 1790682868.7769732,
+      "first_right_frame_number": 1175,
+      "second_right_frame_number": 1180
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 140,
+      "second_index": 150,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790682835.1089277,
+      "second_t_sec": 1790682835.4423306,
+      "first_right_frame_number": 170,
+      "second_right_frame_number": 180
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 330,
+      "second_index": 340,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790682841.442552,
+      "second_t_sec": 1790682841.7758894,
+      "first_right_frame_number": 360,
+      "second_right_frame_number": 370
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 520,
+      "second_index": 530,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790682847.7760925,
+      "second_t_sec": 1790682848.1094272,
+      "first_right_frame_number": 550,
+      "second_right_frame_number": 560
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 710,
+      "second_index": 720,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790682854.1097927,
+      "second_t_sec": 1790682854.443139,
+      "first_right_frame_number": 740,
+      "second_right_frame_number": 750
+    },
+    {
+      "accepted": true,
+      "scale": 0.49168363918480074,
+      "metric_distance_m": 0.029907280398945003,
+      "metric_displacement_camera_i_m": [
+        0.02389310446487549,
+        0.006161116288304456,
+        -0.01689987059044111
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.06065319926963845,
+      "direction_cosine": 0.9984517159054673,
+      "rotation_error_deg": 0.2273630251427447,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.045566867942090604,
+        -0.026039573237781645,
+        -0.036325721210387525,
+        0.9979609426977026
+      ],
+      "tracked_points": 965,
+      "pnp_inliers": 734,
+      "pnp_inlier_ratio": 0.7606217616580311,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.6802688837051392,
+      "pnp_reprojection_p95_px": 1.62632155418396,
+      "median_depth_m": 0.2545208689339404,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.49232317160457323,
+      "reverse_scale": 0.4910534365762513,
+      "bidirectional_relative_disagreement": 0.002582398275002428,
+      "reverse_metric_distance_m": 0.029818014445131144,
+      "reverse_pnp_inlier_ratio": 0.7765108323831242,
+      "reverse_rotation_error_deg": 0.21455563015229165,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 905,
+      "second_index": 915,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790682860.6101315,
+      "second_t_sec": 1790682860.943464,
+      "first_right_frame_number": 935,
+      "second_right_frame_number": 945
+    },
+    {
+      "accepted": true,
+      "scale": 0.4822152286441067,
+      "metric_distance_m": 0.025462389151364756,
+      "metric_displacement_camera_i_m": [
+        0.0054106728519817794,
+        0.01200582920693714,
+        -0.021792612180237137
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.052130544522345,
+      "direction_cosine": 0.9998035398673554,
+      "rotation_error_deg": 0.281714503595899,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.019094136764438486,
+        -0.023417754886671468,
+        -0.002593050942066723,
+        0.9995400436121109
+      ],
+      "tracked_points": 375,
+      "pnp_inliers": 304,
+      "pnp_inlier_ratio": 0.8106666666666666,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.7939479351043701,
+      "pnp_reprojection_p95_px": 1.7696336507797241,
+      "median_depth_m": 0.40308240616576824,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.4883391692964705,
+      "reverse_scale": 0.4755749873808766,
+      "bidirectional_relative_disagreement": 0.026484063600834624,
+      "reverse_metric_distance_m": 0.024814700868156514,
+      "reverse_pnp_inlier_ratio": 0.7871720116618076,
+      "reverse_rotation_error_deg": 0.35121542245707543,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 1095,
+      "second_index": 1105,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790682866.9435713,
+      "second_t_sec": 1790682867.276953,
+      "first_right_frame_number": 1125,
+      "second_right_frame_number": 1135
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 95,
+      "second_index": 110,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790682833.6087546,
+      "second_t_sec": 1790682834.1087675,
+      "first_right_frame_number": 125,
+      "second_right_frame_number": 140
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 285,
+      "second_index": 300,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790682839.9425151,
+      "second_t_sec": 1790682840.4425578,
+      "first_right_frame_number": 315,
+      "second_right_frame_number": 330
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 475,
+      "second_index": 490,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790682846.2760763,
+      "second_t_sec": 1790682846.7760837,
+      "first_right_frame_number": 505,
+      "second_right_frame_number": 520
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 670,
+      "second_index": 685,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790682852.7764316,
+      "second_t_sec": 1790682853.276452,
+      "first_right_frame_number": 700,
+      "second_right_frame_number": 715
+    },
+    {
+      "accepted": true,
+      "scale": 0.4994461133776133,
+      "metric_distance_m": 0.005804017195498236,
+      "metric_displacement_camera_i_m": [
+        -0.005421097886723633,
+        4.19774124968346e-06,
+        0.0020732331482899305
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.011575366268068843,
+      "direction_cosine": 0.9994986345083078,
+      "rotation_error_deg": 0.04721133120402626,
+      "pnp_rotation_quaternion_xyzw": [
+        0.012590887902954154,
+        -0.011855203666186668,
+        0.014151305762994051,
+        0.9997503009417156
+      ],
+      "tracked_points": 2093,
+      "pnp_inliers": 1981,
+      "pnp_inlier_ratio": 0.9464882943143813,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.2809169888496399,
+      "pnp_reprojection_p95_px": 0.7227755784988403,
+      "median_depth_m": 0.21665098186072432,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.501159715141441,
+      "reverse_scale": 0.4977125198428208,
+      "bidirectional_relative_disagreement": 0.00690217462831873,
+      "reverse_metric_distance_m": 0.005764286487763551,
+      "reverse_pnp_inlier_ratio": 0.9485148514851485,
+      "reverse_rotation_error_deg": 0.04097369932646324,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 860,
+      "second_index": 875,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790682859.1101296,
+      "second_t_sec": 1790682859.610124,
+      "first_right_frame_number": 890,
+      "second_right_frame_number": 905
+    },
+    {
+      "accepted": false,
+      "reason": "insufficient_consistent_points",
+      "method": "lk",
+      "sift_failure_reason": "pnp_inlier_ratio_low",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 1050,
+      "second_index": 1065,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790682865.4435122,
+      "second_t_sec": 1790682865.9435055,
+      "first_right_frame_number": 1080,
+      "second_right_frame_number": 1095
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 55,
+      "second_index": 75,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790682832.2799354,
+      "second_t_sec": 1790682832.9443388,
+      "first_right_frame_number": 85,
+      "second_right_frame_number": 105
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 245,
+      "second_index": 265,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790682838.6091294,
+      "second_t_sec": 1790682839.275789,
+      "first_right_frame_number": 275,
+      "second_right_frame_number": 295
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 440,
+      "second_index": 460,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790682845.1093814,
+      "second_t_sec": 1790682845.7760642,
+      "first_right_frame_number": 470,
+      "second_right_frame_number": 490
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 630,
+      "second_index": 650,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790682851.4430428,
+      "second_t_sec": 1790682852.109736,
+      "first_right_frame_number": 660,
+      "second_right_frame_number": 680
+    },
+    {
+      "accepted": false,
+      "reason": "insufficient_consistent_points",
+      "method": "lk",
+      "sift_failure_reason": "insufficient_consistent_points",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 820,
+      "second_index": 840,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790682857.7768378,
+      "second_t_sec": 1790682858.4434795,
+      "first_right_frame_number": 850,
+      "second_right_frame_number": 870
+    },
+    {
+      "accepted": true,
+      "scale": 0.5190738825002722,
+      "metric_distance_m": 0.09094336372993239,
+      "metric_displacement_camera_i_m": [
+        -0.013740863959400086,
+        0.01355688269518113,
+        0.08887122704088843
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.1715037602629476,
+      "direction_cosine": 0.9973765332050877,
+      "rotation_error_deg": 1.205456655701579,
+      "pnp_rotation_quaternion_xyzw": [
+        0.10463232643493428,
+        0.045094988034448134,
+        0.025635040387608696,
+        0.9931572700349689
+      ],
+      "tracked_points": 64,
+      "pnp_inliers": 24,
+      "pnp_inlier_ratio": 0.375,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.9039707183837891,
+      "pnp_reprojection_p95_px": 1.8516463041305542,
+      "median_depth_m": 0.40481983033027585,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.5288792309620602,
+      "reverse_scale": 0.5122412901529501,
+      "bidirectional_relative_disagreement": 0.03196160381372836,
+      "reverse_metric_distance_m": 0.08904055267348775,
+      "reverse_pnp_inlier_ratio": 0.5614035087719298,
+      "reverse_rotation_error_deg": 2.057238322563486,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 1010,
+      "second_index": 1030,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790682864.1101968,
+      "second_t_sec": 1790682864.7768543,
+      "first_right_frame_number": 1040,
+      "second_right_frame_number": 1060
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 20,
+      "second_index": 45,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682831.1156805,
+      "second_t_sec": 1790682831.9470317,
+      "first_right_frame_number": 50,
+      "second_right_frame_number": 75
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 215,
+      "second_index": 240,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682837.6091506,
+      "second_t_sec": 1790682838.442464,
+      "first_right_frame_number": 245,
+      "second_right_frame_number": 270
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 405,
+      "second_index": 430,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682843.9426544,
+      "second_t_sec": 1790682844.7760406,
+      "first_right_frame_number": 435,
+      "second_right_frame_number": 460
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 595,
+      "second_index": 620,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682850.2761188,
+      "second_t_sec": 1790682851.1096346,
+      "first_right_frame_number": 625,
+      "second_right_frame_number": 650
+    },
+    {
+      "accepted": false,
+      "reason": "insufficient_consistent_points",
+      "method": "lk",
+      "sift_failure_reason": "pnp_inlier_ratio_low",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 785,
+      "second_index": 810,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682856.6100762,
+      "second_t_sec": 1790682857.4435153,
+      "first_right_frame_number": 815,
+      "second_right_frame_number": 840
+    },
+    {
+      "accepted": false,
+      "reason": "insufficient_consistent_points",
+      "method": "lk",
+      "sift_failure_reason": "pnp_failed",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 975,
+      "second_index": 1000,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682862.9435525,
+      "second_t_sec": 1790682863.7768712,
+      "first_right_frame_number": 1005,
+      "second_right_frame_number": 1030
+    },
+    {
+      "accepted": false,
+      "reason": "insufficient_consistent_points",
+      "method": "lk",
+      "sift_failure_reason": "insufficient_consistent_points",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 1170,
+      "second_index": 1195,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790682869.4436543,
+      "second_t_sec": 1790682870.2769885,
+      "first_right_frame_number": 1200,
+      "second_right_frame_number": 1225
+    }
+  ],
+  "consumed_source_sha256_before": {
+    "checkpoint": {
+      "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
+      "sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2"
+    },
+    "config": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/effective_config.yaml",
+      "sha256": "d7a7291f98d357cc46b77e0e73e6ed619f103c445344bd9defe456742ca82ceb"
+    },
+    "context": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/context.json",
+      "sha256": "9aa51697ff4e2cc31565aa48857ad3f92e18802a31371ead7f20e573109d905b"
+    },
+    "context_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/experimental_mast3r_metric_joint_adapter.py",
+      "sha256": "bbabe5b0b3d30d0c90c249ab944958470d69117a217992df858d6eebc65485d6"
+    },
+    "diagnostic_script": {
+      "path": "/home/robot/ego_vio_humble/scripts/diagnose_fresh_right_stereo.py",
+      "sha256": "e3ae20da6ff285b33dc88aa946dee3af4b15f83a62f63fd781d1d244b9dfd83b"
+    },
+    "frontend_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/evaluate_metric_joint_frontend.py",
+      "sha256": "dbb1e53cfee2f88d3bdf25d3e8f7ee4746961eb360182a996db27a9ad3e17290"
+    },
+    "image_0000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000000.png",
+      "sha256": "42778a56fe9d82e3c16c4baf69065c43356ecf429b4eef4b0121436deef4913e"
+    },
+    "image_0000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000000.png",
+      "sha256": "35511092afe9b9c6fe823fe005972f21ce0bea409e8c6f56b19c7fab6d91813e"
+    },
+    "image_0000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000000.png",
+      "sha256": "35511092afe9b9c6fe823fe005972f21ce0bea409e8c6f56b19c7fab6d91813e"
+    },
+    "image_0005_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000005.png",
+      "sha256": "5903ee584116f8092402c4de45db976d1408b677209cc5426f02b4b355065789"
+    },
+    "image_0005_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000005.png",
+      "sha256": "1c1a2a87650df505b52fbba814ffd26a1064d4842065200cde99dd623e39fe59"
+    },
+    "image_0005_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000005.png",
+      "sha256": "1c1a2a87650df505b52fbba814ffd26a1064d4842065200cde99dd623e39fe59"
+    },
+    "image_0020_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000020.png",
+      "sha256": "bcaedb002d9e01ee17d54c2327cc652dd7b8f8398b6f57d1434ba2f731a7a048"
+    },
+    "image_0020_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000020.png",
+      "sha256": "02f1b3bc46bc35d5556689d7ccab45b217016587c857bba7ac6853a16753ec8b"
+    },
+    "image_0020_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000020.png",
+      "sha256": "02f1b3bc46bc35d5556689d7ccab45b217016587c857bba7ac6853a16753ec8b"
+    },
+    "image_0045_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000045.png",
+      "sha256": "70fd3a49edea09d5609cfdd356d2e336a62d9ee2eab5f6f0d1f82e8fe4979c40"
+    },
+    "image_0045_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000045.png",
+      "sha256": "9b0d125d5f109c1f4d473ddf9b38ccd64d65c11f7f9dbecaa4786fa6be6fd551"
+    },
+    "image_0045_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000045.png",
+      "sha256": "9b0d125d5f109c1f4d473ddf9b38ccd64d65c11f7f9dbecaa4786fa6be6fd551"
+    },
+    "image_0055_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000055.png",
+      "sha256": "27facf21543886bb6fc7454d64556dae76058ac497364286385a523046d4c4f1"
+    },
+    "image_0055_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000055.png",
+      "sha256": "32e8c2bafcc1db2e5d04f8c0b39651228f25879649d05c919447c9c12329a486"
+    },
+    "image_0055_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000055.png",
+      "sha256": "32e8c2bafcc1db2e5d04f8c0b39651228f25879649d05c919447c9c12329a486"
+    },
+    "image_0075_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000075.png",
+      "sha256": "68e29d23859c0263049e1c6e9f840f17cda48603240edff55e8814981c5db27b"
+    },
+    "image_0075_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000075.png",
+      "sha256": "46bd16e5184a286205b5041edd7c23495782252a20e479a297c2749b32644d0b"
+    },
+    "image_0075_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000075.png",
+      "sha256": "46bd16e5184a286205b5041edd7c23495782252a20e479a297c2749b32644d0b"
+    },
+    "image_0095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000095.png",
+      "sha256": "65397d6278b6fbc68d09ef5410e8637a355cb05bf0f592001623764ef3d8fc41"
+    },
+    "image_0095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000095.png",
+      "sha256": "c5303399d03e1c1a79a0352be9bf095b3159f9289a511f66d07f852439f07e05"
+    },
+    "image_0095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000095.png",
+      "sha256": "c5303399d03e1c1a79a0352be9bf095b3159f9289a511f66d07f852439f07e05"
+    },
+    "image_0110_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000110.png",
+      "sha256": "bb06ff84028c467f3290e53ac401ae881384508f85cd38008ebe0f7e6acde72d"
+    },
+    "image_0110_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000110.png",
+      "sha256": "a3a6e163275def008be74b2305a5314f65427348ee1aa6803aea949a976a93e2"
+    },
+    "image_0110_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000110.png",
+      "sha256": "a3a6e163275def008be74b2305a5314f65427348ee1aa6803aea949a976a93e2"
+    },
+    "image_0140_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000140.png",
+      "sha256": "65993d681006d2f3893363163acf0db76391108ed0a2f2fc97825ab47b79a4ba"
+    },
+    "image_0140_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000140.png",
+      "sha256": "1707265cb0515191d157d3290e78120cfc1566eba4f3e38b71737601c93d5587"
+    },
+    "image_0140_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000140.png",
+      "sha256": "1707265cb0515191d157d3290e78120cfc1566eba4f3e38b71737601c93d5587"
+    },
+    "image_0150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000150.png",
+      "sha256": "f2fdb03a1cd43972b5d048f07d889dd0e4c633d569e4e8a96347cc8e9d6a2024"
+    },
+    "image_0150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000150.png",
+      "sha256": "65b2b1f58b8e4980f3d14ddb2500baf127915f76d0ae11a976d8cb422dbcb119"
+    },
+    "image_0150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000150.png",
+      "sha256": "65b2b1f58b8e4980f3d14ddb2500baf127915f76d0ae11a976d8cb422dbcb119"
+    },
+    "image_0190_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000190.png",
+      "sha256": "4493ede3d81af98a9a3412dfd13a1ac7c52d87b9cdb9be7b604605fd55822854"
+    },
+    "image_0190_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000190.png",
+      "sha256": "4230a7a29b616a5c8628ad01f2d0c12f05c5cbe64fcb2795b4f5c639fd24367d"
+    },
+    "image_0190_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000190.png",
+      "sha256": "4230a7a29b616a5c8628ad01f2d0c12f05c5cbe64fcb2795b4f5c639fd24367d"
+    },
+    "image_0195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000195.png",
+      "sha256": "f0858f573593992e163b775eab7b6b8007782cb425b9ae7d3a6b091eca434f85"
+    },
+    "image_0195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000195.png",
+      "sha256": "892e3485cbdcb765e352507e3e5358bdfdae0e89c533bf3aba763f621c4d1b03"
+    },
+    "image_0195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000195.png",
+      "sha256": "892e3485cbdcb765e352507e3e5358bdfdae0e89c533bf3aba763f621c4d1b03"
+    },
+    "image_0215_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000215.png",
+      "sha256": "6daa8cbc11c2add71fa17d03de2b98684864e6472f7fb3684191f3825524661b"
+    },
+    "image_0215_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000215.png",
+      "sha256": "cad40ae7a11831b50855e61a91ef056cdd85385364167a4594fbb05cb71ce78e"
+    },
+    "image_0215_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000215.png",
+      "sha256": "cad40ae7a11831b50855e61a91ef056cdd85385364167a4594fbb05cb71ce78e"
+    },
+    "image_0240_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000240.png",
+      "sha256": "7464d7adf61b3dfa1a826efab42a99a8b3773b8c07447455033f2dbf1704a69b"
+    },
+    "image_0240_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000240.png",
+      "sha256": "adebd806c61df7d2ff6e1b5349a68ae027967245ad7cd2973b49f5b5c7ee97f3"
+    },
+    "image_0240_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000240.png",
+      "sha256": "adebd806c61df7d2ff6e1b5349a68ae027967245ad7cd2973b49f5b5c7ee97f3"
+    },
+    "image_0245_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000245.png",
+      "sha256": "8d85324a99da3972da4d00821bc84e9cda589c8d1ce185208d73930d26905c73"
+    },
+    "image_0245_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000245.png",
+      "sha256": "76d26843e09b98f30ed9844311df111922e57c9be58da92c3bfd7f2a6ff5141a"
+    },
+    "image_0245_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000245.png",
+      "sha256": "76d26843e09b98f30ed9844311df111922e57c9be58da92c3bfd7f2a6ff5141a"
+    },
+    "image_0265_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000265.png",
+      "sha256": "33cd142be8a3dfabd403e2839df7082f9e6b6c2584d1215be9590d0fcc867204"
+    },
+    "image_0265_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000265.png",
+      "sha256": "6dc20862ea71602332c2183a1bbb4e930a0a5ad565dcf9d3c7c40f860bd095b9"
+    },
+    "image_0265_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000265.png",
+      "sha256": "6dc20862ea71602332c2183a1bbb4e930a0a5ad565dcf9d3c7c40f860bd095b9"
+    },
+    "image_0285_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000285.png",
+      "sha256": "c6f5192870725e77f2c7c1909947360e1cd43573b34de15f1f755a1a8eae30d6"
+    },
+    "image_0285_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000285.png",
+      "sha256": "af9bcf3848956e96d574112477e0adbe3615557faff89dfd8e066876a81e955b"
+    },
+    "image_0285_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000285.png",
+      "sha256": "af9bcf3848956e96d574112477e0adbe3615557faff89dfd8e066876a81e955b"
+    },
+    "image_0300_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000300.png",
+      "sha256": "9e1abc669aefa1b69b45f370b0e73e6a15418979c65f11989f0a68878bf8b538"
+    },
+    "image_0300_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000300.png",
+      "sha256": "883d53b6939de6f3d576a3e98b3af7d630f1fcd581bc645e409b37abe37bcda4"
+    },
+    "image_0300_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000300.png",
+      "sha256": "883d53b6939de6f3d576a3e98b3af7d630f1fcd581bc645e409b37abe37bcda4"
+    },
+    "image_0330_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000330.png",
+      "sha256": "3e8f81df22d3df5845bf775cdd8d74405507c6374ca96b09efe05199479d9024"
+    },
+    "image_0330_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000330.png",
+      "sha256": "c616ef6b95077c2ee390d8b5b564a010f6536997e12e64eebd028b582f6533e0"
+    },
+    "image_0330_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000330.png",
+      "sha256": "c616ef6b95077c2ee390d8b5b564a010f6536997e12e64eebd028b582f6533e0"
+    },
+    "image_0340_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000340.png",
+      "sha256": "23e92a0f12734e0a0c8cb5b6cb5135e480b79655bbdd01fb78557dbaff149c80"
+    },
+    "image_0340_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000340.png",
+      "sha256": "fd3b7f08680cd5cc4489fc8af82d2c2e7e59753de89628b88a9fa24c64bc80a7"
+    },
+    "image_0340_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000340.png",
+      "sha256": "fd3b7f08680cd5cc4489fc8af82d2c2e7e59753de89628b88a9fa24c64bc80a7"
+    },
+    "image_0380_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000380.png",
+      "sha256": "db23a516e526ae306a877398546e6f7dbd172b8eaf2decdbbc0bcac40ee5e22a"
+    },
+    "image_0380_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000380.png",
+      "sha256": "701b9755e0526de1e9337e5455fb4a826465e7d31f04011dea59481220c9123b"
+    },
+    "image_0380_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000380.png",
+      "sha256": "701b9755e0526de1e9337e5455fb4a826465e7d31f04011dea59481220c9123b"
+    },
+    "image_0385_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000385.png",
+      "sha256": "1ce3873537e8a9ad3d4483b845264b9a6a7c3103adb7c119225a8d38cacf1397"
+    },
+    "image_0385_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000385.png",
+      "sha256": "27ebc4da0f6f334745b86a90788b5c7bd21b02af9704214d400f52994e607063"
+    },
+    "image_0385_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000385.png",
+      "sha256": "27ebc4da0f6f334745b86a90788b5c7bd21b02af9704214d400f52994e607063"
+    },
+    "image_0405_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000405.png",
+      "sha256": "b4810d09f8ee6b6d483363442169c0ca7b80206f8c7be69878f591176366bfca"
+    },
+    "image_0405_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000405.png",
+      "sha256": "5bea29223f901cfbe47878673a8863ebd5555ff8bf7ce31eb26dc5a923798c12"
+    },
+    "image_0405_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000405.png",
+      "sha256": "5bea29223f901cfbe47878673a8863ebd5555ff8bf7ce31eb26dc5a923798c12"
+    },
+    "image_0430_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000430.png",
+      "sha256": "31ce3b05cf4648d6c521b79a089825407e66108dafa6cee2d284b7053be1842c"
+    },
+    "image_0430_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000430.png",
+      "sha256": "6ec59fff939f166ee79d81eb15c906337181fe5c3ac3fc620ba9254b28a86339"
+    },
+    "image_0430_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000430.png",
+      "sha256": "6ec59fff939f166ee79d81eb15c906337181fe5c3ac3fc620ba9254b28a86339"
+    },
+    "image_0440_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000440.png",
+      "sha256": "b3bd6abee26898511654ae44bb81152307677726a84e33c52f34023f6669e850"
+    },
+    "image_0440_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000440.png",
+      "sha256": "a4253bd4d7dbc80e0209f4ac01b3cd532ae5410c645e09258062a7a419f67a18"
+    },
+    "image_0440_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000440.png",
+      "sha256": "a4253bd4d7dbc80e0209f4ac01b3cd532ae5410c645e09258062a7a419f67a18"
+    },
+    "image_0460_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000460.png",
+      "sha256": "4df6e41f8dc99c02ef63abc3398e39036622cbaf530d6e84c1862abc939c50a3"
+    },
+    "image_0460_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000460.png",
+      "sha256": "9871f5a323810d7f43971211652410e0f1a0dfcbf9b81f1fedfb2c9994442390"
+    },
+    "image_0460_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000460.png",
+      "sha256": "9871f5a323810d7f43971211652410e0f1a0dfcbf9b81f1fedfb2c9994442390"
+    },
+    "image_0475_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000475.png",
+      "sha256": "71642b8ca60780272e9db2cc4396d333f8da5ecddc239a9ba3abc7d110db0b98"
+    },
+    "image_0475_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000475.png",
+      "sha256": "5c3adc9799f4611b5ca780c1389a3227bf45fc260d8c3f1d9521d37c0f9393e3"
+    },
+    "image_0475_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000475.png",
+      "sha256": "5c3adc9799f4611b5ca780c1389a3227bf45fc260d8c3f1d9521d37c0f9393e3"
+    },
+    "image_0490_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000490.png",
+      "sha256": "160ce27e9e2f5f89225f7e283149ccccae205fe984edaf8542c1ecb84514c6c7"
+    },
+    "image_0490_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000490.png",
+      "sha256": "dbf1c749779fe913f7717796336acc8079106edab7b0be2196ee88866b2e1036"
+    },
+    "image_0490_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000490.png",
+      "sha256": "dbf1c749779fe913f7717796336acc8079106edab7b0be2196ee88866b2e1036"
+    },
+    "image_0520_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000520.png",
+      "sha256": "a40ff6c59e45827da36289df219663785d04f94b8653abcb151817d104070d2d"
+    },
+    "image_0520_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000520.png",
+      "sha256": "8e0b8e4ca6a051fdf6239e09bd20ac562522c4f8564bd65e283804314eab8e8c"
+    },
+    "image_0520_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000520.png",
+      "sha256": "8e0b8e4ca6a051fdf6239e09bd20ac562522c4f8564bd65e283804314eab8e8c"
+    },
+    "image_0530_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000530.png",
+      "sha256": "72bbd9fc8dc5bf40b01f6087953b13ff3fa356fe3cd599c66461da004be6ba8e"
+    },
+    "image_0530_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000530.png",
+      "sha256": "dcce4945c5ff461891d4328eaf7504a4a3c4f2b1e317cc1892074abb57c04b80"
+    },
+    "image_0530_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000530.png",
+      "sha256": "dcce4945c5ff461891d4328eaf7504a4a3c4f2b1e317cc1892074abb57c04b80"
+    },
+    "image_0570_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000570.png",
+      "sha256": "f6acd98bc207bc2dcaf8f2eaf2c3bf936f9bfc7c9117e1ebc587b45fd99826a3"
+    },
+    "image_0570_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000570.png",
+      "sha256": "c633f63c4aaed7af936252b9f9579b736f2d4ee2f817cd08bdc6f4b5ed3d54ca"
+    },
+    "image_0570_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000570.png",
+      "sha256": "c633f63c4aaed7af936252b9f9579b736f2d4ee2f817cd08bdc6f4b5ed3d54ca"
+    },
+    "image_0575_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000575.png",
+      "sha256": "7c8781d5698842b942b5282dc06e8fb3739f9890a9d65cc574da3e634ceaf0a8"
+    },
+    "image_0575_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000575.png",
+      "sha256": "0568a03ca32510e6cefe56b9cf00c891e285a9e3ffa1b49442c357e9ce9b7efe"
+    },
+    "image_0575_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000575.png",
+      "sha256": "0568a03ca32510e6cefe56b9cf00c891e285a9e3ffa1b49442c357e9ce9b7efe"
+    },
+    "image_0595_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000595.png",
+      "sha256": "8296988a092de8f4d1a4f0868acd47992628c1bdd2201a840e7173c2fcc05934"
+    },
+    "image_0595_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000595.png",
+      "sha256": "7d8886a5f8a100ad3a16964400cf8842ac0ea3fa22dd06c8dc3c8728566e6b27"
+    },
+    "image_0595_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000595.png",
+      "sha256": "7d8886a5f8a100ad3a16964400cf8842ac0ea3fa22dd06c8dc3c8728566e6b27"
+    },
+    "image_0620_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000620.png",
+      "sha256": "bb56c3ec03b677bb43403a6eedb16b09f94b928cf8a09bce45b15dc7a18f867c"
+    },
+    "image_0620_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000620.png",
+      "sha256": "d266bbdfeffe87770017f9bf2103c3992b0588da6efc8df73b82d2ac599dcadf"
+    },
+    "image_0620_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000620.png",
+      "sha256": "d266bbdfeffe87770017f9bf2103c3992b0588da6efc8df73b82d2ac599dcadf"
+    },
+    "image_0630_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000630.png",
+      "sha256": "03702f5f6f1e921945446834915bc9b6fc3e6207f935d0e369574d582e2ba4d1"
+    },
+    "image_0630_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000630.png",
+      "sha256": "e533471de56960a0e1dba03bab6e0d5185e85efc5fb9db80f65fd6f8fc2e0844"
+    },
+    "image_0630_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000630.png",
+      "sha256": "e533471de56960a0e1dba03bab6e0d5185e85efc5fb9db80f65fd6f8fc2e0844"
+    },
+    "image_0650_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000650.png",
+      "sha256": "134684fdf3580b838eda81c56579d6b3635738ec0dc32c6359706617b1503717"
+    },
+    "image_0650_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000650.png",
+      "sha256": "f23ff8a8b7dfd08bd1fa66c8b05fac3d960fd69537e9292f30a2546b469b93f6"
+    },
+    "image_0650_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000650.png",
+      "sha256": "f23ff8a8b7dfd08bd1fa66c8b05fac3d960fd69537e9292f30a2546b469b93f6"
+    },
+    "image_0670_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000670.png",
+      "sha256": "e60bc494a0048459d0cfcdc68ef13679f21c91424728bb68cf0f2e6b6227b805"
+    },
+    "image_0670_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000670.png",
+      "sha256": "0e1fb228a77354ce95d6ecdf085d17afb701f69b3bacd23d2ea7f3716c608b26"
+    },
+    "image_0670_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000670.png",
+      "sha256": "0e1fb228a77354ce95d6ecdf085d17afb701f69b3bacd23d2ea7f3716c608b26"
+    },
+    "image_0685_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000685.png",
+      "sha256": "f30f255e08ab65f18699922c10c8d7bd19b9734187c4edc55c3b7fe3afbd95cf"
+    },
+    "image_0685_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000685.png",
+      "sha256": "0c7abd3b38c15c1e787dc066cdb4874700bc8fcc073cf2974100d6e5c554c02f"
+    },
+    "image_0685_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000685.png",
+      "sha256": "0c7abd3b38c15c1e787dc066cdb4874700bc8fcc073cf2974100d6e5c554c02f"
+    },
+    "image_0710_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000710.png",
+      "sha256": "3d6787de5e249e8c562d1710ae5a2bc1dd6b207f47cd8274150bd1b3492e5b95"
+    },
+    "image_0710_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000710.png",
+      "sha256": "0db36c7b2d9938ac6d0c78b3153fc71af83c6c195c5f15980637811221a79634"
+    },
+    "image_0710_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000710.png",
+      "sha256": "0db36c7b2d9938ac6d0c78b3153fc71af83c6c195c5f15980637811221a79634"
+    },
+    "image_0720_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000720.png",
+      "sha256": "0d77c839ce358bb6684b0e4eb1aa4a170ee48442a2dcaf0e373d34f8ab993564"
+    },
+    "image_0720_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000720.png",
+      "sha256": "5e5c743afff117b118252674a08ef8d40b664bb13a51599b00b90804c39d63d2"
+    },
+    "image_0720_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000720.png",
+      "sha256": "5e5c743afff117b118252674a08ef8d40b664bb13a51599b00b90804c39d63d2"
+    },
+    "image_0760_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000760.png",
+      "sha256": "cbafb8fabb631c76180ac739bd51405c345e1273b41da91278de2a0707f65be3"
+    },
+    "image_0760_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000760.png",
+      "sha256": "2d31e3a218f56e754f2bd81a67fe8317f2c5fab62e9fb3b182dddf305ecf574d"
+    },
+    "image_0760_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000760.png",
+      "sha256": "2d31e3a218f56e754f2bd81a67fe8317f2c5fab62e9fb3b182dddf305ecf574d"
+    },
+    "image_0765_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000765.png",
+      "sha256": "0ed50b0c37cc8691677b8d293d72da6e9db5669ccea74a0a2cff56bd684583b3"
+    },
+    "image_0765_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000765.png",
+      "sha256": "ef7b9e8282240de6841c7a24a5e396a3036f7b2993f7b4b00444febb290315ed"
+    },
+    "image_0765_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000765.png",
+      "sha256": "ef7b9e8282240de6841c7a24a5e396a3036f7b2993f7b4b00444febb290315ed"
+    },
+    "image_0785_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000785.png",
+      "sha256": "5c57e56005aa205199b7b7dff54986a35d0615d029b2c301be1e5bcbfc499adf"
+    },
+    "image_0785_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000785.png",
+      "sha256": "a3d270d34929887419e9d5be6d356c1425c214b50705bb7deda065b3ecbdc8de"
+    },
+    "image_0785_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000785.png",
+      "sha256": "a3d270d34929887419e9d5be6d356c1425c214b50705bb7deda065b3ecbdc8de"
+    },
+    "image_0810_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000810.png",
+      "sha256": "2e179e492a468b200edaf6d1dc5e1b6271f2ebe4bf40d4770ebc53d434828d43"
+    },
+    "image_0810_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000810.png",
+      "sha256": "f7e201ae392cfa9041b954bd0ed37c080881d0dd79f21d24fa8de8f4ef7ccab6"
+    },
+    "image_0810_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000810.png",
+      "sha256": "f7e201ae392cfa9041b954bd0ed37c080881d0dd79f21d24fa8de8f4ef7ccab6"
+    },
+    "image_0820_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000820.png",
+      "sha256": "1caf83b339478a32f7b6b1c4ae9cce28bc70625469fe291cd6850e2a133ca831"
+    },
+    "image_0820_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000820.png",
+      "sha256": "fe95f6a0f779d94bb53ab01b4999701f0581e6bb3a4708d98b9344fcca1c5748"
+    },
+    "image_0820_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000820.png",
+      "sha256": "fe95f6a0f779d94bb53ab01b4999701f0581e6bb3a4708d98b9344fcca1c5748"
+    },
+    "image_0840_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000840.png",
+      "sha256": "3a64c011e6d8375c54fcd907e1761644cd381ae98e26549f154d4eff0113d83d"
+    },
+    "image_0840_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000840.png",
+      "sha256": "c5876a1ead442b951644405e16d53875548d4ebbc3b7c3fbdf137415cbd3e821"
+    },
+    "image_0840_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000840.png",
+      "sha256": "c5876a1ead442b951644405e16d53875548d4ebbc3b7c3fbdf137415cbd3e821"
+    },
+    "image_0860_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000860.png",
+      "sha256": "5a1ee053cb4e87d6689950734f4b7b5611ff1917756b78794012239de8f43ce7"
+    },
+    "image_0860_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000860.png",
+      "sha256": "92427237e7ce2994aab4ecd1eec09f588d89518898899f2bd52b6c5f7be167b8"
+    },
+    "image_0860_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000860.png",
+      "sha256": "92427237e7ce2994aab4ecd1eec09f588d89518898899f2bd52b6c5f7be167b8"
+    },
+    "image_0875_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000875.png",
+      "sha256": "b278fd41e906092a2cdff8a930a48f3f79dd0ac2837d75b1d8cfe1adb15c16e7"
+    },
+    "image_0875_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000875.png",
+      "sha256": "d72d4ea60019eb12650d54883b05061e7a868945f01a91c18ed713e63fafc290"
+    },
+    "image_0875_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000875.png",
+      "sha256": "d72d4ea60019eb12650d54883b05061e7a868945f01a91c18ed713e63fafc290"
+    },
+    "image_0905_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000905.png",
+      "sha256": "00423070d5abf4b89cbe2ddec1cc8d9e1639daae5967e6a6e0c56c3ed2df4296"
+    },
+    "image_0905_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000905.png",
+      "sha256": "16acdff90964b3f2459571f8a85eee415a6b22b075e73319ce564a69aadb4adf"
+    },
+    "image_0905_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000905.png",
+      "sha256": "16acdff90964b3f2459571f8a85eee415a6b22b075e73319ce564a69aadb4adf"
+    },
+    "image_0915_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000915.png",
+      "sha256": "c34ef69bb43b712fe929a3dedfd5710aba494387cc6dbf91fef9db5af95b066b"
+    },
+    "image_0915_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000915.png",
+      "sha256": "22f0788c55bb841dd33c580537dfd9ad369f7bc23897ac884ee58cb8530d8253"
+    },
+    "image_0915_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000915.png",
+      "sha256": "22f0788c55bb841dd33c580537dfd9ad369f7bc23897ac884ee58cb8530d8253"
+    },
+    "image_0950_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000950.png",
+      "sha256": "127e1cf40cb36380f9841b57cbc124e8fb89f2d6e2c9decc3e838c49dd1254da"
+    },
+    "image_0950_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000950.png",
+      "sha256": "7b0bd89efed8bd0ce07580981182f663c542b2c67ea95e995002b2d6f0a09fc0"
+    },
+    "image_0950_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000950.png",
+      "sha256": "7b0bd89efed8bd0ce07580981182f663c542b2c67ea95e995002b2d6f0a09fc0"
+    },
+    "image_0955_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000955.png",
+      "sha256": "92d206f1d371661df91b5c1f77865c7c760153d8b2fa986465be7e59ea7a37ca"
+    },
+    "image_0955_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000955.png",
+      "sha256": "eacc71cc4abd56ed0865f15ec7c3f6fc73481ed26d4be396290d3725db2a38e1"
+    },
+    "image_0955_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000955.png",
+      "sha256": "eacc71cc4abd56ed0865f15ec7c3f6fc73481ed26d4be396290d3725db2a38e1"
+    },
+    "image_0975_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000975.png",
+      "sha256": "9b20edb6b7b6998951e1d50b3408bdc510f6e29df16a75bca96732d4bcb8e97c"
+    },
+    "image_0975_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000975.png",
+      "sha256": "a05baeaa48b65ad23a0a5d84dd0bd5c649a1be640258134663eaadaccaae31d1"
+    },
+    "image_0975_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000975.png",
+      "sha256": "a05baeaa48b65ad23a0a5d84dd0bd5c649a1be640258134663eaadaccaae31d1"
+    },
+    "image_1000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001000.png",
+      "sha256": "cdcde8cf9e74c54f56f1391cbe59aefabf326714fa18a20ef0e21176289a784d"
+    },
+    "image_1000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001000.png",
+      "sha256": "d263d685e68b1f5897cd800935ec6b2400233afcee30b9121f08662e54bc79e0"
+    },
+    "image_1000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001000.png",
+      "sha256": "d263d685e68b1f5897cd800935ec6b2400233afcee30b9121f08662e54bc79e0"
+    },
+    "image_1010_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001010.png",
+      "sha256": "266ef289c11f2fc0198ed8827273ac168d6a4372ef15abab047ccd27f9d50aac"
+    },
+    "image_1010_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001010.png",
+      "sha256": "b86e633cdf9e7f46c624b9af49905d4c801bae140ee04173bfabbed36241e156"
+    },
+    "image_1010_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001010.png",
+      "sha256": "b86e633cdf9e7f46c624b9af49905d4c801bae140ee04173bfabbed36241e156"
+    },
+    "image_1030_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001030.png",
+      "sha256": "8f9643194db19098279a110eba18e2e81af750db0f7b97dd2758fabdd3600ca1"
+    },
+    "image_1030_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001030.png",
+      "sha256": "7dcfe40efc7ccb0f2f3c3f5155bb2b57db9f0b46e2640484b324d91476ef93c7"
+    },
+    "image_1030_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001030.png",
+      "sha256": "7dcfe40efc7ccb0f2f3c3f5155bb2b57db9f0b46e2640484b324d91476ef93c7"
+    },
+    "image_1050_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001050.png",
+      "sha256": "9b0a71cd85aeb16c4f473c3c5a463ea85b179de886f45735f1fb727eebe0bd87"
+    },
+    "image_1050_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001050.png",
+      "sha256": "5b77d14914f5a7c052c573db86bd5aa6082b05c97ee67bf13e9274ea9d35c0cc"
+    },
+    "image_1050_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001050.png",
+      "sha256": "5b77d14914f5a7c052c573db86bd5aa6082b05c97ee67bf13e9274ea9d35c0cc"
+    },
+    "image_1065_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001065.png",
+      "sha256": "2361433179314cf3b89ac8102d996b6378027cc2ed7a165d83f32397c8b3da29"
+    },
+    "image_1065_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001065.png",
+      "sha256": "275d8ea3ba86ba74ad3325106c24086881ad306dab9583dfce1fef68e0fac33a"
+    },
+    "image_1065_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001065.png",
+      "sha256": "275d8ea3ba86ba74ad3325106c24086881ad306dab9583dfce1fef68e0fac33a"
+    },
+    "image_1095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001095.png",
+      "sha256": "c9cb3a92561987c78b61f9b86a82af7cb3e20c4c7611968b7d38f568d5996474"
+    },
+    "image_1095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001095.png",
+      "sha256": "409bc8fcd8c4ddf24a066c07df6882e1ae35833f6a773aeecd052f3dee03009b"
+    },
+    "image_1095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001095.png",
+      "sha256": "409bc8fcd8c4ddf24a066c07df6882e1ae35833f6a773aeecd052f3dee03009b"
+    },
+    "image_1105_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001105.png",
+      "sha256": "f8e677dffa1f8fccc8a4385049405f5701c340389d6246568884899033e983c7"
+    },
+    "image_1105_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001105.png",
+      "sha256": "9ba018194ae62063991767d9568036e461e2026e210caaeac0c11effee852164"
+    },
+    "image_1105_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001105.png",
+      "sha256": "9ba018194ae62063991767d9568036e461e2026e210caaeac0c11effee852164"
+    },
+    "image_1145_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001145.png",
+      "sha256": "5cb8895a850b9fb7e8b840fd7141bde51af77e51b2276c896f887c98c8864f57"
+    },
+    "image_1145_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001145.png",
+      "sha256": "c0af58b8aac47bac0c6691c1f8e7e15ea3e672817ea4ccfdf8b244d6b944c646"
+    },
+    "image_1145_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001145.png",
+      "sha256": "c0af58b8aac47bac0c6691c1f8e7e15ea3e672817ea4ccfdf8b244d6b944c646"
+    },
+    "image_1150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001150.png",
+      "sha256": "8059d6027439ccf9d5945277d010ae1486e9eb9ea3306350a1c267875a7ef456"
+    },
+    "image_1150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001150.png",
+      "sha256": "b085af0bacad1be9a4856e7ac1d15184af4bc24dde613d5ea3feb28af5ea9dad"
+    },
+    "image_1150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001150.png",
+      "sha256": "b085af0bacad1be9a4856e7ac1d15184af4bc24dde613d5ea3feb28af5ea9dad"
+    },
+    "image_1170_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001170.png",
+      "sha256": "e5d6c536365ca90d7a057f331146f6c222db7d5d0271c978dbd10b5d08466d81"
+    },
+    "image_1170_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001170.png",
+      "sha256": "85c00b9743a1194c5f404876e95decd7542e48dedbc660c8a37572dfe7bb0e88"
+    },
+    "image_1170_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001170.png",
+      "sha256": "85c00b9743a1194c5f404876e95decd7542e48dedbc660c8a37572dfe7bb0e88"
+    },
+    "image_1195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001195.png",
+      "sha256": "8be557cfad65bc9624f6d5d4938e93dee3fda0f4eb66c3948577a8063f2e8c30"
+    },
+    "image_1195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001195.png",
+      "sha256": "73ad76fd41ad6c19e1efda57e29687b5e51619158b7c0aa3587203741d634cce"
+    },
+    "image_1195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001195.png",
+      "sha256": "73ad76fd41ad6c19e1efda57e29687b5e51619158b7c0aa3587203741d634cce"
+    },
+    "native_calibration": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "native_frames": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/frames.csv",
+      "sha256": "41592a11fdba41e9fc72a133681ce6e2a586e95adcb515fe362f06c3cb15cc08"
+    },
+    "native_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/dataset_manifest.json",
+      "sha256": "2cf5013ec1d98c8f780cc011e7589382b9a3d0621913abc40d399926c2612e61"
+    },
+    "paired_calibration": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "paired_frames": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/frames.csv",
+      "sha256": "41592a11fdba41e9fc72a133681ce6e2a586e95adcb515fe362f06c3cb15cc08"
+    },
+    "paired_manifest": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/dataset_manifest.json",
+      "sha256": "ca2910534461a0b1e32c91c5f2982dea4ea7c8de04275d1fce46d08a89568ced"
+    },
+    "right_helper": {
+      "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+      "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+    },
+    "run_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/run_manifest.json",
+      "sha256": "131b458a35a3dca95bbae319dc09236415dc098fec7d4c41c7ff687dd54ab058"
+    },
+    "source_d405_frames": {
+      "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195348/d405_frames.csv",
+      "sha256": "7d35da0f5f5e3080be0c811d9b82b3434cf6665d2af2cfd0ed4817fbd6f690ae"
+    },
+    "stereo_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+      "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+    },
+    "trajectory": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/trajectory_frames.csv",
+      "sha256": "e89fc1689db79a1e52f5c7a01b184e100edf01d83362448650cae230fb2f22fe"
+    }
+  },
+  "consumed_source_sha256_after": {
+    "checkpoint": {
+      "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
+      "sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2"
+    },
+    "config": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/effective_config.yaml",
+      "sha256": "d7a7291f98d357cc46b77e0e73e6ed619f103c445344bd9defe456742ca82ceb"
+    },
+    "context": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/context.json",
+      "sha256": "9aa51697ff4e2cc31565aa48857ad3f92e18802a31371ead7f20e573109d905b"
+    },
+    "context_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/experimental_mast3r_metric_joint_adapter.py",
+      "sha256": "bbabe5b0b3d30d0c90c249ab944958470d69117a217992df858d6eebc65485d6"
+    },
+    "diagnostic_script": {
+      "path": "/home/robot/ego_vio_humble/scripts/diagnose_fresh_right_stereo.py",
+      "sha256": "e3ae20da6ff285b33dc88aa946dee3af4b15f83a62f63fd781d1d244b9dfd83b"
+    },
+    "frontend_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/evaluate_metric_joint_frontend.py",
+      "sha256": "dbb1e53cfee2f88d3bdf25d3e8f7ee4746961eb360182a996db27a9ad3e17290"
+    },
+    "image_0000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000000.png",
+      "sha256": "42778a56fe9d82e3c16c4baf69065c43356ecf429b4eef4b0121436deef4913e"
+    },
+    "image_0000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000000.png",
+      "sha256": "35511092afe9b9c6fe823fe005972f21ce0bea409e8c6f56b19c7fab6d91813e"
+    },
+    "image_0000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000000.png",
+      "sha256": "35511092afe9b9c6fe823fe005972f21ce0bea409e8c6f56b19c7fab6d91813e"
+    },
+    "image_0005_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000005.png",
+      "sha256": "5903ee584116f8092402c4de45db976d1408b677209cc5426f02b4b355065789"
+    },
+    "image_0005_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000005.png",
+      "sha256": "1c1a2a87650df505b52fbba814ffd26a1064d4842065200cde99dd623e39fe59"
+    },
+    "image_0005_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000005.png",
+      "sha256": "1c1a2a87650df505b52fbba814ffd26a1064d4842065200cde99dd623e39fe59"
+    },
+    "image_0020_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000020.png",
+      "sha256": "bcaedb002d9e01ee17d54c2327cc652dd7b8f8398b6f57d1434ba2f731a7a048"
+    },
+    "image_0020_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000020.png",
+      "sha256": "02f1b3bc46bc35d5556689d7ccab45b217016587c857bba7ac6853a16753ec8b"
+    },
+    "image_0020_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000020.png",
+      "sha256": "02f1b3bc46bc35d5556689d7ccab45b217016587c857bba7ac6853a16753ec8b"
+    },
+    "image_0045_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000045.png",
+      "sha256": "70fd3a49edea09d5609cfdd356d2e336a62d9ee2eab5f6f0d1f82e8fe4979c40"
+    },
+    "image_0045_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000045.png",
+      "sha256": "9b0d125d5f109c1f4d473ddf9b38ccd64d65c11f7f9dbecaa4786fa6be6fd551"
+    },
+    "image_0045_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000045.png",
+      "sha256": "9b0d125d5f109c1f4d473ddf9b38ccd64d65c11f7f9dbecaa4786fa6be6fd551"
+    },
+    "image_0055_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000055.png",
+      "sha256": "27facf21543886bb6fc7454d64556dae76058ac497364286385a523046d4c4f1"
+    },
+    "image_0055_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000055.png",
+      "sha256": "32e8c2bafcc1db2e5d04f8c0b39651228f25879649d05c919447c9c12329a486"
+    },
+    "image_0055_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000055.png",
+      "sha256": "32e8c2bafcc1db2e5d04f8c0b39651228f25879649d05c919447c9c12329a486"
+    },
+    "image_0075_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000075.png",
+      "sha256": "68e29d23859c0263049e1c6e9f840f17cda48603240edff55e8814981c5db27b"
+    },
+    "image_0075_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000075.png",
+      "sha256": "46bd16e5184a286205b5041edd7c23495782252a20e479a297c2749b32644d0b"
+    },
+    "image_0075_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000075.png",
+      "sha256": "46bd16e5184a286205b5041edd7c23495782252a20e479a297c2749b32644d0b"
+    },
+    "image_0095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000095.png",
+      "sha256": "65397d6278b6fbc68d09ef5410e8637a355cb05bf0f592001623764ef3d8fc41"
+    },
+    "image_0095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000095.png",
+      "sha256": "c5303399d03e1c1a79a0352be9bf095b3159f9289a511f66d07f852439f07e05"
+    },
+    "image_0095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000095.png",
+      "sha256": "c5303399d03e1c1a79a0352be9bf095b3159f9289a511f66d07f852439f07e05"
+    },
+    "image_0110_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000110.png",
+      "sha256": "bb06ff84028c467f3290e53ac401ae881384508f85cd38008ebe0f7e6acde72d"
+    },
+    "image_0110_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000110.png",
+      "sha256": "a3a6e163275def008be74b2305a5314f65427348ee1aa6803aea949a976a93e2"
+    },
+    "image_0110_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000110.png",
+      "sha256": "a3a6e163275def008be74b2305a5314f65427348ee1aa6803aea949a976a93e2"
+    },
+    "image_0140_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000140.png",
+      "sha256": "65993d681006d2f3893363163acf0db76391108ed0a2f2fc97825ab47b79a4ba"
+    },
+    "image_0140_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000140.png",
+      "sha256": "1707265cb0515191d157d3290e78120cfc1566eba4f3e38b71737601c93d5587"
+    },
+    "image_0140_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000140.png",
+      "sha256": "1707265cb0515191d157d3290e78120cfc1566eba4f3e38b71737601c93d5587"
+    },
+    "image_0150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000150.png",
+      "sha256": "f2fdb03a1cd43972b5d048f07d889dd0e4c633d569e4e8a96347cc8e9d6a2024"
+    },
+    "image_0150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000150.png",
+      "sha256": "65b2b1f58b8e4980f3d14ddb2500baf127915f76d0ae11a976d8cb422dbcb119"
+    },
+    "image_0150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000150.png",
+      "sha256": "65b2b1f58b8e4980f3d14ddb2500baf127915f76d0ae11a976d8cb422dbcb119"
+    },
+    "image_0190_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000190.png",
+      "sha256": "4493ede3d81af98a9a3412dfd13a1ac7c52d87b9cdb9be7b604605fd55822854"
+    },
+    "image_0190_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000190.png",
+      "sha256": "4230a7a29b616a5c8628ad01f2d0c12f05c5cbe64fcb2795b4f5c639fd24367d"
+    },
+    "image_0190_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000190.png",
+      "sha256": "4230a7a29b616a5c8628ad01f2d0c12f05c5cbe64fcb2795b4f5c639fd24367d"
+    },
+    "image_0195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000195.png",
+      "sha256": "f0858f573593992e163b775eab7b6b8007782cb425b9ae7d3a6b091eca434f85"
+    },
+    "image_0195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000195.png",
+      "sha256": "892e3485cbdcb765e352507e3e5358bdfdae0e89c533bf3aba763f621c4d1b03"
+    },
+    "image_0195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000195.png",
+      "sha256": "892e3485cbdcb765e352507e3e5358bdfdae0e89c533bf3aba763f621c4d1b03"
+    },
+    "image_0215_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000215.png",
+      "sha256": "6daa8cbc11c2add71fa17d03de2b98684864e6472f7fb3684191f3825524661b"
+    },
+    "image_0215_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000215.png",
+      "sha256": "cad40ae7a11831b50855e61a91ef056cdd85385364167a4594fbb05cb71ce78e"
+    },
+    "image_0215_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000215.png",
+      "sha256": "cad40ae7a11831b50855e61a91ef056cdd85385364167a4594fbb05cb71ce78e"
+    },
+    "image_0240_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000240.png",
+      "sha256": "7464d7adf61b3dfa1a826efab42a99a8b3773b8c07447455033f2dbf1704a69b"
+    },
+    "image_0240_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000240.png",
+      "sha256": "adebd806c61df7d2ff6e1b5349a68ae027967245ad7cd2973b49f5b5c7ee97f3"
+    },
+    "image_0240_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000240.png",
+      "sha256": "adebd806c61df7d2ff6e1b5349a68ae027967245ad7cd2973b49f5b5c7ee97f3"
+    },
+    "image_0245_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000245.png",
+      "sha256": "8d85324a99da3972da4d00821bc84e9cda589c8d1ce185208d73930d26905c73"
+    },
+    "image_0245_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000245.png",
+      "sha256": "76d26843e09b98f30ed9844311df111922e57c9be58da92c3bfd7f2a6ff5141a"
+    },
+    "image_0245_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000245.png",
+      "sha256": "76d26843e09b98f30ed9844311df111922e57c9be58da92c3bfd7f2a6ff5141a"
+    },
+    "image_0265_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000265.png",
+      "sha256": "33cd142be8a3dfabd403e2839df7082f9e6b6c2584d1215be9590d0fcc867204"
+    },
+    "image_0265_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000265.png",
+      "sha256": "6dc20862ea71602332c2183a1bbb4e930a0a5ad565dcf9d3c7c40f860bd095b9"
+    },
+    "image_0265_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000265.png",
+      "sha256": "6dc20862ea71602332c2183a1bbb4e930a0a5ad565dcf9d3c7c40f860bd095b9"
+    },
+    "image_0285_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000285.png",
+      "sha256": "c6f5192870725e77f2c7c1909947360e1cd43573b34de15f1f755a1a8eae30d6"
+    },
+    "image_0285_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000285.png",
+      "sha256": "af9bcf3848956e96d574112477e0adbe3615557faff89dfd8e066876a81e955b"
+    },
+    "image_0285_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000285.png",
+      "sha256": "af9bcf3848956e96d574112477e0adbe3615557faff89dfd8e066876a81e955b"
+    },
+    "image_0300_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000300.png",
+      "sha256": "9e1abc669aefa1b69b45f370b0e73e6a15418979c65f11989f0a68878bf8b538"
+    },
+    "image_0300_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000300.png",
+      "sha256": "883d53b6939de6f3d576a3e98b3af7d630f1fcd581bc645e409b37abe37bcda4"
+    },
+    "image_0300_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000300.png",
+      "sha256": "883d53b6939de6f3d576a3e98b3af7d630f1fcd581bc645e409b37abe37bcda4"
+    },
+    "image_0330_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000330.png",
+      "sha256": "3e8f81df22d3df5845bf775cdd8d74405507c6374ca96b09efe05199479d9024"
+    },
+    "image_0330_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000330.png",
+      "sha256": "c616ef6b95077c2ee390d8b5b564a010f6536997e12e64eebd028b582f6533e0"
+    },
+    "image_0330_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000330.png",
+      "sha256": "c616ef6b95077c2ee390d8b5b564a010f6536997e12e64eebd028b582f6533e0"
+    },
+    "image_0340_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000340.png",
+      "sha256": "23e92a0f12734e0a0c8cb5b6cb5135e480b79655bbdd01fb78557dbaff149c80"
+    },
+    "image_0340_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000340.png",
+      "sha256": "fd3b7f08680cd5cc4489fc8af82d2c2e7e59753de89628b88a9fa24c64bc80a7"
+    },
+    "image_0340_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000340.png",
+      "sha256": "fd3b7f08680cd5cc4489fc8af82d2c2e7e59753de89628b88a9fa24c64bc80a7"
+    },
+    "image_0380_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000380.png",
+      "sha256": "db23a516e526ae306a877398546e6f7dbd172b8eaf2decdbbc0bcac40ee5e22a"
+    },
+    "image_0380_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000380.png",
+      "sha256": "701b9755e0526de1e9337e5455fb4a826465e7d31f04011dea59481220c9123b"
+    },
+    "image_0380_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000380.png",
+      "sha256": "701b9755e0526de1e9337e5455fb4a826465e7d31f04011dea59481220c9123b"
+    },
+    "image_0385_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000385.png",
+      "sha256": "1ce3873537e8a9ad3d4483b845264b9a6a7c3103adb7c119225a8d38cacf1397"
+    },
+    "image_0385_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000385.png",
+      "sha256": "27ebc4da0f6f334745b86a90788b5c7bd21b02af9704214d400f52994e607063"
+    },
+    "image_0385_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000385.png",
+      "sha256": "27ebc4da0f6f334745b86a90788b5c7bd21b02af9704214d400f52994e607063"
+    },
+    "image_0405_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000405.png",
+      "sha256": "b4810d09f8ee6b6d483363442169c0ca7b80206f8c7be69878f591176366bfca"
+    },
+    "image_0405_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000405.png",
+      "sha256": "5bea29223f901cfbe47878673a8863ebd5555ff8bf7ce31eb26dc5a923798c12"
+    },
+    "image_0405_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000405.png",
+      "sha256": "5bea29223f901cfbe47878673a8863ebd5555ff8bf7ce31eb26dc5a923798c12"
+    },
+    "image_0430_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000430.png",
+      "sha256": "31ce3b05cf4648d6c521b79a089825407e66108dafa6cee2d284b7053be1842c"
+    },
+    "image_0430_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000430.png",
+      "sha256": "6ec59fff939f166ee79d81eb15c906337181fe5c3ac3fc620ba9254b28a86339"
+    },
+    "image_0430_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000430.png",
+      "sha256": "6ec59fff939f166ee79d81eb15c906337181fe5c3ac3fc620ba9254b28a86339"
+    },
+    "image_0440_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000440.png",
+      "sha256": "b3bd6abee26898511654ae44bb81152307677726a84e33c52f34023f6669e850"
+    },
+    "image_0440_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000440.png",
+      "sha256": "a4253bd4d7dbc80e0209f4ac01b3cd532ae5410c645e09258062a7a419f67a18"
+    },
+    "image_0440_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000440.png",
+      "sha256": "a4253bd4d7dbc80e0209f4ac01b3cd532ae5410c645e09258062a7a419f67a18"
+    },
+    "image_0460_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000460.png",
+      "sha256": "4df6e41f8dc99c02ef63abc3398e39036622cbaf530d6e84c1862abc939c50a3"
+    },
+    "image_0460_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000460.png",
+      "sha256": "9871f5a323810d7f43971211652410e0f1a0dfcbf9b81f1fedfb2c9994442390"
+    },
+    "image_0460_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000460.png",
+      "sha256": "9871f5a323810d7f43971211652410e0f1a0dfcbf9b81f1fedfb2c9994442390"
+    },
+    "image_0475_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000475.png",
+      "sha256": "71642b8ca60780272e9db2cc4396d333f8da5ecddc239a9ba3abc7d110db0b98"
+    },
+    "image_0475_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000475.png",
+      "sha256": "5c3adc9799f4611b5ca780c1389a3227bf45fc260d8c3f1d9521d37c0f9393e3"
+    },
+    "image_0475_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000475.png",
+      "sha256": "5c3adc9799f4611b5ca780c1389a3227bf45fc260d8c3f1d9521d37c0f9393e3"
+    },
+    "image_0490_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000490.png",
+      "sha256": "160ce27e9e2f5f89225f7e283149ccccae205fe984edaf8542c1ecb84514c6c7"
+    },
+    "image_0490_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000490.png",
+      "sha256": "dbf1c749779fe913f7717796336acc8079106edab7b0be2196ee88866b2e1036"
+    },
+    "image_0490_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000490.png",
+      "sha256": "dbf1c749779fe913f7717796336acc8079106edab7b0be2196ee88866b2e1036"
+    },
+    "image_0520_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000520.png",
+      "sha256": "a40ff6c59e45827da36289df219663785d04f94b8653abcb151817d104070d2d"
+    },
+    "image_0520_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000520.png",
+      "sha256": "8e0b8e4ca6a051fdf6239e09bd20ac562522c4f8564bd65e283804314eab8e8c"
+    },
+    "image_0520_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000520.png",
+      "sha256": "8e0b8e4ca6a051fdf6239e09bd20ac562522c4f8564bd65e283804314eab8e8c"
+    },
+    "image_0530_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000530.png",
+      "sha256": "72bbd9fc8dc5bf40b01f6087953b13ff3fa356fe3cd599c66461da004be6ba8e"
+    },
+    "image_0530_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000530.png",
+      "sha256": "dcce4945c5ff461891d4328eaf7504a4a3c4f2b1e317cc1892074abb57c04b80"
+    },
+    "image_0530_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000530.png",
+      "sha256": "dcce4945c5ff461891d4328eaf7504a4a3c4f2b1e317cc1892074abb57c04b80"
+    },
+    "image_0570_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000570.png",
+      "sha256": "f6acd98bc207bc2dcaf8f2eaf2c3bf936f9bfc7c9117e1ebc587b45fd99826a3"
+    },
+    "image_0570_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000570.png",
+      "sha256": "c633f63c4aaed7af936252b9f9579b736f2d4ee2f817cd08bdc6f4b5ed3d54ca"
+    },
+    "image_0570_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000570.png",
+      "sha256": "c633f63c4aaed7af936252b9f9579b736f2d4ee2f817cd08bdc6f4b5ed3d54ca"
+    },
+    "image_0575_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000575.png",
+      "sha256": "7c8781d5698842b942b5282dc06e8fb3739f9890a9d65cc574da3e634ceaf0a8"
+    },
+    "image_0575_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000575.png",
+      "sha256": "0568a03ca32510e6cefe56b9cf00c891e285a9e3ffa1b49442c357e9ce9b7efe"
+    },
+    "image_0575_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000575.png",
+      "sha256": "0568a03ca32510e6cefe56b9cf00c891e285a9e3ffa1b49442c357e9ce9b7efe"
+    },
+    "image_0595_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000595.png",
+      "sha256": "8296988a092de8f4d1a4f0868acd47992628c1bdd2201a840e7173c2fcc05934"
+    },
+    "image_0595_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000595.png",
+      "sha256": "7d8886a5f8a100ad3a16964400cf8842ac0ea3fa22dd06c8dc3c8728566e6b27"
+    },
+    "image_0595_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000595.png",
+      "sha256": "7d8886a5f8a100ad3a16964400cf8842ac0ea3fa22dd06c8dc3c8728566e6b27"
+    },
+    "image_0620_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000620.png",
+      "sha256": "bb56c3ec03b677bb43403a6eedb16b09f94b928cf8a09bce45b15dc7a18f867c"
+    },
+    "image_0620_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000620.png",
+      "sha256": "d266bbdfeffe87770017f9bf2103c3992b0588da6efc8df73b82d2ac599dcadf"
+    },
+    "image_0620_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000620.png",
+      "sha256": "d266bbdfeffe87770017f9bf2103c3992b0588da6efc8df73b82d2ac599dcadf"
+    },
+    "image_0630_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000630.png",
+      "sha256": "03702f5f6f1e921945446834915bc9b6fc3e6207f935d0e369574d582e2ba4d1"
+    },
+    "image_0630_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000630.png",
+      "sha256": "e533471de56960a0e1dba03bab6e0d5185e85efc5fb9db80f65fd6f8fc2e0844"
+    },
+    "image_0630_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000630.png",
+      "sha256": "e533471de56960a0e1dba03bab6e0d5185e85efc5fb9db80f65fd6f8fc2e0844"
+    },
+    "image_0650_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000650.png",
+      "sha256": "134684fdf3580b838eda81c56579d6b3635738ec0dc32c6359706617b1503717"
+    },
+    "image_0650_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000650.png",
+      "sha256": "f23ff8a8b7dfd08bd1fa66c8b05fac3d960fd69537e9292f30a2546b469b93f6"
+    },
+    "image_0650_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000650.png",
+      "sha256": "f23ff8a8b7dfd08bd1fa66c8b05fac3d960fd69537e9292f30a2546b469b93f6"
+    },
+    "image_0670_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000670.png",
+      "sha256": "e60bc494a0048459d0cfcdc68ef13679f21c91424728bb68cf0f2e6b6227b805"
+    },
+    "image_0670_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000670.png",
+      "sha256": "0e1fb228a77354ce95d6ecdf085d17afb701f69b3bacd23d2ea7f3716c608b26"
+    },
+    "image_0670_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000670.png",
+      "sha256": "0e1fb228a77354ce95d6ecdf085d17afb701f69b3bacd23d2ea7f3716c608b26"
+    },
+    "image_0685_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000685.png",
+      "sha256": "f30f255e08ab65f18699922c10c8d7bd19b9734187c4edc55c3b7fe3afbd95cf"
+    },
+    "image_0685_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000685.png",
+      "sha256": "0c7abd3b38c15c1e787dc066cdb4874700bc8fcc073cf2974100d6e5c554c02f"
+    },
+    "image_0685_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000685.png",
+      "sha256": "0c7abd3b38c15c1e787dc066cdb4874700bc8fcc073cf2974100d6e5c554c02f"
+    },
+    "image_0710_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000710.png",
+      "sha256": "3d6787de5e249e8c562d1710ae5a2bc1dd6b207f47cd8274150bd1b3492e5b95"
+    },
+    "image_0710_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000710.png",
+      "sha256": "0db36c7b2d9938ac6d0c78b3153fc71af83c6c195c5f15980637811221a79634"
+    },
+    "image_0710_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000710.png",
+      "sha256": "0db36c7b2d9938ac6d0c78b3153fc71af83c6c195c5f15980637811221a79634"
+    },
+    "image_0720_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000720.png",
+      "sha256": "0d77c839ce358bb6684b0e4eb1aa4a170ee48442a2dcaf0e373d34f8ab993564"
+    },
+    "image_0720_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000720.png",
+      "sha256": "5e5c743afff117b118252674a08ef8d40b664bb13a51599b00b90804c39d63d2"
+    },
+    "image_0720_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000720.png",
+      "sha256": "5e5c743afff117b118252674a08ef8d40b664bb13a51599b00b90804c39d63d2"
+    },
+    "image_0760_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000760.png",
+      "sha256": "cbafb8fabb631c76180ac739bd51405c345e1273b41da91278de2a0707f65be3"
+    },
+    "image_0760_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000760.png",
+      "sha256": "2d31e3a218f56e754f2bd81a67fe8317f2c5fab62e9fb3b182dddf305ecf574d"
+    },
+    "image_0760_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000760.png",
+      "sha256": "2d31e3a218f56e754f2bd81a67fe8317f2c5fab62e9fb3b182dddf305ecf574d"
+    },
+    "image_0765_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000765.png",
+      "sha256": "0ed50b0c37cc8691677b8d293d72da6e9db5669ccea74a0a2cff56bd684583b3"
+    },
+    "image_0765_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000765.png",
+      "sha256": "ef7b9e8282240de6841c7a24a5e396a3036f7b2993f7b4b00444febb290315ed"
+    },
+    "image_0765_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000765.png",
+      "sha256": "ef7b9e8282240de6841c7a24a5e396a3036f7b2993f7b4b00444febb290315ed"
+    },
+    "image_0785_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000785.png",
+      "sha256": "5c57e56005aa205199b7b7dff54986a35d0615d029b2c301be1e5bcbfc499adf"
+    },
+    "image_0785_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000785.png",
+      "sha256": "a3d270d34929887419e9d5be6d356c1425c214b50705bb7deda065b3ecbdc8de"
+    },
+    "image_0785_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000785.png",
+      "sha256": "a3d270d34929887419e9d5be6d356c1425c214b50705bb7deda065b3ecbdc8de"
+    },
+    "image_0810_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000810.png",
+      "sha256": "2e179e492a468b200edaf6d1dc5e1b6271f2ebe4bf40d4770ebc53d434828d43"
+    },
+    "image_0810_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000810.png",
+      "sha256": "f7e201ae392cfa9041b954bd0ed37c080881d0dd79f21d24fa8de8f4ef7ccab6"
+    },
+    "image_0810_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000810.png",
+      "sha256": "f7e201ae392cfa9041b954bd0ed37c080881d0dd79f21d24fa8de8f4ef7ccab6"
+    },
+    "image_0820_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000820.png",
+      "sha256": "1caf83b339478a32f7b6b1c4ae9cce28bc70625469fe291cd6850e2a133ca831"
+    },
+    "image_0820_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000820.png",
+      "sha256": "fe95f6a0f779d94bb53ab01b4999701f0581e6bb3a4708d98b9344fcca1c5748"
+    },
+    "image_0820_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000820.png",
+      "sha256": "fe95f6a0f779d94bb53ab01b4999701f0581e6bb3a4708d98b9344fcca1c5748"
+    },
+    "image_0840_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000840.png",
+      "sha256": "3a64c011e6d8375c54fcd907e1761644cd381ae98e26549f154d4eff0113d83d"
+    },
+    "image_0840_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000840.png",
+      "sha256": "c5876a1ead442b951644405e16d53875548d4ebbc3b7c3fbdf137415cbd3e821"
+    },
+    "image_0840_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000840.png",
+      "sha256": "c5876a1ead442b951644405e16d53875548d4ebbc3b7c3fbdf137415cbd3e821"
+    },
+    "image_0860_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000860.png",
+      "sha256": "5a1ee053cb4e87d6689950734f4b7b5611ff1917756b78794012239de8f43ce7"
+    },
+    "image_0860_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000860.png",
+      "sha256": "92427237e7ce2994aab4ecd1eec09f588d89518898899f2bd52b6c5f7be167b8"
+    },
+    "image_0860_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000860.png",
+      "sha256": "92427237e7ce2994aab4ecd1eec09f588d89518898899f2bd52b6c5f7be167b8"
+    },
+    "image_0875_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000875.png",
+      "sha256": "b278fd41e906092a2cdff8a930a48f3f79dd0ac2837d75b1d8cfe1adb15c16e7"
+    },
+    "image_0875_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000875.png",
+      "sha256": "d72d4ea60019eb12650d54883b05061e7a868945f01a91c18ed713e63fafc290"
+    },
+    "image_0875_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000875.png",
+      "sha256": "d72d4ea60019eb12650d54883b05061e7a868945f01a91c18ed713e63fafc290"
+    },
+    "image_0905_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000905.png",
+      "sha256": "00423070d5abf4b89cbe2ddec1cc8d9e1639daae5967e6a6e0c56c3ed2df4296"
+    },
+    "image_0905_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000905.png",
+      "sha256": "16acdff90964b3f2459571f8a85eee415a6b22b075e73319ce564a69aadb4adf"
+    },
+    "image_0905_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000905.png",
+      "sha256": "16acdff90964b3f2459571f8a85eee415a6b22b075e73319ce564a69aadb4adf"
+    },
+    "image_0915_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000915.png",
+      "sha256": "c34ef69bb43b712fe929a3dedfd5710aba494387cc6dbf91fef9db5af95b066b"
+    },
+    "image_0915_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000915.png",
+      "sha256": "22f0788c55bb841dd33c580537dfd9ad369f7bc23897ac884ee58cb8530d8253"
+    },
+    "image_0915_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000915.png",
+      "sha256": "22f0788c55bb841dd33c580537dfd9ad369f7bc23897ac884ee58cb8530d8253"
+    },
+    "image_0950_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000950.png",
+      "sha256": "127e1cf40cb36380f9841b57cbc124e8fb89f2d6e2c9decc3e838c49dd1254da"
+    },
+    "image_0950_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000950.png",
+      "sha256": "7b0bd89efed8bd0ce07580981182f663c542b2c67ea95e995002b2d6f0a09fc0"
+    },
+    "image_0950_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000950.png",
+      "sha256": "7b0bd89efed8bd0ce07580981182f663c542b2c67ea95e995002b2d6f0a09fc0"
+    },
+    "image_0955_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000955.png",
+      "sha256": "92d206f1d371661df91b5c1f77865c7c760153d8b2fa986465be7e59ea7a37ca"
+    },
+    "image_0955_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000955.png",
+      "sha256": "eacc71cc4abd56ed0865f15ec7c3f6fc73481ed26d4be396290d3725db2a38e1"
+    },
+    "image_0955_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000955.png",
+      "sha256": "eacc71cc4abd56ed0865f15ec7c3f6fc73481ed26d4be396290d3725db2a38e1"
+    },
+    "image_0975_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000000975.png",
+      "sha256": "9b20edb6b7b6998951e1d50b3408bdc510f6e29df16a75bca96732d4bcb8e97c"
+    },
+    "image_0975_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000975.png",
+      "sha256": "a05baeaa48b65ad23a0a5d84dd0bd5c649a1be640258134663eaadaccaae31d1"
+    },
+    "image_0975_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000000975.png",
+      "sha256": "a05baeaa48b65ad23a0a5d84dd0bd5c649a1be640258134663eaadaccaae31d1"
+    },
+    "image_1000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001000.png",
+      "sha256": "cdcde8cf9e74c54f56f1391cbe59aefabf326714fa18a20ef0e21176289a784d"
+    },
+    "image_1000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001000.png",
+      "sha256": "d263d685e68b1f5897cd800935ec6b2400233afcee30b9121f08662e54bc79e0"
+    },
+    "image_1000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001000.png",
+      "sha256": "d263d685e68b1f5897cd800935ec6b2400233afcee30b9121f08662e54bc79e0"
+    },
+    "image_1010_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001010.png",
+      "sha256": "266ef289c11f2fc0198ed8827273ac168d6a4372ef15abab047ccd27f9d50aac"
+    },
+    "image_1010_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001010.png",
+      "sha256": "b86e633cdf9e7f46c624b9af49905d4c801bae140ee04173bfabbed36241e156"
+    },
+    "image_1010_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001010.png",
+      "sha256": "b86e633cdf9e7f46c624b9af49905d4c801bae140ee04173bfabbed36241e156"
+    },
+    "image_1030_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001030.png",
+      "sha256": "8f9643194db19098279a110eba18e2e81af750db0f7b97dd2758fabdd3600ca1"
+    },
+    "image_1030_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001030.png",
+      "sha256": "7dcfe40efc7ccb0f2f3c3f5155bb2b57db9f0b46e2640484b324d91476ef93c7"
+    },
+    "image_1030_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001030.png",
+      "sha256": "7dcfe40efc7ccb0f2f3c3f5155bb2b57db9f0b46e2640484b324d91476ef93c7"
+    },
+    "image_1050_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001050.png",
+      "sha256": "9b0a71cd85aeb16c4f473c3c5a463ea85b179de886f45735f1fb727eebe0bd87"
+    },
+    "image_1050_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001050.png",
+      "sha256": "5b77d14914f5a7c052c573db86bd5aa6082b05c97ee67bf13e9274ea9d35c0cc"
+    },
+    "image_1050_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001050.png",
+      "sha256": "5b77d14914f5a7c052c573db86bd5aa6082b05c97ee67bf13e9274ea9d35c0cc"
+    },
+    "image_1065_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001065.png",
+      "sha256": "2361433179314cf3b89ac8102d996b6378027cc2ed7a165d83f32397c8b3da29"
+    },
+    "image_1065_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001065.png",
+      "sha256": "275d8ea3ba86ba74ad3325106c24086881ad306dab9583dfce1fef68e0fac33a"
+    },
+    "image_1065_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001065.png",
+      "sha256": "275d8ea3ba86ba74ad3325106c24086881ad306dab9583dfce1fef68e0fac33a"
+    },
+    "image_1095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001095.png",
+      "sha256": "c9cb3a92561987c78b61f9b86a82af7cb3e20c4c7611968b7d38f568d5996474"
+    },
+    "image_1095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001095.png",
+      "sha256": "409bc8fcd8c4ddf24a066c07df6882e1ae35833f6a773aeecd052f3dee03009b"
+    },
+    "image_1095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001095.png",
+      "sha256": "409bc8fcd8c4ddf24a066c07df6882e1ae35833f6a773aeecd052f3dee03009b"
+    },
+    "image_1105_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001105.png",
+      "sha256": "f8e677dffa1f8fccc8a4385049405f5701c340389d6246568884899033e983c7"
+    },
+    "image_1105_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001105.png",
+      "sha256": "9ba018194ae62063991767d9568036e461e2026e210caaeac0c11effee852164"
+    },
+    "image_1105_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001105.png",
+      "sha256": "9ba018194ae62063991767d9568036e461e2026e210caaeac0c11effee852164"
+    },
+    "image_1145_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001145.png",
+      "sha256": "5cb8895a850b9fb7e8b840fd7141bde51af77e51b2276c896f887c98c8864f57"
+    },
+    "image_1145_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001145.png",
+      "sha256": "c0af58b8aac47bac0c6691c1f8e7e15ea3e672817ea4ccfdf8b244d6b944c646"
+    },
+    "image_1145_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001145.png",
+      "sha256": "c0af58b8aac47bac0c6691c1f8e7e15ea3e672817ea4ccfdf8b244d6b944c646"
+    },
+    "image_1150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001150.png",
+      "sha256": "8059d6027439ccf9d5945277d010ae1486e9eb9ea3306350a1c267875a7ef456"
+    },
+    "image_1150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001150.png",
+      "sha256": "b085af0bacad1be9a4856e7ac1d15184af4bc24dde613d5ea3feb28af5ea9dad"
+    },
+    "image_1150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001150.png",
+      "sha256": "b085af0bacad1be9a4856e7ac1d15184af4bc24dde613d5ea3feb28af5ea9dad"
+    },
+    "image_1170_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001170.png",
+      "sha256": "e5d6c536365ca90d7a057f331146f6c222db7d5d0271c978dbd10b5d08466d81"
+    },
+    "image_1170_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001170.png",
+      "sha256": "85c00b9743a1194c5f404876e95decd7542e48dedbc660c8a37572dfe7bb0e88"
+    },
+    "image_1170_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001170.png",
+      "sha256": "85c00b9743a1194c5f404876e95decd7542e48dedbc660c8a37572dfe7bb0e88"
+    },
+    "image_1195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/0000001195.png",
+      "sha256": "8be557cfad65bc9624f6d5d4938e93dee3fda0f4eb66c3948577a8063f2e8c30"
+    },
+    "image_1195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000001195.png",
+      "sha256": "73ad76fd41ad6c19e1efda57e29687b5e51619158b7c0aa3587203741d634cce"
+    },
+    "image_1195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/0000001195.png",
+      "sha256": "73ad76fd41ad6c19e1efda57e29687b5e51619158b7c0aa3587203741d634cce"
+    },
+    "native_calibration": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "native_frames": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/frames.csv",
+      "sha256": "41592a11fdba41e9fc72a133681ce6e2a586e95adcb515fe362f06c3cb15cc08"
+    },
+    "native_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take04/right_cache/dataset/dataset_manifest.json",
+      "sha256": "2cf5013ec1d98c8f780cc011e7589382b9a3d0621913abc40d399926c2612e61"
+    },
+    "paired_calibration": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "paired_frames": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/frames.csv",
+      "sha256": "41592a11fdba41e9fc72a133681ce6e2a586e95adcb515fe362f06c3cb15cc08"
+    },
+    "paired_manifest": {
+      "path": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195345_slam_validation_take04/evaluation_20260929_v2/fusion_adaptive/sparse/mast3r/dataset/dataset_manifest.json",
+      "sha256": "ca2910534461a0b1e32c91c5f2982dea4ea7c8de04275d1fce46d08a89568ced"
+    },
+    "right_helper": {
+      "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+      "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+    },
+    "run_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/run_manifest.json",
+      "sha256": "131b458a35a3dca95bbae319dc09236415dc098fec7d4c41c7ff687dd54ab058"
+    },
+    "source_d405_frames": {
+      "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260929_195348/d405_frames.csv",
+      "sha256": "7d35da0f5f5e3080be0c811d9b82b3434cf6665d2af2cfd0ed4817fbd6f690ae"
+    },
+    "stereo_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+      "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+    },
+    "trajectory": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_fast10_v2/20260929_take04/right/trajectory_frames.csv",
+      "sha256": "e89fc1689db79a1e52f5c7a01b184e100edf01d83362448650cae230fb2f22fe"
+    }
+  }
+}

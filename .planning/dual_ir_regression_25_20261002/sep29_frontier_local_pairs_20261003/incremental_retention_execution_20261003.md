@@ -347,3 +347,65 @@ unmodified; all87 guarded source hashes freshly match. No new production
 promotion, estimator code edit, reference rewrite or hardware action occurred.
 RK3576: a fresh bounded read-only SSH check still returned `No route to host`;
 real ARM candidate and all target/deployment/HIL acceptance remain unverified.
+
+## Fresh RIGHT-only geometry diagnostic: retain evidence, not an accuracy claim
+
+The user distinguishes a useful partial gain from final <=10mm acceptance.
+Keep the scored backend gains above while passing-control evaluation is
+incomplete. Do not reject the whole direction because final maximum ATE
+remains above10mm. Conversely, do not call improvement on one failed record
+proof of cohort-level robustness. Original sample counts, failed records,
+coverage and accuracy gates remain unchanged.
+
+A specific complementary-path gap was found: take04 has a complete fresh
+RIGHT frontend, but the normal evaluator exits on LEFT-primary geometry
+failure before checking RIGHT. The existing derived-RIGHT path requires the
+LEFT-primary report. A new diagnostic-only entry reuses the original stereo
+pair estimator through the tested RIGHT mirror/calibration adapter; it does
+not rewrite the frozen evaluator or substitute an older RIGHT trajectory.
+
+New files only:
+
+- `scripts/diagnose_fresh_right_stereo.py`
+- `tests/test_diagnose_fresh_right_stereo.py`
+
+Fresh main verification: 44 tests PASS across the new diagnostic, existing
+RIGHT motion helper and stereo-scale suite; independent review approves the
+diagnostic-only boundary. Before/after hashes bind script, helper modules,
+native frontend/config/checkpoint, actual RIGHT timestamps and consumed stereo
+images. All87 full10 guarded sources still match. The diagnostic uses no GT,
+loads no model, runs no backend, emits no factors, and cannot promote a
+production/precision PASS.
+
+Same fixed32 uniformly sampled pairs, full1199-frame native continuity:
+
+| Fresh RIGHT record | Accepted / robust pairs | Scale m/native unit | P90-P10 relative spread | Full continuity | Diagnostic |
+| --- | ---: | ---: | ---: | --- | --- |
+| 20260929_take04 | 7 / 6 | 0.5053898918 | 0.0614361954 | PASS, max step17.860407mm | PASS geometry only |
+| 20260927_ind2 | 13 / 9 | 0.4194577050 | 0.0937230657 | FAIL, one43.677159mm step at index576 (576->577) | FAIL retained |
+| 20260930_take06 | 16 / 15 | 0.3480338978 | 0.1940597860 | PASS, max step12.848344mm | PASS geometry only |
+
+RIGHT time binding and stereo skew are exactly0ms in all three diagnostics;
+before/after consumed hashes agree. These pair caps are diagnostic sampling,
+not a reduction of scoring samples. Original stereo depth calculations emit
+existing invalid-disparity warnings; report serialization rejects nonfinite
+JSON values, and the original correspondence rejection gates are unchanged.
+
+Evidence lives under `fresh_right_primary_stereo_v1/<record>/` in this
+directory. Native trajectory SHA256s are:
+
+- take04: `e89fc1689db79a1e52f5c7a01b184e100edf01d83362448650cae230fb2f22fe`.
+- ind2: `e0f2a583f712207dc075404a3c2c5636c27a53cb1eeb50d944b798830bed496e`.
+- take06: `7551e66be7b1c5914cf02f00390aad0c40800f197c1f9d59a52ddc0e4f38911b`.
+
+Interpretation: take04's RIGHT source has usable metric geometry and no detected
+continuity jump under this bounded check; LEFT failure alone is insufficient
+to reject RIGHT's potential complementarity. ind2 independently retains the
+known native RIGHT interval jump, so successful scale fitting cannot mask it.
+Neither result proves final body-trajectory accuracy or warrants automatic
+selection of RIGHT. Next run the identical diagnostic on the fresh passing
+control once its RIGHT frontend completes, then evaluate any integration as a
+separate source-bound candidate. Do not touch the live queue's frozen helpers.
+
+The full10 producer and real local OFF/ON diagnostic chain remain running/
+queued. Passing-control precision and final25 accuracy remain unverified.

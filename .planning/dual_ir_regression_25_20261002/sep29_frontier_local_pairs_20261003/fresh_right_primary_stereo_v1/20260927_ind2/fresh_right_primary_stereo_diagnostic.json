@@ -1,0 +1,2910 @@
+{
+  "schema": "umi_fresh_right_primary_stereo_diagnostic_v1",
+  "result": "FAIL",
+  "failures": [
+    "isolated_position_step_jump"
+  ],
+  "external_ground_truth_used": false,
+  "production_promoted": false,
+  "factors_emitted": 0,
+  "backend_run": false,
+  "scoring_run": false,
+  "model_loaded": false,
+  "accuracy_label": "geometry_diagnostic_only_not_slam_accuracy",
+  "capped_diagnostic": true,
+  "sampling": {
+    "frame_step": 5,
+    "max_hop": 5,
+    "max_pairs": 32,
+    "scheduled_pairs": 32
+  },
+  "fixed_parameters": {
+    "min_depth_m": 0.07,
+    "max_depth_m": 0.6,
+    "num_disparities": 128,
+    "min_observations": 4
+  },
+  "source_run": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right",
+  "source_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501",
+  "frontend": {
+    "eye": "right",
+    "run_manifest": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/run_manifest.json",
+    "run_manifest_sha256": "03d6beda927cbcee0ee54ec17a86e2439f2c115fad8b266cb1211c9d59836b9d",
+    "context": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/context.json",
+    "context_sha256": "cc361cf5103a524ba0f07f737b5027f45c5b72fe0af922819e4f1f69f49d1f50",
+    "frames_csv": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/frames.csv",
+    "frames_csv_sha256": "3b3cb77d278f346bb1d7f90f187276e49288a619ae4ba1d3b20525322ab1c033",
+    "trajectory_frames": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/trajectory_frames.csv",
+    "trajectory_frames_sha256": "e0f2a583f712207dc075404a3c2c5636c27a53cb1eeb50d944b798830bed496e",
+    "frame_count": 1199,
+    "source_session": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501",
+    "consumed_paths": [
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/run_manifest.json",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/context.json",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/frames.csv",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/trajectory_frames.csv",
+      "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/effective_config.yaml",
+      "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"
+    ],
+    "config": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/effective_config.yaml",
+    "config_sha256": "d7a7291f98d357cc46b77e0e73e6ed619f103c445344bd9defe456742ca82ceb",
+    "checkpoint": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
+    "checkpoint_sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2",
+    "metric_relative_joint_enabled": true
+  },
+  "timing": {
+    "time_binding": "trajectory t_sec -> d405_frames.infrared_right_device_ms",
+    "max_trajectory_delta_ms": 0.0,
+    "max_stereo_skew_ms": 0.0
+  },
+  "scale_m_per_mast3r_unit": 0.41945770504168706,
+  "quality": {
+    "accepted_observations": 13,
+    "robust_inliers": 9,
+    "median_before_filter": 0.41765139518298244,
+    "mad_before_filter": 0.018952471783806157,
+    "relative_p90_p10": 0.09372306569376061,
+    "scale_estimator": "robust_inverse_variance_weighted_mean",
+    "weight_p95_limit": 0.009477228709361048
+  },
+  "trajectory_continuity": {
+    "result": "FAIL",
+    "reason": "isolated_position_step_jump",
+    "jump_count": 1,
+    "first_jump_index": 576,
+    "max_step_m": 0.04367715926388547,
+    "max_contiguous_step_m": 0.04367715926388547,
+    "unverified_gap_count": 0,
+    "max_gap_s": 0.0,
+    "absolute_step_limit_m": 0.03,
+    "local_median_multiplier": 5.0
+  },
+  "observation_frame": "infrared_right_camera_i",
+  "observations": [
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 0,
+      "second_index": 5,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504103.8260677,
+      "second_t_sec": 1790504103.9928346,
+      "first_right_frame_number": 30,
+      "second_right_frame_number": 35
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 190,
+      "second_index": 195,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504110.150659,
+      "second_t_sec": 1790504110.317362,
+      "first_right_frame_number": 220,
+      "second_right_frame_number": 225
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 380,
+      "second_index": 385,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504116.4844506,
+      "second_t_sec": 1790504116.6511204,
+      "first_right_frame_number": 410,
+      "second_right_frame_number": 415
+    },
+    {
+      "accepted": false,
+      "reason": "translation_direction_disagrees",
+      "direction_cosine": -0.9362588725970524,
+      "method": "lk",
+      "sift_failure_reason": "translation_direction_disagrees",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 570,
+      "second_index": 575,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504122.8182414,
+      "second_t_sec": 1790504122.9849334,
+      "first_right_frame_number": 600,
+      "second_right_frame_number": 605
+    },
+    {
+      "accepted": true,
+      "scale": 0.44234435102984104,
+      "metric_distance_m": 0.005585467419067355,
+      "metric_displacement_camera_i_m": [
+        -0.0029320732135489857,
+        0.0024719370510318367,
+        0.004060778272152702
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.01263244461776093,
+      "direction_cosine": 0.9934684385741316,
+      "rotation_error_deg": 0.1578754157818493,
+      "pnp_rotation_quaternion_xyzw": [
+        0.0151170849835507,
+        0.007568852131143509,
+        0.0015527433208447155,
+        0.9998558772179101
+      ],
+      "tracked_points": 873,
+      "pnp_inliers": 780,
+      "pnp_inlier_ratio": 0.8934707903780069,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.48672956228256226,
+      "pnp_reprojection_p95_px": 1.341982364654541,
+      "median_depth_m": 0.2722266685119536,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.4392645891932732,
+      "reverse_scale": 0.44520321401501695,
+      "bidirectional_relative_disagreement": 0.01342869644367416,
+      "reverse_metric_distance_m": 0.005659918607538726,
+      "reverse_pnp_inlier_ratio": 0.9373522458628841,
+      "reverse_rotation_error_deg": 0.15993540354653235,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 760,
+      "second_index": 765,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504129.152032,
+      "second_t_sec": 1790504129.318712,
+      "first_right_frame_number": 790,
+      "second_right_frame_number": 795
+    },
+    {
+      "accepted": true,
+      "scale": 0.5196116900809611,
+      "metric_distance_m": 0.006019883372239874,
+      "metric_displacement_camera_i_m": [
+        -0.00042603428768175325,
+        -0.004361052268287413,
+        0.004127797683311868
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.0115327441517942,
+      "direction_cosine": 0.9948418165312798,
+      "rotation_error_deg": 0.15866019427785394,
+      "pnp_rotation_quaternion_xyzw": [
+        0.003906436916855124,
+        0.0012941657918538376,
+        -0.00015057940916229665,
+        0.9999915210697335
+      ],
+      "tracked_points": 420,
+      "pnp_inliers": 411,
+      "pnp_inlier_ratio": 0.9785714285714285,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.30920833349227905,
+      "pnp_reprojection_p95_px": 0.9741650819778442,
+      "median_depth_m": 0.28353455696256225,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.5192893929250874,
+      "reverse_scale": 0.5199301087695923,
+      "bidirectional_relative_disagreement": 0.0012330712490674963,
+      "reverse_metric_distance_m": 0.006034978112379245,
+      "reverse_pnp_inlier_ratio": 0.9855421686746988,
+      "reverse_rotation_error_deg": 0.16752229194888174,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 950,
+      "second_index": 955,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504135.4857903,
+      "second_t_sec": 1790504135.6524673,
+      "first_right_frame_number": 980,
+      "second_right_frame_number": 985
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 1145,
+      "second_index": 1150,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 1,
+      "first_t_sec": 1790504141.9862165,
+      "second_t_sec": 1790504142.1528902,
+      "first_right_frame_number": 1175,
+      "second_right_frame_number": 1180
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 140,
+      "second_index": 150,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790504108.4839158,
+      "second_t_sec": 1790504108.8172123,
+      "first_right_frame_number": 170,
+      "second_right_frame_number": 180
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 330,
+      "second_index": 340,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790504114.8178058,
+      "second_t_sec": 1790504115.1511292,
+      "first_right_frame_number": 360,
+      "second_right_frame_number": 370
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 520,
+      "second_index": 530,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790504121.1515949,
+      "second_t_sec": 1790504121.4849124,
+      "first_right_frame_number": 550,
+      "second_right_frame_number": 560
+    },
+    {
+      "accepted": true,
+      "scale": 0.4221015861412287,
+      "metric_distance_m": 0.05820950821745251,
+      "metric_displacement_camera_i_m": [
+        0.018117265074390758,
+        0.002623789473644496,
+        0.05525601579864336
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.13742819611256896,
+      "direction_cosine": 0.9999383222931929,
+      "rotation_error_deg": 0.13899614906791516,
+      "pnp_rotation_quaternion_xyzw": [
+        0.04651450510723798,
+        -0.011909197465589862,
+        -0.013392272332123197,
+        0.9987568367085837
+      ],
+      "tracked_points": 193,
+      "pnp_inliers": 141,
+      "pnp_inlier_ratio": 0.7305699481865285,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.8234529495239258,
+      "pnp_reprojection_p95_px": 1.7272087335586548,
+      "median_depth_m": 0.48286992615230845,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.42353694245389184,
+      "reverse_scale": 0.42072834540017356,
+      "bidirectional_relative_disagreement": 0.006653351959683442,
+      "reverse_metric_distance_m": 0.05783321829072561,
+      "reverse_pnp_inlier_ratio": 0.7735849056603774,
+      "reverse_rotation_error_deg": 0.1648555091865738,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 710,
+      "second_index": 720,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790504127.4852579,
+      "second_t_sec": 1790504127.8186386,
+      "first_right_frame_number": 740,
+      "second_right_frame_number": 750
+    },
+    {
+      "accepted": true,
+      "scale": 0.4366038669667886,
+      "metric_distance_m": 0.03444035696895998,
+      "metric_displacement_camera_i_m": [
+        -0.0020186438267241,
+        0.029083154874885667,
+        -0.01833666730280159
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.07863017832561145,
+      "direction_cosine": 0.9949292806251379,
+      "rotation_error_deg": 0.48730461383042295,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.0023883784337894094,
+        -0.006225166412226979,
+        0.01155166000362758,
+        0.9999110470950692
+      ],
+      "tracked_points": 236,
+      "pnp_inliers": 170,
+      "pnp_inlier_ratio": 0.7203389830508474,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.8454935550689697,
+      "pnp_reprojection_p95_px": 1.7718461751937866,
+      "median_depth_m": 0.41927768141349997,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.4357833126322603,
+      "reverse_scale": 0.43743764171194754,
+      "bidirectional_relative_disagreement": 0.0037890274424980425,
+      "reverse_metric_distance_m": 0.034495155268679495,
+      "reverse_pnp_inlier_ratio": 0.7066666666666667,
+      "reverse_rotation_error_deg": 0.4435229593093639,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 905,
+      "second_index": 915,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790504133.985647,
+      "second_t_sec": 1790504134.3190215,
+      "first_right_frame_number": 935,
+      "second_right_frame_number": 945
+    },
+    {
+      "accepted": true,
+      "scale": 0.3315073036607522,
+      "metric_distance_m": 0.018984731717613994,
+      "metric_displacement_camera_i_m": [
+        0.0015001800505724141,
+        -0.005262061983848385,
+        0.01817911444168227
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.056649529574637154,
+      "direction_cosine": 0.9965924766837796,
+      "rotation_error_deg": 0.7282095968668794,
+      "pnp_rotation_quaternion_xyzw": [
+        0.023336362137424214,
+        0.0381949915771379,
+        -0.03381711852898489,
+        0.9984252397225392
+      ],
+      "tracked_points": 307,
+      "pnp_inliers": 204,
+      "pnp_inlier_ratio": 0.6644951140065146,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 1.040510654449463,
+      "pnp_reprojection_p95_px": 1.8520807027816772,
+      "median_depth_m": 0.28417004731202417,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.33398407619089604,
+      "reverse_scale": 0.3290377935413634,
+      "bidirectional_relative_disagreement": 0.014920420804610923,
+      "reverse_metric_distance_m": 0.01867791044036211,
+      "reverse_pnp_inlier_ratio": 0.6885245901639344,
+      "reverse_rotation_error_deg": 0.634805584299947,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 1095,
+      "second_index": 1105,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 2,
+      "first_t_sec": 1790504140.3193896,
+      "second_t_sec": 1790504140.6527603,
+      "first_right_frame_number": 1125,
+      "second_right_frame_number": 1135
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 95,
+      "second_index": 110,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790504106.9838145,
+      "second_t_sec": 1790504107.4839442,
+      "first_right_frame_number": 125,
+      "second_right_frame_number": 140
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 285,
+      "second_index": 300,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790504113.3177698,
+      "second_t_sec": 1790504113.8178556,
+      "first_right_frame_number": 315,
+      "second_right_frame_number": 330
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 475,
+      "second_index": 490,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790504119.651609,
+      "second_t_sec": 1790504120.1516225,
+      "first_right_frame_number": 505,
+      "second_right_frame_number": 520
+    },
+    {
+      "accepted": true,
+      "scale": 0.42994509394140323,
+      "metric_distance_m": 0.10682923577552926,
+      "metric_displacement_camera_i_m": [
+        0.07498672820263495,
+        -0.02530346985129983,
+        0.07175800041341825
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.2301562293888919,
+      "direction_cosine": 0.9425354134878816,
+      "rotation_error_deg": 4.259384592724859,
+      "pnp_rotation_quaternion_xyzw": [
+        0.071095428286885,
+        -0.06146330363529571,
+        -0.033605221698751506,
+        0.995006729352881
+      ],
+      "tracked_points": 35,
+      "pnp_inliers": 27,
+      "pnp_inlier_ratio": 0.7714285714285715,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 1.0777841806411743,
+      "pnp_reprojection_p95_px": 1.7589408159255981,
+      "median_depth_m": 0.5833428610970435,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.43748691131078515,
+      "reverse_scale": 0.42160077840772847,
+      "bidirectional_relative_disagreement": 0.036983728420696825,
+      "reverse_metric_distance_m": 0.1042826188565879,
+      "reverse_pnp_inlier_ratio": 0.7317073170731707,
+      "reverse_rotation_error_deg": 3.9030598739060434,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 670,
+      "second_index": 685,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790504126.1517959,
+      "second_t_sec": 1790504126.651807,
+      "first_right_frame_number": 700,
+      "second_right_frame_number": 715
+    },
+    {
+      "accepted": true,
+      "scale": 0.41765139518298244,
+      "metric_distance_m": 0.03611658744468674,
+      "metric_displacement_camera_i_m": [
+        0.011680642657496,
+        0.008879758447362968,
+        -0.03300182367194387
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.08658174870898062,
+      "direction_cosine": 0.994210616941999,
+      "rotation_error_deg": 0.8020601145567057,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.03904447109771521,
+        -0.01936769704257184,
+        -0.012933650548439493,
+        0.9989660365955679
+      ],
+      "tracked_points": 556,
+      "pnp_inliers": 418,
+      "pnp_inlier_ratio": 0.7517985611510791,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.8413439989089966,
+      "pnp_reprojection_p95_px": 1.6698163747787476,
+      "median_depth_m": 0.2398932327883116,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.4147236019211654,
+      "reverse_scale": 0.4205335794907838,
+      "bidirectional_relative_disagreement": 0.013911829072327105,
+      "reverse_metric_distance_m": 0.036545201755710154,
+      "reverse_pnp_inlier_ratio": 0.7458866544789763,
+      "reverse_rotation_error_deg": 0.7449506302667224,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 860,
+      "second_index": 875,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790504132.4854908,
+      "second_t_sec": 1790504132.9855287,
+      "first_right_frame_number": 890,
+      "second_right_frame_number": 905
+    },
+    {
+      "accepted": false,
+      "scale": 0.313946150492667,
+      "metric_distance_m": 0.057097498006714875,
+      "metric_displacement_camera_i_m": [
+        0.052137677239622274,
+        -0.007570770792748881,
+        -0.02201068650195724
+      ],
+      "metric_displacement_frame": "infrared_left_camera_i",
+      "mast3r_distance": 0.17392456015651295,
+      "direction_cosine": 0.9563106623489182,
+      "rotation_error_deg": 3.0776780229414094,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.04534408816202525,
+        -0.09507248063440694,
+        -0.09118768567242484,
+        0.990247415081949
+      ],
+      "tracked_points": 97,
+      "pnp_inliers": 64,
+      "pnp_inlier_ratio": 0.6597938144329897,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.8830651044845581,
+      "pnp_reprojection_p95_px": 1.664025902748108,
+      "median_depth_m": 0.30996105820667985,
+      "method": "lk",
+      "reason": "bidirectional_scale_disagrees",
+      "forward_scale": 0.313946150492667,
+      "reverse_scale": 0.251015786555486,
+      "bidirectional_relative_disagreement": 0.22277735829774065,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 1050,
+      "second_index": 1065,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 3,
+      "first_t_sec": 1790504138.8192954,
+      "second_t_sec": 1790504139.319313,
+      "first_right_frame_number": 1080,
+      "second_right_frame_number": 1095
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 55,
+      "second_index": 75,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790504105.6548731,
+      "second_t_sec": 1790504106.319307,
+      "first_right_frame_number": 85,
+      "second_right_frame_number": 105
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 245,
+      "second_index": 265,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790504111.984351,
+      "second_t_sec": 1790504112.6510024,
+      "first_right_frame_number": 275,
+      "second_right_frame_number": 295
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 440,
+      "second_index": 460,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790504118.4847524,
+      "second_t_sec": 1790504119.1515212,
+      "first_right_frame_number": 470,
+      "second_right_frame_number": 490
+    },
+    {
+      "accepted": true,
+      "scale": 0.34358023826146367,
+      "metric_distance_m": 0.04081787485107719,
+      "metric_displacement_camera_i_m": [
+        0.0331045818805016,
+        0.01072176957039485,
+        0.02133610140477214
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.11855189390451207,
+      "direction_cosine": 0.9978983007486264,
+      "rotation_error_deg": 0.49622719281419875,
+      "pnp_rotation_quaternion_xyzw": [
+        0.05426968049464804,
+        -0.12233197904611194,
+        -0.025211132920103362,
+        0.9906836465080845
+      ],
+      "tracked_points": 318,
+      "pnp_inliers": 177,
+      "pnp_inlier_ratio": 0.5566037735849056,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.6638350486755371,
+      "pnp_reprojection_p95_px": 1.626151442527771,
+      "median_depth_m": 0.3000581489987987,
+      "method": "sift",
+      "lk_failure_reason": "insufficient_consistent_points",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 630,
+      "second_index": 650,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790504124.8184295,
+      "second_t_sec": 1790504125.4851139,
+      "first_right_frame_number": 660,
+      "second_right_frame_number": 680
+    },
+    {
+      "accepted": true,
+      "scale": 0.41652786745359804,
+      "metric_distance_m": 0.09332091186946764,
+      "metric_displacement_camera_i_m": [
+        0.02081249900640124,
+        -0.017898689862810704,
+        0.08919231681289824
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.21971369999780635,
+      "direction_cosine": 0.9981884702553633,
+      "rotation_error_deg": 0.8201590951844836,
+      "pnp_rotation_quaternion_xyzw": [
+        0.04951588933359429,
+        -0.007522320487427404,
+        -0.013349569328413278,
+        0.9986557867437277
+      ],
+      "tracked_points": 249,
+      "pnp_inliers": 80,
+      "pnp_inlier_ratio": 0.321285140562249,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 1.2757116556167603,
+      "pnp_reprojection_p95_px": 1.9652520418167114,
+      "median_depth_m": 0.3971171274275856,
+      "method": "lk",
+      "scale_estimator": "bidirectional_pnp_weighted_mean",
+      "forward_scale": 0.4239692757563571,
+      "reverse_scale": 0.41168618568167786,
+      "bidirectional_relative_disagreement": 0.029397498470343134,
+      "reverse_metric_distance_m": 0.0905406626491425,
+      "reverse_pnp_inlier_ratio": 0.5245901639344263,
+      "reverse_rotation_error_deg": 0.5869789519316906,
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 820,
+      "second_index": 840,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790504131.152073,
+      "second_t_sec": 1790504131.8187895,
+      "first_right_frame_number": 850,
+      "second_right_frame_number": 870
+    },
+    {
+      "accepted": false,
+      "reason": "insufficient_consistent_points",
+      "method": "lk",
+      "sift_failure_reason": "pnp_failed",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 1010,
+      "second_index": 1030,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 4,
+      "first_t_sec": 1790504137.4859455,
+      "second_t_sec": 1790504138.152628,
+      "first_right_frame_number": 1040,
+      "second_right_frame_number": 1060
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 20,
+      "second_index": 45,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504104.4908211,
+      "second_t_sec": 1790504105.3220243,
+      "first_right_frame_number": 50,
+      "second_right_frame_number": 75
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 215,
+      "second_index": 240,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504110.9841752,
+      "second_t_sec": 1790504111.8176858,
+      "first_right_frame_number": 245,
+      "second_right_frame_number": 270
+    },
+    {
+      "accepted": false,
+      "reason": "translation_excitation_low",
+      "method": "lk",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "first_index": 405,
+      "second_index": 430,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504117.3179011,
+      "second_t_sec": 1790504118.1513758,
+      "first_right_frame_number": 435,
+      "second_right_frame_number": 460
+    },
+    {
+      "accepted": true,
+      "scale": 0.31728462444614197,
+      "metric_distance_m": 0.04299309073591219,
+      "metric_displacement_camera_i_m": [
+        0.04298435219797454,
+        -0.0008192874972956317,
+        0.0002829931865519316
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.13172530354264841,
+      "direction_cosine": 0.9721193045019284,
+      "rotation_error_deg": 2.098041821020026,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.03772430765620007,
+        -0.0890771053510327,
+        -0.0103669166638107,
+        0.9952560841075161
+      ],
+      "tracked_points": 530,
+      "pnp_inliers": 355,
+      "pnp_inlier_ratio": 0.6698113207547169,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.6893191933631897,
+      "pnp_reprojection_p95_px": 1.5992143154144287,
+      "median_depth_m": 0.28503247537670406,
+      "method": "sift",
+      "lk_failure_reason": "insufficient_consistent_points",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 595,
+      "second_index": 620,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504123.6517045,
+      "second_t_sec": 1790504124.485084,
+      "first_right_frame_number": 625,
+      "second_right_frame_number": 650
+    },
+    {
+      "accepted": true,
+      "scale": 0.42914879859575555,
+      "metric_distance_m": 0.11917386720321893,
+      "metric_displacement_camera_i_m": [
+        0.0743232087591086,
+        -0.0435487031529115,
+        -0.08235278815935755
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.27767327919900653,
+      "direction_cosine": 0.999910105855647,
+      "rotation_error_deg": 0.581268016892174,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.10929756715921454,
+        -0.0871986712624286,
+        -0.03794836440595411,
+        0.989449521290529
+      ],
+      "tracked_points": 105,
+      "pnp_inliers": 27,
+      "pnp_inlier_ratio": 0.2571428571428571,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 1.0955103635787964,
+      "pnp_reprojection_p95_px": 1.9600962400436401,
+      "median_depth_m": 0.2296288524122836,
+      "method": "sift",
+      "lk_failure_reason": "insufficient_consistent_points",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 785,
+      "second_index": 810,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504129.9854062,
+      "second_t_sec": 1790504130.818714,
+      "first_right_frame_number": 815,
+      "second_right_frame_number": 840
+    },
+    {
+      "accepted": true,
+      "scale": 0.4121538176021628,
+      "metric_distance_m": 0.14918232964017905,
+      "metric_displacement_camera_i_m": [
+        -0.04123095839776244,
+        0.05139521578246616,
+        -0.13384284568532892
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.36107459682203075,
+      "direction_cosine": 0.9975596565511786,
+      "rotation_error_deg": 1.2437073134607985,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.14323719903676435,
+        0.20999058499739823,
+        0.09075884557679086,
+        0.9628862295069553
+      ],
+      "tracked_points": 213,
+      "pnp_inliers": 95,
+      "pnp_inlier_ratio": 0.4460093896713615,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.7911416888237,
+      "pnp_reprojection_p95_px": 1.7673451900482178,
+      "median_depth_m": 0.37048599856656406,
+      "method": "sift",
+      "lk_failure_reason": "insufficient_consistent_points",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 975,
+      "second_index": 1000,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504136.3191974,
+      "second_t_sec": 1790504137.1525958,
+      "first_right_frame_number": 1005,
+      "second_right_frame_number": 1030
+    },
+    {
+      "accepted": true,
+      "scale": 0.26885179467529285,
+      "metric_distance_m": 0.05949851767588381,
+      "metric_displacement_camera_i_m": [
+        -0.01557851825598982,
+        0.034996200078983755,
+        -0.045526358899070626
+      ],
+      "metric_displacement_frame": "infrared_right_camera_i",
+      "mast3r_distance": 0.22128426096343212,
+      "direction_cosine": 0.9999017289388437,
+      "rotation_error_deg": 0.3369637736002994,
+      "pnp_rotation_quaternion_xyzw": [
+        -0.015754694089872928,
+        0.016802377343937785,
+        0.05435803785593806,
+        0.9982558156355409
+      ],
+      "tracked_points": 241,
+      "pnp_inliers": 139,
+      "pnp_inlier_ratio": 0.5767634854771784,
+      "pnp_refined": false,
+      "pnp_rotation_mode": "free",
+      "pnp_rotation_constrained": false,
+      "pnp_free_rotation_delta_deg": 0.0,
+      "pnp_reprojection_median_px": 0.9172757267951965,
+      "pnp_reprojection_p95_px": 1.7792487144470215,
+      "median_depth_m": 0.22124428889664075,
+      "method": "sift",
+      "lk_failure_reason": "pnp_inlier_ratio_low",
+      "source_provenance": {
+        "right_pixels": true,
+        "mirror_representation": "u_prime_equals_width_minus_1_minus_u",
+        "native_estimator": "align_mast3r_scale_with_stereo.estimate_motion_from_correspondences",
+        "external_ground_truth_used": false
+      },
+      "right_centric_motion_source": "independent_right_pixels_negative_disparity",
+      "first_index": 1170,
+      "second_index": 1195,
+      "image_shape": [
+        720,
+        1280
+      ],
+      "hop": 5,
+      "first_t_sec": 1790504142.8195794,
+      "second_t_sec": 1790504143.6529346,
+      "first_right_frame_number": 1200,
+      "second_right_frame_number": 1225
+    }
+  ],
+  "consumed_source_sha256_before": {
+    "checkpoint": {
+      "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
+      "sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2"
+    },
+    "config": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/effective_config.yaml",
+      "sha256": "d7a7291f98d357cc46b77e0e73e6ed619f103c445344bd9defe456742ca82ceb"
+    },
+    "context": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/context.json",
+      "sha256": "cc361cf5103a524ba0f07f737b5027f45c5b72fe0af922819e4f1f69f49d1f50"
+    },
+    "context_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/experimental_mast3r_metric_joint_adapter.py",
+      "sha256": "bbabe5b0b3d30d0c90c249ab944958470d69117a217992df858d6eebc65485d6"
+    },
+    "diagnostic_script": {
+      "path": "/home/robot/ego_vio_humble/scripts/diagnose_fresh_right_stereo.py",
+      "sha256": "e3ae20da6ff285b33dc88aa946dee3af4b15f83a62f63fd781d1d244b9dfd83b"
+    },
+    "frontend_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/evaluate_metric_joint_frontend.py",
+      "sha256": "dbb1e53cfee2f88d3bdf25d3e8f7ee4746961eb360182a996db27a9ad3e17290"
+    },
+    "image_0000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000000.png",
+      "sha256": "2df5d5256cc529a391e336e13bce2fdb633211b161aca23e1cdd3ee9bfbb7350"
+    },
+    "image_0000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000000.png",
+      "sha256": "1f7ba53dc96f120e5a465d66ee07e422d15a8c7f6223b73aee4242ce2ed45a32"
+    },
+    "image_0000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000000.png",
+      "sha256": "1f7ba53dc96f120e5a465d66ee07e422d15a8c7f6223b73aee4242ce2ed45a32"
+    },
+    "image_0005_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000005.png",
+      "sha256": "b8edc6a4f5854717d83c7f0c608fd713c2c3d3ff8b4357abaf77ef9e235e40bb"
+    },
+    "image_0005_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000005.png",
+      "sha256": "b7651d6c7da1a6400d741766c2bbc85d6911661d843012b0c6ce53d8e886a441"
+    },
+    "image_0005_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000005.png",
+      "sha256": "b7651d6c7da1a6400d741766c2bbc85d6911661d843012b0c6ce53d8e886a441"
+    },
+    "image_0020_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000020.png",
+      "sha256": "ee6c6ddc4dc593038477f096d95befd7135d6484aaf806b014c1945d2ad01193"
+    },
+    "image_0020_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000020.png",
+      "sha256": "adcabec9892c8a2a6a144d2726b0f59987b7e8b624b8f1f4e68e75a44c344ba5"
+    },
+    "image_0020_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000020.png",
+      "sha256": "adcabec9892c8a2a6a144d2726b0f59987b7e8b624b8f1f4e68e75a44c344ba5"
+    },
+    "image_0045_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000045.png",
+      "sha256": "f6a5b3f15a10565bf1707c07011bf4898fe953a4a8f8cfc2d989e470fe7b6912"
+    },
+    "image_0045_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000045.png",
+      "sha256": "9e7af704afac49c23a26427fb122c9cf1b8ad6b44578540bf8f9c4b7080468bd"
+    },
+    "image_0045_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000045.png",
+      "sha256": "9e7af704afac49c23a26427fb122c9cf1b8ad6b44578540bf8f9c4b7080468bd"
+    },
+    "image_0055_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000055.png",
+      "sha256": "ccbba27bd1f4aa7dd6b89c5f14b9b932cb4381128f1eabe3cad00c6d3a01f7da"
+    },
+    "image_0055_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000055.png",
+      "sha256": "189d4ab02ccc0bafea4b9ce213c2106981d33476d4687d13b763f7b335518884"
+    },
+    "image_0055_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000055.png",
+      "sha256": "189d4ab02ccc0bafea4b9ce213c2106981d33476d4687d13b763f7b335518884"
+    },
+    "image_0075_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000075.png",
+      "sha256": "359208fffacdd6221e4994a5da170e540f844b43790519ba6b52350fdf699043"
+    },
+    "image_0075_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000075.png",
+      "sha256": "2483fe4b8b5a2152efeb39584f1518a170b954f8419d1528634a52d976b56625"
+    },
+    "image_0075_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000075.png",
+      "sha256": "2483fe4b8b5a2152efeb39584f1518a170b954f8419d1528634a52d976b56625"
+    },
+    "image_0095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000095.png",
+      "sha256": "68d4f37cca0758f9e312820b14c400a97ee0efd672459a5332287883545878a0"
+    },
+    "image_0095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000095.png",
+      "sha256": "ffbf9463a1451b19dc0878af72d6b8dd660b5a1971724743e4fc2aeef3277ee5"
+    },
+    "image_0095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000095.png",
+      "sha256": "ffbf9463a1451b19dc0878af72d6b8dd660b5a1971724743e4fc2aeef3277ee5"
+    },
+    "image_0110_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000110.png",
+      "sha256": "1f2e84420ec403c4650127a7d390eaebc46affe322b685c517ddceb6d3c1723f"
+    },
+    "image_0110_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000110.png",
+      "sha256": "16856c80a5e588471250667a7eee5b3dd87ef3a08008f2ee076b592f561ba3bb"
+    },
+    "image_0110_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000110.png",
+      "sha256": "16856c80a5e588471250667a7eee5b3dd87ef3a08008f2ee076b592f561ba3bb"
+    },
+    "image_0140_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000140.png",
+      "sha256": "d4398137a210484ff89281f76daec7c9fbff5b769465fefb9bf4f119803e243c"
+    },
+    "image_0140_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000140.png",
+      "sha256": "33eac407bdf54834df6bd9ad60bc7e1d33fed685c894a1323598fe8e6ea2baed"
+    },
+    "image_0140_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000140.png",
+      "sha256": "33eac407bdf54834df6bd9ad60bc7e1d33fed685c894a1323598fe8e6ea2baed"
+    },
+    "image_0150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000150.png",
+      "sha256": "85c188dc57313213e6e70b6b532c694d09701170408328ad400eae9cae878653"
+    },
+    "image_0150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000150.png",
+      "sha256": "8df5857e83a58631fcdf5d80ca965cff6b9b50bce88ba84eca0ca01f5bb91eaa"
+    },
+    "image_0150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000150.png",
+      "sha256": "8df5857e83a58631fcdf5d80ca965cff6b9b50bce88ba84eca0ca01f5bb91eaa"
+    },
+    "image_0190_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000190.png",
+      "sha256": "d535e6ca54b4b1fa28fe05c5d36cafab0a178d935b9d89e3db0b00cd400eb765"
+    },
+    "image_0190_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000190.png",
+      "sha256": "9cb9813a4788dba88ab51d3b451e33c4f1cf78f26f5f593664c714749dcec461"
+    },
+    "image_0190_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000190.png",
+      "sha256": "9cb9813a4788dba88ab51d3b451e33c4f1cf78f26f5f593664c714749dcec461"
+    },
+    "image_0195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000195.png",
+      "sha256": "5cda81e7e20ef21b8fabd479b87ec7ef9043c0b664f76c3ddc3013fcfd7447f6"
+    },
+    "image_0195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000195.png",
+      "sha256": "c0a1a4d187be4879e09b776d9f42c61bb1edd1250e9870e3bfa13201cd09807b"
+    },
+    "image_0195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000195.png",
+      "sha256": "c0a1a4d187be4879e09b776d9f42c61bb1edd1250e9870e3bfa13201cd09807b"
+    },
+    "image_0215_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000215.png",
+      "sha256": "1c87ca5e7918d2a54f77d29ef7874cb84ee6514df0be13be64c4665ecc1648b7"
+    },
+    "image_0215_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000215.png",
+      "sha256": "91c88f749ea21d87bdd5c9c3e37339d238610f66592d1ee9d11439afe19ecd05"
+    },
+    "image_0215_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000215.png",
+      "sha256": "91c88f749ea21d87bdd5c9c3e37339d238610f66592d1ee9d11439afe19ecd05"
+    },
+    "image_0240_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000240.png",
+      "sha256": "c11429836bd483e795cb6f9ab95f1e9a7883ccfe7ed0d47c888a317719947a3f"
+    },
+    "image_0240_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000240.png",
+      "sha256": "5cd58f4b338524f4597537b336d3ffd6c3bbeacd0202dedaeda019970faa9232"
+    },
+    "image_0240_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000240.png",
+      "sha256": "5cd58f4b338524f4597537b336d3ffd6c3bbeacd0202dedaeda019970faa9232"
+    },
+    "image_0245_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000245.png",
+      "sha256": "f7fb2f74b7ae554556d9fe805e8edd277359bd3106cb55f0dd1d9ab420acd1f7"
+    },
+    "image_0245_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000245.png",
+      "sha256": "87e281375fd3426089d6c11b6d8c9107cacc37b3229338e4985569b5cf43f2d6"
+    },
+    "image_0245_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000245.png",
+      "sha256": "87e281375fd3426089d6c11b6d8c9107cacc37b3229338e4985569b5cf43f2d6"
+    },
+    "image_0265_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000265.png",
+      "sha256": "8838ce14458bca1d9e9a6de69e9f9432d4be403ca066cb0c9aee0d2e91104a6b"
+    },
+    "image_0265_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000265.png",
+      "sha256": "2e60e6d2b249365b64587f4bfc038cdb6f3456eb0ae9d68c2f936a0efb534472"
+    },
+    "image_0265_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000265.png",
+      "sha256": "2e60e6d2b249365b64587f4bfc038cdb6f3456eb0ae9d68c2f936a0efb534472"
+    },
+    "image_0285_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000285.png",
+      "sha256": "7070f3e3f69dc81dae95466108c1391f3ca45526b8fc77ea2ac32f85a3800405"
+    },
+    "image_0285_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000285.png",
+      "sha256": "0abbd90cba5545b9b1cde4025f53fefca6638334fa1b9694ee6e75a4d1ec1869"
+    },
+    "image_0285_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000285.png",
+      "sha256": "0abbd90cba5545b9b1cde4025f53fefca6638334fa1b9694ee6e75a4d1ec1869"
+    },
+    "image_0300_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000300.png",
+      "sha256": "80d52419a3316db40769482a0c5faf87737d69775fbc392e109da9de54987c1b"
+    },
+    "image_0300_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000300.png",
+      "sha256": "58e9a3482b1b38c4fa7f6313f0ac41dca464fcd9573284870e60d6b7bf071ee0"
+    },
+    "image_0300_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000300.png",
+      "sha256": "58e9a3482b1b38c4fa7f6313f0ac41dca464fcd9573284870e60d6b7bf071ee0"
+    },
+    "image_0330_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000330.png",
+      "sha256": "2bf6917e7a8367f4ec72f87d5ed90c295ae0debfc9895927567233887b61407c"
+    },
+    "image_0330_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000330.png",
+      "sha256": "4e22f13fd33c7d20315a9a2716e45c44a8739b7808751411b77da3b2de016d2e"
+    },
+    "image_0330_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000330.png",
+      "sha256": "4e22f13fd33c7d20315a9a2716e45c44a8739b7808751411b77da3b2de016d2e"
+    },
+    "image_0340_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000340.png",
+      "sha256": "1276735931a46391986024edc5cb3345692af6f4f7be1a9a5a816cf173c276ab"
+    },
+    "image_0340_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000340.png",
+      "sha256": "bb55680d2f1afe35440ac720846a02885b071d6c559590bc1d2ef7b2c0484b50"
+    },
+    "image_0340_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000340.png",
+      "sha256": "bb55680d2f1afe35440ac720846a02885b071d6c559590bc1d2ef7b2c0484b50"
+    },
+    "image_0380_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000380.png",
+      "sha256": "3299e716bf373fa9a387544cc0e22ffdffdddd2f3f25a6f92a1ce43f0a8e4174"
+    },
+    "image_0380_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000380.png",
+      "sha256": "5868aff269145c26ea1e88889ecbfbf6b9c3812b6ea71cb16e2b470baf405ab2"
+    },
+    "image_0380_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000380.png",
+      "sha256": "5868aff269145c26ea1e88889ecbfbf6b9c3812b6ea71cb16e2b470baf405ab2"
+    },
+    "image_0385_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000385.png",
+      "sha256": "a433687e313710c2b37da87343e14ad0b25c0220ffe72aa28fe7bdd56cae4125"
+    },
+    "image_0385_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000385.png",
+      "sha256": "8d5ae06649a7cb78db7e5e674a36911d56a604a81517c6fdf2d0e846b8c125ce"
+    },
+    "image_0385_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000385.png",
+      "sha256": "8d5ae06649a7cb78db7e5e674a36911d56a604a81517c6fdf2d0e846b8c125ce"
+    },
+    "image_0405_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000405.png",
+      "sha256": "2dbf32a0b98abd6d95ce8305bac58b78d07badef533ef0d3d20e80a48e00722b"
+    },
+    "image_0405_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000405.png",
+      "sha256": "890a899b8ba6e698ca7509d8bc282c5eb64d812ddf92b6c425928da33909e20c"
+    },
+    "image_0405_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000405.png",
+      "sha256": "890a899b8ba6e698ca7509d8bc282c5eb64d812ddf92b6c425928da33909e20c"
+    },
+    "image_0430_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000430.png",
+      "sha256": "8b6df36f99f98929e5eed80f7ec50131d406c6b2a91f51772a0000b6ba0530a1"
+    },
+    "image_0430_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000430.png",
+      "sha256": "9654f30aae439987cf3bc527020fc4fce946469dc0bac0e05ae515e89f73f036"
+    },
+    "image_0430_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000430.png",
+      "sha256": "9654f30aae439987cf3bc527020fc4fce946469dc0bac0e05ae515e89f73f036"
+    },
+    "image_0440_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000440.png",
+      "sha256": "e461aefc04466f6e37cf6e8e6c008a4b39afdfce2933c4b6131a98c63e59ce32"
+    },
+    "image_0440_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000440.png",
+      "sha256": "f421b9c384a582fded5329f748f8cb83981a594f9291009cc0abe6c89e99abfc"
+    },
+    "image_0440_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000440.png",
+      "sha256": "f421b9c384a582fded5329f748f8cb83981a594f9291009cc0abe6c89e99abfc"
+    },
+    "image_0460_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000460.png",
+      "sha256": "655783c6bcc9fe5e19a8763d43065301be4497df5959126fa01520324aaf9646"
+    },
+    "image_0460_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000460.png",
+      "sha256": "270637f3f08fb867b6ae991ba93aacb8af6363b2453685b484c19b2d551398ae"
+    },
+    "image_0460_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000460.png",
+      "sha256": "270637f3f08fb867b6ae991ba93aacb8af6363b2453685b484c19b2d551398ae"
+    },
+    "image_0475_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000475.png",
+      "sha256": "7a9693abd40f153905f4b0946a1a390027eee9d4dd5b60b7362a5e8a8bc62ef1"
+    },
+    "image_0475_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000475.png",
+      "sha256": "b949e5cee8fae331c50a295aabd64155121f177c59f000bdb2c405032de1020a"
+    },
+    "image_0475_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000475.png",
+      "sha256": "b949e5cee8fae331c50a295aabd64155121f177c59f000bdb2c405032de1020a"
+    },
+    "image_0490_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000490.png",
+      "sha256": "76b36f60abe118014c36fcccd3a7a168ffbbfb5928b43c0be7bb9e2287e41dcf"
+    },
+    "image_0490_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000490.png",
+      "sha256": "07ffe2765032f9fffb890650fecccf06fefb44cd56247e2583fd294dfa0821ee"
+    },
+    "image_0490_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000490.png",
+      "sha256": "07ffe2765032f9fffb890650fecccf06fefb44cd56247e2583fd294dfa0821ee"
+    },
+    "image_0520_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000520.png",
+      "sha256": "cb5270cdae90ad559038bc78ffe74fb05c7c32cf4953632c95698fa696cc3777"
+    },
+    "image_0520_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000520.png",
+      "sha256": "7fee15f7399f281b03cd829cd7bd1cdc976614302756ad4d09ced98caedbccbd"
+    },
+    "image_0520_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000520.png",
+      "sha256": "7fee15f7399f281b03cd829cd7bd1cdc976614302756ad4d09ced98caedbccbd"
+    },
+    "image_0530_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000530.png",
+      "sha256": "dc78fe2dca53f3bd41ccb811dc566ee4482c7de2ae2fea820944def60defe628"
+    },
+    "image_0530_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000530.png",
+      "sha256": "471cf38a8050b1638e8e2ea6aae6ccd8a0220df2ac39b19f2c7278c61077e4d7"
+    },
+    "image_0530_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000530.png",
+      "sha256": "471cf38a8050b1638e8e2ea6aae6ccd8a0220df2ac39b19f2c7278c61077e4d7"
+    },
+    "image_0570_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000570.png",
+      "sha256": "27631b4ce8aeac432a68be7e74d708510f11f9e6a4d429a8855cd633059efcaf"
+    },
+    "image_0570_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000570.png",
+      "sha256": "95c9e218192df56c5fda0819ac1722ea2546c048295d734789cfd1d74b929c3c"
+    },
+    "image_0570_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000570.png",
+      "sha256": "95c9e218192df56c5fda0819ac1722ea2546c048295d734789cfd1d74b929c3c"
+    },
+    "image_0575_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000575.png",
+      "sha256": "75cdb5bf2cd05e36c799559f794a395da98a90a8f558210dc42bd9782dbf1ddb"
+    },
+    "image_0575_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000575.png",
+      "sha256": "b42841b76654948f7e2847aa4dd1f4a6ba5aa118e2b64ef6ec49a367aa4c8d14"
+    },
+    "image_0575_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000575.png",
+      "sha256": "b42841b76654948f7e2847aa4dd1f4a6ba5aa118e2b64ef6ec49a367aa4c8d14"
+    },
+    "image_0595_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000595.png",
+      "sha256": "74a855ebd53a5af442ee84e9052ac22b67fb9d690dd7747f56d84ba418f359c6"
+    },
+    "image_0595_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000595.png",
+      "sha256": "7801225ce1c07c05f4165568d5a2d221ab5ec61d74bf2e1992b33d0af7373fb2"
+    },
+    "image_0595_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000595.png",
+      "sha256": "7801225ce1c07c05f4165568d5a2d221ab5ec61d74bf2e1992b33d0af7373fb2"
+    },
+    "image_0620_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000620.png",
+      "sha256": "7cdbfe805848fa37bd20625fef783a1c1c9b6e67cec893735b1c7d5088909bbe"
+    },
+    "image_0620_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000620.png",
+      "sha256": "3c024776f5e2e871dba584d6aff2bd784b67058630ee238d92c3f44c0b83c6c7"
+    },
+    "image_0620_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000620.png",
+      "sha256": "3c024776f5e2e871dba584d6aff2bd784b67058630ee238d92c3f44c0b83c6c7"
+    },
+    "image_0630_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000630.png",
+      "sha256": "d448dd592b7dc7bff239931a495e9b712a5f843bb04337a2b56ab45228cbef0a"
+    },
+    "image_0630_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000630.png",
+      "sha256": "05aafdddfd83ce9f1b627e3ac218c14ff8b6321a93bd26a3b49d2babd1f61fe5"
+    },
+    "image_0630_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000630.png",
+      "sha256": "05aafdddfd83ce9f1b627e3ac218c14ff8b6321a93bd26a3b49d2babd1f61fe5"
+    },
+    "image_0650_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000650.png",
+      "sha256": "f7d0ba0c3ae42b78439f25e024ba373d26f613a74403f881f84efbd4a4175a7c"
+    },
+    "image_0650_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000650.png",
+      "sha256": "850e6e3ed7b3ad4f63fa951f870922560d68d4b0d9d22a68429eb1a82f56d1ea"
+    },
+    "image_0650_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000650.png",
+      "sha256": "850e6e3ed7b3ad4f63fa951f870922560d68d4b0d9d22a68429eb1a82f56d1ea"
+    },
+    "image_0670_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000670.png",
+      "sha256": "41c255c9753a29e3b83da1f34b37667b3771411ee8ab3bc9d197d31374968177"
+    },
+    "image_0670_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000670.png",
+      "sha256": "29e5af3caf504940f07f25629de063e0e290c9df62530d714825ba48fd77cd39"
+    },
+    "image_0670_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000670.png",
+      "sha256": "29e5af3caf504940f07f25629de063e0e290c9df62530d714825ba48fd77cd39"
+    },
+    "image_0685_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000685.png",
+      "sha256": "7928c731165e9a5d6da2222b1fad4902c78f68d4ab9baf9d704fc971899ee185"
+    },
+    "image_0685_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000685.png",
+      "sha256": "28c972d44a6d9b5fa77189b6329e5ea01f830fe0457ced71d4ed0c705bdf7dfb"
+    },
+    "image_0685_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000685.png",
+      "sha256": "28c972d44a6d9b5fa77189b6329e5ea01f830fe0457ced71d4ed0c705bdf7dfb"
+    },
+    "image_0710_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000710.png",
+      "sha256": "c7823faa6600da4b4bc2f65511e47534bbd13a53126f063c9ad3a1b9f4184f5b"
+    },
+    "image_0710_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000710.png",
+      "sha256": "37727a97f77645806367e32f6c3c65072ff661eed60289a137015b73c99015da"
+    },
+    "image_0710_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000710.png",
+      "sha256": "37727a97f77645806367e32f6c3c65072ff661eed60289a137015b73c99015da"
+    },
+    "image_0720_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000720.png",
+      "sha256": "dbed2748a4b892e7fca1ba8dc30985e126833a0185d3672b5239f87e3df089df"
+    },
+    "image_0720_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000720.png",
+      "sha256": "d1ffc7f2029507b4e8d04fb8742a0332ac66c60ba99a7fa81760bd948845c446"
+    },
+    "image_0720_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000720.png",
+      "sha256": "d1ffc7f2029507b4e8d04fb8742a0332ac66c60ba99a7fa81760bd948845c446"
+    },
+    "image_0760_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000760.png",
+      "sha256": "4c27b5ce140d9b96c4aaf56fcdf118e640648ddfb5e418a224a2936580b2ba5f"
+    },
+    "image_0760_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000760.png",
+      "sha256": "20401b2df0140f8add15d193059a85e88c3f196618353e94b22d2a2765507b7e"
+    },
+    "image_0760_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000760.png",
+      "sha256": "20401b2df0140f8add15d193059a85e88c3f196618353e94b22d2a2765507b7e"
+    },
+    "image_0765_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000765.png",
+      "sha256": "a02b1bb8c125914670514c8214c62dbde2c8eb746f804dd35e9009aa0d3e792b"
+    },
+    "image_0765_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000765.png",
+      "sha256": "862faaec72b0cdd63b5d2f1aa97ea4c8ba6ed0d654780ace790c7b85cc2ba6b1"
+    },
+    "image_0765_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000765.png",
+      "sha256": "862faaec72b0cdd63b5d2f1aa97ea4c8ba6ed0d654780ace790c7b85cc2ba6b1"
+    },
+    "image_0785_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000785.png",
+      "sha256": "2db8006cfbdafcd8c71bee2d758d407983b4d3d503b2d6f43dd68c943cb124f3"
+    },
+    "image_0785_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000785.png",
+      "sha256": "795b85fb2b01bc39d24b2018ab545bbd8a423215290eb42c4b4ea32e4281ae68"
+    },
+    "image_0785_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000785.png",
+      "sha256": "795b85fb2b01bc39d24b2018ab545bbd8a423215290eb42c4b4ea32e4281ae68"
+    },
+    "image_0810_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000810.png",
+      "sha256": "353ec70d19fe29434750698a2cb07f5684460b264b7ffebfa362540d06de2cae"
+    },
+    "image_0810_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000810.png",
+      "sha256": "7fb223bdf5abad85d9df9e01f2c87717491afe49380b3f5ff957e2936a55655a"
+    },
+    "image_0810_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000810.png",
+      "sha256": "7fb223bdf5abad85d9df9e01f2c87717491afe49380b3f5ff957e2936a55655a"
+    },
+    "image_0820_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000820.png",
+      "sha256": "2bb6255153a07bbf83f9217025c699bbeb5041099ed4b1770c925ddba00791b0"
+    },
+    "image_0820_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000820.png",
+      "sha256": "ff937b3326ee645233e07ceffe0dc3ed79a5c52c59d0c11d0e4467a966df50b8"
+    },
+    "image_0820_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000820.png",
+      "sha256": "ff937b3326ee645233e07ceffe0dc3ed79a5c52c59d0c11d0e4467a966df50b8"
+    },
+    "image_0840_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000840.png",
+      "sha256": "3d83837badaf157e75c638ea8a2c215d3541fa645fee697a535ae0289f4a2966"
+    },
+    "image_0840_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000840.png",
+      "sha256": "4e68f8b671fb7a917beb89162a9ce2b85335d01b315ebf45079f14153b6aff58"
+    },
+    "image_0840_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000840.png",
+      "sha256": "4e68f8b671fb7a917beb89162a9ce2b85335d01b315ebf45079f14153b6aff58"
+    },
+    "image_0860_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000860.png",
+      "sha256": "fc64726ff09f22ce990b6af93aab446fa68a5d97449e1c070c5e5509781f0043"
+    },
+    "image_0860_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000860.png",
+      "sha256": "80222a952c000e01af66085f97fdf1c3d7b70254b52c30537b2deb21726269a1"
+    },
+    "image_0860_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000860.png",
+      "sha256": "80222a952c000e01af66085f97fdf1c3d7b70254b52c30537b2deb21726269a1"
+    },
+    "image_0875_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000875.png",
+      "sha256": "bff5717adcb811e3b77f3b895fbb52d0c816efd15dcc739dc441c9c29e725946"
+    },
+    "image_0875_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000875.png",
+      "sha256": "8aa209dfba092b53fbef93a8ef4501efa1540782b5b479358ecbe2592819507c"
+    },
+    "image_0875_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000875.png",
+      "sha256": "8aa209dfba092b53fbef93a8ef4501efa1540782b5b479358ecbe2592819507c"
+    },
+    "image_0905_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000905.png",
+      "sha256": "f92ee93911022d5b6e3ca9d6e85c49088968b0aa5d6042b18c44ccd2e02939ef"
+    },
+    "image_0905_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000905.png",
+      "sha256": "373523655f565d4fa0ed378cb7fa7090c4b46362996e0e6a67cebcadd9e0a6d8"
+    },
+    "image_0905_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000905.png",
+      "sha256": "373523655f565d4fa0ed378cb7fa7090c4b46362996e0e6a67cebcadd9e0a6d8"
+    },
+    "image_0915_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000915.png",
+      "sha256": "4849bfdaa06968df1e3d90d6a13b843ef35419f9ea9ded467554ef7081ed6215"
+    },
+    "image_0915_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000915.png",
+      "sha256": "079b233736a17323e67ed0dc3246d579ac68bc7bb0083406220613000f666fdf"
+    },
+    "image_0915_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000915.png",
+      "sha256": "079b233736a17323e67ed0dc3246d579ac68bc7bb0083406220613000f666fdf"
+    },
+    "image_0950_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000950.png",
+      "sha256": "3ef94ddc60ddf9d3305ec3c6a7e94cf53568987594487aff21961513bd5e2fc5"
+    },
+    "image_0950_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000950.png",
+      "sha256": "fbcdda840048731577f430a6861c5f3159f8df446639c8c00a759814031128ec"
+    },
+    "image_0950_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000950.png",
+      "sha256": "fbcdda840048731577f430a6861c5f3159f8df446639c8c00a759814031128ec"
+    },
+    "image_0955_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000955.png",
+      "sha256": "25a83ec0bbd3f79f52a964dfe42aa5a7ec86b416a74f3b3f2122cfa03927524e"
+    },
+    "image_0955_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000955.png",
+      "sha256": "f4ccb47488b7cf7f45b6381845befa4e804e7dcf4f3802eeeca686ae17ab9143"
+    },
+    "image_0955_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000955.png",
+      "sha256": "f4ccb47488b7cf7f45b6381845befa4e804e7dcf4f3802eeeca686ae17ab9143"
+    },
+    "image_0975_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000975.png",
+      "sha256": "04319b39a6927d055f3e31307608737f7790757f073721ef6ce55f0089182b1f"
+    },
+    "image_0975_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000975.png",
+      "sha256": "93f771d623c9ffb6ae59348128552d43aa0fae92a4706d7edf682fa1d6b1e3b6"
+    },
+    "image_0975_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000975.png",
+      "sha256": "93f771d623c9ffb6ae59348128552d43aa0fae92a4706d7edf682fa1d6b1e3b6"
+    },
+    "image_1000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001000.png",
+      "sha256": "324ec57ac757c091da555caad4633d18184c4ee366a4b4554bd897ebe3bbf40b"
+    },
+    "image_1000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001000.png",
+      "sha256": "5bf367c7788ad6d216247eee83cf203601feac5d9de7b9241d8b9457c47b3bc7"
+    },
+    "image_1000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001000.png",
+      "sha256": "5bf367c7788ad6d216247eee83cf203601feac5d9de7b9241d8b9457c47b3bc7"
+    },
+    "image_1010_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001010.png",
+      "sha256": "4322e8eddf0204a433f3646e033b5958ff96c20574fff310e3d90238656d25c6"
+    },
+    "image_1010_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001010.png",
+      "sha256": "87e7328b921ef73e01463021c3ba97f613d8ac38622a28f14b95b4347322fd78"
+    },
+    "image_1010_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001010.png",
+      "sha256": "87e7328b921ef73e01463021c3ba97f613d8ac38622a28f14b95b4347322fd78"
+    },
+    "image_1030_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001030.png",
+      "sha256": "3e6951f389e5331839657458db24dc4f64091d90d3a9f134b4a0ba7abbb1c0e8"
+    },
+    "image_1030_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001030.png",
+      "sha256": "1a113bc13047e56f1ec8f900dabb10ace9cf19d25ceabea766a9dfbd19c1b1d9"
+    },
+    "image_1030_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001030.png",
+      "sha256": "1a113bc13047e56f1ec8f900dabb10ace9cf19d25ceabea766a9dfbd19c1b1d9"
+    },
+    "image_1050_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001050.png",
+      "sha256": "a3042a0aabb86720846f2c08d0dae6da6a205f574c90581bd0cf70bd2ce94797"
+    },
+    "image_1050_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001050.png",
+      "sha256": "3535a853e0bb62946d570564ca7f2511d6ed91e143e657c6579f29b9290d7170"
+    },
+    "image_1050_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001050.png",
+      "sha256": "3535a853e0bb62946d570564ca7f2511d6ed91e143e657c6579f29b9290d7170"
+    },
+    "image_1065_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001065.png",
+      "sha256": "eaefd6113eef885a1e68d10e176d01e3e9f5e846b9e25d609ea7c9fcd2c4c13d"
+    },
+    "image_1065_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001065.png",
+      "sha256": "ce40cb8bacfee070d4d7d8db917c2ae729b438487a3aee622c22d723b2a019f5"
+    },
+    "image_1065_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001065.png",
+      "sha256": "ce40cb8bacfee070d4d7d8db917c2ae729b438487a3aee622c22d723b2a019f5"
+    },
+    "image_1095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001095.png",
+      "sha256": "5f2df0213f0eb7638b634250ac8b7cc0d452420cd885895fe9d27dfc24bc81d9"
+    },
+    "image_1095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001095.png",
+      "sha256": "4cf192deb1ee2fc6a120c6901b6ce5265721d7aa17504c4e5bd9e5bfffe61ccd"
+    },
+    "image_1095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001095.png",
+      "sha256": "4cf192deb1ee2fc6a120c6901b6ce5265721d7aa17504c4e5bd9e5bfffe61ccd"
+    },
+    "image_1105_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001105.png",
+      "sha256": "2255361c816e45e4b140f76438a9a151e6d4394d7a443a8c04ac816ef4bd2945"
+    },
+    "image_1105_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001105.png",
+      "sha256": "e6f929864e5be5b1cfb113385d93b228ed30606ae3f6387701da50069c4104df"
+    },
+    "image_1105_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001105.png",
+      "sha256": "e6f929864e5be5b1cfb113385d93b228ed30606ae3f6387701da50069c4104df"
+    },
+    "image_1145_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001145.png",
+      "sha256": "12d939b5e990353eeb66a1d14e89a2f647cebe0cb56ad85e6ca74ea6f8c3131e"
+    },
+    "image_1145_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001145.png",
+      "sha256": "9273510f389ccb4e2bc398ffcd5b94bf46153347f2543ef224fb4ccea2d6f320"
+    },
+    "image_1145_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001145.png",
+      "sha256": "9273510f389ccb4e2bc398ffcd5b94bf46153347f2543ef224fb4ccea2d6f320"
+    },
+    "image_1150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001150.png",
+      "sha256": "8f97d078d00cde981dacc78118692acdecc06f9d7a3bab230bf50431f4adaf0e"
+    },
+    "image_1150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001150.png",
+      "sha256": "73d078b1b04154a27da852565b5eef8aa4a97f122e3a9dd7bf616f6edd880455"
+    },
+    "image_1150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001150.png",
+      "sha256": "73d078b1b04154a27da852565b5eef8aa4a97f122e3a9dd7bf616f6edd880455"
+    },
+    "image_1170_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001170.png",
+      "sha256": "91a46a59ee0e2fe9370fb0145d27d28eb538a96d6f114643ac85ec46d1f22219"
+    },
+    "image_1170_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001170.png",
+      "sha256": "5eedf79e8247ed599808c3d1d044644a58302616c1d9607c13c768b535bbe272"
+    },
+    "image_1170_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001170.png",
+      "sha256": "5eedf79e8247ed599808c3d1d044644a58302616c1d9607c13c768b535bbe272"
+    },
+    "image_1195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001195.png",
+      "sha256": "48947c1762f2933833ab1132fdc5e0abc4d8740151f342f972f6fd578b3f485d"
+    },
+    "image_1195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001195.png",
+      "sha256": "3f2d5591f738bd78a7ea444491cdd8ead8a4dc9736e667db595d6be420de2156"
+    },
+    "image_1195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001195.png",
+      "sha256": "3f2d5591f738bd78a7ea444491cdd8ead8a4dc9736e667db595d6be420de2156"
+    },
+    "native_calibration": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "native_frames": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/frames.csv",
+      "sha256": "3b3cb77d278f346bb1d7f90f187276e49288a619ae4ba1d3b20525322ab1c033"
+    },
+    "native_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/dataset_manifest.json",
+      "sha256": "26bc9b9a9c1bd0e206e8510ad407929fb0805c3aa37f8d87e24a23ff69c5bf3b"
+    },
+    "paired_calibration": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "paired_frames": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/frames.csv",
+      "sha256": "3b3cb77d278f346bb1d7f90f187276e49288a619ae4ba1d3b20525322ab1c033"
+    },
+    "paired_manifest": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/dataset_manifest.json",
+      "sha256": "505ad7e2bf952ed1087c90fa5be436ee6d7c93a0646b970de93929e96c01f744"
+    },
+    "right_helper": {
+      "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+      "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+    },
+    "run_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/run_manifest.json",
+      "sha256": "03d6beda927cbcee0ee54ec17a86e2439f2c115fad8b266cb1211c9d59836b9d"
+    },
+    "source_d405_frames": {
+      "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_frames.csv",
+      "sha256": "cb69a553a35566d59d49238f36b69083287ada96c545ba33f907769be9717d43"
+    },
+    "stereo_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+      "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+    },
+    "trajectory": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/trajectory_frames.csv",
+      "sha256": "e0f2a583f712207dc075404a3c2c5636c27a53cb1eeb50d944b798830bed496e"
+    }
+  },
+  "consumed_source_sha256_after": {
+    "checkpoint": {
+      "path": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
+      "sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2"
+    },
+    "config": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/effective_config.yaml",
+      "sha256": "d7a7291f98d357cc46b77e0e73e6ed619f103c445344bd9defe456742ca82ceb"
+    },
+    "context": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/context.json",
+      "sha256": "cc361cf5103a524ba0f07f737b5027f45c5b72fe0af922819e4f1f69f49d1f50"
+    },
+    "context_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/experimental_mast3r_metric_joint_adapter.py",
+      "sha256": "bbabe5b0b3d30d0c90c249ab944958470d69117a217992df858d6eebc65485d6"
+    },
+    "diagnostic_script": {
+      "path": "/home/robot/ego_vio_humble/scripts/diagnose_fresh_right_stereo.py",
+      "sha256": "e3ae20da6ff285b33dc88aa946dee3af4b15f83a62f63fd781d1d244b9dfd83b"
+    },
+    "frontend_validation_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/evaluate_metric_joint_frontend.py",
+      "sha256": "dbb1e53cfee2f88d3bdf25d3e8f7ee4746961eb360182a996db27a9ad3e17290"
+    },
+    "image_0000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000000.png",
+      "sha256": "2df5d5256cc529a391e336e13bce2fdb633211b161aca23e1cdd3ee9bfbb7350"
+    },
+    "image_0000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000000.png",
+      "sha256": "1f7ba53dc96f120e5a465d66ee07e422d15a8c7f6223b73aee4242ce2ed45a32"
+    },
+    "image_0000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000000.png",
+      "sha256": "1f7ba53dc96f120e5a465d66ee07e422d15a8c7f6223b73aee4242ce2ed45a32"
+    },
+    "image_0005_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000005.png",
+      "sha256": "b8edc6a4f5854717d83c7f0c608fd713c2c3d3ff8b4357abaf77ef9e235e40bb"
+    },
+    "image_0005_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000005.png",
+      "sha256": "b7651d6c7da1a6400d741766c2bbc85d6911661d843012b0c6ce53d8e886a441"
+    },
+    "image_0005_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000005.png",
+      "sha256": "b7651d6c7da1a6400d741766c2bbc85d6911661d843012b0c6ce53d8e886a441"
+    },
+    "image_0020_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000020.png",
+      "sha256": "ee6c6ddc4dc593038477f096d95befd7135d6484aaf806b014c1945d2ad01193"
+    },
+    "image_0020_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000020.png",
+      "sha256": "adcabec9892c8a2a6a144d2726b0f59987b7e8b624b8f1f4e68e75a44c344ba5"
+    },
+    "image_0020_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000020.png",
+      "sha256": "adcabec9892c8a2a6a144d2726b0f59987b7e8b624b8f1f4e68e75a44c344ba5"
+    },
+    "image_0045_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000045.png",
+      "sha256": "f6a5b3f15a10565bf1707c07011bf4898fe953a4a8f8cfc2d989e470fe7b6912"
+    },
+    "image_0045_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000045.png",
+      "sha256": "9e7af704afac49c23a26427fb122c9cf1b8ad6b44578540bf8f9c4b7080468bd"
+    },
+    "image_0045_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000045.png",
+      "sha256": "9e7af704afac49c23a26427fb122c9cf1b8ad6b44578540bf8f9c4b7080468bd"
+    },
+    "image_0055_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000055.png",
+      "sha256": "ccbba27bd1f4aa7dd6b89c5f14b9b932cb4381128f1eabe3cad00c6d3a01f7da"
+    },
+    "image_0055_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000055.png",
+      "sha256": "189d4ab02ccc0bafea4b9ce213c2106981d33476d4687d13b763f7b335518884"
+    },
+    "image_0055_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000055.png",
+      "sha256": "189d4ab02ccc0bafea4b9ce213c2106981d33476d4687d13b763f7b335518884"
+    },
+    "image_0075_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000075.png",
+      "sha256": "359208fffacdd6221e4994a5da170e540f844b43790519ba6b52350fdf699043"
+    },
+    "image_0075_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000075.png",
+      "sha256": "2483fe4b8b5a2152efeb39584f1518a170b954f8419d1528634a52d976b56625"
+    },
+    "image_0075_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000075.png",
+      "sha256": "2483fe4b8b5a2152efeb39584f1518a170b954f8419d1528634a52d976b56625"
+    },
+    "image_0095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000095.png",
+      "sha256": "68d4f37cca0758f9e312820b14c400a97ee0efd672459a5332287883545878a0"
+    },
+    "image_0095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000095.png",
+      "sha256": "ffbf9463a1451b19dc0878af72d6b8dd660b5a1971724743e4fc2aeef3277ee5"
+    },
+    "image_0095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000095.png",
+      "sha256": "ffbf9463a1451b19dc0878af72d6b8dd660b5a1971724743e4fc2aeef3277ee5"
+    },
+    "image_0110_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000110.png",
+      "sha256": "1f2e84420ec403c4650127a7d390eaebc46affe322b685c517ddceb6d3c1723f"
+    },
+    "image_0110_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000110.png",
+      "sha256": "16856c80a5e588471250667a7eee5b3dd87ef3a08008f2ee076b592f561ba3bb"
+    },
+    "image_0110_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000110.png",
+      "sha256": "16856c80a5e588471250667a7eee5b3dd87ef3a08008f2ee076b592f561ba3bb"
+    },
+    "image_0140_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000140.png",
+      "sha256": "d4398137a210484ff89281f76daec7c9fbff5b769465fefb9bf4f119803e243c"
+    },
+    "image_0140_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000140.png",
+      "sha256": "33eac407bdf54834df6bd9ad60bc7e1d33fed685c894a1323598fe8e6ea2baed"
+    },
+    "image_0140_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000140.png",
+      "sha256": "33eac407bdf54834df6bd9ad60bc7e1d33fed685c894a1323598fe8e6ea2baed"
+    },
+    "image_0150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000150.png",
+      "sha256": "85c188dc57313213e6e70b6b532c694d09701170408328ad400eae9cae878653"
+    },
+    "image_0150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000150.png",
+      "sha256": "8df5857e83a58631fcdf5d80ca965cff6b9b50bce88ba84eca0ca01f5bb91eaa"
+    },
+    "image_0150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000150.png",
+      "sha256": "8df5857e83a58631fcdf5d80ca965cff6b9b50bce88ba84eca0ca01f5bb91eaa"
+    },
+    "image_0190_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000190.png",
+      "sha256": "d535e6ca54b4b1fa28fe05c5d36cafab0a178d935b9d89e3db0b00cd400eb765"
+    },
+    "image_0190_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000190.png",
+      "sha256": "9cb9813a4788dba88ab51d3b451e33c4f1cf78f26f5f593664c714749dcec461"
+    },
+    "image_0190_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000190.png",
+      "sha256": "9cb9813a4788dba88ab51d3b451e33c4f1cf78f26f5f593664c714749dcec461"
+    },
+    "image_0195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000195.png",
+      "sha256": "5cda81e7e20ef21b8fabd479b87ec7ef9043c0b664f76c3ddc3013fcfd7447f6"
+    },
+    "image_0195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000195.png",
+      "sha256": "c0a1a4d187be4879e09b776d9f42c61bb1edd1250e9870e3bfa13201cd09807b"
+    },
+    "image_0195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000195.png",
+      "sha256": "c0a1a4d187be4879e09b776d9f42c61bb1edd1250e9870e3bfa13201cd09807b"
+    },
+    "image_0215_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000215.png",
+      "sha256": "1c87ca5e7918d2a54f77d29ef7874cb84ee6514df0be13be64c4665ecc1648b7"
+    },
+    "image_0215_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000215.png",
+      "sha256": "91c88f749ea21d87bdd5c9c3e37339d238610f66592d1ee9d11439afe19ecd05"
+    },
+    "image_0215_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000215.png",
+      "sha256": "91c88f749ea21d87bdd5c9c3e37339d238610f66592d1ee9d11439afe19ecd05"
+    },
+    "image_0240_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000240.png",
+      "sha256": "c11429836bd483e795cb6f9ab95f1e9a7883ccfe7ed0d47c888a317719947a3f"
+    },
+    "image_0240_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000240.png",
+      "sha256": "5cd58f4b338524f4597537b336d3ffd6c3bbeacd0202dedaeda019970faa9232"
+    },
+    "image_0240_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000240.png",
+      "sha256": "5cd58f4b338524f4597537b336d3ffd6c3bbeacd0202dedaeda019970faa9232"
+    },
+    "image_0245_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000245.png",
+      "sha256": "f7fb2f74b7ae554556d9fe805e8edd277359bd3106cb55f0dd1d9ab420acd1f7"
+    },
+    "image_0245_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000245.png",
+      "sha256": "87e281375fd3426089d6c11b6d8c9107cacc37b3229338e4985569b5cf43f2d6"
+    },
+    "image_0245_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000245.png",
+      "sha256": "87e281375fd3426089d6c11b6d8c9107cacc37b3229338e4985569b5cf43f2d6"
+    },
+    "image_0265_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000265.png",
+      "sha256": "8838ce14458bca1d9e9a6de69e9f9432d4be403ca066cb0c9aee0d2e91104a6b"
+    },
+    "image_0265_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000265.png",
+      "sha256": "2e60e6d2b249365b64587f4bfc038cdb6f3456eb0ae9d68c2f936a0efb534472"
+    },
+    "image_0265_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000265.png",
+      "sha256": "2e60e6d2b249365b64587f4bfc038cdb6f3456eb0ae9d68c2f936a0efb534472"
+    },
+    "image_0285_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000285.png",
+      "sha256": "7070f3e3f69dc81dae95466108c1391f3ca45526b8fc77ea2ac32f85a3800405"
+    },
+    "image_0285_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000285.png",
+      "sha256": "0abbd90cba5545b9b1cde4025f53fefca6638334fa1b9694ee6e75a4d1ec1869"
+    },
+    "image_0285_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000285.png",
+      "sha256": "0abbd90cba5545b9b1cde4025f53fefca6638334fa1b9694ee6e75a4d1ec1869"
+    },
+    "image_0300_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000300.png",
+      "sha256": "80d52419a3316db40769482a0c5faf87737d69775fbc392e109da9de54987c1b"
+    },
+    "image_0300_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000300.png",
+      "sha256": "58e9a3482b1b38c4fa7f6313f0ac41dca464fcd9573284870e60d6b7bf071ee0"
+    },
+    "image_0300_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000300.png",
+      "sha256": "58e9a3482b1b38c4fa7f6313f0ac41dca464fcd9573284870e60d6b7bf071ee0"
+    },
+    "image_0330_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000330.png",
+      "sha256": "2bf6917e7a8367f4ec72f87d5ed90c295ae0debfc9895927567233887b61407c"
+    },
+    "image_0330_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000330.png",
+      "sha256": "4e22f13fd33c7d20315a9a2716e45c44a8739b7808751411b77da3b2de016d2e"
+    },
+    "image_0330_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000330.png",
+      "sha256": "4e22f13fd33c7d20315a9a2716e45c44a8739b7808751411b77da3b2de016d2e"
+    },
+    "image_0340_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000340.png",
+      "sha256": "1276735931a46391986024edc5cb3345692af6f4f7be1a9a5a816cf173c276ab"
+    },
+    "image_0340_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000340.png",
+      "sha256": "bb55680d2f1afe35440ac720846a02885b071d6c559590bc1d2ef7b2c0484b50"
+    },
+    "image_0340_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000340.png",
+      "sha256": "bb55680d2f1afe35440ac720846a02885b071d6c559590bc1d2ef7b2c0484b50"
+    },
+    "image_0380_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000380.png",
+      "sha256": "3299e716bf373fa9a387544cc0e22ffdffdddd2f3f25a6f92a1ce43f0a8e4174"
+    },
+    "image_0380_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000380.png",
+      "sha256": "5868aff269145c26ea1e88889ecbfbf6b9c3812b6ea71cb16e2b470baf405ab2"
+    },
+    "image_0380_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000380.png",
+      "sha256": "5868aff269145c26ea1e88889ecbfbf6b9c3812b6ea71cb16e2b470baf405ab2"
+    },
+    "image_0385_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000385.png",
+      "sha256": "a433687e313710c2b37da87343e14ad0b25c0220ffe72aa28fe7bdd56cae4125"
+    },
+    "image_0385_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000385.png",
+      "sha256": "8d5ae06649a7cb78db7e5e674a36911d56a604a81517c6fdf2d0e846b8c125ce"
+    },
+    "image_0385_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000385.png",
+      "sha256": "8d5ae06649a7cb78db7e5e674a36911d56a604a81517c6fdf2d0e846b8c125ce"
+    },
+    "image_0405_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000405.png",
+      "sha256": "2dbf32a0b98abd6d95ce8305bac58b78d07badef533ef0d3d20e80a48e00722b"
+    },
+    "image_0405_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000405.png",
+      "sha256": "890a899b8ba6e698ca7509d8bc282c5eb64d812ddf92b6c425928da33909e20c"
+    },
+    "image_0405_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000405.png",
+      "sha256": "890a899b8ba6e698ca7509d8bc282c5eb64d812ddf92b6c425928da33909e20c"
+    },
+    "image_0430_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000430.png",
+      "sha256": "8b6df36f99f98929e5eed80f7ec50131d406c6b2a91f51772a0000b6ba0530a1"
+    },
+    "image_0430_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000430.png",
+      "sha256": "9654f30aae439987cf3bc527020fc4fce946469dc0bac0e05ae515e89f73f036"
+    },
+    "image_0430_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000430.png",
+      "sha256": "9654f30aae439987cf3bc527020fc4fce946469dc0bac0e05ae515e89f73f036"
+    },
+    "image_0440_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000440.png",
+      "sha256": "e461aefc04466f6e37cf6e8e6c008a4b39afdfce2933c4b6131a98c63e59ce32"
+    },
+    "image_0440_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000440.png",
+      "sha256": "f421b9c384a582fded5329f748f8cb83981a594f9291009cc0abe6c89e99abfc"
+    },
+    "image_0440_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000440.png",
+      "sha256": "f421b9c384a582fded5329f748f8cb83981a594f9291009cc0abe6c89e99abfc"
+    },
+    "image_0460_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000460.png",
+      "sha256": "655783c6bcc9fe5e19a8763d43065301be4497df5959126fa01520324aaf9646"
+    },
+    "image_0460_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000460.png",
+      "sha256": "270637f3f08fb867b6ae991ba93aacb8af6363b2453685b484c19b2d551398ae"
+    },
+    "image_0460_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000460.png",
+      "sha256": "270637f3f08fb867b6ae991ba93aacb8af6363b2453685b484c19b2d551398ae"
+    },
+    "image_0475_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000475.png",
+      "sha256": "7a9693abd40f153905f4b0946a1a390027eee9d4dd5b60b7362a5e8a8bc62ef1"
+    },
+    "image_0475_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000475.png",
+      "sha256": "b949e5cee8fae331c50a295aabd64155121f177c59f000bdb2c405032de1020a"
+    },
+    "image_0475_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000475.png",
+      "sha256": "b949e5cee8fae331c50a295aabd64155121f177c59f000bdb2c405032de1020a"
+    },
+    "image_0490_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000490.png",
+      "sha256": "76b36f60abe118014c36fcccd3a7a168ffbbfb5928b43c0be7bb9e2287e41dcf"
+    },
+    "image_0490_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000490.png",
+      "sha256": "07ffe2765032f9fffb890650fecccf06fefb44cd56247e2583fd294dfa0821ee"
+    },
+    "image_0490_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000490.png",
+      "sha256": "07ffe2765032f9fffb890650fecccf06fefb44cd56247e2583fd294dfa0821ee"
+    },
+    "image_0520_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000520.png",
+      "sha256": "cb5270cdae90ad559038bc78ffe74fb05c7c32cf4953632c95698fa696cc3777"
+    },
+    "image_0520_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000520.png",
+      "sha256": "7fee15f7399f281b03cd829cd7bd1cdc976614302756ad4d09ced98caedbccbd"
+    },
+    "image_0520_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000520.png",
+      "sha256": "7fee15f7399f281b03cd829cd7bd1cdc976614302756ad4d09ced98caedbccbd"
+    },
+    "image_0530_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000530.png",
+      "sha256": "dc78fe2dca53f3bd41ccb811dc566ee4482c7de2ae2fea820944def60defe628"
+    },
+    "image_0530_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000530.png",
+      "sha256": "471cf38a8050b1638e8e2ea6aae6ccd8a0220df2ac39b19f2c7278c61077e4d7"
+    },
+    "image_0530_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000530.png",
+      "sha256": "471cf38a8050b1638e8e2ea6aae6ccd8a0220df2ac39b19f2c7278c61077e4d7"
+    },
+    "image_0570_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000570.png",
+      "sha256": "27631b4ce8aeac432a68be7e74d708510f11f9e6a4d429a8855cd633059efcaf"
+    },
+    "image_0570_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000570.png",
+      "sha256": "95c9e218192df56c5fda0819ac1722ea2546c048295d734789cfd1d74b929c3c"
+    },
+    "image_0570_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000570.png",
+      "sha256": "95c9e218192df56c5fda0819ac1722ea2546c048295d734789cfd1d74b929c3c"
+    },
+    "image_0575_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000575.png",
+      "sha256": "75cdb5bf2cd05e36c799559f794a395da98a90a8f558210dc42bd9782dbf1ddb"
+    },
+    "image_0575_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000575.png",
+      "sha256": "b42841b76654948f7e2847aa4dd1f4a6ba5aa118e2b64ef6ec49a367aa4c8d14"
+    },
+    "image_0575_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000575.png",
+      "sha256": "b42841b76654948f7e2847aa4dd1f4a6ba5aa118e2b64ef6ec49a367aa4c8d14"
+    },
+    "image_0595_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000595.png",
+      "sha256": "74a855ebd53a5af442ee84e9052ac22b67fb9d690dd7747f56d84ba418f359c6"
+    },
+    "image_0595_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000595.png",
+      "sha256": "7801225ce1c07c05f4165568d5a2d221ab5ec61d74bf2e1992b33d0af7373fb2"
+    },
+    "image_0595_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000595.png",
+      "sha256": "7801225ce1c07c05f4165568d5a2d221ab5ec61d74bf2e1992b33d0af7373fb2"
+    },
+    "image_0620_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000620.png",
+      "sha256": "7cdbfe805848fa37bd20625fef783a1c1c9b6e67cec893735b1c7d5088909bbe"
+    },
+    "image_0620_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000620.png",
+      "sha256": "3c024776f5e2e871dba584d6aff2bd784b67058630ee238d92c3f44c0b83c6c7"
+    },
+    "image_0620_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000620.png",
+      "sha256": "3c024776f5e2e871dba584d6aff2bd784b67058630ee238d92c3f44c0b83c6c7"
+    },
+    "image_0630_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000630.png",
+      "sha256": "d448dd592b7dc7bff239931a495e9b712a5f843bb04337a2b56ab45228cbef0a"
+    },
+    "image_0630_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000630.png",
+      "sha256": "05aafdddfd83ce9f1b627e3ac218c14ff8b6321a93bd26a3b49d2babd1f61fe5"
+    },
+    "image_0630_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000630.png",
+      "sha256": "05aafdddfd83ce9f1b627e3ac218c14ff8b6321a93bd26a3b49d2babd1f61fe5"
+    },
+    "image_0650_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000650.png",
+      "sha256": "f7d0ba0c3ae42b78439f25e024ba373d26f613a74403f881f84efbd4a4175a7c"
+    },
+    "image_0650_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000650.png",
+      "sha256": "850e6e3ed7b3ad4f63fa951f870922560d68d4b0d9d22a68429eb1a82f56d1ea"
+    },
+    "image_0650_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000650.png",
+      "sha256": "850e6e3ed7b3ad4f63fa951f870922560d68d4b0d9d22a68429eb1a82f56d1ea"
+    },
+    "image_0670_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000670.png",
+      "sha256": "41c255c9753a29e3b83da1f34b37667b3771411ee8ab3bc9d197d31374968177"
+    },
+    "image_0670_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000670.png",
+      "sha256": "29e5af3caf504940f07f25629de063e0e290c9df62530d714825ba48fd77cd39"
+    },
+    "image_0670_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000670.png",
+      "sha256": "29e5af3caf504940f07f25629de063e0e290c9df62530d714825ba48fd77cd39"
+    },
+    "image_0685_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000685.png",
+      "sha256": "7928c731165e9a5d6da2222b1fad4902c78f68d4ab9baf9d704fc971899ee185"
+    },
+    "image_0685_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000685.png",
+      "sha256": "28c972d44a6d9b5fa77189b6329e5ea01f830fe0457ced71d4ed0c705bdf7dfb"
+    },
+    "image_0685_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000685.png",
+      "sha256": "28c972d44a6d9b5fa77189b6329e5ea01f830fe0457ced71d4ed0c705bdf7dfb"
+    },
+    "image_0710_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000710.png",
+      "sha256": "c7823faa6600da4b4bc2f65511e47534bbd13a53126f063c9ad3a1b9f4184f5b"
+    },
+    "image_0710_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000710.png",
+      "sha256": "37727a97f77645806367e32f6c3c65072ff661eed60289a137015b73c99015da"
+    },
+    "image_0710_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000710.png",
+      "sha256": "37727a97f77645806367e32f6c3c65072ff661eed60289a137015b73c99015da"
+    },
+    "image_0720_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000720.png",
+      "sha256": "dbed2748a4b892e7fca1ba8dc30985e126833a0185d3672b5239f87e3df089df"
+    },
+    "image_0720_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000720.png",
+      "sha256": "d1ffc7f2029507b4e8d04fb8742a0332ac66c60ba99a7fa81760bd948845c446"
+    },
+    "image_0720_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000720.png",
+      "sha256": "d1ffc7f2029507b4e8d04fb8742a0332ac66c60ba99a7fa81760bd948845c446"
+    },
+    "image_0760_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000760.png",
+      "sha256": "4c27b5ce140d9b96c4aaf56fcdf118e640648ddfb5e418a224a2936580b2ba5f"
+    },
+    "image_0760_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000760.png",
+      "sha256": "20401b2df0140f8add15d193059a85e88c3f196618353e94b22d2a2765507b7e"
+    },
+    "image_0760_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000760.png",
+      "sha256": "20401b2df0140f8add15d193059a85e88c3f196618353e94b22d2a2765507b7e"
+    },
+    "image_0765_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000765.png",
+      "sha256": "a02b1bb8c125914670514c8214c62dbde2c8eb746f804dd35e9009aa0d3e792b"
+    },
+    "image_0765_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000765.png",
+      "sha256": "862faaec72b0cdd63b5d2f1aa97ea4c8ba6ed0d654780ace790c7b85cc2ba6b1"
+    },
+    "image_0765_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000765.png",
+      "sha256": "862faaec72b0cdd63b5d2f1aa97ea4c8ba6ed0d654780ace790c7b85cc2ba6b1"
+    },
+    "image_0785_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000785.png",
+      "sha256": "2db8006cfbdafcd8c71bee2d758d407983b4d3d503b2d6f43dd68c943cb124f3"
+    },
+    "image_0785_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000785.png",
+      "sha256": "795b85fb2b01bc39d24b2018ab545bbd8a423215290eb42c4b4ea32e4281ae68"
+    },
+    "image_0785_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000785.png",
+      "sha256": "795b85fb2b01bc39d24b2018ab545bbd8a423215290eb42c4b4ea32e4281ae68"
+    },
+    "image_0810_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000810.png",
+      "sha256": "353ec70d19fe29434750698a2cb07f5684460b264b7ffebfa362540d06de2cae"
+    },
+    "image_0810_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000810.png",
+      "sha256": "7fb223bdf5abad85d9df9e01f2c87717491afe49380b3f5ff957e2936a55655a"
+    },
+    "image_0810_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000810.png",
+      "sha256": "7fb223bdf5abad85d9df9e01f2c87717491afe49380b3f5ff957e2936a55655a"
+    },
+    "image_0820_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000820.png",
+      "sha256": "2bb6255153a07bbf83f9217025c699bbeb5041099ed4b1770c925ddba00791b0"
+    },
+    "image_0820_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000820.png",
+      "sha256": "ff937b3326ee645233e07ceffe0dc3ed79a5c52c59d0c11d0e4467a966df50b8"
+    },
+    "image_0820_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000820.png",
+      "sha256": "ff937b3326ee645233e07ceffe0dc3ed79a5c52c59d0c11d0e4467a966df50b8"
+    },
+    "image_0840_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000840.png",
+      "sha256": "3d83837badaf157e75c638ea8a2c215d3541fa645fee697a535ae0289f4a2966"
+    },
+    "image_0840_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000840.png",
+      "sha256": "4e68f8b671fb7a917beb89162a9ce2b85335d01b315ebf45079f14153b6aff58"
+    },
+    "image_0840_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000840.png",
+      "sha256": "4e68f8b671fb7a917beb89162a9ce2b85335d01b315ebf45079f14153b6aff58"
+    },
+    "image_0860_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000860.png",
+      "sha256": "fc64726ff09f22ce990b6af93aab446fa68a5d97449e1c070c5e5509781f0043"
+    },
+    "image_0860_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000860.png",
+      "sha256": "80222a952c000e01af66085f97fdf1c3d7b70254b52c30537b2deb21726269a1"
+    },
+    "image_0860_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000860.png",
+      "sha256": "80222a952c000e01af66085f97fdf1c3d7b70254b52c30537b2deb21726269a1"
+    },
+    "image_0875_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000875.png",
+      "sha256": "bff5717adcb811e3b77f3b895fbb52d0c816efd15dcc739dc441c9c29e725946"
+    },
+    "image_0875_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000875.png",
+      "sha256": "8aa209dfba092b53fbef93a8ef4501efa1540782b5b479358ecbe2592819507c"
+    },
+    "image_0875_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000875.png",
+      "sha256": "8aa209dfba092b53fbef93a8ef4501efa1540782b5b479358ecbe2592819507c"
+    },
+    "image_0905_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000905.png",
+      "sha256": "f92ee93911022d5b6e3ca9d6e85c49088968b0aa5d6042b18c44ccd2e02939ef"
+    },
+    "image_0905_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000905.png",
+      "sha256": "373523655f565d4fa0ed378cb7fa7090c4b46362996e0e6a67cebcadd9e0a6d8"
+    },
+    "image_0905_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000905.png",
+      "sha256": "373523655f565d4fa0ed378cb7fa7090c4b46362996e0e6a67cebcadd9e0a6d8"
+    },
+    "image_0915_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000915.png",
+      "sha256": "4849bfdaa06968df1e3d90d6a13b843ef35419f9ea9ded467554ef7081ed6215"
+    },
+    "image_0915_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000915.png",
+      "sha256": "079b233736a17323e67ed0dc3246d579ac68bc7bb0083406220613000f666fdf"
+    },
+    "image_0915_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000915.png",
+      "sha256": "079b233736a17323e67ed0dc3246d579ac68bc7bb0083406220613000f666fdf"
+    },
+    "image_0950_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000950.png",
+      "sha256": "3ef94ddc60ddf9d3305ec3c6a7e94cf53568987594487aff21961513bd5e2fc5"
+    },
+    "image_0950_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000950.png",
+      "sha256": "fbcdda840048731577f430a6861c5f3159f8df446639c8c00a759814031128ec"
+    },
+    "image_0950_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000950.png",
+      "sha256": "fbcdda840048731577f430a6861c5f3159f8df446639c8c00a759814031128ec"
+    },
+    "image_0955_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000955.png",
+      "sha256": "25a83ec0bbd3f79f52a964dfe42aa5a7ec86b416a74f3b3f2122cfa03927524e"
+    },
+    "image_0955_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000955.png",
+      "sha256": "f4ccb47488b7cf7f45b6381845befa4e804e7dcf4f3802eeeca686ae17ab9143"
+    },
+    "image_0955_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000955.png",
+      "sha256": "f4ccb47488b7cf7f45b6381845befa4e804e7dcf4f3802eeeca686ae17ab9143"
+    },
+    "image_0975_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000000975.png",
+      "sha256": "04319b39a6927d055f3e31307608737f7790757f073721ef6ce55f0089182b1f"
+    },
+    "image_0975_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000000975.png",
+      "sha256": "93f771d623c9ffb6ae59348128552d43aa0fae92a4706d7edf682fa1d6b1e3b6"
+    },
+    "image_0975_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000000975.png",
+      "sha256": "93f771d623c9ffb6ae59348128552d43aa0fae92a4706d7edf682fa1d6b1e3b6"
+    },
+    "image_1000_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001000.png",
+      "sha256": "324ec57ac757c091da555caad4633d18184c4ee366a4b4554bd897ebe3bbf40b"
+    },
+    "image_1000_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001000.png",
+      "sha256": "5bf367c7788ad6d216247eee83cf203601feac5d9de7b9241d8b9457c47b3bc7"
+    },
+    "image_1000_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001000.png",
+      "sha256": "5bf367c7788ad6d216247eee83cf203601feac5d9de7b9241d8b9457c47b3bc7"
+    },
+    "image_1010_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001010.png",
+      "sha256": "4322e8eddf0204a433f3646e033b5958ff96c20574fff310e3d90238656d25c6"
+    },
+    "image_1010_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001010.png",
+      "sha256": "87e7328b921ef73e01463021c3ba97f613d8ac38622a28f14b95b4347322fd78"
+    },
+    "image_1010_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001010.png",
+      "sha256": "87e7328b921ef73e01463021c3ba97f613d8ac38622a28f14b95b4347322fd78"
+    },
+    "image_1030_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001030.png",
+      "sha256": "3e6951f389e5331839657458db24dc4f64091d90d3a9f134b4a0ba7abbb1c0e8"
+    },
+    "image_1030_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001030.png",
+      "sha256": "1a113bc13047e56f1ec8f900dabb10ace9cf19d25ceabea766a9dfbd19c1b1d9"
+    },
+    "image_1030_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001030.png",
+      "sha256": "1a113bc13047e56f1ec8f900dabb10ace9cf19d25ceabea766a9dfbd19c1b1d9"
+    },
+    "image_1050_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001050.png",
+      "sha256": "a3042a0aabb86720846f2c08d0dae6da6a205f574c90581bd0cf70bd2ce94797"
+    },
+    "image_1050_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001050.png",
+      "sha256": "3535a853e0bb62946d570564ca7f2511d6ed91e143e657c6579f29b9290d7170"
+    },
+    "image_1050_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001050.png",
+      "sha256": "3535a853e0bb62946d570564ca7f2511d6ed91e143e657c6579f29b9290d7170"
+    },
+    "image_1065_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001065.png",
+      "sha256": "eaefd6113eef885a1e68d10e176d01e3e9f5e846b9e25d609ea7c9fcd2c4c13d"
+    },
+    "image_1065_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001065.png",
+      "sha256": "ce40cb8bacfee070d4d7d8db917c2ae729b438487a3aee622c22d723b2a019f5"
+    },
+    "image_1065_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001065.png",
+      "sha256": "ce40cb8bacfee070d4d7d8db917c2ae729b438487a3aee622c22d723b2a019f5"
+    },
+    "image_1095_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001095.png",
+      "sha256": "5f2df0213f0eb7638b634250ac8b7cc0d452420cd885895fe9d27dfc24bc81d9"
+    },
+    "image_1095_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001095.png",
+      "sha256": "4cf192deb1ee2fc6a120c6901b6ce5265721d7aa17504c4e5bd9e5bfffe61ccd"
+    },
+    "image_1095_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001095.png",
+      "sha256": "4cf192deb1ee2fc6a120c6901b6ce5265721d7aa17504c4e5bd9e5bfffe61ccd"
+    },
+    "image_1105_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001105.png",
+      "sha256": "2255361c816e45e4b140f76438a9a151e6d4394d7a443a8c04ac816ef4bd2945"
+    },
+    "image_1105_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001105.png",
+      "sha256": "e6f929864e5be5b1cfb113385d93b228ed30606ae3f6387701da50069c4104df"
+    },
+    "image_1105_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001105.png",
+      "sha256": "e6f929864e5be5b1cfb113385d93b228ed30606ae3f6387701da50069c4104df"
+    },
+    "image_1145_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001145.png",
+      "sha256": "12d939b5e990353eeb66a1d14e89a2f647cebe0cb56ad85e6ca74ea6f8c3131e"
+    },
+    "image_1145_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001145.png",
+      "sha256": "9273510f389ccb4e2bc398ffcd5b94bf46153347f2543ef224fb4ccea2d6f320"
+    },
+    "image_1145_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001145.png",
+      "sha256": "9273510f389ccb4e2bc398ffcd5b94bf46153347f2543ef224fb4ccea2d6f320"
+    },
+    "image_1150_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001150.png",
+      "sha256": "8f97d078d00cde981dacc78118692acdecc06f9d7a3bab230bf50431f4adaf0e"
+    },
+    "image_1150_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001150.png",
+      "sha256": "73d078b1b04154a27da852565b5eef8aa4a97f122e3a9dd7bf616f6edd880455"
+    },
+    "image_1150_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001150.png",
+      "sha256": "73d078b1b04154a27da852565b5eef8aa4a97f122e3a9dd7bf616f6edd880455"
+    },
+    "image_1170_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001170.png",
+      "sha256": "91a46a59ee0e2fe9370fb0145d27d28eb538a96d6f114643ac85ec46d1f22219"
+    },
+    "image_1170_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001170.png",
+      "sha256": "5eedf79e8247ed599808c3d1d044644a58302616c1d9607c13c768b535bbe272"
+    },
+    "image_1170_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001170.png",
+      "sha256": "5eedf79e8247ed599808c3d1d044644a58302616c1d9607c13c768b535bbe272"
+    },
+    "image_1195_left": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/0000001195.png",
+      "sha256": "48947c1762f2933833ab1132fdc5e0abc4d8740151f342f972f6fd578b3f485d"
+    },
+    "image_1195_paired_right": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/stereo_right/0000001195.png",
+      "sha256": "3f2d5591f738bd78a7ea444491cdd8ead8a4dc9736e667db595d6be420de2156"
+    },
+    "image_1195_right": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/0000001195.png",
+      "sha256": "3f2d5591f738bd78a7ea444491cdd8ead8a4dc9736e667db595d6be420de2156"
+    },
+    "native_calibration": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "native_frames": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/frames.csv",
+      "sha256": "3b3cb77d278f346bb1d7f90f187276e49288a619ae4ba1d3b20525322ab1c033"
+    },
+    "native_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260927_ind2/right_cache/dataset/dataset_manifest.json",
+      "sha256": "26bc9b9a9c1bd0e206e8510ad407929fb0805c3aa37f8d87e24a23ff69c5bf3b"
+    },
+    "paired_calibration": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/calibration.yaml",
+      "sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b"
+    },
+    "paired_frames": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/frames.csv",
+      "sha256": "3b3cb77d278f346bb1d7f90f187276e49288a619ae4ba1d3b20525322ab1c033"
+    },
+    "paired_manifest": {
+      "path": "/home/robot/ego_vio_humble/reports/joint_scale_independent_four_20260927/take2/fusion/baseline/mast3r/dataset/dataset_manifest.json",
+      "sha256": "505ad7e2bf952ed1087c90fa5be436ee6d7c93a0646b970de93929e96c01f744"
+    },
+    "right_helper": {
+      "path": "/home/robot/ego_vio_humble/ego_vio/vio/right_stereo_motion.py",
+      "sha256": "18b4d48bc4d6a64c91cc5aa7e3c9f61f5656097d3dccbe7180d8dfe92eb40d96"
+    },
+    "run_manifest": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/run_manifest.json",
+      "sha256": "03d6beda927cbcee0ee54ec17a86e2439f2c115fad8b266cb1211c9d59836b9d"
+    },
+    "source_d405_frames": {
+      "path": "/home/robot/umi_ego_vio_data_device2_c48df736/recordings/d405_720p_rgb_stereo_ir_20260927_181501/d405_frames.csv",
+      "sha256": "cb69a553a35566d59d49238f36b69083287ada96c545ba33f907769be9717d43"
+    },
+    "stereo_module": {
+      "path": "/home/robot/ego_vio_humble/scripts/align_mast3r_scale_with_stereo.py",
+      "sha256": "d6ca2db05c844adfaa06f60aabe54667991a4919755ce57871f5b09496f1e03f"
+    },
+    "trajectory": {
+      "path": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/full_metric_joint_frontend_v2/20260927_ind2/right/trajectory_frames.csv",
+      "sha256": "e0f2a583f712207dc075404a3c2c5636c27a53cb1eeb50d944b798830bed496e"
+    }
+  }
+}
