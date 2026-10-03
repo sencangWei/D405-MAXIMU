@@ -16,7 +16,21 @@ from audit_native_objective_change import _validate_frozen_job, summarize_edge_o
 from probe_dense_native_graph import _clone_args, _validate_graph_args
 from probe_stereo_depth_shape_native_graph import check_chain_pnp, load_depths, pose_check, read_json, sha, validate_job_bindings
 from probe_pnp_supported_outlier_mask import REQUIRED, evaluate_candidate
-from joint_metric_native_solver import solve_joint
+from joint_metric_native_solver import array_hash, solve_joint
+
+
+def replay_invariants(initial, variant, repeat):
+    if initial.shape != variant.shape or initial.shape != repeat.shape or initial.ndim != 2:
+        raise ValueError("joint replay pose dimensions differ")
+    if not all(torch.isfinite(value).all() for value in (initial, variant, repeat)):
+        raise ValueError("nonfinite joint replay poses")
+    return {"repeat_exact": torch.equal(variant, repeat),
+            "pin_exact": torch.equal(variant[0], initial[0]),
+            "repeat_max_abs": float((variant.double() - repeat.double()).abs().max()),
+            "pin_max_abs": float((variant[0].double() - initial[0].double()).abs().max()),
+            "initial_pose_sha256": array_hash(initial.cpu().numpy()),
+            "variant_pose_sha256": array_hash(variant.cpu().numpy()),
+            "repeat_pose_sha256": array_hash(repeat.cpu().numpy())}
 
 
 def load_backend():
@@ -53,10 +67,19 @@ def run_job(prior, row, output, backend):
     if not torch.equal(control, saved["poses"]["control"]):
         raise ValueError("original control differs from frozen replay")
     variant, trace = solve_joint(args, factors, backend)
-    repeat, _ = solve_joint(args, factors, backend)
+    repeat, repeat_trace = solve_joint(args, factors, backend)
+    invariants = replay_invariants(args[0], variant, repeat)
+    # Persist both failed and exact runs before asserting; no tolerance change.
+    replay_path = output / "invariant_diagnostic.pt"
+    torch.save({"initial": args[0], "variant": variant, "repeat": repeat,
+                "variant_trace": trace, "repeat_trace": repeat_trace}, replay_path)
+    (output / "invariant_diagnostic.json").write_text(json.dumps({
+        **invariants, "diagnostic_only": True, "external_ground_truth_used": False,
+        "graph_sha256": sha(job["graph"]), "poses_sha256": sha(replay_path),
+        "variant_trace": trace, "repeat_trace": repeat_trace}, indent=2, allow_nan=False) + "\n")
     pose_check(variant)
-    if not torch.equal(variant, repeat) or not torch.equal(variant[0], args[0][0]):
-        raise ValueError("joint repeat/pin invariant violated")
+    if not invariants["repeat_exact"] or not invariants["pin_exact"]:
+        raise ValueError("joint repeat/pin invariant violated; see invariant_diagnostic.json")
     poses = {"pre": args[0], "control": control, "filtered": variant}
     pnp = check_chain_pnp(graph, depth, poses)
     accepted = [pair for pair in pnp if pair["accepted"]]

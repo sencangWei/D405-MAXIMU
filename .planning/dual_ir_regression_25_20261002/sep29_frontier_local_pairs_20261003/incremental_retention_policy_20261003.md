@@ -51,3 +51,20 @@ Next: finish the controls, retain partial source evidence, diagnose technical
 repeat/pin failures without silently weakening the invariant, then regenerate
 affected full frontend trajectories for the fixed10 paired ATE comparison.
 Only that comparison can justify an incremental trajectory baseline.
+
+## Completed source trial update
+
+All seven contexts have now executed: five complete, two technical failures.
+Both passing controls improved their local maximum rotation disagreement:
+held2 1.193247->1.109162 degrees, take01 1.189147->1.155092 degrees. Native
+common support is .999998/.999998; common cost ratios1.000073/1.000335. The
+three RIGHT improvements above remain measured. LEFT877 and LEFT1044 both
+failed the combined exact repeat/pin check. The terminal summary therefore
+says TECHNICAL_EXECUTION_FAILED / NOT_EVALUATED_ATE, not direction rejection.
+
+After this run finished (no mid-run source edits), diagnostic instrumentation
+was added to separate repeat/pin equality and maximum numeric deltas, persist
+both solutions and per-iteration native/joint H/g, dx and pose fingerprints
+before an assertion. The exact invariant, solver math, weights and gates are
+unchanged. A bounded LEFT replay will diagnose execution inconsistency; it is
+not a new trajectory or a replacement for the fixed10 ATE comparison.

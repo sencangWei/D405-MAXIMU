@@ -1,0 +1,198 @@
+{
+  "schema": "metric_relative_joint_native_falsifier_v1",
+  "diagnostic_only": true,
+  "external_ground_truth_used": false,
+  "precision_pass": false,
+  "production_promoted": false,
+  "runner_sha256": "a92cc921451f0b6907c80158f7249712261c762cf1d667701805af1424ce1ed6",
+  "plan_sha256": "3768048cce73f0199a99d218ffe90ff5f7f5985a34612ae23aa580014baeb40b",
+  "source_summary_sha256": "52c3f368c99ca83c7767f2ad086fe4b0b04cfd0177d066cd5f82198afb3e52a7",
+  "native_source_sha256": {
+    "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/main.py": "52fa042caa2157dc86c73af0b7c3d4db180b9854c2da5c412015f8c11a44ae95",
+    "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/tracker.py": "36045b4f3958b2245bb536b47af809f97fcd0e7f5cd15ec4f29953bd3b97ead6",
+    "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/mast3r_slam/global_opt.py": "b53237f7dfecb1033b1b6b9c2e8787628e301f093ae19afe0909af9344475359"
+  },
+  "helper_sha256": {
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/metric_relative_pose_factor.py": "49f3999ae0af2b15914384eb2c2a5bf32a97b6828010217c3ff683c189f393d1",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/joint_metric_native_solver.py": "20113fd6db3b114af4cdacf84253c84d9bc102a011c38d13c5fb887c97399e25",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/native_derivative_audit_v1/inspect.cpp": "f8caad396a4790805d7d9d70d547d84f80e730512bf79717a54bd4bfed82beb7",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/native_derivative_audit_v1/inspect.cu": "ef4e285a8ab6657c1d76159f25f647b0e7d734e5877a419ea37c9bafbebbb8de",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003/native_derivative_audit_v1/build_backend.py": "bd4eac6045d0ab4b1887f42b58f52ca4f28c7de868c7736daa53d121e11bf8b5"
+  },
+  "jobs": [
+    {
+      "id": "right587",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.3853421077755025,
+          "max": 3.5265640441190067
+        },
+        "control": {
+          "median": 0.4353606925484216,
+          "max": 9.209803611275431
+        },
+        "filtered": {
+          "median": 0.40497896647310583,
+          "max": 7.529568836626264
+        }
+      },
+      "support_preserved": true,
+      "native_objective": {
+        "control_common": 66578458.85030573,
+        "joint_common": 67044549.35891587,
+        "common_count": 5872393,
+        "control_count": 5873907,
+        "common_support_ratio": 0.9997422499198574,
+        "common_cost_ratio": 1.0070006202705608
+      },
+      "elapsed_s": 49.95592214300996,
+      "report_sha256": "9dc60053d97c6c490fe14a45a4dff7f588f9440b770a3ad482d4187a11f48f59",
+      "metric_factor_count": 104
+    },
+    {
+      "id": "right592",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.4353606925484216,
+          "max": 9.209803611275431
+        },
+        "control": {
+          "median": 0.43471799231211783,
+          "max": 10.671542661312424
+        },
+        "filtered": {
+          "median": 0.4049857782699539,
+          "max": 8.144639958928698
+        }
+      },
+      "support_preserved": true,
+      "native_objective": {
+        "control_common": 66546630.354461536,
+        "joint_common": 66987472.30051047,
+        "common_count": 5895321,
+        "control_count": 5897423,
+        "common_support_ratio": 0.9996435731335535,
+        "common_cost_ratio": 1.006624557001621
+      },
+      "elapsed_s": 49.6652696839883,
+      "report_sha256": "9ae73956938ba03c33bd5e81e69baa0358e6afd575680322cf5b12aedcc82d84",
+      "metric_factor_count": 104
+    },
+    {
+      "id": "right613",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.29221313592003906,
+          "max": 10.967105041159023
+        },
+        "control": {
+          "median": 0.292211390468154,
+          "max": 10.967110983554742
+        },
+        "filtered": {
+          "median": 0.2861927977147015,
+          "max": 8.43930736507452
+        }
+      },
+      "support_preserved": true,
+      "native_objective": {
+        "control_common": 82519927.84743954,
+        "joint_common": 82925980.07915136,
+        "common_count": 7756573,
+        "control_count": 7758755,
+        "common_support_ratio": 0.9997187693128601,
+        "common_cost_ratio": 1.0049206566499005
+      },
+      "elapsed_s": 76.1996877330239,
+      "report_sha256": "8b2ffbcdbc2ef5b0c59ed913f3d50fdff13f36d0ee8e15f637363d0d3baa0a03",
+      "metric_factor_count": 162
+    },
+    {
+      "id": "left877",
+      "status": "DIAGNOSTIC_FAILED",
+      "error": "joint repeat/pin invariant violated"
+    },
+    {
+      "id": "left1044",
+      "status": "DIAGNOSTIC_FAILED",
+      "error": "joint repeat/pin invariant violated"
+    },
+    {
+      "id": "passing_held2_752",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.12425107122758793,
+          "max": 1.1937346082568487
+        },
+        "control": {
+          "median": 0.11084891387085843,
+          "max": 1.1932474458976143
+        },
+        "filtered": {
+          "median": 0.11071689079974592,
+          "max": 1.1091616913766205
+        }
+      },
+      "support_preserved": true,
+      "native_objective": {
+        "control_common": 57580911.00450807,
+        "joint_common": 57585118.89117681,
+        "common_count": 6408457,
+        "control_count": 6408468,
+        "common_support_ratio": 0.9999982835211161,
+        "common_cost_ratio": 1.000073077806435
+      },
+      "elapsed_s": 51.35409878400969,
+      "report_sha256": "0c61a8ff1aec57bbeeed290b36924bc2214f1996b2d3ff5e591a0eae25dd3b12",
+      "metric_factor_count": 110
+    },
+    {
+      "id": "passing_take01_738",
+      "status": "DIAGNOSTIC_COMPLETE",
+      "rotation_disagreement_deg": {
+        "pre": {
+          "median": 0.3098646881155068,
+          "max": 1.563955554464279
+        },
+        "control": {
+          "median": 0.30986491137359506,
+          "max": 1.1891472797155622
+        },
+        "filtered": {
+          "median": 0.30018860811780246,
+          "max": 1.1550920923442198
+        }
+      },
+      "support_preserved": true,
+      "native_objective": {
+        "control_common": 118650785.71938998,
+        "joint_common": 118690560.00601983,
+        "common_count": 13348915,
+        "control_count": 13348943,
+        "common_support_ratio": 0.9999979024556476,
+        "common_cost_ratio": 1.0003352214348071
+      },
+      "elapsed_s": 97.0874972770107,
+      "report_sha256": "f2b4a861197caf0e28188be09f95e11aabfc9d7021e0c52d6a083574ca6c0648",
+      "metric_factor_count": 208
+    }
+  ],
+  "source_geometry_criterion_failures": [
+    "technical_execution_incomplete",
+    "right587:right_max_not_below_2deg",
+    "right592:right_max_not_below_2deg",
+    "right613:right_max_not_below_2deg",
+    "left877:supported_constraints_depleted_or_missing",
+    "left1044:supported_constraints_depleted_or_missing"
+  ],
+  "source_geometry_criterion_met": false,
+  "candidate_status": "TECHNICAL_EXECUTION_FAILED",
+  "formal_result": "NOT_EVALUATED_ATE",
+  "ate_claim": false,
+  "trajectory_progress": "NOT_EVALUATED_FIXED10",
+  "discard_on_geometry_criterion_alone": false
+}

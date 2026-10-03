@@ -3,9 +3,16 @@
 No objective normalization, new weights, damping, clipping or pose priors.
 This small CPU normal-system adapter is not a production CUDA replacement.
 """
+import hashlib
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
 import torch
+
+
+def array_hash(value):
+    value = np.ascontiguousarray(value)
+    header = f"{value.dtype}:{value.shape}:".encode()
+    return hashlib.sha256(header + value.tobytes()).hexdigest()
 
 
 def assemble_native_blocks(blocks, gradients, ii, jj, pose_count):
@@ -44,7 +51,8 @@ def solve_joint(args, factors, backend):
     trace = []
     for iteration in range(int(args[17])):
         blocks, gradients = backend.inspect_calibrated(*cuda[:17])
-        H, g = assemble_native_blocks(blocks.cpu().numpy(), gradients.cpu().numpy(), ii, jj, count)
+        native_H, native_g = blocks.cpu().numpy(), gradients.cpu().numpy()
+        H, g = assemble_native_blocks(native_H, native_g, ii, jj, count)
         poses = cuda[0].cpu().double().numpy()
         metric_cost = 0.0
         for factor in factors:
@@ -62,7 +70,11 @@ def solve_joint(args, factors, backend):
         if not torch.equal(updated[0], cuda[0][0]):
             raise ValueError("pose0 moved")
         cuda = (updated, *cuda[1:])
-        trace.append({"iteration": iteration, "delta_norm": norm, "metric_pre_cost": metric_cost})
+        trace.append({"iteration": iteration, "delta_norm": norm, "metric_pre_cost": metric_cost,
+                      "pose_before_sha256": array_hash(poses),
+                      "native_H_sha256": array_hash(native_H), "native_g_sha256": array_hash(native_g),
+                      "joint_H_sha256": array_hash(H), "joint_g_sha256": array_hash(g),
+                      "dx_sha256": array_hash(dx), "pose_after_sha256": array_hash(updated.cpu().numpy())})
         if norm < float(args[18]):
             break
     torch.cuda.synchronize()
