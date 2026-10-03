@@ -1,0 +1,39 @@
+{
+  "schema": "umi_native_dense_and_graph_capture_diagnostic_v1",
+  "record": "20260929_take02",
+  "diagnostic_only": true,
+  "production_promoted": false,
+  "precision_pass": false,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "workflow": "left_retry_dense808_graph877/run_manifest.json",
+  "workflow_exit_code": 0,
+  "workflow_elapsed_s": 118,
+  "native_pose_count": 1199,
+  "final_and_online_trajectories_byte_equal_to_previous_retry": true,
+  "dense_snapshot": "dense808_inputs.pt",
+  "dense_snapshot_sha256": "4fdc490403b3dd100eada95cf14d6e9122714648381762305a579449d23ac695",
+  "dense_snapshot_is_successful_ordinary_frame": true,
+  "dense_frame": 808,
+  "dense_reference_frame": 791,
+  "dense_reference_index": 105,
+  "graph_snapshot": "graph877_inputs.pt",
+  "graph_snapshot_sha256": "bbcdff766fb5c76b5a1f66fa1861c6c8fbdaf53c62af03b2d1c3ee77556dcadc",
+  "graph_keyframes": 121,
+  "graph_last_frame": 877,
+  "calibrated_gn_argument_count": 19,
+  "capture_values_finite": true,
+  "edge_indices_in_bounds": true,
+  "unchanged_gn877_replay": {
+    "solver": "mast3r_slam_backends.gauss_newton_calib",
+    "trace": "backend809_events.jsonl",
+    "before_max_abs_difference_model_units": 0.0,
+    "after_max_abs_difference_model_units": 0.0,
+    "original_solver_parameters_and_edges_preserved": true
+  },
+  "warnings": [
+    "System ROS helper interpreters cannot import lietorch from hook; native MASt3R virtualenv did import hook and both snapshots were captured",
+    "CUDA IPC teardown warning; workflow exited zero"
+  ],
+  "scope": "Observed native input capture and reproduction only. No modified solver, accepted metric source, ATE improvement or 10mm pass is claimed."
+}

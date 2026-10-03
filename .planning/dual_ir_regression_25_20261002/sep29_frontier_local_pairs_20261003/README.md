@@ -201,3 +201,29 @@ underlying conflicting learned geometry remains to be isolated. No metric
 or fusion source is promoted, no gate is changed, and there is still no new
 10mm precision result. Other scored fast10 failures are being checked
 independently so this one incomplete record does not monopolize optimization.
+
+## Exact ordinary-frame capture for one bounded structural falsifier
+
+The default-off process-local hook in `dense_capture_hook/sitecustomize.py`
+was independently reviewed, then captured actual ordinary frame808 (parent791,
+reference index105) during one full native replay. Both new-KF and failed
+tracking returns are refused. Seven focused tests pass, including scalar-bool
+compatibility. The full1199-frame source completed in118s; final and online
+CSV files are byte-identical to the previous retry. The actual pointmap,
+confidence, cached encoded features, intrinsics and Sim3 data are CPU-cloned,
+not fabricated or interpolated.
+
+The simultaneous graph877 capture contains121 keyframes and19 calibrated-GN
+arguments. Replaying the unchanged native solver reproduces the independently
+observed graph event **exactly**: before and after maximum element difference
+both0.0. Hashes/checks are in `dense808_capture_evidence.json`; large tensor
+snapshots stay local, outside git. System-helper import warnings and CUDA IPC
+teardown warnings did not affect the native capture; exit code0 is verified.
+
+This is still sourceFAIL and not a precision improvement. The next single
+variable falsifier is a copied graph with an explicit captured dense808 state
+and original-threshold learned geometric links to791/809, keeping every
+original edge and solver setting. It must refuse an isolated state, wrong
+source images/config/checkpoint, or insufficient matching; it must not score
+or promote a diagnostic graph. After a source-valid repair exists, use the
+fixed failure-first5+passing5 regression set, not all25 per development cycle.
