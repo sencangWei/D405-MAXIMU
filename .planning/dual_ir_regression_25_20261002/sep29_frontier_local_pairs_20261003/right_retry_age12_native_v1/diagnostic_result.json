@@ -1,0 +1,56 @@
+{
+  "schema": "umi_native_previous_keyframe_retry_diagnostic_v1",
+  "dataset": "20260929_take02",
+  "eye": "right",
+  "result": "FAIL_INCOMPLETE_NATIVE_SOURCE",
+  "diagnostic_only": true,
+  "production_promoted": false,
+  "external_ground_truth_used": false,
+  "slam_supervision": false,
+  "source_main_sha256": "52fa042caa2157dc86c73af0b7c3d4db180b9854c2da5c412015f8c11a44ae95",
+  "patched_ast_source_sha256": "2c9a220fd37e8a608d2911823103306e1ac9552b678d4a9d98081bd4be382f61",
+  "checkpoint_sha256": "e28f91b488554653e2b46ddae9c78c1143e0bcb2e27d3e26cdb0b717f1568eb2",
+  "configuration_sha256": "ac2577063dce6f017307f2bbe45485cb272f84b152eec86d9cb31962f9d4d84a",
+  "prepared_frames_sha256": "08b4309a3384839288d7e4b17c6fe97241fd2736c0bca65e82617c3d18e671e1",
+  "calibration_sha256": "20b5367bf8841350212e892b1610f5150fae96c3ff0bcf3191aa2bf39361879b",
+  "original_retry_max_age_frames": 8,
+  "diagnostic_retry_max_age_frames": 12,
+  "input_frame_count": 1199,
+  "old_native_pose_count": 588,
+  "diagnostic_native_pose_count": 589,
+  "tracked_frame_ids": {"first": 0, "last": 588, "contiguous": true},
+  "last_keyframes": [
+    {"index": 23, "frame_id": 576},
+    {"index": 24, "frame_id": 587}
+  ],
+  "frame_588": {
+    "primary_reference_frame": 587,
+    "primary_valid_opt": 1260,
+    "total_pixels": 147456,
+    "retry_reference_frame": 576,
+    "retry_valid_opt": 31160,
+    "retry_accepted": true,
+    "export_anchor_index": 23,
+    "export_anchor_frame_id": 576,
+    "created_new_keyframe": false
+  },
+  "frame_589": {
+    "primary_reference_frame": 587,
+    "primary_valid_opt": 325,
+    "total_pixels": 147456,
+    "previous_reference_frame": 576,
+    "previous_reference_age_frames": 13,
+    "retry_match_logged": false,
+    "age_guard_allows_retry": false,
+    "native_pose_exported": false
+  },
+  "hashes": {
+    "mast3r.log": "1e966b81edab19da4c50ae9bf1389644607915e0640cb5b237414e4c9050bcf5",
+    "match.csv": "e6d51a60265dc7bd14e69269a2fa9b11caef225d4895553e2e98a3f0e0ee30f5",
+    "native_export.pt": "ca9191d04276961796b3aa86e773b7061571061fab2b3a081430788e62850601",
+    "mast3r_logs/dataset_full.txt": "5b4b97ce58ef612cd59851c40ff3417ab5f37061fa67e339b3b593819c803ca9"
+  },
+  "conclusion": "Reference-age cliff blocked a usable alternative at588, but increasing8 to12 recovers only one frame. Recovery exports against576 without advancing the active reference away from587. Next failure589 reuses587 and loses the alternative when age becomes13. This establishes a recovery-reference lifecycle problem to investigate, not a complete repair or a right-camera accuracy claim.",
+  "next_check": "Inspect recovery reference/pointmap state persistence; preserve normal first attempt and matching thresholds. No age sweep, no new full25 batch, no new paired ATE claim with stale sources.",
+  "downstream_scale_and_ate": "NOT_RUN_INCOMPLETE_SOURCE"
+}

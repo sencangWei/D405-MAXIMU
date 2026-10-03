@@ -379,3 +379,48 @@ Neither is a valid substitute for this new LEFT1199 source. Genuine complete
 RIGHT recovery and a new paired lineage (or an explicitly separate partial-source
 diagnostic contract) are needed before claiming a new fixed10 paired regression.
 The new full-source PASS does not erase this remaining failure or meet the goal.
+
+## RIGHT retry-age cause diagnostic and fixed10 policy (2026-10-03)
+
+The user reconfirmed the development loop: fixed failing recordings first,
+then five fixed historical passing controls from Sep27–30, about ten total.
+The checked-in fast10 configuration/runner enforces those cohorts and phase
+order. Full25 is reserved for a stable candidate and then fresh blind data;
+unchanged, hash-bound source caches can be reused, but a new front-end cannot
+be validated by replaying an old source and presenting its old score as new.
+
+RIGHT prepared input is complete1199 frames. Its original native output ends
+at587, with588 exported poses. At frame588, active reference587 fails while
+the earlier keyframe576 has a usable learned geometric match. The existing
+8-frame previous-reference limit blocks this12-frame-old alternative.
+
+`run_native_retry_age_diagnostic.py` makes one runtime-only AST substitution,
+8->12. It enforces the reviewed exact main SHA and exact comparator/env guard,
+fails closed for conflicting retry environment, preserves native spawn module
+identity, and restores process globals. Actual toolchain source, checkpoint,
+configuration, first tracking attempt, and matching thresholds are untouched.
+Independent review initially requested four fixes; after those fixes and11
+fresh tests it returned APPROVE. This is a cause diagnostic, not a promotion.
+
+The real native replay exits0 but is still incomplete:589 actual poses0..588,
+not1199. At588 the normal valid optimization count is1260/147456 (0.85%);
+the retry against576 is31160/147456 (21.13%) and succeeds. Native snapshot
+records588 anchored to576, with no new keyframe added. At589 the next normal
+attempt still targets587 and yields325/147456 (0.22%); the576 alternative is
+now13 frames old and no retry is attempted. Final keyframes remain576 and587.
+Therefore increasing the horizon only moves the stop by one frame. It is not
+an accuracy fix and does not justify another horizon sweep.
+
+Actual hash-bound result is in `right_retry_age12_native_v1/diagnostic_result.json`.
+The native snapshot remains local; text telemetry and diagnostic code are
+backed up. Full-source scale and paired ATE are deliberately NOT run on this
+incomplete candidate. Next investigate persistent recovery reference/pointmap
+state: a successful alternate-reference recovery must not immediately revert
+to an unusable active reference. A subsequent repair still needs complete
+native coverage, unchanged geometry/continuity gates, failing-five first and
+passing-five controls before any full25 or production claim.
+
+Fresh targeted tests:46 PASS across retry-age, fast10 and dense/native export
+diagnostic tests. An earlier command used a nonexistent fast10 test filename
+and ran no tests; the corrected command was executed and its46-pass result
+read before this report. Goal remains ACTIVE and the10mm maximum is unmet.

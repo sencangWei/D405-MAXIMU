@@ -1,0 +1,1261 @@
+{"diagnostic_only": true, "external_ground_truth_used": false, "native_argc": 12, "new_retry_max_age": 12, "old_retry_max_age": 8, "original_sha256": "52fa042caa2157dc86c73af0b7c3d4db180b9854c2da5c412015f8c11a44ae95", "patched_ast_source_sha256": "2c9a220fd37e8a608d2911823103306e1ac9552b678d4a9d98081bd4be382f61", "production_promoted": false, "schema": "mast3r_retry_age_runtime_ast_diagnostic_v1", "source_main": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/main.py", "toolroot": "/home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM"}
+/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take02/right_cache/dataset
+{'use_calib': False, 'single_thread': True, 'dataset': {'subsample': 1, 'img_downsample': 1, 'center_principle_point': True}, 'matching': {'max_iter': 10, 'lambda_init': 1e-08, 'convergence_thresh': 1e-06, 'dist_thresh': 0.1, 'radius': 3, 'dilation_max': 5}, 'tracking': {'min_match_frac': 0.05, 'max_iters': 50, 'C_conf': 0.0, 'Q_conf': 1.5, 'rel_error': 0.001, 'delta_norm': 0.001, 'huber': 1.345, 'match_frac_thresh': 0.333, 'sigma_ray': 0.003, 'sigma_dist': 10.0, 'sigma_pixel': 1.0, 'sigma_depth': 10.0, 'sigma_point': 0.05, 'pixel_border': -10, 'depth_eps': 1e-06, 'filtering_mode': 'weighted_pointmap', 'filtering_score': 'median', 'imu_rotation_prior': True, 'imu_rotation_constraint_weight': 0.6, 'imu_rotation_constraint_gate_deg': 0.5, 'stereo_pointmap_scale_prior': False, 'stereo_fix_pose_scale': False, 'stereo_pointmap_depth_anchor': False, 'stereo_preserve_keyframe_pointmap': False, 'stereo_keyframe_pnp': False, 'stereo_keyframe_pnp_min_points': 100, 'stereo_keyframe_pnp_min_inlier_ratio': 0.4, 'stereo_keyframe_pnp_reprojection_error_px': 2.0, 'stereo_keyframe_pnp_max_points': 5000, 'stereo_keyframe_pnp_lookback': 1, 'stereo_keyframe_pnp_max_visual_disagreement_m': 0.05, 'stereo_keyframe_pnp_max_visual_disagreement_deg': 5.0, 'stereo_keyframe_3d_translation_refine': False, 'stereo_keyframe_3d_min_points': 100, 'stereo_keyframe_3d_min_inlier_ratio': 0.3, 'stereo_keyframe_3d_max_residual_m': 0.02, 'stereo_scale_min_points': 500, 'stereo_scale_min_depth_m': 0.15, 'stereo_scale_max_depth_m': 0.65, 'stereo_scale_min_confidence': 1.5, 'stereo_scale_max_relative_jump': 0.25, 'stereo_depth_anchor_max_relative_residual': 0.5}, 'local_opt': {'pin': 1, 'window_size': 1000000.0, 'C_conf': 0.0, 'Q_conf': 1.5, 'min_match_frac': 0.1, 'pixel_border': -10, 'depth_eps': 1e-06, 'max_iters': 10, 'sigma_ray': 0.003, 'sigma_dist': 10.0, 'sigma_pixel': 1.0, 'sigma_depth': 10.0, 'sigma_point': 0.05, 'delta_norm': 1e-08, 'use_cuda': True}, 'retrieval': {'k': 3, 'min_thresh': 0.005, 'confirmation_frames': 2, 'confirmation_immediate_frame_gap': 150, 'confirmation_frame_id_radius': 60, 'density_window': 10, 'dense_min_keyframes': 10, 'dense_max_mean_frame_gap': 24}, 'reloc': {'min_match_frac': 0.3, 'strict': True}, 'inherit': 'config/base.yaml'}
+Using calibrated IMU rotation priors for frame initialization
+... loading model from /home/robot/ego_pipeline/work/toolchains/MASt3R-SLAM/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth
+instantiating : AsymmetricMASt3R(enc_depth=24, dec_depth=12, enc_embed_dim=1024, dec_embed_dim=768, enc_num_heads=16, dec_num_heads=12, pos_embed='RoPE100',img_size=(512, 512), head_type='catmlp+dpt', output_mode='pts3d+desc24', depth_mode=('exp', -inf, inf), conf_mode=('exp', 1, inf), patch_embed_cls='PatchEmbedDust3R', two_confs=True, desc_conf_mode=('exp', 0, inf), landscape_only=False)
+<All keys matched successfully>
+Loading retrieval model from checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric_retrieval_trainingfree.pth
+Loop confirmation mode 0 : sparse_exact mean_source_frame_gap= inf
+Retrieval pending multi-frame confirmation 1 :  [0]
+Retrieval pending multi-frame confirmation 2 :  [1]
+Database retrieval 2 :  {0}
+Retrieval pending multi-frame confirmation 3 :  [2]
+Database retrieval 3 :  {0, 1}
+Retrieval pending multi-frame confirmation 4 :  [3]
+Database retrieval 4 :  {1, 2}
+Retrieval pending multi-frame confirmation 5 :  [4]
+Database retrieval 5 :  {2, 3}
+Retrieval pending multi-frame confirmation 6 :  [5]
+Database retrieval 6 :  {2, 4}
+Retrieval pending multi-frame confirmation 7 :  [1, 3]
+Database retrieval 7 :  {2}
+Retrieval pending multi-frame confirmation 8 :  [0, 7]
+Database retrieval 8 :  {2}
+Retrieval pending multi-frame confirmation 9 :  [1, 3]
+Database retrieval 9 :  {7}
+Loop confirmation mode 10 : dense_scene_cluster mean_source_frame_gap= 13.444444444444445
+Database retrieval 10 :  {3, 4, 6}
+Database retrieval 11 :  {4, 6}
+Database retrieval 12 :  {10, 6}
+Database retrieval 13 :  {10, 11}
+Database retrieval 14 :  {11, 12}
+Database retrieval 15 :  {12, 13}
+Database retrieval 16 :  {10, 11, 12}
+Retrieval pending multi-frame confirmation 17 :  [1]
+Database retrieval 17 :  {10}
+Database retrieval 18 :  {2, 1}
+Database retrieval 19 :  {17, 10}
+Database retrieval 20 :  {17, 18}
+Database retrieval 21 :  {17, 19}
+Database retrieval 22 :  {20, 14}
+Database retrieval 23 :  {21, 14}
+Database retrieval 24 :  {21, 22}
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 17, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 23, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 23, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 23, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 22, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 23]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 15, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 15, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 15, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 15, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 15]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 4]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 24, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 20, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 19, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 19, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [18, 17, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [18, 20, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 3, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 18, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 18, 3]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 4, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 18, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 18, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 22]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 17, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 17, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 17, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 24]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 20, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 17, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 24, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 24, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 18, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 20, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 24, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 24]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 24, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 24, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 14, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 14, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 21]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 16]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 20, 14]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [24, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 20, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [17, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 18, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 18, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 18, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 18, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 20, 18]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 20, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 20, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 20, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 19, 20]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 19, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 20, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [20, 7, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [8, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 8, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 8]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 2]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [9, 7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 2]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 2, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 2]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 18, 2]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 2, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 18, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 18, 17]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 2, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [1, 2, 3]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [1, 2]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [19, 18, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [18, 19]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [18, 7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 1, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 3]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 3]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 1]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [0, 7, 9]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 9, 0]
+Failed to relocalize
+RELOCALIZING against kf  25  and  [7, 0, 9]
+Failed to relocalize
+FPS: 18.563415019520267
+FPS: 20.443676205842923
+FPS: 21.11317651189808
+FPS: 21.417112849000173
+FPS: 21.505491313416176
+FPS: 21.731228662924835
+FPS: 21.86075297159008
+FPS: 21.816965123712727
+FPS: 20.708061306544867
+FPS: 20.09024275084112
+FPS: 19.747574038083908
+FPS: 19.893651565122862
+FPS: 19.658905940023857
+FPS: 19.364060043537727
+FPS: 19.19254918157535
+FPS: 19.356660550430135
+FPS: 18.732038172463756
+FPS: 18.744540500810313
+FPS: 18.756285533923464
+Skipped frame 588
+Recovered frame 588 using previous keyframe 23
+Skipped frame 589
+FPS: 18.030920055803815
+FPS: 16.702854362130452
+FPS: 15.656227811431972
+FPS: 14.792702421586242
+FPS: 14.095009068341724
+FPS: 13.502626208877128
+FPS: 13.317203387269135
+FPS: 12.848959461338456
+FPS: 12.435337717003717
+FPS: 12.09080261669347
+FPS: 11.902049805601173
+FPS: 11.771717018453312
+FPS: 11.565204473424204
+FPS: 11.5583495628387
+FPS: 11.484501572549801
+FPS: 11.304428342389487
+FPS: 11.263587894476023
+FPS: 11.129318880089201
+FPS: 10.934130369020528
+FPS: 10.784714284826112
+done
+[W1003 14:35:52.251603068 CudaIPCTypes.cpp:16] Producer process has been terminated before all shared CUDA tensors released. See Note [Sharing CUDA tensors]
