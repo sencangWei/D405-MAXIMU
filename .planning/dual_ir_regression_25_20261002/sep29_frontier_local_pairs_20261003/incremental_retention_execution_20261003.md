@@ -16,8 +16,8 @@ actual MASt3R toolchain 58c9f61), not rolled back. Its ind2 LEFT full frontend
 finished successfully: 1199 actual tracked poses / 1199 input frames, 86 actual
 joint metric solves; trajectory SHA256
 606e0565a6f781b4303e011c570bb4e9fa7507aac5984d47c18d1948f1ebd78e.
-This is not an ATE or precision PASS. The RIGHT run is still in progress at
-this checkpoint. The take02 RIGHT prefix failure is retained as coverage
+This is not an ATE or precision PASS. The RIGHT v1 run was subsequently
+interrupted (details below). The take02 RIGHT prefix failure is retained as coverage
 failure, not evidence that the metric direction is useless.
 
 Review found that historical frontend commits differ from current 58c9f61.
@@ -44,6 +44,28 @@ with 1199/1199 actual poses. Subsequent controls, fresh scale/fusion/scoring,
 and a fresh RIGHT metric replay are queued serially in
 run_ind2_fresh_serial_validation_v1.sh. No failed output is overwritten and no
 algorithm objective, weight, cap, or precision threshold is changed.
+
+Fresh serial validation checkpoint: default-off LEFT and RIGHT v2 both
+completed with 1199/1199 actual poses. The unchanged raw-stereo primary stage
+then returned its quality-failure code 3: relative_p90_p10=0.571 exceeds the
+existing dispersion gate. The complete control frontends and failed scale
+report remain preserved. This is an internal-scale quality failure, not an
+ATE measurement or a reason to reject the retained metric-joint direction.
+Do not weaken the primary gate or relabel the control as scored. The serial
+queue continued to a fresh RIGHT metric-joint replay v2 with the same frozen
+objective, code, model, input, and calibration. No new comparable ATE exists
+at this checkpoint, and no ten-record or full25 acceptance is claimed.
+
+Same-day source backup verified: ROOT owned remote sencang branch
+codex/dual-ir-frontend-20261001 resolves to
+6bc8284710deb4f62996a076129e7dd33e3b961d after a fresh fetch. A clean archive of
+that fetched revision was restored to /tmp/umi-metric-ab-restore-RnRwiH;
+all seven newly backed-up files match the working source byte-for-byte,
+including the unchanged frozen scorer dependency. The restored focused suite
+passed 80/80 tests in 1.88 seconds with the previously restored owned MASt3R
+source. These tests establish source/contract reproducibility, not native
+runtime packaging or precision acceptance; raw recordings, calibration,
+model checkpoints, and native runtime remain external prerequisites.
 
 Independent RK3576 deployment remains live-blocked by No route to host and the
 missing actual ARM candidate/native runtime. No QR, network, udev, package,
