@@ -1,6 +1,9 @@
 import hashlib
 import importlib.util
 import json
+import argparse
+import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -32,6 +35,16 @@ def _pose(x=0.0):
 
 def _hash_text(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _json_ready(value):
+    if torch.is_tensor(value):
+        return value.tolist()
+    if isinstance(value, dict):
+        return {key: _json_ready(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_ready(item) for item in value]
+    return value
 
 
 def _fake_export_text(timestamps, frames, tracked_poses):
@@ -119,12 +132,61 @@ def _probe(source_run):
     }
 
 
+def _probe_reference_transition(source_run):
+    probe = _probe(source_run)
+    dense_paths = {}
+    for frame_id in (1, 3):
+        path = Path(source_run) / f"dense_{frame_id}.pt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = f"dense{frame_id}".encode()
+        path.write_bytes(payload)
+        dense_paths[str(frame_id)] = {
+            "path": str(path),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+        }
+    probe.update(
+        {
+            "reference_transition_window": True,
+            "window_frame_ids": [0, 1, 2, 3, 4],
+            "solved_dense_frame_ids": [1, 3],
+            "dense_edge_matches": [
+                {"first": 0, "second": 1, "accepted": [True]},
+                {"first": 1, "second": 2, "accepted": [True]},
+                {"first": 2, "second": 3, "accepted": [True]},
+                {"first": 3, "second": 4, "accepted": [True]},
+            ],
+            "inputs": {
+                **probe["inputs"],
+                "dense_snapshots": dense_paths,
+            },
+            "pose_states": {
+                "0": {"baseline_after": _pose(0.0), "variant_after": _pose(10.0)},
+                "1": {"baseline_after": _pose(1.0), "variant_after": _pose(11.0)},
+                "2": {"baseline_after": _pose(2.0), "variant_after": _pose(12.0)},
+                "3": {"baseline_after": _pose(3.0), "variant_after": _pose(13.0)},
+                "4": {"baseline_after": _pose(4.0), "variant_after": _pose(14.0)},
+            },
+        }
+    )
+    return probe
+
+
 def _validate_snapshot(snap):
     return exporter.validate_snapshot(torch, snap, expected_frame_count=5)
 
 
 def _validate_probe(probe, snap):
     return exporter.validate_probe(torch, probe, snap, expected_window_ids=[2, 3, 4])
+
+
+def _validate_reference_probe(probe, snap):
+    return exporter.validate_probe(
+        torch,
+        probe,
+        snap,
+        expected_window_ids=[0, 1, 2, 3, 4],
+        reference_transition_window=True,
+    )
 
 
 def test_validate_snapshot_rejects_malformed_sim3_shape(tmp_path):
@@ -217,6 +279,104 @@ def test_cli_defaults_reject_truncated_snapshot_and_reduced_window(tmp_path):
         exporter.validate_probe(torch, _probe(tmp_path), snap)
 
 
+def test_run_rejects_nonpositive_expected_frame_count_before_native_imports(tmp_path):
+    with pytest.raises(ValueError, match="expected-frame-count"):
+        exporter.run(
+            argparse.Namespace(
+                snapshot=str(tmp_path / "missing_snapshot.pt"),
+                probe=str(tmp_path / "missing_probe.json"),
+                output_dir=str(tmp_path / "out"),
+                reference_transition_window=False,
+                expected_frame_count=0,
+            )
+        )
+
+
+def test_reference_transition_window_allows_existing_interior_keyframe_only_with_flag(tmp_path):
+    snap = _validate_snapshot(_snapshot(tmp_path))
+    probe = _probe_reference_transition(tmp_path)
+    with pytest.raises(ValueError, match="interior"):
+        exporter.validate_probe(
+            torch,
+            probe,
+            snap,
+            expected_window_ids=[0, 1, 2, 3, 4],
+        )
+    validated = _validate_reference_probe(probe, snap)
+    assert validated["solved_dense_frame_ids"] == [1, 3]
+    bad = _probe_reference_transition(tmp_path)
+    bad["solved_dense_frame_ids"] = [1, 2, 3]
+    with pytest.raises(ValueError, match="solved_dense_frame_ids"):
+        _validate_reference_probe(bad, snap)
+
+
+def test_run_reference_transition_accepts_nondefault_window_but_default_rejects(tmp_path, monkeypatch):
+    snap = _snapshot(tmp_path)
+    probe = _probe_reference_transition(tmp_path)
+    snapshot_path = tmp_path / "snapshot.pt"
+    probe_path = tmp_path / "probe.json"
+    torch.save(snap, snapshot_path)
+    probe_path.write_text(json.dumps(_json_ready(probe)), encoding="utf-8")
+
+    lietorch = types.ModuleType("lietorch")
+    lietorch.Sim3 = Pose
+    evaluate = types.ModuleType("mast3r_slam.evaluate")
+    evaluate.save_full_traj = _fake_save_full_traj
+    mast3r_slam = types.ModuleType("mast3r_slam")
+    mast3r_slam.evaluate = evaluate
+    monkeypatch.setitem(sys.modules, "lietorch", lietorch)
+    monkeypatch.setitem(sys.modules, "mast3r_slam", mast3r_slam)
+    monkeypatch.setitem(sys.modules, "mast3r_slam.evaluate", evaluate)
+
+    common = {
+        "snapshot": str(snapshot_path),
+        "probe": str(probe_path),
+        "expected_frame_count": 5,
+    }
+    with pytest.raises(ValueError, match="expected diagnostic window"):
+        exporter.run(argparse.Namespace(
+            **common,
+            output_dir=str(tmp_path / "default_out"),
+            reference_transition_window=False,
+        ))
+
+    report = exporter.run(argparse.Namespace(
+        **common,
+        output_dir=str(tmp_path / "transition_out"),
+        reference_transition_window=True,
+    ))
+    assert report["dense_anchor_frame_ids"] == [1, 3]
+    assert report["tracked_pose_count"] == 5
+
+
+def test_run_reference_transition_flag_cannot_relax_plain_probe_window(tmp_path, monkeypatch):
+    snap = _snapshot(tmp_path)
+    probe = _probe(tmp_path)
+    snapshot_path = tmp_path / "snapshot.pt"
+    probe_path = tmp_path / "probe.json"
+    torch.save(snap, snapshot_path)
+    probe_path.write_text(json.dumps(_json_ready(probe)), encoding="utf-8")
+
+    lietorch = types.ModuleType("lietorch")
+    lietorch.Sim3 = Pose
+    evaluate = types.ModuleType("mast3r_slam.evaluate")
+    evaluate.save_full_traj = _fake_save_full_traj
+    mast3r_slam = types.ModuleType("mast3r_slam")
+    mast3r_slam.evaluate = evaluate
+    monkeypatch.setitem(sys.modules, "lietorch", lietorch)
+    monkeypatch.setitem(sys.modules, "mast3r_slam", mast3r_slam)
+    monkeypatch.setitem(sys.modules, "mast3r_slam.evaluate", evaluate)
+
+    with pytest.raises(ValueError, match="requires probe reference_transition_window true"):
+        exporter.run(argparse.Namespace(
+            snapshot=str(snapshot_path),
+            probe=str(probe_path),
+            output_dir=str(tmp_path / "out"),
+            reference_transition_window=True,
+            expected_frame_count=5,
+        ))
+
+
 def test_write_exports_replays_baseline_and_reanchors_dense_frame(tmp_path):
     snap = _validate_snapshot(_snapshot(tmp_path))
     probe = _validate_probe(_probe(tmp_path), snap)
@@ -243,6 +403,27 @@ def test_write_exports_replays_baseline_and_reanchors_dense_frame(tmp_path):
     assert saved_report["production_promoted"] is False
     assert saved_report["precision_pass"] is False
     assert saved_report["dense_anchor_frame_ids"] == [3]
+
+
+def test_write_exports_reference_transition_preserves_existing_interior_keyframe_and_all_rows(tmp_path):
+    snap = _validate_snapshot(_snapshot(tmp_path))
+    probe = _validate_reference_probe(_probe_reference_transition(tmp_path), snap)
+    out = tmp_path / "out"
+    report = exporter.write_exports(
+        torch=torch,
+        save_full_traj=_fake_save_full_traj,
+        sim3_factory=Pose,
+        snapshot=snap,
+        probe=probe,
+        output_dir=out,
+    )
+    assert report["tracked_pose_count"] == 5
+    assert report["dense_anchor_frame_ids"] == [1, 3]
+    assert report["dense_anchor_count"] == 2
+    variant = (out / "variant_dataset_full.txt").read_text(encoding="utf-8").splitlines()
+    assert variant[1] == "1.0 1 3 1 11.000"
+    assert variant[2] == "2.0 2 1 2 12.000"  # original keyframe 2 preserved, not relabeled dense
+    assert variant[3] == "3.0 3 4 3 13.000"
 
 
 def test_variant_rows_preserve_snapshot_dtype(tmp_path):

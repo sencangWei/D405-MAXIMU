@@ -1,0 +1,97 @@
+{
+  "schema": "right_original_KF587_bidirectional_stereo_factor_audit_v1",
+  "diagnostic_only": true,
+  "external_tracker_used": false,
+  "precision_pass": false,
+  "dataset_left": "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset",
+  "dataset_right": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_v1/20260929_take02/right_cache/dataset",
+  "graph_sha256": "ff3fc8d4ccc6d1f29fa0446d95c86d87daffae68d6a5099691c5d57818f8dcc3",
+  "factory_baseline_m": 0.018083254,
+  "right_image_equals_native_dataset": true,
+  "depth_settings": {
+    "disparities": 128,
+    "left_right_tolerance_px": 1,
+    "depth_range_m": [
+      0.07,
+      0.6
+    ],
+    "opencv_seed": 0,
+    "pixel_mapping": "native512x288 to original1280x720, scale2.5, no crop or interpolation"
+  },
+  "depth_support": [
+    {
+      "frame_id": 541,
+      "valid_right_stereo_pixels": 72718,
+      "point_count": 147456
+    },
+    {
+      "frame_id": 576,
+      "valid_right_stereo_pixels": 64339,
+      "point_count": 147456
+    },
+    {
+      "frame_id": 587,
+      "valid_right_stereo_pixels": 59681,
+      "point_count": 147456
+    }
+  ],
+  "image_sha256": {
+    "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000541.png": "a30f2cd0f5056d19be06d405cdbd8a94bf71e6aff79e8615ce06ca04d1cc90f4",
+    "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000541.png": "b7dbc830f1bbf7da790b898ef9458e9ad22dfefbbb7e19a26a3e6a43f7139c96",
+    "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000576.png": "0ebaf1100611d1aa7613f2c4c6d8d61006d3da3950720cfb73b292c10e17d22b",
+    "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000576.png": "b9b32059da32e0a3ecdfbc785fd5244ec209e81d9021e43a15ab66b7f3e3d61e",
+    "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/0000000587.png": "f8680ae2a618289b2bb0c285b216ca3aff685677f8686f0c9329d1eb5737b96d",
+    "/home/robot/ego_vio_humble/reports/steamvr_umi_sessions/20260929_195055_slam_validation_take02/evaluation_20260929_v1/fusion_adaptive/sparse/mast3r/dataset/stereo_right/0000000587.png": "c664a8c89baded8e83c86a8aa94bffa9c72a344d41e74efdaf598efef1439ab6"
+  },
+  "pair_results": [
+    {
+      "accepted": true,
+      "first_frame_id": 541,
+      "second_frame_id": 587,
+      "geometry_source": "bidirectional_d405_stereo_depth",
+      "forward": {
+        "accepted": true,
+        "candidate_points": 5000,
+        "inlier_points": 3657,
+        "inlier_ratio": 0.7314,
+        "reprojection_median_px": 0.6134542226791382,
+        "reprojection_p95_px": 1.569009327888488
+      },
+      "reverse": {
+        "accepted": true,
+        "candidate_points": 5000,
+        "inlier_points": 3019,
+        "inlier_ratio": 0.6038,
+        "reprojection_median_px": 0.7721876502037048,
+        "reprojection_p95_px": 1.7972313642501827
+      },
+      "cycle_translation_m": 0.0032720879920510974,
+      "cycle_rotation_deg": 0.5822629036395013
+    },
+    {
+      "accepted": true,
+      "first_frame_id": 576,
+      "second_frame_id": 587,
+      "geometry_source": "bidirectional_d405_stereo_depth",
+      "forward": {
+        "accepted": true,
+        "candidate_points": 5000,
+        "inlier_points": 4749,
+        "inlier_ratio": 0.9498,
+        "reprojection_median_px": 0.5135990977287292,
+        "reprojection_p95_px": 1.2311781406402587
+      },
+      "reverse": {
+        "accepted": true,
+        "candidate_points": 5000,
+        "inlier_points": 4782,
+        "inlier_ratio": 0.9564,
+        "reprojection_median_px": 0.6164534091949463,
+        "reprojection_p95_px": 1.3767020523548124
+      },
+      "cycle_translation_m": 0.0008464399725382082,
+      "cycle_rotation_deg": 0.20193873809810506
+    }
+  ],
+  "conclusion": "Both original587 graph pair mappings pass independent bidirectional D405 stereo PnP using the existing native gate. This rules out declaring541->587 false solely from the graph residual conflict; pointmap/pose compatibility remains to be measured. No graph edge was removed or reweighted."
+}

@@ -490,3 +490,75 @@ Fresh targeted tests:61 PASS, including6 right-scale tests. Reviews approve both
 latched diagnostic and continuity propagation. No production promotion, Tracker
 supervision, cap/age sweep or full25 rerun is claimed; fixed failing5+passing5
 remains the next regression stage after a source-valid paired candidate exists.
+
+## Exact reference-transition/GN diagnosis (2026-10-03; not a new ATE result)
+
+The user fixed the development loop to five historical failures FIRST plus
+five frozen passing controls from Sep27–30. Config remains
+`config/dual_ir_fast_regression_10_20261003.json`; cached data may be reused,
+but an unchanged cached score is not a fresh candidate validation. Do not
+replace difficult records, run full25 after every edit, or promote on fast10
+alone. Final acceptance still requires the full25 and independent new captures.
+
+The default-off reference-transition capture hook records actual states and
+exact original 19-argument native GN inputs without changing native source.
+The actual RIGHT replay at `right_reference_transition_native_v1/` has 614
+actual poses and is still incomplete. Its full/online trajectory and match
+telemetry are byte-identical to the previous latched control. Re-encoding
+15 captured frames (577–591) gives exact feature/position equality; five fresh
+rematches also reproduce indices and fractions exactly. Capture/cache feature
+corruption is excluded for this window, not for all recordings.
+
+The generalized dense-window helper preserves all 40 original graph613 KFs
+and 178 directed edges, including interior KF587. It rejects the actual trial
+before variant GN: 10/16 adjacent learned pairs pass, the last six fail the
+unchanged 10% GRAPH threshold. The 5% tracking threshold is separate. There is
+no candidate export/fusion ATE from this rejected trial. A star diagnostic
+576→577..591 passes all 15 pairs, but 576→592 fails reverse matching. Adding
+only leaf nodes cannot independently bridge the original bad transition, so
+no star-only GN experiment was run.
+
+Native pre/post GN replay is exact at graph587,592,613 (maximum pose delta0).
+The CPU factor auditor uses native directed mapping and masks, with common
+pre/post support; its float64 Huber analysis is NOT a claim of bit-exact CUDA
+kernel cost. At587 the 576→587 common-support pixel median worsens from
+0.646 to8.831px while541→587 pixel P95 improves111.13→34.58px. This proves
+incompatible factor demands, not that the retrieved541 edge is false.
+
+Independent raw paired D405 depth plus the ORIGINAL learned indices refutes
+that proposed false-loop deletion: BOTH541↔587 and576↔587 pass the existing
+bidirectional metric PnP gate. Forward P95 reprojection is1.569/1.231px and
+cycle translation is3.272/0.846mm. No Tracker, new match indices or relaxed
+thresholds enter this evidence.
+
+The follow-up pointmap/pose audit records a more specific source failure:
+native PRE-GN rotations agree with independent stereo PnP to0.816/0.411°;
+POST-GN rotations disagree by8.568/9.223°. Thus GN moved away from two valid
+independent observations in this slice. After a per-frame median depth ratio
+fit, canonical-vs-stereo absolute relative depth P95 is21.6/29.7/29.9% for
+541/576/587. Those percentages and pose discrepancies are source diagnostics,
+not ATE, proof of universal model failure, or permission to delete/reweight
+original factors. The next falsifiable comparison is pre/post source geometry
+consistency against the fixed failing and passing controls. Missing pre-GN
+captures must be reported, not inferred from final poses.
+
+Evidence (small text artifacts; native PT/image captures remain local):
+- `right_reference_transition_graph613_probe_v1.json`
+- `right_reference_transition_feature_identity_audit_v1.json`
+- `right_native_reference_star_edge_audit_v1.json`
+- `right_reference_transition_exact_gn_factor_audit_v1.json`
+- `right_original_KF587_bidirectional_stereo_factor_audit_v1.json`
+- `right_KF587_stereo_pointmap_pose_consistency_audit_v1.json`
+- `right_latched_reference_export_audit_v1/export_audit.json`
+
+Test hygiene regression: direct removal of torch from sys.modules by capture
+tests caused a combined-suite TORCH_LIBRARY re-import failure (8 failures and
+exit139). Replacing only those test removals with monkeypatch.delitem restores
+the original modules on teardown. The corrected combined targeted suite has
+74 PASS/exit0. The native production hook is unchanged by this test repair.
+This is diagnostic progress; no new fusion10mm PASS is claimed.
+
+Fresh combined verification also includes the six failure-first fast10 runner
+tests: 80 PASS/exit0. No production SLAM candidate was launched just to repeat
+unchanged cached results. Raw sensor data, thresholds and deployed native
+toolchain files remain unchanged.

@@ -156,6 +156,7 @@ def validate_probe(
     snapshot: dict[str, Any],
     *,
     expected_window_ids: list[int] | None = DEFAULT_EXPECTED_WINDOW_IDS,
+    reference_transition_window: bool = False,
 ) -> dict[str, Any]:
     if probe.get("schema") != PROBE_SCHEMA:
         raise ValueError("unexpected probe schema")
@@ -197,15 +198,26 @@ def validate_probe(
     if window_ids[0] not in keyframe_ids or window_ids[-1] not in keyframe_ids:
         raise ValueError("probe window endpoints must be graph keyframes")
     interior_ids = window_ids[1:-1]
-    if any(frame_id in keyframe_ids for frame_id in interior_ids):
+    allow_interior_keyframes = reference_transition_window and probe.get("reference_transition_window") is True
+    if any(frame_id in keyframe_ids for frame_id in interior_ids) and not allow_interior_keyframes:
         raise ValueError("probe dense window interior must not already be graph keyframes")
     if any(frame_id < 0 or frame_id >= len(snapshot["tracked_poses"]) for frame_id in interior_ids):
         raise ValueError("probe dense window interior must exist in tracked timeline")
+    if allow_interior_keyframes:
+        solved_dense_ids = [
+            _strict_int(f"solved_dense_frame_ids[{idx}]", value)
+            for idx, value in enumerate(probe.get("solved_dense_frame_ids", []))
+        ]
+        expected_dense_ids = [frame_id for frame_id in interior_ids if frame_id not in keyframe_ids]
+        if solved_dense_ids != expected_dense_ids:
+            raise ValueError("probe solved_dense_frame_ids must match non-keyframe window interior")
+    else:
+        solved_dense_ids = interior_ids
 
     dense_snapshots = probe.get("inputs", {}).get("dense_snapshots")
     if not isinstance(dense_snapshots, dict):
         raise ValueError("probe inputs.dense_snapshots must be present")
-    for frame_id in interior_ids:
+    for frame_id in solved_dense_ids:
         entry = dense_snapshots.get(str(frame_id))
         if not isinstance(entry, dict) or not entry.get("path") or not entry.get("sha256"):
             raise ValueError(f"probe missing dense snapshot binding for frame {frame_id}")
@@ -248,7 +260,7 @@ def validate_probe(
             torch, f"pose_states[{frame_id}].variant_after", state.get("variant_after"),
             allow_vector=True,
         )
-    for frame_id in interior_ids:
+    for frame_id in solved_dense_ids:
         state = pose_states.get(str(frame_id))
         if not isinstance(state, dict):
             raise ValueError(f"probe missing dense window pose state {frame_id}")
@@ -401,15 +413,30 @@ def write_exports(
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    if args.expected_frame_count is not None and int(args.expected_frame_count) <= 0:
+        raise ValueError("--expected-frame-count must be positive")
     import torch
     import lietorch
     import mast3r_slam.evaluate as evaluate
 
     snapshot_path = Path(args.snapshot)
     probe_path = Path(args.probe)
-    snapshot = validate_snapshot(torch, _load_torch_snapshot(torch, snapshot_path))
+    snapshot = validate_snapshot(
+        torch,
+        _load_torch_snapshot(torch, snapshot_path),
+        expected_frame_count=args.expected_frame_count,
+    )
     with probe_path.open("r", encoding="utf-8") as stream:
-        probe = validate_probe(torch, json.load(stream), snapshot)
+        probe_payload = json.load(stream)
+        if args.reference_transition_window and probe_payload.get("reference_transition_window") is not True:
+            raise ValueError("CLI reference-transition-window requires probe reference_transition_window true")
+        probe = validate_probe(
+            torch,
+            probe_payload,
+            snapshot,
+            expected_window_ids=None if args.reference_transition_window else DEFAULT_EXPECTED_WINDOW_IDS,
+            reference_transition_window=args.reference_transition_window,
+        )
 
     report = write_exports(
         torch=torch,
@@ -436,6 +463,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     parser.add_argument("--snapshot", required=True)
     parser.add_argument("--probe", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--reference-transition-window", action="store_true")
+    parser.add_argument("--expected-frame-count", type=int, default=DEFAULT_EXPECTED_FRAME_COUNT)
     return run(parser.parse_args(argv))
 
 

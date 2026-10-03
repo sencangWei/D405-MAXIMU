@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import sys
 from pathlib import Path
@@ -68,10 +69,79 @@ def _load_dense(torch, path, frame_id, parent, K):
     _validate_sim3_array(torch, "dense.frame.T_WC_data", dense["frame"]["T_WC_data"], 1)
     if not torch.equal(dense["frame"]["K"], K):
         raise ValueError("dense K differs from graph intrinsics")
+    dense["_source_path"] = str(Path(path).resolve())
+    dense["_source_sha256"] = base._file_sha256(path)
     return dense
 
 
-def load_dense_window(torch, template, dense_ids, parent, K):
+def _load_reference_transition_dense(torch, path, frame_id, graph_ids, K):
+    capture = torch.load(path, map_location="cpu", weights_only=True)
+    if capture.get("schema") != "mast3r_reference_transition_snapshot_v1":
+        raise ValueError("unexpected reference-transition snapshot schema")
+    if int(capture.get("requested_frame_id", -1)) != frame_id:
+        raise ValueError("reference-transition frame ID mismatch")
+    after = capture.get("after", {})
+    result = after.get("track_return", {})
+    if result.get("add_new_kf") is not False or result.get("try_reloc") is not False:
+        raise ValueError("reference-transition success must be ordinary non-reloc")
+    success = capture.get("success_fields")
+    if not isinstance(success, dict):
+        raise ValueError("reference-transition success_fields missing")
+    frame = success.get("frame_after")
+    reference = capture.get("before", {}).get("resolved_reference")
+    if not isinstance(frame, dict) or not isinstance(reference, dict):
+        raise ValueError("reference-transition frame/reference payload missing")
+    ref_id = int(reference["frame_id"])
+    if ref_id not in graph_ids or ref_id > frame_id:
+        raise ValueError("reference-transition reference must be an existing prior graph frame")
+    if int(frame["frame_id"]) != frame_id:
+        raise ValueError("reference-transition frame payload ID mismatch")
+    for name in ("img", "X_canon", "C", "feat", "pos", "img_true_shape", "K", "T_WC_data"):
+        base._finite_tensor(torch, f"reference_transition{frame_id}.{name}", frame[name])
+    if int(frame["N"]) <= 0:
+        raise ValueError("reference-transition frame N must be positive")
+    _validate_sim3_array(torch, "reference_transition.reference.T_WC_data", reference["T_WC_data"], 1)
+    _validate_sim3_array(torch, "reference_transition.frame.T_WC_data", frame["T_WC_data"], 1)
+    if not torch.equal(frame["K"], K):
+        raise ValueError("reference-transition K differs from graph intrinsics")
+    return {
+        "schema": "mast3r_reference_transition_as_dense_v1",
+        "requested_frame_id": frame_id,
+        "frame": frame,
+        "reference": {"frame_id": ref_id, "T_WC_data": reference["T_WC_data"]},
+        "track_return": result,
+        "_source_path": str(Path(path).resolve()),
+        "_source_sha256": base._file_sha256(path),
+    }
+
+
+def _find_reference_transition_capture(torch, template, frame_id, graph_ids, K):
+    if "{frame_id}" not in template or "{attempt}" not in template:
+        raise ValueError("reference-transition template must contain {frame_id} and {attempt}")
+    pattern = template.format(frame_id=frame_id, attempt="*")
+    candidates = sorted(Path(path) for path in glob.glob(pattern) if Path(path).is_file())
+    successes = []
+    for path in candidates:
+        capture = torch.load(path, map_location="cpu", weights_only=True)
+        if capture.get("schema") != "mast3r_reference_transition_snapshot_v1":
+            continue
+        if int(capture.get("requested_frame_id", -1)) != frame_id:
+            continue
+        result = capture.get("after", {}).get("track_return", {})
+        if result.get("add_new_kf") is False and result.get("try_reloc") is False:
+            successes.append(path)
+    if len(successes) != 1:
+        raise ValueError(f"expected exactly one successful ordinary capture for frame {frame_id}, found {len(successes)}")
+    return _load_reference_transition_dense(torch, successes[0], frame_id, graph_ids, K)
+
+
+def load_dense_window(torch, template, dense_ids, parent, K, *, reference_transition_window=False, graph_ids=None):
+    if reference_transition_window:
+        graph_ids = [] if graph_ids is None else [int(v) for v in graph_ids]
+        return {
+            frame_id: _find_reference_transition_capture(torch, template, frame_id, graph_ids, K)
+            for frame_id in dense_ids
+        }
     if "{frame_id}" not in template and len(dense_ids) > 1:
         raise ValueError("dense template must contain {frame_id} for an interval")
     return {
@@ -146,7 +216,6 @@ def _public_edges(edge_matches):
 
 def _pose_states(torch, lietorch, parent, frame_ids, dense_ids, variant_ids, args_cpu, dense_by_id,
                  base_after, var_after):
-    parent_idx = frame_ids.index(parent)
     states = {}
     for frame_id in frame_ids:
         idx = frame_ids.index(frame_id)
@@ -157,13 +226,15 @@ def _pose_states(torch, lietorch, parent, frame_ids, dense_ids, variant_ids, arg
         }
     for frame_id in dense_ids:
         dense = dense_by_id[frame_id]
+        reference_id = int(dense["reference"]["frame_id"])
+        reference_idx = frame_ids.index(reference_id)
         initial = base._transport_dense_pose(
-            torch, lietorch, args_cpu[0][parent_idx],
+            torch, lietorch, args_cpu[0][reference_idx],
             base._pose_row(torch, "dense.reference.T_WC_data", dense["reference"]["T_WC_data"])[0],
             base._pose_row(torch, "dense.frame.T_WC_data", dense["frame"]["T_WC_data"])[0],
         )[0]
         baseline = base._transport_dense_pose(
-            torch, lietorch, base_after[parent_idx],
+            torch, lietorch, base_after[reference_idx],
             base._pose_row(torch, "dense.reference.T_WC_data", dense["reference"]["T_WC_data"])[0],
             base._pose_row(torch, "dense.frame.T_WC_data", dense["frame"]["T_WC_data"])[0],
         )[0]
@@ -191,14 +262,27 @@ def run_probe(paths):
     if output_path.exists():
         raise FileExistsError(output_path)
     window_ids = interval_frame_ids(paths.first, paths.last, paths.parent, paths.next)
-    dense_ids = window_ids[1:-1]
     source_manifest_path, source_manifest = base.load_source_run(
         paths.source_run, paths.dataset, paths.config, paths.checkpoint
     )
+    graph_probe = torch.load(paths.graph, map_location="cpu", weights_only=True)
+    graph_ids_probe = [int(v) for v in graph_probe.get("frame_ids", [])]
+    dense_ids = [
+        frame_id for frame_id in window_ids[1:-1]
+        if not (paths.reference_transition_window and frame_id in graph_ids_probe)
+    ]
     graph = _load_graph(torch, paths.graph, paths.solve, paths.parent, paths.next, dense_ids)
     args_cpu = tuple(graph["args"])
     graph_ids = [int(v) for v in graph["frame_ids"]]
-    dense_by_id = load_dense_window(torch, paths.dense_template, dense_ids, paths.parent, args_cpu[3])
+    dense_by_id = load_dense_window(
+        torch,
+        paths.dense_template,
+        dense_ids,
+        paths.parent,
+        args_cpu[3],
+        reference_transition_window=paths.reference_transition_window,
+        graph_ids=graph_ids,
+    )
 
     load_config(paths.config)
     dataset = load_dataset(paths.dataset)
@@ -220,7 +304,7 @@ def run_probe(paths):
 
         frames = {}
         with torch.inference_mode():
-            for frame_id in (paths.parent, paths.next):
+            for frame_id in [frame_id for frame_id in graph_ids if frame_id in window_ids]:
                 _, image = dataset[frame_id]
                 frame = create_frame(
                     frame_id, image,
@@ -250,12 +334,12 @@ def run_probe(paths):
 
         variant_ids = graph_ids + dense_ids
         variant_cpu = list(args_cpu)
-        parent_idx = graph_ids.index(paths.parent)
         dense_poses, dense_Xs, dense_Cs = [], [], []
         for frame_id in dense_ids:
             dense = dense_by_id[frame_id]
+            reference_idx = graph_ids.index(int(dense["reference"]["frame_id"]))
             dense_poses.append(base._transport_dense_pose(
-                torch, lietorch, args_cpu[0][parent_idx],
+                torch, lietorch, args_cpu[0][reference_idx],
                 base._pose_row(torch, "dense.reference.T_WC_data", dense["reference"]["T_WC_data"])[0],
                 base._pose_row(torch, "dense.frame.T_WC_data", dense["frame"]["T_WC_data"])[0],
             ))
@@ -307,6 +391,8 @@ def run_probe(paths):
             "precision_pass": False,
             "original_graph_frame_ids": graph_ids,
             "window_frame_ids": window_ids,
+            "reference_transition_window": bool(paths.reference_transition_window),
+            "solved_dense_frame_ids": [int(v) for v in dense_ids],
             "dense_edge_matches": _public_edges(edge_matches),
             "dense_edges_added": bool(added),
             "pose_states": states,
@@ -352,8 +438,8 @@ def run_probe(paths):
                 "source_run_toolchain_commit": source_manifest.get("toolchain_commit"),
                 "dense_snapshots": {
                     str(frame_id): {
-                        "path": str(Path(paths.dense_template.format(frame_id=frame_id)).resolve()),
-                        "sha256": base._file_sha256(paths.dense_template.format(frame_id=frame_id)),
+                        "path": dense_by_id[frame_id]["_source_path"],
+                        "sha256": dense_by_id[frame_id]["_source_sha256"],
                     }
                     for frame_id in dense_ids
                 },
@@ -381,6 +467,7 @@ def main(argv=None):
     parser.add_argument("--config", required=True)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--reference-transition-window", action="store_true")
     parser.add_argument("--output", required=True)
     return run_probe(parser.parse_args(argv))
 
