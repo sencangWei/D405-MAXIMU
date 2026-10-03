@@ -14,7 +14,7 @@ import sys
 
 import numpy as np
 import torch
-from scipy.linalg import expm, logm
+from scipy.linalg import expm
 from scipy.spatial.transform import Rotation
 
 
@@ -71,21 +71,24 @@ def _sim3_exp(xi: np.ndarray) -> np.ndarray:
 
 
 def _sim3_log(mat: np.ndarray) -> np.ndarray:
-    raw = logm(np.asarray(mat, dtype=np.float64).reshape(4, 4))
-    if np.max(np.abs(np.imag(raw))) > 1e-9:
-        raise ValueError("complex Sim3 logarithm")
-    algebra = np.real(raw).astype(np.float64)
-    sigma = float(np.trace(algebra[:3, :3]) / 3.0)
-    skew = algebra[:3, :3] - np.eye(3) * sigma
-    return np.array([
-        algebra[0, 3],
-        algebra[1, 3],
-        algebra[2, 3],
-        0.5 * (skew[2, 1] - skew[1, 2]),
-        0.5 * (skew[0, 2] - skew[2, 0]),
-        0.5 * (skew[1, 0] - skew[0, 1]),
-        sigma,
-    ], dtype=np.float64)
+    mat = np.asarray(mat, dtype=np.float64).reshape(4, 4)
+    scale = float(np.cbrt(np.linalg.det(mat[:3, :3])))
+    if not np.isfinite(mat).all() or not np.isfinite(scale) or scale <= 0.0:
+        raise ValueError("invalid Sim3 matrix")
+    sigma = float(np.log(scale))
+    omega = Rotation.from_matrix(mat[:3, :3] / scale).as_rotvec()
+    wx, wy, wz = omega
+    generator = np.array([[sigma, -wz, wy], [wz, sigma, -wx], [-wy, wx, sigma]])
+    # exp([[A, I], [0, 0]]) has integral_0^1 exp(u A) du in its
+    # upper-right block, including the singular A=0 case.  This is the
+    # exact Sim3 translation Jacobian; generic logm uses randomized norm
+    # estimates which perturb finite-difference factor Jacobians.
+    block = np.zeros((6, 6), dtype=np.float64)
+    block[:3, :3] = generator
+    block[:3, 3:] = np.eye(3)
+    translation_jacobian = expm(block)[:3, 3:]
+    rho = np.linalg.solve(translation_jacobian, mat[:3, 3])
+    return np.r_[rho, omega, sigma]
 
 
 def relative_residual(pose_i: np.ndarray, pose_j: np.ndarray, measurement: dict[str, Any]) -> np.ndarray:

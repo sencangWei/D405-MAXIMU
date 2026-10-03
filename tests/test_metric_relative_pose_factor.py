@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from scipy.linalg import logm
 from scipy.spatial.transform import Rotation
 
 
@@ -87,6 +88,34 @@ def test_relative_residual_detects_wrong_direction_and_scale():
 
     assert abs(residual[0]) > 1.0
     assert abs(residual[6]) > 0.6
+
+
+def test_sim3_log_is_rng_independent_and_matches_matrix_logarithm():
+    xi = np.array([.7, -.4, .3, .24, -.11, .07, .18])
+    matrix = metric._sim3_exp(xi)
+    random_state = np.random.get_state()
+    try:
+        np.random.seed(19)
+        before = np.random.get_state()
+        result = metric._sim3_log(matrix)
+        after = np.random.get_state()
+        assert before[0] == after[0]
+        np.testing.assert_array_equal(before[1], after[1])
+        assert before[2:] == after[2:]
+        np.random.seed(71)
+        np.testing.assert_array_equal(result, metric._sim3_log(matrix))
+        np.testing.assert_allclose(result, xi, atol=2e-12, rtol=0)
+        algebra = np.real(logm(matrix))
+        expected = np.r_[algebra[:3, 3], algebra[2, 1], algebra[0, 2], algebra[1, 0], np.trace(algebra[:3, :3]) / 3]
+        np.testing.assert_allclose(result, expected, atol=2e-12, rtol=0)
+    finally:
+        np.random.set_state(random_state)
+
+
+def test_sim3_log_near_identity_large_scale_and_rotation_round_trip():
+    for angle, sigma in [(0., 0.), (1e-10, 1e-10), (.4, 0.), (0., -.7), (2.8, -2.), (.2, 2.)]:
+        xi = np.array([.6, -.3, .2, angle, 0., 0., sigma])
+        np.testing.assert_allclose(metric._sim3_log(metric._sim3_exp(xi)), xi, atol=2e-11, rtol=0)
 
 
 def test_factor_linearization_shapes_and_finite_values():
