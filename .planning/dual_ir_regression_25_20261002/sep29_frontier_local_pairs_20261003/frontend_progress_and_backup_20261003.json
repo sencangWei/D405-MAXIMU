@@ -1,0 +1,68 @@
+{
+  "schema": "umi_metric_joint_frontend_progress_v1",
+  "recorded_utc": "2026-10-03T11:35:01Z",
+  "classification": "PROGRESS_NOT_PRECISION_PASS",
+  "candidate_discarded": false,
+  "production_promoted": false,
+  "external_ground_truth_used_by_solver": false,
+  "retention_policy": "Majority fixed failure5 trajectory maxATE improvements with complete comparable coverage and every fixed passing5 maxATE<=10mm qualify incremental retention, not final acceptance. Incomplete/technical/source-proxy failure is not proof an entire direction is useless. Final25 and new capture gates unchanged.",
+  "fresh_tests_passed": 65,
+  "restored_source_tests_passed": 65,
+  "adapter_equivalence": {
+    "right613": {"byte_exact": true, "max_abs": 0, "pin_exact": true},
+    "left877": {"byte_exact": true, "max_abs": 0, "pin_exact": true},
+    "is_trajectory_accuracy": false
+  },
+  "complete_input_replay": {
+    "id": "20260929_take02",
+    "eye": "right",
+    "input_frames": 1199,
+    "tracked_frames": 588,
+    "joint_graph_solves": 24,
+    "elapsed_s": 199.7618988630129,
+    "main_exited": true,
+    "status": "FRONTEND_FAILED_COMPLETE_COVERAGE",
+    "fresh_ate_available": false,
+    "historical_right_tracked_frames": 588,
+    "reason_evidence": "Both actual old/new logs enter relocalization at KF25 and skip frame588. Historical frame588 diagnostic:1260/147456 valid optimization matches, below unchanged5% gate. New last actual joint graph contains576,587 with104 metric factors. Current joint solve does not repair reference/admission coverage.",
+    "inference_boundary": "Same terminal count/relocalization pattern supports an inherited coverage bottleneck, not proof that every graph state or local geometry is identical. Do not derive complete ATE from the partial tail."
+  },
+  "next_replay": {
+    "id": "20260927_ind2",
+    "eye": "right",
+    "input_frames": 1199,
+    "exec_session": 46878,
+    "status_at_recording": "RUNNING",
+    "output": "full_metric_joint_frontend_v1/20260927_ind2/right"
+  },
+  "backups": {
+    "root": {
+      "commit": "117b080970c232b1a37c7fc29d388f53d93c7253",
+      "branch": "codex/dual-ir-frontend-20261001",
+      "remote": "https://github.com/sencangWei/D405-MAXIMU.git",
+      "fresh_fetch_equals_head": true,
+      "clean_remote_restore": "/tmp/umi-metric-frontend-root-restore-eacZcB",
+      "changed_files_byte_identical": 18,
+      "restored_tests_passed": 65
+    },
+    "actual_toolchain": {
+      "commit": "58c9f619d930566e79b42b16fe4ef3ebe3a79bfd",
+      "branch": "codex/relocalization-recovery-20261001",
+      "remote": "https://github.com/sencangWei/MASt3R-SLAM.git",
+      "clean_remote_restore": "/tmp/umi-metric-frontend-tool-restore-Nn6awb",
+      "changed_files_byte_identical": 2,
+      "restored_tests_passed": 17
+    },
+    "external_prerequisites_not_in_source_backup": ["installed native binaries", "model checkpoints", "raw source recordings"]
+  },
+  "rk3576": {
+    "deployment_status": "BLOCKED",
+    "ssh": "No route to host",
+    "actual_arm_candidate_available": false,
+    "source_tests_passed": 34,
+    "checksum_safety_tests_passed": 5,
+    "board_identity_release_idle_rollback_verified": false,
+    "deployment_or_hil_claimed": false,
+    "board_or_recording_or_network_or_config_or_qr_mutated": false
+  }
+}
