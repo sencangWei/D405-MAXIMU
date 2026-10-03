@@ -186,3 +186,47 @@ run_fast10_after_ros_fix_v2.sh prepares a new source-consistent fixed10 run afte
 the current guarded queue/producer finish. Its terminal-artifact reuse index
 keeps completed LEFT/RIGHT outputs and the known take02 coverage failure; it
 does not terminate native jobs, overwrite outputs, or clean up linked sources.
+
+## Incremental rather than binary decisions (2026-10-03 continuation)
+
+The fixed10 v2 queue completed take04 RIGHT with all 1199 inputs in 593.318 s.
+Its evaluation records the existing LEFT frame806->807 step at 34.503213 mm;
+it does not silently drop the failing record. The queue has continued to take07
+LEFT. No fresh ATE or ten-record no-regression acceptance exists at this point.
+
+Two independently inspected failures now locate a missing constraint more
+specifically than "graph optimization pulls the geometry": ind2 RIGHT577 and
+take04 LEFT807 are non-keyframe poses, absent from every retained metric graph,
+and their jump already exists in online tracking. Source hashes, graph brackets,
+and export comparisons are in interval_tracking_gap_20261003.md. Independent
+read-only review confirms the proposed soft per-frame metric-relative factor
+can be added inside the original tracker GN. It remains a hypothesis requiring
+actual local inputs, flag-off equivalence and passing controls. Keep the existing
+keyframe benefit; do not replace it, cap translation, interpolate, or weaken gates.
+
+The isolated analytic derivative was also tested in seven frozen native graph
+contexts, without changing any live frontend/solver CODE_PATH. Four final solves
+are bitwise exact (right587, right592 and both passing-control graphs). Three
+are not: right613, left877 and left1044 have fresh-original vs analytic translation
+differences up to 0.000142554 in native coordinates (not calibrated metres).
+Original/analytic repeats are each exact in those three cases, and the fresh
+original itself differs from the older frozen solve. All iteration counts stay
+at ten and pose0 remains pinned. The original/analytic native solve timing is
+roughly tenfold apart, but there is no full-trajectory or ATE equivalence proof.
+Retain this exact-objective speed candidate as a development artifact; do not
+discard it for a strict bitwise failure or silently integrate it into the frozen
+accuracy queue. Existing strict diagnostic failures remain explicit. Evidence:
+metric_analytic_native_equivalence_v2/summary.json,
+metric_analytic_native_equivalence_v3_right613_repeat/summary.json,
+metric_analytic_native_equivalence_v3_remaining4/summary.json.
+
+Fresh local contracts passed 32/32 tests: eight native-probe safety/continuation
+tests, fourteen analytic-factor tests and ten incremental-retention tests.
+This is source/contract evidence, not 10 mm accuracy or deploy/HIL acceptance.
+
+Review additionally found stale/missing probe runner hashes were accepted on
+resume; two red tests reproduced it. A two-line fail-closed guard now rejects
+those summaries before modifying them. The final focused suite passes 34/34,
+and independent review approves with no remaining issue in that scope. The
+earlier native reports keep their original runner hashes and are not relabeled
+as runs of this subsequent provenance-only fix.
