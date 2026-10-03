@@ -126,3 +126,39 @@ or that any of the remaining trajectories have passed.
 Independent RK3576 deployment remains live-blocked by No route to host and the
 missing actual ARM candidate/native runtime. No QR, network, udev, package,
 recording deletion, reboot, or robot-motion changes were made.
+
+## Fresh completion and environment fault (2026-10-03)
+
+The ind2 RIGHT v2 full replay completed: 1199 actual poses / 1199 input frames,
+112 keyframes and 616 metric factors in its final graph; elapsed 2042.490 s.
+Both LEFT v1 and RIGHT v2 passed a fresh independent full-coverage/source-bound
+frontend validation. This is still not an ATE PASS.
+
+The actual fresh ON primary LEFT stereo report now passes the unchanged gate:
+relative_p90_p10=0.4093186696, versus the fresh OFF failure near 0.571. Keep this
+incremental component. The evaluator then failed before RIGHT output with
+ModuleNotFoundError: rosbag2_py. The RIGHT derive CLI rereads raw DB factory
+calibration but was launched without the ROS setup used by the LEFT CLI. The
+traceback and a minimal direct load_stereo_calibration reproduction agree.
+Fix this orchestration environment, not the frontend objective or quality gate.
+There is no ATE from this failed evaluation, and no precision conclusion follows
+from its exit status.
+
+The queued continuation did actually launch (PID 3453631): the reused take02
+coverage failure is preserved, and take04 LEFT started a fresh full frontend.
+Any evaluator source correction is guarded: finish the current producer, then
+stop at the next guarded boundary and reuse the completed frontend in a new
+queue/output root. Do not kill it, mix source revisions silently, overwrite old
+artifacts, or replay a completed frontend just for an environment fix.
+
+An isolated CPU analytic-Jacobian candidate was also verified, not integrated.
+The original metric residual, information, objective and current production
+solver remain unchanged. The source-bound v2 benchmark compares 5514 factors
+over seven frozen contexts / 21 pose sets: approximately 23.23x linearization
+speedup; residual/information differences zero; Jacobian max absolute difference
+7.4643e-11. H/g relative differences are near 1e-11, with absolute maxima
+0.04138136 / 0.00043706 because of the information scale. Full-pose and trajectory
+equivalence and ATE are explicitly untested. Independent review found no
+mathematical blocker; static type tooling was unavailable, with compile/import
+and tests used as substitutes. A fresh focused CPU suite passed 26/26 tests.
+Do not switch the frozen accuracy candidate to this derivative mid-cohort.
