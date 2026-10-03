@@ -1520,3 +1520,54 @@ the original full25 result. Existing outputs must be absent; only0/3 consumer
 returns tolerated; actual exceptions/invalid bindings stop. Current queue is
 untouched, no GT solver supervision/selection, no promotion/claimed precision
 gain from telemetry. Actual telemetry solving has NOT started yet.
+
+2026-10-03 supersession after user's failure-first fast regression request:
+The preceding all25 diagnostic continuation is historical, NOT active now.
+Session19310 was stopped with SIGTERM of its verified scheduler only, exit143;
+the original B source+paired parent2450656/source2450675 remain untouched.
+continue_native25_then_lsqr_20261003.sh is retained with a SUPERSEDED header.
+
+Added config/dual_ir_fast_regression_10_20261003.json, script
+scripts/run_independent_ir_fast_regression.py and its6tests. Fixed development
+cohort: failures Sep27ind2/Sep29take02,take04,take07/Sep30take06, followed by
+passing Sep27heldout2,heldout4/Sep29take01/Sep30take03,take04. Take07 is a
+rotation FAIL despite translation max9.864mm; this fact is explicit rather
+than calling it a position failure. Passing controls include near-boundary
+max9.855mm and multiple recording days. Existing reference scores select this
+development cohort; this is reference-informed, not blind. The solver and
+production selector do NOT use GT. Reference-jump take03 and unobservable
+take05 remain in the full25 quality/denominator accounting, not silently lost.
+
+Runner reuses terminal native caches, invokes the existing paired consumer
+through unchanged-parameter telemetry, runs failure phases before passing,
+validates subset/source ownership/hash/context/terminal evidence and preserves
+the strict original full25 merger. No image extraction or threshold/weight
+change. Fresh48relatedtests PASS and py_compile; independent code review
+APPROVE,15focusedtests PASS. Root also validated real ind2/take06 subset
+summaries and their matching cross-stage context, not only mocked unit tests.
+
+Actual failure-first pilot diagnostics completed under the new user override:
+lsqr_failure_paired_ind2_v3 and lsqr_failure_paired_take06_v3, each8calls.
+Ind2 elapsed166.04s, istop2 for all calls,4030..4164iterations;
+take06 elapsed154.04s, istop2 for all,4190..4272iterations. No5000iteration
+limit hits or nonfinite outputs. Installed SciPy1.14.1 documents istop2 as
+approximately solving least squares; this does NOT prove a causal explanation
+or global precision convergence. All4 estimateCSV hashes and embedded score
+dicts exactly match the previously completed original/native results.
+Native max remains10.359mm and13.479mm, no new precision PASS.
+
+Latest B source progress17processed16READY1retained; with firstind2+A3 this is
+21/25processed20READY1retained,remaining4. Only4real paired scores so far,
+2PASS2FAIL. Source-ready is not accuracy PASS. Producer/consumer/merger unchanged.
+New continuation session96887 is live, command saved in
+continue_native25_then_fast10_20261003.sh. It waits on the same B parent process
+start time; once current source+paired chain closes it strict-merges its
+existing full25 baseline and starts ONLY fast10 unchanged-parameter diagnostics.
+Actual fast10 has NOT started; source extraction is one-time reusable work,
+not a repeated step for every optimization. Final acceptance still needs full25
+plus newly recorded independent validation; max10mm goal remains unachieved.
+
+Previous telemetry backup0cea1ad62afb543be53a87b2e75a14d030489241 fetched from
+sencang was restored at /tmp/umi-lsqr-label-backup-20261003.uKgbwT:
+4target files byte-identical,9restoredtests PASS,bash-n PASS. New fast10 backup
+is pending fresh commit/push/fetched restore verification at this entry.

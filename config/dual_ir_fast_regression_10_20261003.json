@@ -1,0 +1,66 @@
+{
+  "schema": "umi_independent_ir_fast_regression_config_v1",
+  "purpose": "Development-only fast native paired regression subset. Runs fixed ordinary failures first, then fixed passing controls. This is not a blind test, not a production promotion, and not a full25 denominator replacement.",
+  "created_utc": "2026-10-03",
+  "cohort_selection_uses_reference_scores": true,
+  "external_ground_truth_used_for_selection": true,
+  "external_ground_truth_used_by_solver": false,
+  "production_selector_uses_ground_truth": false,
+  "slam_supervision": false,
+  "root": "/home/robot/ego_vio_humble",
+  "manifest": "/home/robot/ego_vio_humble/config/dual_ir_regression_25_20261002.json",
+  "baseline": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/batch_adapters_v2",
+  "constant_gauge": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/constant_gauge_batch_v3",
+  "combined_reference": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/gauge_physical_combined_batch_v1",
+  "combined_reference_summary": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/gauge_physical_combined_batch_v1/summary.json",
+  "combined_reference_summary_sha256": "76b9ec541676aee83b1f5d274a5db96a0e32084eacf63e4a88292c15b4d6877f",
+  "combined_reference_variant": "physical_stereo_constant_gauge",
+  "consumer_script": "/home/robot/ego_vio_humble/scripts/evaluate_independent_ir_corpus_probe.py",
+  "telemetry_wrapper": "/home/robot/ego_vio_humble/scripts/audit_independent_ir_solver_convergence.py",
+  "source_stages": [
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_ir_corpus_native_ind2_v1",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_ir_corpus_native_multiday3_v1",
+    "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/independent_ir_corpus_native_remaining21_v1"
+  ],
+  "failure_records": [
+    "20260927_ind2",
+    "20260929_take02",
+    "20260929_take04",
+    "20260929_take07",
+    "20260930_take06"
+  ],
+  "passing_records": [
+    "20260927_heldout2",
+    "20260927_heldout4",
+    "20260929_take01",
+    "20260930_take03",
+    "20260930_take04"
+  ],
+  "retained_full25_quality_notes": [
+    {
+      "id": "20260929_take03",
+      "reason": "raw Tracker/reference jump quality audit case; retained in full25 denominator but excluded from fast10 optimization loop"
+    },
+    {
+      "id": "20260929_take05",
+      "reason": "primary scale unobservable/unscored case; retained in full25 denominator but excluded from fast10 optimization loop"
+    }
+  ],
+  "allowed_consumer_exit_codes": [
+    0,
+    3
+  ],
+  "run_policy": {
+    "phase_order": [
+      "failure",
+      "passing"
+    ],
+    "grouping": "source_stage_within_phase",
+    "reuse_existing_native_source_stages": true,
+    "do_not_extract_images": true,
+    "do_not_run_full25_until_candidate_stable": true,
+    "development_only": true,
+    "blind_test": false,
+    "production_promoted": false
+  }
+}

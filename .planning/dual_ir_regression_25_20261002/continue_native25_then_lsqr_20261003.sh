@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SUPERSEDED by the user's failure-first fast10 instruction. Do not launch.
+# Preserved as history; its session19310 was terminated143 before any solver.
 # One-shot continuation bound to the live 2026-10-03 B-chain PID.
 # Not a generic restart script; rerunning refuses existing outputs.
 set -eo pipefail
@@ -47,4 +49,3 @@ for rid,x in aa.items():
    assert z["score"].get(k)==y["variants"][v]["score"].get(k),(rid,v,k)
   checked+=1
 print(json.dumps({"status":"TELEMETRY_REPLAY_IDENTICAL","record_count":25,"checked_estimates":checked}))'
-
