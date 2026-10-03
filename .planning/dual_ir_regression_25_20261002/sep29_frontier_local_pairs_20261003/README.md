@@ -562,3 +562,52 @@ Fresh combined verification also includes the six failure-first fast10 runner
 tests: 80 PASS/exit0. No production SLAM candidate was launched just to repeat
 unchanged cached results. Raw sensor data, thresholds and deployed native
 toolchain files remain unchanged.
+
+## Depth-shape falsifier completed; fixed10 policy retained (2026-10-03)
+
+All seven predeclared native graph trials completed. Original GN repeated twice
+with exact control replay. Only native pointmap XYZ changed: stereo-valid depths
+were normalized by each frame's median metric/native depth ratio, preserving
+its original median gauge and rays. Matching indices, confidence, graph edges,
+thresholds and the other18 native arguments were unchanged. No Tracker/GT data
+entered the experiment. Inputs/source manifests and native production files
+were hash-bound before execution. Raw graph PT inputs and output pose tensors
+remain local; source code, plan and measured JSON evidence are backed up.
+
+Maximum rotation disagreement against independent stereo PnP on unchanged
+accepted chronological graph pairs (degrees; NOT trajectory ATE):
+
+| Graph | Accepted pairs | Original GN control | Depth-shape trial |
+|---|---:|---:|---:|
+| failure take02 RIGHT587 |22|9.209804|9.014641|
+| failure take02 RIGHT592 |22|10.671543|10.356316|
+| failure take02 RIGHT613 |35|10.967111|10.591717|
+| failure take02 LEFT877 |114|3.589815|1.282934|
+| failure take02 LEFT1044 |121|3.589809|1.281200|
+| passing heldout2 graph752 |23|1.193247|0.847675|
+| passing take01 graph738 |41|1.189147|1.051942|
+
+Median disagreement improved in all seven graphs, but the large RIGHT error
+persists. Depth-shape error contributes to the LEFT geometric inconsistency;
+this trial does not establish a complete bilateral repair, a new fusion ATE,
+or10mm acceptance. The two passing controls show no regression in this measured
+diagnostic only; that is not proof of unchanged end-to-end precision. Do not
+promote the diagnostic or claim that all25 failures have this same cause.
+
+Fresh targeted verification:20 tests PASS, including six fixed10 runner tests
+and14 depth-shape helper/runner tests. The broader preceding combined suite
+had94 PASS; this section does not present that older run as a fresh result.
+Evidence: `depth_shape_GN_falsifier_plan_v1.json` and
+`depth_shape_GN_falsifier_v1/summary.json`, with all seven job `report.json` files.
+
+The user's latest validation policy remains:
+1. Keep the fixed historical failure5; execute them before passing controls.
+2. Keep five passing recordings from Sep27–30; do not substitute them per edit.
+3. For each genuine candidate rerun all affected stages with matching source
+   hashes; reuse unchanged caches only. An unchanged cached score is not a new
+   validation. Missing/invalid sources remain visible failures, never cropped.
+4. Compare maximumATE, P95, RMSE, within10mm ratio and full coverage on the same
+   ten recordings; passing controls must not lose their10mm gate.
+5. If a candidate fails, localize its first source/factor inconsistency before
+   another targeted change. Once the fixed10 is stable, run full25 and fresh
+   independent recordings for acceptance. This development set is not blind.
