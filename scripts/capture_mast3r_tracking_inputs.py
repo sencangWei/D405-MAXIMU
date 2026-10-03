@@ -409,6 +409,14 @@ def capture_mast3r_tracking_inputs(
                     "C": _snapshot(result[1] if isinstance(result, tuple) and len(result) > 1 else None),
                     "D": _snapshot(result[2] if isinstance(result, tuple) and len(result) > 2 else None),
                     "Q": _snapshot(result[3] if isinstance(result, tuple) and len(result) > 3 else None),
+                    "encoded_inputs": {
+                        name: {
+                            "feat": _snapshot(getattr(frame, "feat", None)),
+                            "pos": _snapshot(getattr(frame, "pos", None)),
+                            "img_true_shape": _snapshot(getattr(frame, "img_true_shape", None)),
+                        }
+                        for name, frame in (("frame_i", frame_i), ("frame_j", frame_j))
+                    },
                 }
             )
         return result

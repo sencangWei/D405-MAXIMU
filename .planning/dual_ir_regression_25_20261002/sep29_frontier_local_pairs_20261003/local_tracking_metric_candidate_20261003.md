@@ -46,8 +46,11 @@ Never invert indices, substitute an empty initial guess, or borrow another edge.
 
 Native matching is GPU-only: `gn.cpp:108-121` dispatches to `iter_proj_cuda`,
 and `matching_kernels.cu:279-318` launches a CUDA kernel unconditionally. The
-early CPU-config error did not prove CPU matching works. Raw captured decoder
-tensors avoid a new model forward, not GPU matching. Local GN replay is CPU.
+early CPU-config error did not prove CPU matching works. Forward asymmetric
+Xii/Xji tensors cannot be swapped to stand in for native reverse Xjj/Xij.
+The reverse requires a second original asymmetric decoder call in reversed
+frame order. Captured encoder feat/pos/img_true_shape avoid image encoding,
+not that decoder call or GPU matching. Local GN replay is CPU.
 
 The current fixed10 producer and exact-process capture/replay schedulers remain
 untouched. No extra GPU work is started while the retained queue is active.
@@ -115,3 +118,42 @@ review inspected the exact native call site, approved this diagnostic-only
 observer change, and separately passed all 19 capture tests. AST parsing and
 diff whitespace checking pass; dedicated static type tooling was unavailable.
 No selected-frame native snapshots or ATE results are created by these tests.
+
+## True reverse decoder and exact forward validity (2026-10-03 continuation)
+
+Independent source review rejected swapping the forward asymmetric pointmaps
+as an equivalent native reverse: the original symmetric path uses separately
+decoded Xjj/Xij and Djj/Dij. That proposed implementation is not being used;
+this does not reject the retained metric-relative candidate or its partial gains.
+
+The observer now also saves encoded feat/pos/img_true_shape for both actual
+forward input frames, after original inference populated its lazy encoder cache.
+This adds tensor observation only, with no extra model/matcher call in tracking.
+The isolated reverse helper calls the unchanged asymmetric decoder once with
+keyframe first and current frame second, reusing those captured encoded inputs.
+Actual model/GPU work remains queued until the retained fixed10 run is idle.
+
+The CPU forward selector checks the unique current/keyframe match association,
+actual warm start and native optimizer inputs. It keeps raw matcher validity
+separate from C/Q-filtered tracking validity; metric graph prep must use the raw
+field. Captured native Q is preserved for thresholds/output. CPU Q recomputation
+is a formula diagnostic with at most two representable-step rounding difference,
+not a new matching/gate tolerance. Above-bound mismatches reject the input.
+
+Review of the initial selector found five defects; all were surgically fixed
+without abandoning the direction. It was then approved as diagnostic-only.
+CPU mocks and new contract tests are source validation, not real reverse match,
+accepted bidirectional PnP, measured ATE improvement, or 10 mm acceptance.
+The fixed failing-five/passing-five cohort, complete coverage and final full25
+plus new-recording acceptance requirements stay unchanged.
+
+The real producer uses encoded_inputs.frame_i/frame_j and outer input frame IDs,
+not current/reference aliases or invented inner IDs. RED tests exposed this
+fixture/producer mismatch and a reversed returned provenance binding; both were
+repaired before use. Reverse helper review is APPROVE with zero remaining
+findings. Fresh main-owner combined observer/forward/reverse/replay/local-factor/
+capture-runner/retention suites pass 130/130 in 3.80 s. Six source/test files
+parse successfully; all 87 guarded live-queue source hashes remain unchanged.
+No native reverse decode/match, local-factor or ATE result is implied by these
+mock validations. The queue has moved from take06 LEFT to RIGHT; passing-five
+controls and the scheduled real input capture/replay are still pending.

@@ -422,6 +422,48 @@ def install_fake_mast3r_utils(monkeypatch, match_impl):
     return utils, matching
 
 
+def test_asymmetric_capture_keeps_encoded_inputs_for_true_reverse_decoder(monkeypatch, tmp_path):
+    module = import_module()
+    utils, _matching = install_fake_mast3r_utils(monkeypatch, lambda *a, **k: None)
+    original_inference = utils.mast3r_asymmetric_inference
+    calls = []
+
+    def inference(model, frame_i, frame_j):
+        calls.append((frame_i.frame_id, frame_j.frame_id))
+        for frame in (frame_i, frame_j):
+            frame.feat = torch.full((1, 2, 4), float(frame.frame_id))
+            frame.pos = torch.tensor([[[0, 0], [1, 0]]])
+            frame.img_true_shape = torch.tensor([[1, 2]])
+        return original_inference(model, frame_i, frame_j)
+
+    utils.mast3r_asymmetric_inference = inference
+
+    class EncodedTracker(Tracker):
+        def track(self, frame, *args, **kwargs):
+            import mast3r_slam.mast3r_utils as imported_utils
+
+            result = imported_utils.mast3r_asymmetric_inference(None, frame, self.keyframes.last_keyframe())
+            self.returned = result
+            # Observer snapshots must precede any caller changes.
+            frame.feat.fill_(999.0)
+            self.keyframes.last_keyframe().pos.fill_(9)
+            return False, [], False
+
+    tracker = EncodedTracker()
+    with module.capture_mast3r_tracking_inputs(
+        EncodedTracker, capture_dir=tmp_path, frame_ids={18}, enabled=True
+    ):
+        tracker.track(Frame(18))
+    payload = torch.load(tmp_path / "mast3r_tracking_frame000018_attempt001.pt", weights_only=True)
+    encoded = payload["mast3r_asymmetric_inference"][0]["encoded_inputs"]
+    assert calls == [(18, 9)]
+    assert torch.equal(encoded["frame_i"]["feat"], torch.full((1, 2, 4), 18.0))
+    assert torch.equal(encoded["frame_j"]["feat"], torch.full((1, 2, 4), 9.0))
+    assert encoded["frame_j"]["pos"].tolist() == [[[0, 0], [1, 0]]]
+    assert encoded["frame_i"]["img_true_shape"].tolist() == [[1, 2]]
+    assert utils.mast3r_asymmetric_inference is inference
+
+
 def test_matching_call_captures_warmstart_raw_valid_identity_and_pre_call_clones(monkeypatch, tmp_path):
     module = import_module()
     returned = (torch.tensor([[1, 0]]), torch.tensor([[[False], [True]]]))
