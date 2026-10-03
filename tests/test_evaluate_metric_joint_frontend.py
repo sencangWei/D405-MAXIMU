@@ -1,6 +1,7 @@
 import csv
 import json
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -216,12 +217,16 @@ def test_orchestrates_existing_clis_and_truthful_outputs(tmp_path: Path) -> None
     assert row["fresh_metric_joint_frontend_eval"]["right_geometry_source"] == report["right_geometry_source"]
 
 
-def test_optional_stereo_rc2_is_retained_for_reject_window_policy(tmp_path: Path) -> None:
+@pytest.mark.parametrize("failed_eye", ["left", "right"])
+def test_optional_quality_failure_is_retained_without_deriving_from_failed_left(tmp_path: Path, failed_eye: str) -> None:
     manifest, session, _vins = _record_fixture(tmp_path)
     left = _frontend(tmp_path / "left", "left", session=session)
     right = _frontend(tmp_path / "right", "right", session=session)
 
     def fake_runner(command, cwd=None, **_kwargs):
+        if _has_script(command, "derive_right_ir_stereo_scale.py"):
+            source = Path(command[command.index("--left-stereo-report") + 1])
+            assert json.loads(source.read_text())["result"] == "PASS"
         _metric_outputs(command)
         if _has_script(command, "fuse_mast3r_dual_ir_symmetric.py"):
             out = Path(command[command.index("--output-dir") + 1])
@@ -235,7 +240,19 @@ def test_optional_stereo_rc2_is_retained_for_reject_window_policy(tmp_path: Path
         if _has_script(command, "run_constant_ir_gauge_probe.py") or _has_script(command, "run_physical_stereo_lever_probe.py"):
             out = Path(command[command.index("--output") + 1])
             _write_json(out / "summary.json", {"status": "COMPLETED", "results": [{"id": "rid", "status": "COMPLETED"}]})
-        rc = 2 if "long_hops" in " ".join(command) else 0
+        rc = 0
+        if "long_hops" in " ".join(command):
+            if failed_eye == "left" and "align_mast3r_scale_with_stereo.py" in " ".join(command):
+                rc = 3
+                parts = command[-1].split()
+                path = Path(parts[parts.index("--report") + 1].strip("'\""))
+            elif failed_eye == "right" and _has_script(command, "derive_right_ir_stereo_scale.py"):
+                rc = 2
+                path = Path(command[command.index("--output") + 1])
+            if rc:
+                failed = json.loads(path.read_text())
+                failed.update(result="FAIL", failures=["synthetic optional quality failure"])
+                _write_json(path, failed)
         return SimpleNamespace(returncode=rc)
 
     report = fresh.run_pipeline(
@@ -248,6 +265,44 @@ def test_optional_stereo_rc2_is_retained_for_reject_window_policy(tmp_path: Path
     )
     retained = [stage for stage in report["stages"] if stage.get("retained_for_reject_window_policy")]
     assert retained and retained[0]["primary"] is False
+    assert retained[0]["left_returncode"] == (3 if failed_eye == "left" else 0)
+    assert retained[0]["right_returncode"] == (None if failed_eye == "left" else 2)
+    if failed_eye == "left":
+        failed_right = json.loads(Path(retained[0]["right_report"]).read_text())
+        assert failed_right["result"] == "FAIL"
+        assert failed_right["derivation_status"] == "SKIPPED_LEFT_QUALITY_FAILED"
+        assert failed_right["observations"] == []
+        assert failed_right["scale_m_per_mast3r_unit"] is None
+        import fuse_mast3r_stereo_imu as fusion
+        primary = json.loads((tmp_path / "out/right_cache/stereo_scale_right_report.json").read_text())
+        merged = fusion.merge_stereo_reports(primary, [failed_right], optional_policy="reject_window")
+        assert merged["observations"] == primary["observations"]
+        assert merged["optional_report_rejections"][0]["reason"] == "optional_report_failed"
+
+
+@pytest.mark.parametrize("eye,returncode,expected_calls", [("left", 3, 1), ("right", 2, 2)])
+def test_primary_stereo_quality_failure_stays_strict(tmp_path: Path, eye: str, returncode: int, expected_calls: int) -> None:
+    manifest, session, _vins = _record_fixture(tmp_path)
+    left = _frontend(tmp_path / "left", "left", session=session)
+    right = _frontend(tmp_path / "right", "right", session=session)
+    calls = []
+
+    def fake_runner(command, cwd=None, **_kwargs):
+        calls.append(command)
+        _metric_outputs(command)
+        is_left = "align_mast3r_scale_with_stereo.py" in " ".join(command)
+        is_right = _has_script(command, "derive_right_ir_stereo_scale.py")
+        rc = returncode if (eye == "left" and is_left) or (eye == "right" and is_right) else 0
+        return SimpleNamespace(returncode=rc)
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        fresh.run_pipeline(
+            manifest_path=manifest, record_id="rid", left_frontend=left,
+            right_frontend=right, output=tmp_path / "out", command_runner=fake_runner,
+        )
+    assert error.value.returncode == returncode
+    assert len(calls) == expected_calls
+    assert not any(_has_script(command, "score_steamvr_slam.py") for command in calls)
 
 
 def test_rejects_incomplete_frontend_before_commands(tmp_path: Path) -> None:

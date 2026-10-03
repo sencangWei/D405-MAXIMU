@@ -67,6 +67,37 @@ source. These tests establish source/contract reproducibility, not native
 runtime packaging or precision acceptance; raw recordings, calibration,
 model checkpoints, and native runtime remain external prerequisites.
 
+Next bounded investigation: all ten fixed cohort records have verified full
+LEFT/RIGHT clocks (1199 frames per eye), including the two 09-30 RIGHT datasets
+under frontend_observation_20260930/dual_ir_same_code_20261002 rather than
+batch_v1. A read-only audit confirmed the fresh OFF primary uses the same raw
+DB/factory calibration/window/free-PnP/depth settings as historical production.
+Its changed LEFT geometry, not a stereo orchestration parameter mismatch,
+explains the new dispersion failure. The fresh OFF RIGHT export is byte-identical
+to the historical RIGHT source; the historical LEFT frontend provenance differs.
+
+The shared-observation diagnostic is saved in
+shared_stereo_geometry_diagnostic_v1.json with source hashes and explicit
+non-ATE/non-acceptance labels. For the identical 593 OFF-accepted raw stereo
+observations, metric-joint LEFT reduced forward-projection scale dispersion
+0.571610 -> 0.410501 and rotation P95 2.677522 -> 2.563217 degrees; rotation
+maximum slightly increased 4.522480 -> 4.581192 degrees. This supports retaining
+the effective component, not unconditional promotion or discarding it because
+one remaining metric is worse. Actual full-frame scored trajectories are still
+needed; this subset diagnostic has selection bias and is not the fresh ON
+bidirectional report.
+
+A real orchestration bug in the new evaluator was reproduced and fixed:
+optional LEFT quality FAIL returns 3, while RIGHT derive quality FAIL returns 2;
+RIGHT derive additionally requires a passing LEFT report. Under the unchanged
+reject_window policy, optional LEFT FAIL now records an explicit skipped RIGHT
+dependency with zero geometry and a FAIL result; the real merge consumer rejects
+that optional report. Primary LEFT/RIGHT quality gates remain strict, as do GT
+independence and coverage requirements. Red tests reproduced both the return-code
+error and failed-LEFT dependency error; targeted evaluator/optional-policy/RIGHT
+scale tests then passed 38/38, and independent review approved the two-file fix.
+No frontend objective, weight, cap, or precision threshold was changed.
+
 Independent RK3576 deployment remains live-blocked by No route to host and the
 missing actual ARM candidate/native runtime. No QR, network, udev, package,
 recording deletion, reboot, or robot-motion changes were made.

@@ -1,0 +1,43 @@
+{
+  "schema": "umi_frozen_stereo_observation_geometry_comparison_v1",
+  "record_id": "20260927_ind2",
+  "external_ground_truth_used": false,
+  "diagnostic_not_ate": true,
+  "not_a_fresh_bidirectional_scale_report": true,
+  "precision_acceptance_established": false,
+  "production_promoted": false,
+  "source_root": "/home/robot/ego_vio_humble/.planning/dual_ir_regression_25_20261002/sep29_frontier_local_pairs_20261003",
+  "source_artifacts": {
+    "metric_off": {
+      "path": "full_metric_joint_frontend_control_v2/20260927_ind2/left/trajectory_frames.csv",
+      "sha256": "b4ea01ac59b0a7d7630ec7c7790a2d05154c7b9e0d1da36ad454278424f3f351"
+    },
+    "metric_on": {
+      "path": "full_metric_joint_frontend_v1/20260927_ind2/left/trajectory_frames.csv",
+      "sha256": "606e0565a6f781b4303e011c570bb4e9fa7507aac5984d47c18d1948f1ebd78e"
+    },
+    "frozen_raw_observations": {
+      "path": "full_metric_joint_frontend_evaluation_v1/20260927_ind2/control/left_cache/stereo_scale_bidirectional_report.json",
+      "sha256": "7028de18a95079c98dc10d3ce5780818fcbac2af9345171157dba2d8736adcb2"
+    }
+  },
+  "comparison_policy": "Reuse the same 593 observations accepted by the OFF report. No image re-extraction, new correspondence admission, reverse-PnP recomputation, or GT evaluation.",
+  "scale_formula": "s_ij = dot(v_metric_i, inv(R_i)*(p_j-p_i)) / squared_norm(inv(R_i)*(p_j-p_i)); original 3*1.4826*MAD or 0.15*median mask, metric_distance^2*max(pnp_inlier_ratio,0.25) weights limited at p95; (p90-p10)/weighted_mean on retained scales",
+  "results": {
+    "metric_off": {
+      "shared_accepted_observations": 593,
+      "forward_projection_scale_median": 0.44741649073328066,
+      "forward_projection_relative_p90_p10": 0.5716102285328968,
+      "rotation_error_deg_median_p95_max": [0.6320351743970036, 2.6775215011654785, 4.522479729414116],
+      "direction_cosine_p5_median": [0.9286371314167869, 0.9970012625749465]
+    },
+    "metric_on": {
+      "shared_accepted_observations": 593,
+      "forward_projection_scale_median": 0.45445954817564016,
+      "forward_projection_relative_p90_p10": 0.41050122329065214,
+      "rotation_error_deg_median_p95_max": [0.6277515699618614, 2.5632167382035003, 4.58119154313529],
+      "direction_cosine_p5_median": [0.9420875194855339, 0.996923841629944]
+    }
+  },
+  "interpretation": "Retain the candidate for full trajectory evaluation: local scale dispersion and rotation P95 improved, while rotation maximum slightly worsened. This does not prove 10 mm ATE or all-record non-regression. The OFF-accepted subset has selection bias; the actual ON raw-stereo reports and complete scored trajectory remain required."
+}

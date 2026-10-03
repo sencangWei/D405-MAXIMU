@@ -39,6 +39,7 @@ INVENTORY_SCHEMA = "umi_metric_joint_frontend_fresh_inventory_v1"
 FRONTEND_READY_STATUS = "FRONTEND_COMPLETE_NOT_SCORED"
 SYMMETRIC_VARIANT = "both"
 OPTIONAL_RETURN_CODES = (0, 2)
+OPTIONAL_LEFT_STEREO_RETURN_CODES = (0, 3)
 
 STEREO_WINDOWS = (
     {
@@ -513,18 +514,40 @@ def run_pipeline(
             command_runner,
             stage=f"left_stereo_{window['left_report']}",
             log_dir=log_dir,
-            allowed=(0,) if is_primary else OPTIONAL_RETURN_CODES,
+            allowed=(0,) if is_primary else OPTIONAL_LEFT_STEREO_RETURN_CODES,
         )
         left_report_path = left_cache / window["left_report"]
         if not left_report_path.is_file():
             raise FileNotFoundError(f"left stereo report was not written: {left_report_path}")
-        right_rc = _run([
-            sys.executable, str(ROOT / "scripts/derive_right_ir_stereo_scale.py"),
-            "--left-stereo-report", str(left_cache / window["left_report"]),
-            "--right-trajectory", str(right_traj),
-            "--output", str(right_cache / window["right_report"]),
-        ], command_runner, stage=f"right_derive_{window['right_report']}", log_dir=log_dir, allowed=(0,) if is_primary else OPTIONAL_RETURN_CODES)
         right_report_path = right_cache / window["right_report"]
+        right_log = log_dir / _stage_log_name(f"right_derive_{window['right_report']}")
+        if not is_primary and left_rc == 3:
+            left_report = read_json(left_report_path)
+            if left_report.get("result") != "FAIL":
+                raise ValueError("optional left quality returncode disagrees with report")
+            # The real derive CLI requires a passing LEFT report. Keep an explicit
+            # failed dependency marker, not fabricated RIGHT geometry or a PASS.
+            unavailable = dict(left_report)
+            unavailable.update(
+                result="FAIL", failures=["upstream_left_optional_quality_failed"],
+                inputs="RIGHT derivation not run: optional LEFT report failed quality",
+                trajectory=str(right_traj.resolve()), observation_frame="infrared_right_camera_i",
+                observations=[], scale_m_per_mast3r_unit=None,
+                quality={"error": "upstream_left_optional_quality_failed"},
+                trajectory_continuity=None, derivation_status="SKIPPED_LEFT_QUALITY_FAILED",
+                derived_from_left_stereo_report=str(left_report_path.resolve()),
+                output=str(right_report_path.resolve()),
+            )
+            write_json(right_report_path, unavailable)
+            right_log.write_text("SKIPPED_LEFT_QUALITY_FAILED: no RIGHT geometry was derived\n", encoding="utf-8")
+            right_rc = None
+        else:
+            right_rc = _run([
+                sys.executable, str(ROOT / "scripts/derive_right_ir_stereo_scale.py"),
+                "--left-stereo-report", str(left_report_path),
+                "--right-trajectory", str(right_traj),
+                "--output", str(right_report_path),
+            ], command_runner, stage=f"right_derive_{window['right_report']}", log_dir=log_dir, allowed=(0,) if is_primary else OPTIONAL_RETURN_CODES)
         if not right_report_path.is_file():
             raise FileNotFoundError(f"right stereo report was not written: {right_report_path}")
         right_report = read_json(right_report_path)
@@ -535,9 +558,10 @@ def run_pipeline(
             "primary": is_primary,
             "left_returncode": left_rc,
             "right_returncode": right_rc,
+            "right_derivation_status": "SKIPPED_LEFT_QUALITY_FAILED" if right_rc is None else "COMPLETED",
             "left_log": str((log_dir / _stage_log_name(f"left_stereo_{window['left_report']}")).resolve()),
-            "right_log": str((log_dir / _stage_log_name(f"right_derive_{window['right_report']}")).resolve()),
-            "retained_for_reject_window_policy": (not is_primary and (left_rc == 2 or right_rc == 2)),
+            "right_log": str(right_log.resolve()),
+            "retained_for_reject_window_policy": (not is_primary and (left_rc == 3 or right_rc == 2)),
             "left_report": str(left_report_path.resolve()),
             "right_report": str(right_report_path.resolve()),
         })
